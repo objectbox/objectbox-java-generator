@@ -70,6 +70,7 @@ object AnnotationProxy {
     inline operator fun <reified T : kotlin.Annotation> invoke(jdtAnnotation: Annotation) : T =
         this(jdtAnnotation, T::class.java) as T
 
+    @Suppress("UNCHECKED_CAST")
     private fun <T : Any, C : Class<out T>> Expression.javaValue(expected: C) : T {
         when {
             expected.isArray -> if (this is ArrayInitializer) {

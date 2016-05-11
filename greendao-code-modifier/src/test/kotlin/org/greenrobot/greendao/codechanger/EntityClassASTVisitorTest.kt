@@ -68,7 +68,7 @@ class EntityClassASTVisitorTest {
 
     @Test(expected = RuntimeException::class)
     fun entityIsNotRecognizedAmbigousImport() {
-        val entity = visit(
+        visit(
             //language=java
             """
         import org.greenrobot.greendao.annotations.*;
@@ -373,9 +373,9 @@ class EntityClassASTVisitorTest {
         }
         """)!!
         val field = entity.fields[0]
-        assertNotNull(field.index)
-        assertEquals("NAME_INDEX", field.index!!.name)
-        assertTrue(field.index!!.unique)
+        val index = field.index!!
+        assertEquals("NAME_INDEX", index.name)
+        assertTrue(index.unique)
     }
 
     @Test(expected = RuntimeException::class)
