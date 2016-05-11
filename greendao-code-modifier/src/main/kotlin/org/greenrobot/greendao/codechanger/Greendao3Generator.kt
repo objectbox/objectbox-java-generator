@@ -22,14 +22,17 @@ class Greendao3Generator(formattingOptions: FormattingOptions? = null,
             it to it.getJavaClassNames()
         }.toMap()
 
+        val start = System.currentTimeMillis();
         val entities = sourceFiles.asSequence()
             .map { context.parse(it, classesByDir[it.parentFile]!!) }
             .filterNotNull()
             .toList()
 
-        require(entities.isNotEmpty()) { "No entities found among specified files" }
+        val time = System.currentTimeMillis() - start;
+        println("Parsed ${entities.size} entities in $time ms among ${sourceFiles.count()} source files: " +
+                "${entities.asSequence().map { it.name }.joinToString()}")
 
-        println("Found entities: ${entities.asSequence().map { it.name }.joinToString()}")
+        require(entities.isNotEmpty()) { "No entities found among specified files" }
 
         entities.groupBy { it.schema }.forEach { entry ->
             val (schemaName, schemaEntities) = entry

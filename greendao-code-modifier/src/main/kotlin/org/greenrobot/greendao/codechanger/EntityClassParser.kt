@@ -7,6 +7,7 @@ import java.io.File
 
 class EntityClassParser(val jdtOptions: MutableMap<Any, Any>) {
     fun parse(javaFile : File, classesInPackage: List<String>) : EntityClass? {
+        // TODO consider encoding
         val source = javaFile.readText()
         val parser = ASTParser.newParser(AST.JLS8)
         parser.setCompilerOptions(jdtOptions)
@@ -23,7 +24,7 @@ class EntityClassParser(val jdtOptions: MutableMap<Any, Any>) {
 
         val problems = astRoot.problems;
         if (problems != null && problems.size > 0) {
-            println("Got {} problems compiling the source file: ${problems.size}");
+            println("Found ${problems.size} problem(s) parsing \"${javaFile}\":");
             problems.forEach { println(it) }
         }
 
