@@ -8,6 +8,7 @@ import org.gradle.api.tasks.util.PatternFilterable
 import org.greenrobot.greendao.codechanger.Greendao3Generator
 import org.greenrobot.greendao.codechanger.SchemaOptions
 import java.io.File
+import java.util.*
 
 class Greendao3GradlePlugin : Plugin<Project> {
     override fun apply(project: Project) {
@@ -40,8 +41,9 @@ class Greendao3GradlePlugin : Plugin<Project> {
 
                 inputs.files(*inputFiles.toTypedArray())
 
-                // run generateBuildConfig Gradle task to generate BuildConfig first
-                inputs.property("plugin-version", BuildConfig.version)
+                val version = getVersion()
+
+                inputs.property("plugin-version", version)
 
                 // put schema options into inputs
                 schemaOptions.forEach { e ->
@@ -64,6 +66,15 @@ class Greendao3GradlePlugin : Plugin<Project> {
                 it.dependsOn(generateCode)
             }
         }
+    }
+
+    private fun getVersion(): String {
+        return Greendao3GradlePlugin::class.java.getResourceAsStream(
+            "/org/greenrobot/greendao/gradle/version.properties")?.let {
+            val properties = Properties()
+            properties.load(it)
+            properties.getProperty("version") ?: throw RuntimeException("No version in version.properties")
+        } ?: "0"
     }
 
     private fun collectSchemaOptions(daoPackage: String, genSrcDir: File, options: GreendaoOptions)
