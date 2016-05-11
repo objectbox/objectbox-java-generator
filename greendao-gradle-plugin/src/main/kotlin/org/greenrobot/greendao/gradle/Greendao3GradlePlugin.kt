@@ -16,89 +16,42 @@ class Greendao3GradlePlugin : Plugin<Project> {
         project.afterEvaluate {
             val options = project.extensions.getByType(GreendaoOptions::class.java)
 
-            requireNotNull(options.entities) { "greenDAO: 'entities' property should be specified" }
+            val entities = options.entities
+                ?: throw IllegalArgumentException("greenDAO: 'entities' property should be specified")
 
             val genSrcDir = options.genSrcDir
 
-            val sourceProvider = when {
-                project.plugins.findPlugin("java") != null -> JavaPluginSourceProvider(project)
-
-                project.plugins.findPlugin("android") != null
-                    || project.plugins.findPlugin("com.android.application") != null
-                    || project.plugins.findPlugin("com.android.library") != null -> AndroidPluginSourceProvider(project)
-
-                else -> throw RuntimeException("greenDAO supports only Java or Android projects. " +
-                    "None of corresponding plugins have been applied to the project")
-            }
+            val sourceProvider = project.sourceProvider
 
             val inputFiles = getInputFiles(
                 project,
-                options.entities!!,
+                entities,
                 if (options.scanOutputDir) null else genSrcDir,
                 sourceProvider
             )
 
-            require(inputFiles.isNotEmpty()) {
-                "greenDAO: No java files found among specified file collection. " +
-                   "Please check 'greendao.entities' property"
-            }
+            val (daoPackage, daoPackageDir) = getDaoPackageAndPackageDir(inputFiles, options, sourceProvider)
 
-            // TODO document daoPackage gen, extract fun?
-            val daoPackageDir = options.daoPackage?.replace('.', '/') ?: run {
-                // detect package name
-                val firstFile = inputFiles.first()
-                val pkgDir = sourceProvider.sourceDirs()
-                    .find { firstFile.startsWith(it) }
-                    ?.let { firstFile.parentFile.relativeToOrNull(it)?.path }
-                requireNotNull(pkgDir) {
-                    "greenDAO: Can't determine package name for output dao classes. " +
-                        "Please specify it explicitly with daoPackage option."
-                }
-            }
-
-            val daoPackage = options.daoPackage ?: daoPackageDir.replace(File.separatorChar, '.')
+            val schemaOptions = collectSchemaOptions(daoPackage, genSrcDir, options)
 
             // define task
             val generateCode = project.task("generateGreenDao").apply {
                 logging.captureStandardOutput(LogLevel.INFO)
 
                 inputs.files(*inputFiles.toTypedArray())
-                outputs.dir(File(genSrcDir, daoPackageDir))
-                if (options.generateTests) {
-                    outputs.dir(options.testsGenSrcDir)
-                }
 
                 // run generateBuildConfig Gradle task to generate BuildConfig first
                 inputs.property("plugin-version", BuildConfig.version)
 
-                val defaultOptions = SchemaOptions(
-                    name = "default",
-                    version = options.schemaVersion,
-                    encrypt = options.encrypt,
-                    daoPackage = daoPackage,
-                    outputDir = genSrcDir,
-                    testsOutputDir = if (options.generateTests) options.testsGenSrcDir else null
-                )
-
-                val schemaOptions = mutableMapOf("default" to defaultOptions)
-
-                options.schemas.schemasMap.map { e ->
-                    val (name, schemaExt) = e
-                    SchemaOptions(
-                        name = name,
-                        version = schemaExt.version ?: defaultOptions.version,
-                        encrypt = schemaExt.encrypt ?: defaultOptions.encrypt,
-                        daoPackage = schemaExt.daoPackage ?: "${defaultOptions.daoPackage}.$name",
-                        outputDir = schemaExt.genSrcDir ?: defaultOptions.outputDir,
-                        testsOutputDir = if (options.generateTests) {
-                            schemaExt.testsGenSrcDir ?: defaultOptions.testsOutputDir
-                        } else null
-                    )
-                }.associateTo(schemaOptions, { it.name to it })
-
-                // define inputs of the task
+                // put schema options into inputs
                 schemaOptions.forEach { e ->
                     inputs.property("schema-${e.key}", e.value.toString())
+                }
+
+                // define task outputs
+                outputs.dir(File(genSrcDir, daoPackageDir))
+                if (options.generateTests) {
+                    outputs.dir(options.testsGenSrcDir)
                 }
 
                 doLast {
@@ -113,9 +66,62 @@ class Greendao3GradlePlugin : Plugin<Project> {
         }
     }
 
+    private fun collectSchemaOptions(daoPackage: String, genSrcDir: File, options: GreendaoOptions)
+        : MutableMap<String, SchemaOptions> {
+        val defaultOptions = SchemaOptions(
+            name = "default",
+            version = options.schemaVersion,
+            encrypt = options.encrypt,
+            daoPackage = daoPackage,
+            outputDir = genSrcDir,
+            testsOutputDir = if (options.generateTests) options.testsGenSrcDir else null
+        )
+
+        val schemaOptions = mutableMapOf("default" to defaultOptions)
+
+        options.schemas.schemasMap.map { e ->
+            val (name, schemaExt) = e
+            SchemaOptions(
+                name = name,
+                version = schemaExt.version ?: defaultOptions.version,
+                encrypt = schemaExt.encrypt ?: defaultOptions.encrypt,
+                daoPackage = schemaExt.daoPackage ?: "${defaultOptions.daoPackage}.$name",
+                outputDir = schemaExt.genSrcDir ?: defaultOptions.outputDir,
+                testsOutputDir = if (options.generateTests) {
+                    schemaExt.testsGenSrcDir ?: defaultOptions.testsOutputDir
+                } else null
+            )
+        }.associateTo(schemaOptions, { it.name to it })
+        return schemaOptions
+    }
+
+    /**
+     * Tries to resolve a package name for generated dao classes and corresponding relative path to that package
+     * E.g. ("com.example.app", "com/example/app")
+     */
+    private fun getDaoPackageAndPackageDir(inputFiles: List<File>, options: GreendaoOptions,
+                                           sourceProvider: SourceProvider): Pair<String, String> {
+        return options.daoPackage?.let {
+            Pair(it, it.replace('.', '/'))
+        } ?: run {
+            // detect package name from the path to the first input file
+            val firstFile = inputFiles.first()
+            val pkgDir = sourceProvider.sourceDirs()
+                .find { firstFile.startsWith(it) }
+                ?.let { firstFile.parentFile.relativeToOrNull(it)?.path }
+                ?: throw RuntimeException("greenDAO: Can't determine package name for output dao classes. " +
+                                                    "Please specify it explicitly with daoPackage option.")
+            Pair(pkgDir.replace(File.separatorChar, '.'), pkgDir)
+        }
+    }
+
+    /**
+     * @return input java files
+     * @throws IllegalArgumentException if no input files found
+     * */
     private fun getInputFiles(project: Project, spec: Any, excludeDir: File?,
                               fileTreeProvider: SourceProvider) : List<File> {
-        return when (spec) {
+        val files = when (spec) {
             is FileCollection -> spec.asFileTree.matching(Closure { pf: PatternFilterable ->
                 pf.include("**/*.java")
             }).files
@@ -142,5 +148,10 @@ class Greendao3GradlePlugin : Plugin<Project> {
                 it.toList()
             }
         }
+        require(files.isNotEmpty()) {
+            "greenDAO: No java files found among specified file collection. " +
+                "Please check 'greendao.entities' property"
+        }
+        return files
     }
 }

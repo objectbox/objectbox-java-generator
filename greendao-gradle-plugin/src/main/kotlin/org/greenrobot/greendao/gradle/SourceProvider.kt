@@ -40,3 +40,15 @@ class JavaPluginSourceProvider(val project: Project): SourceProvider {
     override fun sourceDirs(): Sequence<File> =
         javaPluginConvention.sourceSets.asSequence().map { it.allJava.srcDirs }.flatten()
 }
+
+val Project.sourceProvider: SourceProvider
+    get() = when {
+        project.plugins.findPlugin("java") != null -> JavaPluginSourceProvider(project)
+
+        project.plugins.findPlugin("android") != null
+            || project.plugins.findPlugin("com.android.application") != null
+            || project.plugins.findPlugin("com.android.library") != null -> AndroidPluginSourceProvider(project)
+
+        else -> throw RuntimeException("greenDAO supports only Java or Android projects. " +
+            "None of corresponding plugins have been applied to the project")
+    }
