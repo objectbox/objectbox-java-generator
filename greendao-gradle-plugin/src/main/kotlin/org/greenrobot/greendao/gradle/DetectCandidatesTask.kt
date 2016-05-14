@@ -28,7 +28,8 @@ open class DetectCandidatesTask : DefaultTask() {
         val candidatesFile = this.candidatesFile ?: throw IllegalStateException("candidates should be defined")
 
         val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
-        val oldCandidates = if (candidatesFile.exists()) candidatesFile.readLines().toSet() else emptySet()
+        // read candidates, skipping first line with timestamp
+        val oldCandidates = if (candidatesFile.exists()) candidatesFile.readLines().drop(1).toSet() else emptySet()
         val newCandidates = oldCandidates.toMutableSet()
 
         var modifiedExisting = false
@@ -56,6 +57,8 @@ open class DetectCandidatesTask : DefaultTask() {
         if (newCandidates != oldCandidates || modifiedExisting) {
             // write candidates into file line by line
             candidatesFile.printWriter().use { writer ->
+                // first write timestamp to make file hash changed
+                writer.println(System.currentTimeMillis())
                 newCandidates.forEach {
                     writer.println(it)
                 }

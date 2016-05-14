@@ -41,7 +41,9 @@ class Greendao3GradlePlugin : Plugin<Project> {
 
             val detectCandidates = project.task(
                 mapOf("type" to DetectCandidatesTask::class.java), "greendaoDetectCandidates") as DetectCandidatesTask
-            detectCandidates.sourceFiles = sourceProvider.sourceTree()
+            detectCandidates.sourceFiles = sourceProvider.sourceTree().matching(Closure { pf: PatternFilterable ->
+                pf.include("**/*.java")
+            })
             detectCandidates.candidatesFile = candidatesFile
             detectCandidates.version = version
 
@@ -69,7 +71,8 @@ class Greendao3GradlePlugin : Plugin<Project> {
                         "Candidates file does not exist. Can't continue"
                     }
 
-                    val candidatesFiles = candidatesFile.readLines().map { File(it) }
+                    // read candidates file skipping first for timestamp
+                    val candidatesFiles = candidatesFile.readLines().drop(1).map { File(it) }
 
                     Greendao3Generator(options.formatting.data, options.skipTestGeneration)
                         .run(candidatesFiles, schemaOptions)
