@@ -21,7 +21,7 @@ class EntityClassASTVisitorTest {
         val entity = visit(
             //language=java
             """
-        import org.greenrobot.greendao.annotations.Entity;
+        import org.greenrobot.greendao.annotation.Entity;
 
         @Entity class Foobar {}
         """)
@@ -33,7 +33,7 @@ class EntityClassASTVisitorTest {
         val entity = visit(
             //language=java
             """
-        @org.greenrobot.greendao.annotations.Entity class Foobar {}
+        @org.greenrobot.greendao.annotation.Entity class Foobar {}
         """)
         assertNotNull(entity)
     }
@@ -71,7 +71,7 @@ class EntityClassASTVisitorTest {
         visit(
             //language=java
             """
-        import org.greenrobot.greendao.annotations.*;
+        import org.greenrobot.greendao.annotation.*;
         import org.redrobot.reddao.annotations.*;
 
         @Entity class Foobar {}
@@ -83,7 +83,7 @@ class EntityClassASTVisitorTest {
         val entity = visit(
             //language=java
             """
-        import org.greenrobot.greendao.annotations.Entity;
+        import org.greenrobot.greendao.annotation.Entity;
 
         @Entity(active = true) class Foobar {}
         """)!!
@@ -95,7 +95,7 @@ class EntityClassASTVisitorTest {
         val entity = visit(
             //language=java
             """
-        import org.greenrobot.greendao.annotations.*;
+        import org.greenrobot.greendao.annotation.*;
 
         @Entity class Foobar {}
         """)!!
@@ -109,7 +109,7 @@ class EntityClassASTVisitorTest {
             """
         package com.user.myapp;
 
-        import org.greenrobot.greendao.annotations.*;
+        import org.greenrobot.greendao.annotation.*;
 
         @Entity class Foobar {}
         """)!!
@@ -121,7 +121,7 @@ class EntityClassASTVisitorTest {
         val entity = visit(
             //language=java
             """
-        import org.greenrobot.greendao.annotations.*;
+        import org.greenrobot.greendao.annotation.*;
 
         @Entity class Foobar {}
         """)!!
@@ -133,7 +133,7 @@ class EntityClassASTVisitorTest {
         val entity = visit(
             //language=java
             """
-        import org.greenrobot.greendao.annotations.*;
+        import org.greenrobot.greendao.annotation.*;
 
         @Entity class Foobar {}
         """)!!
@@ -145,7 +145,7 @@ class EntityClassASTVisitorTest {
         val entity = visit(
             //language=java
             """
-        import org.greenrobot.greendao.annotations.*;
+        import org.greenrobot.greendao.annotation.*;
 
         @Entity
         @Table(name = "BAR")
@@ -159,7 +159,7 @@ class EntityClassASTVisitorTest {
         val entity = visit(
             //language=java
             """
-        import org.greenrobot.greendao.annotations.*;
+        import org.greenrobot.greendao.annotation.*;
 
         @Entity
         class Foobar {}
@@ -172,7 +172,7 @@ class EntityClassASTVisitorTest {
         val entity = visit(
             //language=java
             """
-        import org.greenrobot.greendao.annotations.*;
+        import org.greenrobot.greendao.annotation.*;
 
         @Entity(schema="custom")
         class Foobar {}
@@ -185,7 +185,7 @@ class EntityClassASTVisitorTest {
         val entity = visit(
             //language=java
             """
-        import org.greenrobot.greendao.annotations.*;
+        import org.greenrobot.greendao.annotation.*;
 
         @Entity
         class Foobar {}
@@ -198,7 +198,7 @@ class EntityClassASTVisitorTest {
         val entity = visit(
             //language=java
             """
-        import org.greenrobot.greendao.annotations.*;
+        import org.greenrobot.greendao.annotation.*;
 
         @Entity
         @Keep
@@ -212,7 +212,7 @@ class EntityClassASTVisitorTest {
         val entity = visit(
             //language=java
             """
-        import org.greenrobot.greendao.annotations.*;
+        import org.greenrobot.greendao.annotation.*;
 
         @Entity
         class Foobar {
@@ -233,7 +233,7 @@ class EntityClassASTVisitorTest {
         val entity = visit(
             //language=java
             """
-        import org.greenrobot.greendao.annotations.*;
+        import org.greenrobot.greendao.annotation.*;
 
         @Entity
         class Foobar {}
@@ -252,7 +252,7 @@ class EntityClassASTVisitorTest {
         val entity = visit(
             //language=java
             """
-        import org.greenrobot.greendao.annotations.*;
+        import org.greenrobot.greendao.annotation.*;
 
         @Entity
         class Foobar {
@@ -271,7 +271,7 @@ class EntityClassASTVisitorTest {
         val entity = visit(
             //language=java
             """
-        import org.greenrobot.greendao.annotations.*;
+        import org.greenrobot.greendao.annotation.*;
 
         @Entity
         class Foobar {
@@ -290,7 +290,7 @@ class EntityClassASTVisitorTest {
         val entity = visit(
             //language=java
             """
-        import org.greenrobot.greendao.annotations.*;
+        import org.greenrobot.greendao.annotation.*;
 
         @Entity
         class Foobar {
@@ -308,7 +308,7 @@ class EntityClassASTVisitorTest {
         val entity = visit(
             //language=java
             """
-        import org.greenrobot.greendao.annotations.*;
+        import org.greenrobot.greendao.annotation.*;
 
         @Entity
         class Foobar {
@@ -324,7 +324,7 @@ class EntityClassASTVisitorTest {
         val entity = visit(
             //language=java
             """
-        import org.greenrobot.greendao.annotations.*;
+        import org.greenrobot.greendao.annotation.*;
 
         @Entity
         class Foobar {
@@ -341,7 +341,7 @@ class EntityClassASTVisitorTest {
         val entity = visit(
             //language=java
             """
-        import org.greenrobot.greendao.annotations.*;
+        import org.greenrobot.greendao.annotation.*;
 
         @Entity
         class Foobar {
@@ -364,7 +364,7 @@ class EntityClassASTVisitorTest {
         val entity = visit(
             //language=java
             """
-        import org.greenrobot.greendao.annotations.*;
+        import org.greenrobot.greendao.annotation.*;
 
         @Entity
         class Foobar {
@@ -383,7 +383,7 @@ class EntityClassASTVisitorTest {
         visit(
             //language=java
             """
-        import org.greenrobot.greendao.annotations.*;
+        import org.greenrobot.greendao.annotation.*;
 
         @Entity
         class Foobar {
@@ -398,7 +398,7 @@ class EntityClassASTVisitorTest {
         val entity = visit(
             //language=java
             """
-        import org.greenrobot.greendao.annotations.*;
+        import org.greenrobot.greendao.annotation.*;
 
         @Entity
         class Foobar {
@@ -416,8 +416,8 @@ class EntityClassASTVisitorTest {
             """
         package com.example.myapp;
 
-        import org.greenrobot.greendao.annotations.Entity;
-        import org.greenrobot.greendao.annotations.Convert;
+        import org.greenrobot.greendao.annotation.Entity;
+        import org.greenrobot.greendao.annotation.Convert;
         import com.example.myapp.Converter;
 
         @Entity
@@ -443,7 +443,7 @@ class EntityClassASTVisitorTest {
         val entity = visit(
             //language=java
             """
-        import org.greenrobot.greendao.annotations.*;
+        import org.greenrobot.greendao.annotation.*;
 
         @Entity
         @Table(indexes = {
@@ -473,7 +473,7 @@ class EntityClassASTVisitorTest {
         val entity = visit(
             //language=java
             """
-        import org.greenrobot.greendao.annotations.*;
+        import org.greenrobot.greendao.annotation.*;
 
         @Entity
         class Foobar {
@@ -502,7 +502,7 @@ class EntityClassASTVisitorTest {
         val entity = visit(
             //language=java
             """
-        import org.greenrobot.greendao.annotations.*;
+        import org.greenrobot.greendao.annotation.*;
 
         @Entity
         class Foobar {
@@ -531,7 +531,7 @@ class EntityClassASTVisitorTest {
         val entity = visit(
             //language=java
             """
-        import org.greenrobot.greendao.annotations.*;
+        import org.greenrobot.greendao.annotation.*;
 
         @Entity
         class Foobar {
@@ -559,7 +559,7 @@ class EntityClassASTVisitorTest {
         val entity = visit(
             //language=java
             """
-        import org.greenrobot.greendao.annotations.*;
+        import org.greenrobot.greendao.annotation.*;
 
         @Entity
         class Foobar {
@@ -590,8 +590,8 @@ class EntityClassASTVisitorTest {
             """
         package com.example;
 
-        import org.greenrobot.greendao.annotations.Entity;
-        import org.greenrobot.greendao.annotations.ToOne;
+        import org.greenrobot.greendao.annotation.Entity;
+        import org.greenrobot.greendao.annotation.ToOne;
 
         @Entity
         class Foobar {
@@ -614,9 +614,9 @@ class EntityClassASTVisitorTest {
             """
         package com.example;
 
-        import org.greenrobot.greendao.annotations.Column;
-        import org.greenrobot.greendao.annotations.Entity;
-        import org.greenrobot.greendao.annotations.ToOne;
+        import org.greenrobot.greendao.annotation.Column;
+        import org.greenrobot.greendao.annotation.Entity;
+        import org.greenrobot.greendao.annotation.ToOne;
         import org.jetbrains.annotations.NotNull;
 
         @Entity
@@ -639,10 +639,10 @@ class EntityClassASTVisitorTest {
             """
         package com.example;
 
-        import org.greenrobot.greendao.annotations.Column;
-        import org.greenrobot.greendao.annotations.Entity;
-        import org.greenrobot.greendao.annotations.ToOne;
-        import org.greenrobot.greendao.annotations.Unique;
+        import org.greenrobot.greendao.annotation.Column;
+        import org.greenrobot.greendao.annotation.Entity;
+        import org.greenrobot.greendao.annotation.ToOne;
+        import org.greenrobot.greendao.annotation.Unique;
         import org.jetbrains.annotations.NotNull;
 
         @Entity
@@ -668,8 +668,8 @@ class EntityClassASTVisitorTest {
             """
         package com.example;
 
-        import org.greenrobot.greendao.annotations.Entity;
-        import org.greenrobot.greendao.annotations.ToMany;
+        import org.greenrobot.greendao.annotation.Entity;
+        import org.greenrobot.greendao.annotation.ToMany;
 
         import java.util.List;
 
@@ -693,9 +693,9 @@ class EntityClassASTVisitorTest {
             """
         package com.example;
 
-        import org.greenrobot.greendao.annotations.Entity;
-        import org.greenrobot.greendao.annotations.JoinOn;
-        import org.greenrobot.greendao.annotations.ToMany;
+        import org.greenrobot.greendao.annotation.Entity;
+        import org.greenrobot.greendao.annotation.JoinOn;
+        import org.greenrobot.greendao.annotation.ToMany;
 
         import java.util.List;
 
@@ -727,9 +727,9 @@ class EntityClassASTVisitorTest {
             """
         package com.example;
 
-        import org.greenrobot.greendao.annotations.Entity;
-        import org.greenrobot.greendao.annotations.JoinEntity;
-        import org.greenrobot.greendao.annotations.ToMany;
+        import org.greenrobot.greendao.annotation.Entity;
+        import org.greenrobot.greendao.annotation.JoinEntity;
+        import org.greenrobot.greendao.annotation.ToMany;
 
         import java.util.List;
 
@@ -756,9 +756,9 @@ class EntityClassASTVisitorTest {
             """
         package com.example;
 
-        import org.greenrobot.greendao.annotations.Entity;
-        import org.greenrobot.greendao.annotations.OrderBy;
-        import org.greenrobot.greendao.annotations.ToMany;
+        import org.greenrobot.greendao.annotation.Entity;
+        import org.greenrobot.greendao.annotation.OrderBy;
+        import org.greenrobot.greendao.annotation.ToMany;
 
         import java.util.List;
 
@@ -786,8 +786,8 @@ class EntityClassASTVisitorTest {
             """
         package com.example;
 
-        import org.greenrobot.greendao.annotations.Entity;
-        import org.greenrobot.greendao.annotations.ToOne;
+        import org.greenrobot.greendao.annotation.Entity;
+        import org.greenrobot.greendao.annotation.ToOne;
 
         import net.yetanotherlib.*;
 
@@ -808,8 +808,8 @@ class EntityClassASTVisitorTest {
             """
         package com.example;
 
-        import org.greenrobot.greendao.annotations.Entity;
-        import org.greenrobot.greendao.annotations.ToOne;
+        import org.greenrobot.greendao.annotation.Entity;
+        import org.greenrobot.greendao.annotation.ToOne;
 
         import net.yetanotherlib.*;
 
@@ -832,8 +832,8 @@ class EntityClassASTVisitorTest {
             """
         package com.example;
 
-        import org.greenrobot.greendao.annotations.Entity;
-        import org.greenrobot.greendao.annotations.ToOne;
+        import org.greenrobot.greendao.annotation.Entity;
+        import org.greenrobot.greendao.annotation.ToOne;
 
         import net.yetanotherlib.*;
 
@@ -856,8 +856,8 @@ class EntityClassASTVisitorTest {
             """
         package com.example2;
 
-        import org.greenrobot.greendao.annotations.Entity;
-        import org.greenrobot.greendao.annotations.ToOne;
+        import org.greenrobot.greendao.annotation.Entity;
+        import org.greenrobot.greendao.annotation.ToOne;
 
         import net.yetanotherlib.*;
 
@@ -881,8 +881,8 @@ class EntityClassASTVisitorTest {
             """
         package com.example2;
 
-        import org.greenrobot.greendao.annotations.Entity;
-        import org.greenrobot.greendao.annotations.ToOne;
+        import org.greenrobot.greendao.annotation.Entity;
+        import org.greenrobot.greendao.annotation.ToOne;
 
         import net.yetanotherlib.*;
 

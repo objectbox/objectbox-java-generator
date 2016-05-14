@@ -101,7 +101,7 @@ class Greendao3Generator(formattingOptions: FormattingOptions? = null,
         val entity = mapping[entityClass]!!
 
         context.transform(entityClass) {
-            ensureImport("org.greenrobot.greendao.annotations.Generated")
+            ensureImport("org.greenrobot.greendao.annotation.Generated")
 
             val fieldsInOrder = entityClass.fieldsInConstructorOrder ?: entityClass.fields
 
@@ -157,7 +157,7 @@ class Greendao3Generator(formattingOptions: FormattingOptions? = null,
 
                     defMethod("set${toOne.name.capitalize()}", toOne.targetEntity.className) {
                         if (entityClass.notNullAnnotation == null && toOne.fkProperties[0].isNotNull) {
-                            ensureImport("org.greenrobot.greendao.annotations.NotNull")
+                            ensureImport("org.greenrobot.greendao.annotation.NotNull")
                         }
                         Templates.entity.oneRelationSetter(toOne, entityClass.notNullAnnotation ?: "@NotNull")
                     }

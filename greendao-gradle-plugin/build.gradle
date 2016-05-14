@@ -4,7 +4,7 @@ apply plugin: 'groovy' // for dsl tests
 apply plugin: 'maven'
 
 group = 'org.greenrobot'
-version = '0.1-SNAPSHOT'
+version = '0.2-SNAPSHOT'
 
 sourceCompatibility = '1.7'
 targetCompatibility = '1.7'
