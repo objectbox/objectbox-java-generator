@@ -8,10 +8,8 @@ import kotlin.reflect.KClass
 
 /**
  * Visits compilation unit, find if it is an Entity and reads all the required information about it
- *
- * TODO optimize visiting, if class is not an entity (save some CPU)
  */
-class EntityClassASTVisitor(val classesInPackage: List<String> = emptyList()) : ASTVisitor() {
+class EntityClassASTVisitor(val classesInPackage: List<String> = emptyList()) : LazyVisitor() {
     var isEntity = false
     var schemaName: String = "default"
     val fields = mutableListOf<EntityField>()
@@ -33,13 +31,16 @@ class EntityClassASTVisitor(val classesInPackage: List<String> = emptyList()) : 
     private val methodAnnotations = mutableListOf<Annotation>()
     private val fieldAnnotations = mutableListOf<Annotation>()
 
+    override fun visit(node: CompilationUnit): Boolean  = true
+
     override fun visit(node: ImportDeclaration): Boolean {
         imports += node
         return true
     }
 
-    override fun endVisit(node: PackageDeclaration) {
+    override fun visit(node: PackageDeclaration): Boolean {
         packageName = node.name.fullyQualifiedName
+        return true
     }
 
     private fun Annotation.hasType(klass : KClass<*>) : Boolean {
@@ -239,8 +240,9 @@ class EntityClassASTVisitor(val classesInPackage: List<String> = emptyList()) : 
         }
     }
 
+    override fun visit(node: MethodDeclaration): Boolean = isEntity
+
     override fun endVisit(node : MethodDeclaration) {
-        if (!isEntity) return
         val method = Method(
             node.name.fullyQualifiedName,
             node.parameters()
