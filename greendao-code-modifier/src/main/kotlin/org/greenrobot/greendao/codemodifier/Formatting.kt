@@ -1,4 +1,4 @@
-package org.greenrobot.greendao.codechanger
+package org.greenrobot.greendao.codemodifier
 
 data class Formatting(val tabulation: Tabulation, val lineWidth : Int) {
   companion object {

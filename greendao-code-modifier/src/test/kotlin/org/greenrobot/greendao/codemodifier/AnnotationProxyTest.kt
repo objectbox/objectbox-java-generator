@@ -1,4 +1,4 @@
-package org.greenrobot.greendao.codechanger
+package org.greenrobot.greendao.codemodifier
 
 import org.eclipse.jdt.core.dom.*
 import org.eclipse.jdt.core.dom.Annotation

@@ -1,4 +1,4 @@
-package org.greenrobot.greendao.codechanger
+package org.greenrobot.greendao.codemodifier
 
 import de.greenrobot.daogenerator.DaoGenerator
 import de.greenrobot.daogenerator.Entity

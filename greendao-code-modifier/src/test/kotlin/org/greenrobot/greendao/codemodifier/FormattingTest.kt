@@ -1,4 +1,4 @@
-package org.greenrobot.greendao.codechanger
+package org.greenrobot.greendao.codemodifier
 
 import org.junit.Assert.*
 import org.junit.Test

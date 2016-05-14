@@ -5,8 +5,8 @@ import org.gradle.api.Project
 import org.gradle.api.file.FileCollection
 import org.gradle.api.logging.LogLevel
 import org.gradle.api.tasks.util.PatternFilterable
-import org.greenrobot.greendao.codechanger.Greendao3Generator
-import org.greenrobot.greendao.codechanger.SchemaOptions
+import org.greenrobot.greendao.codemodifier.Greendao3Generator
+import org.greenrobot.greendao.codemodifier.SchemaOptions
 import java.io.File
 import java.util.*
 

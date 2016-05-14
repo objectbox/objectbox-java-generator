@@ -4,8 +4,8 @@ import groovy.lang.Closure
 import groovy.lang.GroovyObjectSupport
 import org.gradle.api.Project
 import org.gradle.api.file.FileCollection
-import org.greenrobot.greendao.codechanger.FormattingOptions
-import org.greenrobot.greendao.codechanger.Tabulation
+import org.greenrobot.greendao.codemodifier.FormattingOptions
+import org.greenrobot.greendao.codemodifier.Tabulation
 import java.io.File
 
 /**
