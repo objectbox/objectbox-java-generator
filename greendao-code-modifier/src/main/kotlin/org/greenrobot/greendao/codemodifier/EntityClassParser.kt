@@ -6,9 +6,16 @@ import org.eclipse.jdt.core.dom.CompilationUnit
 import java.io.File
 
 class EntityClassParser(val jdtOptions: MutableMap<Any, Any>) {
+    val ANNOTATION_PACKAGE_CHAR_ARRAY = "org.greenrobot.greendao.annotation".toCharArray()
+
     fun parse(javaFile : File, classesInPackage: List<String>) : EntityClass? {
         // TODO consider encoding
         val source = javaFile.readText()
+
+        if (!source.containsIgnoreWhitespace(ANNOTATION_PACKAGE_CHAR_ARRAY)) {
+            return null
+        }
+
         val parser = ASTParser.newParser(AST.JLS8)
         parser.setCompilerOptions(jdtOptions)
         parser.setKind(ASTParser.K_COMPILATION_UNIT)
