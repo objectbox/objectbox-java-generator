@@ -53,21 +53,3 @@ inline fun <T> logTime(action: String, block: () -> T) : T {
     println("$action took $time ms")
     return result
 }
-
-/** Whether this string contains another char array with ignoring whitespaces */
-fun String.containsIgnoreWhitespace(another: CharArray) : Boolean {
-    var index = 0
-    loop@ for (ch in this) {
-        when (ch) {
-            another[index] -> {
-                index++
-                if (index == another.size) {
-                    return true
-                }
-            }
-            ' ', '\n', '\t', '\r' -> continue@loop
-            else -> index = 0
-        }
-    }
-    return false
-}

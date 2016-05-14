@@ -35,13 +35,21 @@ class Greendao3GradlePlugin : Plugin<Project> {
 
             val schemaOptions = collectSchemaOptions(daoPackage, genSrcDir, options)
 
+            val version = getVersion()
+
+            val candidatesFile = project.file("build/cache/greendao-candidates.list")
+
+            val detectCandidates = project.task(
+                mapOf("type" to DetectCandidatesTask::class.java), "greendaoDetectCandidates") as DetectCandidatesTask
+            detectCandidates.sourceFiles = sourceProvider.sourceTree()
+            detectCandidates.candidatesFile = candidatesFile
+            detectCandidates.version = version
+
             // define task
             val generateCode = project.task("generateGreenDao").apply {
                 logging.captureStandardOutput(LogLevel.INFO)
 
-                inputs.files(*inputFiles.toTypedArray())
-
-                val version = getVersion()
+                inputs.file(candidatesFile)
 
                 inputs.property("plugin-version", version)
 
@@ -57,10 +65,18 @@ class Greendao3GradlePlugin : Plugin<Project> {
                 }
 
                 doLast {
+                    require(candidatesFile.exists()) {
+                        "Candidates file does not exist. Can't continue"
+                    }
+
+                    val candidatesFiles = candidatesFile.readLines().map { File(it) }
+
                     Greendao3Generator(options.formatting.data, options.skipTestGeneration)
-                        .run(inputFiles, schemaOptions)
+                        .run(candidatesFiles, schemaOptions)
                 }
             }
+
+            generateCode.dependsOn(detectCandidates)
 
             project.tasks.filter { it.name.startsWith("compile") }.forEach {
                 it.dependsOn(generateCode)

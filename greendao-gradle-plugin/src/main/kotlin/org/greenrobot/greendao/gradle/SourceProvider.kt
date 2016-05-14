@@ -9,6 +9,7 @@ import java.io.File
 interface SourceProvider {
     fun sourceFiles(): Sequence<FileTree>
     fun sourceDirs(): Sequence<File>
+    fun sourceTree(): FileTree = sourceFiles().reduce { a, b -> a + b }
 }
 
 class AndroidPluginSourceProvider(val project: Project): SourceProvider {
