@@ -44,7 +44,7 @@ class Greendao3GradlePlugin : Plugin<Project> {
             detectCandidates.sourceFiles = sourceProvider.sourceTree().matching(Closure { pf: PatternFilterable ->
                 pf.include("**/*.java")
             })
-            detectCandidates.candidatesFile = candidatesFile
+            detectCandidates.candidatesListFile = candidatesFile
             detectCandidates.version = version
 
             // define task

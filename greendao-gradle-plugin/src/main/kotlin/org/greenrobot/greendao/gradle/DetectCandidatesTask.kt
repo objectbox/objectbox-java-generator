@@ -10,13 +10,24 @@ import org.gradle.api.tasks.incremental.IncrementalTaskInputs
 import org.gradle.api.tasks.incremental.InputFileDetails
 import java.io.File
 
+/**
+ * The task scans content of [sourceFiles] that were changes since the last build and detect if it is a possible
+ * candidate for an entity.
+ * All candidates (if they were changed since the last build) are written then as a list of paths
+ * into [candidatesListFile].
+ *
+ * The [candidatesListFile] is written also in case the list itself was not changed, but there were changes in the
+ * content of any candidate-file
+ *
+ * NOTE class should be opened because gradle inherits from it
+ */
 open class DetectCandidatesTask : DefaultTask() {
 
     @InputFiles
     var sourceFiles: FileCollection? = null
 
     @OutputFile
-    var candidatesFile: File? = null
+    var candidatesListFile: File? = null
 
     @Input
     var version: String = "unknown"
@@ -25,7 +36,7 @@ open class DetectCandidatesTask : DefaultTask() {
 
     @TaskAction
     fun execute(inputs: IncrementalTaskInputs) {
-        val candidatesFile = this.candidatesFile ?: throw IllegalStateException("candidates should be defined")
+        val candidatesFile = this.candidatesListFile ?: throw IllegalStateException("candidates should be defined")
         val sourceFiles = this.sourceFiles ?: throw IllegalStateException("source files should be defined")
 
         if (inputs.isIncremental && candidatesFile.exists()) {
