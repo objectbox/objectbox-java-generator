@@ -26,12 +26,31 @@ open class DetectCandidatesTask : DefaultTask() {
     @TaskAction
     fun execute(inputs: IncrementalTaskInputs) {
         val candidatesFile = this.candidatesFile ?: throw IllegalStateException("candidates should be defined")
+        val sourceFiles = this.sourceFiles ?: throw IllegalStateException("source files should be defined")
 
+        if (inputs.isIncremental && candidatesFile.exists()) {
+            processIncremental(inputs, candidatesFile)
+        } else {
+            processComplete(candidatesFile, sourceFiles)
+        }
+    }
+
+    private fun processComplete(candidatesFile: File, sourceFiles: FileCollection) {
         val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
-        // read candidates, skipping first line with timestamp
-        val oldCandidates = if (candidatesFile.exists()) candidatesFile.readLines().drop(1).toSet() else emptySet()
-        val newCandidates = oldCandidates.toMutableSet()
 
+        sourceFiles.asSequence()
+            .filter { it.isCandidate(token, buffer) }
+            .map { it.path }
+            .let { writeCandidates(it, candidatesFile) }
+    }
+
+    private fun processIncremental(inputs: IncrementalTaskInputs, candidatesFile: File) {
+        val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+
+        // read candidates, skipping first line with timestamp
+        val oldCandidates = candidatesFile.readLines().drop(1).toSet()
+        val newCandidates = oldCandidates.toMutableSet()
+        // will be set to true if any previously known candidate was modified
         var modifiedExisting = false
 
         // check each modified file and add/remove candidates
@@ -55,13 +74,18 @@ open class DetectCandidatesTask : DefaultTask() {
         // only if list is changed or previously added candidate is changed
         // the latter one is a way to notify existing task about changed file
         if (newCandidates != oldCandidates || modifiedExisting) {
+            writeCandidates(newCandidates.asSequence(), candidatesFile)
+        }
+    }
+
+    /** write timestamp and list of [candidates] into [outputFile] */
+    private fun writeCandidates(candidates: Sequence<String>, outputFile: File) {
+        outputFile.printWriter().use { writer ->
+            // first write timestamp to make file hash changed
+            writer.println(System.currentTimeMillis())
             // write candidates into file line by line
-            candidatesFile.printWriter().use { writer ->
-                // first write timestamp to make file hash changed
-                writer.println(System.currentTimeMillis())
-                newCandidates.forEach {
-                    writer.println(it)
-                }
+            candidates.forEach {
+                writer.println(it)
             }
         }
     }
