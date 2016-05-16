@@ -3,7 +3,6 @@ package org.greenrobot.greendao.gradle
 import groovy.lang.Closure
 import groovy.lang.GroovyObjectSupport
 import org.gradle.api.Project
-import org.gradle.api.file.FileCollection
 import org.greenrobot.greendao.codemodifier.FormattingOptions
 import org.greenrobot.greendao.codemodifier.Tabulation
 import java.io.File
@@ -14,28 +13,6 @@ import java.io.File
  * NOTE class should be opened because gradle inherits from it
  */
 open class GreendaoOptions(val project: Project) {
-    /**
-     * The only required property to set up. Limits scan of entities classes to one of the following rules:
-     *
-     * - a package name, e.g. "com.example.app.entities"
-     * - directory path, e.g. "src/main/java/com/example/app/entities"
-     * - gradle file collection, e.g. fileTree(dir: "src/main/java/com/example/app/entities", include: "*Entity.java")
-     *
-     * In case package name or directory path is specified, the plugin also scans internal packages/directories
-     *
-     * Note, precision of the rule reflects performance of the build.
-     * The difference can be more significant for big projects.
-     * For maximum performance ensure your entities package does not contain anything except
-     * classes annotated with @Entity, otherwise consider usage of [Project.fileTree]
-     */
-    var entities: Any? = null
-        set(value) {
-            field = value
-            if (value is String && daoPackage == null && value.matches(Regex("[a-z._]+"))) {
-                daoPackage = value
-            }
-        }
-
     /**
      * Package name for generated DAO (EntityDao, DaoMaster, DaoSession)
      * The value is optional, by default package name is taken from source entities
@@ -96,20 +73,6 @@ open class GreendaoOptions(val project: Project) {
 
     internal val formatting = FormattingExtension()
     internal val schemas = SchemasExtension(project)
-
-    /**
-     * Specifies [FileCollection] which contains entities classes
-     */
-    fun entities(value: FileCollection) {
-        this.entities = value
-    }
-
-    /**
-     * Specifies package name or directory path which contains entities classes
-     */
-    fun entities(pathOrPackage: String) {
-        this.entities = pathOrPackage
-    }
 
     /** @see genSrcDir */
     fun genSrcDir(dir: File) {

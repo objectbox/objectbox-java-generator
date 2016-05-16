@@ -9,7 +9,7 @@ import java.io.File
  * Main generator.
  * - runs parsing and transformation of Entity classes.
  * - runs generation of dao classes within {@link de.greenrobot.daogenerator.DaoGenerator}
- * */
+ */
 class Greendao3Generator(formattingOptions: FormattingOptions? = null,
                          val skipTestGeneration: List<String> = emptyList()) {
     val context = JdtCodeContext(formattingOptions)
@@ -43,7 +43,8 @@ class Greendao3Generator(formattingOptions: FormattingOptions? = null,
     }
 
     fun generateSchema(entities: List<EntityClass>, options: SchemaOptions) {
-        val daoPackage = options.daoPackage
+        // take explicitly specified package name, or package name of the first entity
+        val daoPackage = options.daoPackage ?: entities.first().packageName
         val outputDir = options.outputDir
         val testsOutputDir = options.testsOutputDir
 

@@ -2,7 +2,6 @@ apply plugin: 'kotlin'
 apply plugin: 'maven'
 
 group = 'org.greenrobot'
-version = '1.2-SNAPSHOT'
 
 sourceCompatibility = '1.7'
 targetCompatibility = '1.7'
