@@ -30,7 +30,7 @@ data class TransientField(val variable: Variable,
 data class CustomType(val converterClassName: String,
                       val columnJavaType: VariableType)
 
-data class TableId(val autoincrement: Boolean, val orderDesc: Boolean)
+data class TableId(val autoincrement: Boolean)
 
 data class PropertyIndex(val name: String?, val unique: Boolean)
 

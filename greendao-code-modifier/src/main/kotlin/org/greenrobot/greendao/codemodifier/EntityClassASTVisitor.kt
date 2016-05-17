@@ -219,7 +219,7 @@ class EntityClassASTVisitor(val classesInPackage: List<String> = emptyList()) : 
 
         return EntityField(
             variable = Variable(variableType, fieldName.toString()),
-            id = idAnnotation?.let { TableId(it.autoincrement, it.orderDesc) },
+            id = idAnnotation?.let { TableId(it.autoincrement) },
             index = indexAnnotation?.let { PropertyIndex(indexAnnotation.name.nullIfBlank(), indexAnnotation.unique) },
             isNotNull = node.type.isPrimitiveType || fa.hasNotNull,
             columnName = columnAnnotation?.name?.let { it.nullIfBlank() },

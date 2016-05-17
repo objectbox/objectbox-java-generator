@@ -33,11 +33,7 @@ object GreendaoModelTranslator {
                         propertyBuilder.indexAsc(field.index.name, field.index.unique)
                     }
                     if (field.id != null) {
-                        if (field.id.orderDesc) {
-                            propertyBuilder.primaryKeyDesc()
-                        } else {
-                            propertyBuilder.primaryKeyAsc()
-                        }
+                        propertyBuilder.primaryKey()
                         if (field.id.autoincrement) propertyBuilder.autoincrement()
                     }
                     if (field.columnName != null) {
