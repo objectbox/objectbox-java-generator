@@ -32,13 +32,15 @@ class Greendao3Generator(formattingOptions: FormattingOptions? = null,
         println("Parsed ${entities.size} entities in $time ms among ${sourceFiles.count()} source files: " +
                 "${entities.asSequence().map { it.name }.joinToString()}")
 
-        require(entities.isNotEmpty()) { "No entities found among specified files" }
+        if (entities.isNotEmpty()) {
+            entities.groupBy { it.schema }.forEach { entry ->
+                val (schemaName, schemaEntities) = entry
+                val options = schemaOptions[schemaName] ?: throw RuntimeException("Undefined schema $schemaName")
 
-        entities.groupBy { it.schema }.forEach { entry ->
-            val (schemaName, schemaEntities) = entry
-            val options = schemaOptions[schemaName] ?: throw RuntimeException("Undefined schema $schemaName")
-
-            generateSchema(schemaEntities, options)
+                generateSchema(schemaEntities, options)
+            }
+        } else {
+            System.err.println("No entities found among specified files")
         }
     }
 
