@@ -9,6 +9,7 @@ import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.incremental.IncrementalTaskInputs
 import org.gradle.api.tasks.incremental.InputFileDetails
 import java.io.File
+import java.nio.charset.Charset
 
 /**
  * The task scans content of [sourceFiles] that were changes since the last build and detect if it is a possible
@@ -32,31 +33,35 @@ open class DetectEntityCandidatesTask : DefaultTask() {
     @Input
     var version: String = "unknown"
 
-    private val token = "org.greenrobot.greendao.annotation".toByteArray()
+    @Input
+    var charset: String = "UTF-8"
+
+    private val token = "org.greenrobot.greendao.annotation".toCharArray()
 
     @TaskAction
     fun execute(inputs: IncrementalTaskInputs) {
         val candidatesFile = this.candidatesListFile ?: throw IllegalStateException("candidates should be defined")
         val sourceFiles = this.sourceFiles ?: throw IllegalStateException("source files should be defined")
+        val charset = Charset.forName(charset)
 
         if (inputs.isIncremental && candidatesFile.exists()) {
-            processIncremental(inputs, candidatesFile)
+            processIncremental(inputs, candidatesFile, charset)
         } else {
-            processComplete(candidatesFile, sourceFiles)
+            processComplete(candidatesFile, sourceFiles, charset)
         }
     }
 
-    private fun processComplete(candidatesFile: File, sourceFiles: FileCollection) {
-        val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+    private fun processComplete(candidatesFile: File, sourceFiles: FileCollection, charset: Charset) {
+        val buffer = CharArray(DEFAULT_BUFFER_SIZE)
 
         sourceFiles.asSequence()
-            .filter { it.isCandidate(token, buffer) }
+            .filter { it.containsIgnoreSpaces(token, buffer, charset) }
             .map { it.path }
             .let { writeCandidates(it, candidatesFile) }
     }
 
-    private fun processIncremental(inputs: IncrementalTaskInputs, candidatesFile: File) {
-        val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+    private fun processIncremental(inputs: IncrementalTaskInputs, candidatesFile: File, charset: Charset) {
+        val buffer = CharArray(DEFAULT_BUFFER_SIZE)
 
         // read candidates, skipping first line with timestamp
         val oldCandidates = candidatesFile.readLines().drop(1).toSet()
@@ -68,7 +73,7 @@ open class DetectEntityCandidatesTask : DefaultTask() {
         inputs.outOfDate { change: InputFileDetails ->
             val file = change.file
             if (file.isFile) {
-                if (file.isCandidate(token, buffer)) {
+                if (file.containsIgnoreSpaces(token, buffer, charset)) {
                     val listChanged = newCandidates.add(file.path)
                     modifiedExisting = !listChanged or modifiedExisting
                 } else {
@@ -101,34 +106,4 @@ open class DetectEntityCandidatesTask : DefaultTask() {
         }
     }
 
-    /** Search for token ignoring whitespaces. Supports only ASCI characters (works on raw bytes) */
-    fun File.isCandidate(token: ByteArray, buffer: ByteArray): Boolean {
-        val SPACE = ' '.toByte()
-        val TAB = '\t'.toByte()
-        val CR = '\r'.toByte()
-        val LF = '\n'.toByte()
-        val tokenSize = token.size
-        inputStream().buffered().use { stream ->
-            var index = 0
-            do {
-                val read = stream.read(buffer)
-                for (i in 0..read - 1) {
-                    val b = buffer[i]
-                    if (index == 0) {
-                        if (b == token[0]) {
-                            index = 1
-                        }
-                    } else if (b == token[index]){
-                        index++
-                        if (index == tokenSize) {
-                            return true
-                        }
-                    } else if (!(b == SPACE || b == TAB || b == CR || b == LF)) {
-                        index = 0
-                    }
-                }
-            } while (read >= 0)
-        }
-        return false
-    }
 }
