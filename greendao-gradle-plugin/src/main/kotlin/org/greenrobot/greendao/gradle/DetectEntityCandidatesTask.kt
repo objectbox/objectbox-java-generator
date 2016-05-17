@@ -21,7 +21,7 @@ import java.io.File
  *
  * NOTE class should be opened because gradle inherits from it
  */
-open class DetectCandidatesTask : DefaultTask() {
+open class DetectEntityCandidatesTask : DefaultTask() {
 
     @InputFiles
     var sourceFiles: FileCollection? = null

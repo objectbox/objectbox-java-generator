@@ -22,7 +22,7 @@ class Greendao3GradlePlugin : Plugin<Project> {
             val sourceProvider = project.sourceProvider
 
             val prepareTask = project.task(
-                mapOf("type" to DetectCandidatesTask::class.java), "greendaoPrepare") as DetectCandidatesTask
+                mapOf("type" to DetectEntityCandidatesTask::class.java), "greendaoPrepare") as DetectEntityCandidatesTask
             prepareTask.sourceFiles = sourceProvider.sourceTree().matching(Closure { pf: PatternFilterable ->
                 pf.include("**/*.java")
             })
