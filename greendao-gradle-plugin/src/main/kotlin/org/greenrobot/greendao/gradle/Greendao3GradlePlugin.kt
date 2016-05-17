@@ -20,6 +20,7 @@ class Greendao3GradlePlugin : Plugin<Project> {
             val schemaOptions = collectSchemaOptions(options.daoPackage, genSrcDir, options)
             val candidatesFile = project.file("build/cache/greendao-candidates.list")
             val sourceProvider = project.sourceProvider
+            val encoding = sourceProvider.encoding ?: "UTF-8"
 
             val prepareTask = project.task(
                 mapOf("type" to DetectEntityCandidatesTask::class.java), "greendaoPrepare") as DetectEntityCandidatesTask
@@ -28,14 +29,15 @@ class Greendao3GradlePlugin : Plugin<Project> {
             })
             prepareTask.candidatesListFile = candidatesFile
             prepareTask.version = version
+            prepareTask.charset = encoding
 
             // define task
             val generateTask = project.task("greendaoGenerate").apply {
                 logging.captureStandardOutput(LogLevel.INFO)
 
                 inputs.file(candidatesFile)
-
                 inputs.property("plugin-version", version)
+                inputs.property("source-encoding", encoding)
 
                 // put schema options into inputs
                 schemaOptions.forEach { e ->
@@ -59,8 +61,11 @@ class Greendao3GradlePlugin : Plugin<Project> {
                     // read candidates file skipping first for timestamp
                     val candidatesFiles = candidatesFile.readLines().asSequence().drop(1).map { File(it) }.asIterable()
 
-                    Greendao3Generator(options.formatting.data, options.skipTestGeneration)
-                        .run(candidatesFiles, schemaOptions)
+                    Greendao3Generator(
+                        options.formatting.data,
+                        options.skipTestGeneration,
+                        encoding
+                    ).run(candidatesFiles, schemaOptions)
                 }
             }
 

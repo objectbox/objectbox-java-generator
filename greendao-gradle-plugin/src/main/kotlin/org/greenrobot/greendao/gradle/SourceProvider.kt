@@ -4,12 +4,14 @@ import com.android.build.gradle.AndroidConfig
 import org.gradle.api.Project
 import org.gradle.api.file.FileTree
 import org.gradle.api.plugins.JavaPluginConvention
+import org.gradle.api.tasks.compile.JavaCompile
 import java.io.File
 
 interface SourceProvider {
     fun sourceFiles(): Sequence<FileTree>
     fun sourceDirs(): Sequence<File>
     fun sourceTree(): FileTree = sourceFiles().reduce { a, b -> a + b }
+    val encoding: String? get
 }
 
 class AndroidPluginSourceProvider(val project: Project): SourceProvider {
@@ -25,6 +27,9 @@ class AndroidPluginSourceProvider(val project: Project): SourceProvider {
 
     override fun sourceDirs(): Sequence<File> =
         androidExtension.sourceSets.asSequence().map { it.java.srcDirs }.flatten()
+
+    override val encoding: String?
+        get() = androidExtension.compileOptions.encoding
 }
 
 class JavaPluginSourceProvider(val project: Project): SourceProvider {
@@ -40,6 +45,11 @@ class JavaPluginSourceProvider(val project: Project): SourceProvider {
 
     override fun sourceDirs(): Sequence<File> =
         javaPluginConvention.sourceSets.asSequence().map { it.allJava.srcDirs }.flatten()
+
+    override val encoding: String?
+        get() = project.tasks.withType(JavaCompile::class.java).firstOrNull()?.let {
+            it.options.encoding
+        }
 }
 
 val Project.sourceProvider: SourceProvider

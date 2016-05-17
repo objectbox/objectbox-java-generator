@@ -3,6 +3,7 @@ package org.greenrobot.greendao.codemodifier
 import org.eclipse.jdt.core.dom.*
 import org.eclipse.jdt.core.dom.rewrite.ASTRewrite
 import org.eclipse.jface.text.Document
+import java.nio.charset.Charset
 
 /**
  * Helper class to perform transformations on Entity class
@@ -21,7 +22,7 @@ import org.eclipse.jface.text.Document
  * TODO don't write AST to string if nothing is changed
  */
 class EntityClassTransformer(val entityClass: EntityClass, val jdtOptions : MutableMap<Any, Any>,
-                             val formattingOptions: FormattingOptions?) {
+                             val formattingOptions: FormattingOptions?, val charset: Charset = Charsets.UTF_8) {
     private val cu = entityClass.node.root
     private val formatting = formattingOptions?.toFormatting()
         ?: Formatting.detect(entityClass.source, formattingOptions)
@@ -160,7 +161,7 @@ class EntityClassTransformer(val entityClass: EntityClass, val jdtOptions : Muta
         val newSource = writeToString()
         if (newSource != null) {
             println("Change " + entityClass.sourceFile.path)
-            entityClass.sourceFile.writeText(newSource)
+            entityClass.sourceFile.writeText(newSource, charset)
         } else {
             println("Skip " + entityClass.sourceFile.path)
         }

@@ -42,7 +42,7 @@ open class DetectEntityCandidatesTask : DefaultTask() {
     fun execute(inputs: IncrementalTaskInputs) {
         val candidatesFile = this.candidatesListFile ?: throw IllegalStateException("candidates should be defined")
         val sourceFiles = this.sourceFiles ?: throw IllegalStateException("source files should be defined")
-        val charset = Charset.forName(charset)
+        val charset = charset(charset)
 
         if (inputs.isIncremental && candidatesFile.exists()) {
             processIncremental(inputs, candidatesFile, charset)

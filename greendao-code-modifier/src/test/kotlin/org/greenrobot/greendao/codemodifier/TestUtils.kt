@@ -13,7 +13,6 @@ fun parseCompilationUnit(javaCode: String): CompilationUnit {
     val parser = ASTParser.newParser(AST.JLS8)
     val jdtOptions = JavaCore.getOptions()
     jdtOptions.put(CompilerOptions.OPTION_Source, CompilerOptions.VERSION_1_7)
-    jdtOptions.put(CompilerOptions.OPTION_Encoding, "UTF-8")
     parser.setCompilerOptions(jdtOptions)
     parser.setKind(ASTParser.K_COMPILATION_UNIT)
     parser.setSource(javaCode.toCharArray())

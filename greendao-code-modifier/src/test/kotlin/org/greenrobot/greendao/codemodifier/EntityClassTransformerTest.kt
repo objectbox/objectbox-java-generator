@@ -9,7 +9,6 @@ class EntityClassTransformerTest {
     val jdtOptions = JavaCore.getOptions()
     init {
         jdtOptions.put(CompilerOptions.OPTION_Source, CompilerOptions.VERSION_1_7)
-        jdtOptions.put(CompilerOptions.OPTION_Encoding, "UTF-8")
     }
     private val formattingOptions = FormattingOptions(Tabulation(' ', 4))
 

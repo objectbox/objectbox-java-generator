@@ -5,10 +5,9 @@ import org.eclipse.jdt.core.dom.ASTParser
 import org.eclipse.jdt.core.dom.CompilationUnit
 import java.io.File
 
-class EntityClassParser(val jdtOptions: MutableMap<Any, Any>) {
+class EntityClassParser(val jdtOptions: MutableMap<Any, Any>, val encoding: String) {
     fun parse(javaFile : File, classesInPackage: List<String>) : EntityClass? {
-        // TODO consider encoding
-        val source = javaFile.readText()
+        val source = javaFile.readText(charset(encoding))
 
         val parser = ASTParser.newParser(AST.JLS8)
         parser.setCompilerOptions(jdtOptions)
