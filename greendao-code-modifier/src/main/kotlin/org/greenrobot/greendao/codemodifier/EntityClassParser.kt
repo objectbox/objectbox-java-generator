@@ -24,8 +24,9 @@ class EntityClassParser(val jdtOptions: MutableMap<Any, Any>, val encoding: Stri
 
         val problems = astRoot.problems;
         if (problems != null && problems.size > 0) {
-            println("Found ${problems.size} problem(s) parsing \"${javaFile}\":");
-            problems.forEach { println(it) }
+            System.err.println("Found ${problems.size} problem(s) parsing \"${javaFile}\":");
+            problems.forEach { System.err.println(it) }
+            throw RuntimeException("Found problem(s) parsing \"${javaFile}\". See above")
         }
 
         val visitor = EntityClassASTVisitor(classesInPackage)
