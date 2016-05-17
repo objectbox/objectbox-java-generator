@@ -66,7 +66,7 @@ class EntityClassASTVisitor(val classesInPackage: List<String> = emptyList()) : 
         get() = try {
             typeName(imports, packageName, classesInPackage)
         } catch (e: IllegalArgumentException) {
-            throw RuntimeException("Error processing ${typeDeclaration?.name?.identifier}", e)
+            throw RuntimeException("Error processing \"${typeDeclaration?.name?.identifier}\": ${e.message}", e)
         }
 
     fun visitAnnotation(node : Annotation) : Boolean {
