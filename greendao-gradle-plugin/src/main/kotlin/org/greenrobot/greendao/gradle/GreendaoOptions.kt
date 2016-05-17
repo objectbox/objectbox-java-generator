@@ -23,7 +23,7 @@ open class GreendaoOptions(val project: Project) {
      * Base directory where generated DAO classes should be put
      * @see testsGenSrcDir
      */
-    var genSrcDir: File = project.file("src/generated/main/java")
+    var genSrcDir: File = File(project.buildDir, "generated/source/greendao")
 
     /**
      * Base directory where generated unit tests should be put.

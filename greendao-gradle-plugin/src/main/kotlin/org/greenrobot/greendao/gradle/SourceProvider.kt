@@ -11,6 +11,7 @@ interface SourceProvider {
     fun sourceFiles(): Sequence<FileTree>
     fun sourceDirs(): Sequence<File>
     fun sourceTree(): FileTree = sourceFiles().reduce { a, b -> a + b }
+    fun addSourceDir(dir: File)
     val encoding: String? get
 }
 
@@ -27,6 +28,10 @@ class AndroidPluginSourceProvider(val project: Project): SourceProvider {
 
     override fun sourceDirs(): Sequence<File> =
         androidExtension.sourceSets.asSequence().map { it.java.srcDirs }.flatten()
+
+    override fun addSourceDir(dir: File) {
+        androidExtension.sourceSets.maybeCreate("main").java.srcDir(dir)
+    }
 
     override val encoding: String?
         get() = androidExtension.compileOptions.encoding
@@ -45,6 +50,10 @@ class JavaPluginSourceProvider(val project: Project): SourceProvider {
 
     override fun sourceDirs(): Sequence<File> =
         javaPluginConvention.sourceSets.asSequence().map { it.allJava.srcDirs }.flatten()
+
+    override fun addSourceDir(dir: File) {
+        javaPluginConvention.sourceSets.maybeCreate("main").java.srcDir(dir)
+    }
 
     override val encoding: String?
         get() = project.tasks.withType(JavaCompile::class.java).firstOrNull()?.let {

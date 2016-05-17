@@ -22,6 +22,8 @@ class Greendao3GradlePlugin : Plugin<Project> {
             val sourceProvider = project.sourceProvider
             val encoding = sourceProvider.encoding ?: "UTF-8"
 
+            sourceProvider.addSourceDir(options.genSrcDir)
+
             val prepareTask = project.task(
                 mapOf("type" to DetectEntityCandidatesTask::class.java), "greendaoPrepare") as DetectEntityCandidatesTask
             prepareTask.sourceFiles = sourceProvider.sourceTree().matching(Closure { pf: PatternFilterable ->
