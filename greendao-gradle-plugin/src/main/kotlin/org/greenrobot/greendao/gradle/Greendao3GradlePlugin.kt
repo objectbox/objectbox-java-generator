@@ -13,16 +13,19 @@ class Greendao3GradlePlugin : Plugin<Project> {
     override fun apply(project: Project) {
         project.extensions.create("greendao", GreendaoOptions::class.java, project)
 
+        val genSrcDir = File(project.buildDir, "generated/source/greendao")
+
+        project.whenSourceProviderAvailable {
+            it.addSourceDir(genSrcDir)
+        }
+
         project.afterEvaluate {
             val options = project.extensions.getByType(GreendaoOptions::class.java)
-            val genSrcDir = options.genSrcDir
             val version = getVersion()
             val schemaOptions = collectSchemaOptions(options.daoPackage, genSrcDir, options)
             val candidatesFile = project.file("build/cache/greendao-candidates.list")
             val sourceProvider = project.sourceProvider
             val encoding = sourceProvider.encoding ?: "UTF-8"
-
-            sourceProvider.addSourceDir(options.genSrcDir)
 
             val prepareTask = project.task(
                 mapOf("type" to DetectEntityCandidatesTask::class.java), "greendaoPrepare") as DetectEntityCandidatesTask
@@ -108,7 +111,8 @@ class Greendao3GradlePlugin : Plugin<Project> {
                 version = schemaExt.version ?: defaultOptions.version,
                 encrypt = schemaExt.encrypt ?: defaultOptions.encrypt,
                 daoPackage = schemaExt.daoPackage ?: defaultOptions.daoPackage?.let { "$it.$name" },
-                outputDir = schemaExt.genSrcDir ?: defaultOptions.outputDir,
+//                outputDir = schemaExt.genSrcDir ?: defaultOptions.outputDir,
+                outputDir = defaultOptions.outputDir,
                 testsOutputDir = if (options.generateTests) {
                     schemaExt.testsGenSrcDir ?: defaultOptions.testsOutputDir
                 } else null

@@ -15,6 +15,12 @@ interface SourceProvider {
     val encoding: String? get
 }
 
+val ANDROID_PLUGINS = listOf(
+    "android", "android-library", "com.android.application", "com.android.library"
+)
+
+val SUPPORTED_PLUGINS = ANDROID_PLUGINS + "java"
+
 class AndroidPluginSourceProvider(val project: Project): SourceProvider {
     val androidExtension = project.extensions.getByType(AndroidConfig::class.java)
     init {
@@ -61,14 +67,22 @@ class JavaPluginSourceProvider(val project: Project): SourceProvider {
         }
 }
 
+/** @throws RuntimeException if no supported plugins applied */
 val Project.sourceProvider: SourceProvider
     get() = when {
-        project.plugins.findPlugin("java") != null -> JavaPluginSourceProvider(project)
+        project.plugins.hasPlugin("java") -> JavaPluginSourceProvider(project)
 
-        project.plugins.findPlugin("android") != null
-            || project.plugins.findPlugin("com.android.application") != null
-            || project.plugins.findPlugin("com.android.library") != null -> AndroidPluginSourceProvider(project)
+        ANDROID_PLUGINS.any { project.plugins.hasPlugin(it) } -> AndroidPluginSourceProvider(project)
 
         else -> throw RuntimeException("greenDAO supports only Java or Android projects. " +
             "None of corresponding plugins have been applied to the project")
     }
+
+/** executes block when [SourceProvider] is available */
+fun Project.whenSourceProviderAvailable(block: (SourceProvider) -> Unit) {
+    SUPPORTED_PLUGINS.forEach {
+        pluginManager.withPlugin(it) {
+            block(sourceProvider)
+        }
+    }
+}

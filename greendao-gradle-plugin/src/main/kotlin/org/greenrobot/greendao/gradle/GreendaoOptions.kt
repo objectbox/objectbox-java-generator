@@ -19,11 +19,11 @@ open class GreendaoOptions(val project: Project) {
      */
     var daoPackage: String? = null
 
-    /**
-     * Base directory where generated DAO classes should be put
-     * @see testsGenSrcDir
-     */
-    var genSrcDir: File = File(project.buildDir, "generated/source/greendao")
+//    /**
+//     * Base directory where generated DAO classes should be put
+//     * @see testsGenSrcDir
+//     */
+//    var genSrcDir: File = File(project.buildDir, "generated/source/greendao")
 
     /**
      * Base directory where generated unit tests should be put.
@@ -74,15 +74,15 @@ open class GreendaoOptions(val project: Project) {
     internal val formatting = FormattingExtension()
     internal val schemas = SchemasExtension(project)
 
-    /** @see genSrcDir */
-    fun genSrcDir(dir: File) {
-        this.genSrcDir = dir
-    }
-
-    /** @see genSrcDir */
-    fun genSrcDir(path: String) {
-        this.genSrcDir = project.file(path)
-    }
+//    /** @see genSrcDir */
+//    fun genSrcDir(dir: File) {
+//        this.genSrcDir = dir
+//    }
+//
+//    /** @see genSrcDir */
+//    fun genSrcDir(path: String) {
+//        this.genSrcDir = project.file(path)
+//    }
 
     /** @see testsGenSrcDir */
     fun testsGenSrcDir(dir: File) {
@@ -272,8 +272,8 @@ class SchemaOptionsExtension(val project: Project) {
     /** @see GreendaoOptions.daoPackage */
     var daoPackage: String? = null
 
-    /** @see GreendaoOptions.genSrcDir */
-    var genSrcDir: File? = null
+//    /** @see GreendaoOptions.genSrcDir */
+//    var genSrcDir: File? = null
 
     /** @see GreendaoOptions.testsGenSrcDir */
     var testsGenSrcDir: File? = null
@@ -293,15 +293,15 @@ class SchemaOptionsExtension(val project: Project) {
         this.daoPackage = value
     }
 
-    /** @see GreendaoOptions.genSrcDir */
-    fun genSrcDir(value: File) {
-        this.genSrcDir = value
-    }
-
-    /** @see GreendaoOptions.genSrcDir */
-    fun genSrcDir(value: String) {
-        this.genSrcDir = project.file(value)
-    }
+//    /** @see GreendaoOptions.genSrcDir */
+//    fun genSrcDir(value: File) {
+//        this.genSrcDir = value
+//    }
+//
+//    /** @see GreendaoOptions.genSrcDir */
+//    fun genSrcDir(value: String) {
+//        this.genSrcDir = project.file(value)
+//    }
 
     /** @see GreendaoOptions.testsGenSrcDir */
     fun testsGenSrcDir(value: File) {
