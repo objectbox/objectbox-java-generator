@@ -21,6 +21,10 @@ class EntityClassTransformerTest {
 
             @Entity
             class Foobar {
+                int age;
+
+                class Bar {
+                }
             }
             """.trimIndent()
         )
@@ -41,9 +45,13 @@ class EntityClassTransformerTest {
 
             @Entity
             class Foobar {
+                int age;
 
                 public void hello(String name, int age) {
                     System.out.println("Hello, " + name);
+                }
+
+                class Bar {
                 }
             }
             """.trimIndent(),
@@ -60,6 +68,11 @@ class EntityClassTransformerTest {
 
             @Entity
             class Foobar {
+                String name;
+
+                void someMethod() {
+                    // do nothing
+                }
             }
             """.trimIndent()
         )
@@ -82,9 +95,14 @@ class EntityClassTransformerTest {
 
             @Entity
             class Foobar {
+                String name;
 
                 public Foobar(String name, int age) {
                     System.out.println("Hello, " + name);
+                }
+
+                void someMethod() {
+                    // do nothing
                 }
             }
             """.trimIndent(),
@@ -101,6 +119,13 @@ class EntityClassTransformerTest {
 
             @Entity
             class Foobar {
+                int age;
+
+                Foobar() {
+                }
+
+                void someMethod() {
+                }
             }
             """.trimIndent()
         )
@@ -117,10 +142,16 @@ class EntityClassTransformerTest {
 
             @Entity
             class Foobar {
-
+                int age;
                 /** Name of the Foobar */
                 @Generated
                 private transient String name;
+
+                Foobar() {
+                }
+
+                void someMethod() {
+                }
             }
             """.trimIndent(),
             result
@@ -169,13 +200,12 @@ class EntityClassTransformerTest {
                 }
 
                     public    int age=10000;
+                    @Generated
+                    private transient int age;
 
                         private Foobar(){
                 name = "MyName";
                         }
-
-                        @Generated
-                        private transient int age;
             }
             """.trimIndent()
 

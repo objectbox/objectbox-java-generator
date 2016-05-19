@@ -76,9 +76,17 @@ data class EntityClass(val name: String, val schema: String,
                        val sourceFile: File, val source: String,
                        val keepSource: Boolean,
                        val createTable: Boolean,
-                       val notNullAnnotation: String?) {
+                       val notNullAnnotation: String?,
+                       val lastFieldDeclaration: FieldDeclaration?) {
+
     val qualifiedClassName: String
         get() = "$packageName.$name"
+
+    val lastMethodDeclaration: MethodDeclaration?
+        get() = methods.lastOrNull()?.node
+
+    val lastConstructorDeclaration: MethodDeclaration?
+        get() = constructors.lastOrNull()?.node
 }
 
 enum class GeneratorHint {

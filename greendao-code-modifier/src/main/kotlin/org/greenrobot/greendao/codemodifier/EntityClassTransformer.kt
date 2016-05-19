@@ -50,13 +50,13 @@ class EntityClassTransformer(val entityClass: EntityClass, val jdtOptions : Muta
 
     fun remove(node : ASTNode) = bodyRewrite.remove(node, null)
 
-    private fun insertMethod(code: String, replaceOld: ASTNode? = null) {
+    private fun insertMethod(code: String, replaceOld: ASTNode?, insertAfter: ASTNode?) {
         if (replaceOld != null && replaceOld.isSameCode(code)) {
             keepNodes += replaceOld
         } else {
             val formatted = formatter.format(code)
             val newMethod = astRewrite.createStringPlaceholder(formatted, TypeDeclaration.METHOD_DECLARATION)
-            replaceNode(newMethod, replaceOld)
+            replaceNode(newMethod, replaceOld, insertAfter)
         }
     }
 
@@ -66,16 +66,23 @@ class EntityClassTransformer(val entityClass: EntityClass, val jdtOptions : Muta
         } else {
             val formatted = formatter.format(code)
             val newField = astRewrite.createStringPlaceholder(formatted, TypeDeclaration.FIELD_DECLARATION)
-            replaceNode(newField, replaceOld)
+            replaceNode(newField, replaceOld, entityClass.lastFieldDeclaration)
         }
     }
 
-    private fun replaceNode(newNode: ASTNode, oldNode: ASTNode?) {
-        if (oldNode != null) {
-            bodyRewrite.insertAfter(newNode, oldNode, null)
-            remove(oldNode)
-        } else {
-            bodyRewrite.insertLast(newNode, null)
+    /**
+     * if [oldNode] is not null, then replace it with [newNode]
+     * otherwise if [orInsertAfter] is not null, then insert [newNode] after it
+     * otherwise insert [newNode] after all available nodes
+     * */
+    private fun replaceNode(newNode: ASTNode, oldNode: ASTNode?, orInsertAfter: ASTNode?) {
+        when {
+            oldNode != null -> {
+                bodyRewrite.insertAfter(newNode, oldNode, null)
+                remove(oldNode)
+            }
+            orInsertAfter != null -> bodyRewrite.insertAfter(newNode, orInsertAfter, null)
+            else -> bodyRewrite.insertLast(newNode, null)
         }
     }
 
@@ -110,7 +117,8 @@ class EntityClassTransformer(val entityClass: EntityClass, val jdtOptions : Muta
         } ?: entityClass.constructors.find { it.generated }
         // replace only generated code
         if (constructor == null || constructor.generated) {
-            insertMethod(code(), constructor?.node)
+            insertMethod(code(), constructor?.node,
+                entityClass.lastConstructorDeclaration ?: entityClass.lastFieldDeclaration)
         } else {
             constructor.checkKeepPresent()
         }
@@ -127,7 +135,10 @@ class EntityClassTransformer(val entityClass: EntityClass, val jdtOptions : Muta
         // replace only generated code
         if (method == null || method.generated) {
             paramTypes.filter { it.contains('.') }.forEach { ensureImport(it) }
-            insertMethod(code(), method?.node)
+            insertMethod(code(), method?.node,
+                entityClass.lastMethodDeclaration
+                ?: entityClass.lastConstructorDeclaration
+                ?: entityClass.lastFieldDeclaration)
         } else {
             method.checkKeepPresent()
         }

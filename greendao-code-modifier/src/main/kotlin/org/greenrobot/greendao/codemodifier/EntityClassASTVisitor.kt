@@ -27,6 +27,7 @@ class EntityClassASTVisitor(val classesInPackage: List<String> = emptyList()) : 
     var keepSource = false
     var createTable = true
     var usedNotNullAnnotation: String? = null;
+    var lastField: FieldDeclaration? = null
 
     private val methodAnnotations = mutableListOf<Annotation>()
     private val fieldAnnotations = mutableListOf<Annotation>()
@@ -139,6 +140,8 @@ class EntityClassASTVisitor(val classesInPackage: List<String> = emptyList()) : 
             }?.typeName?.fullyQualifiedName?.let { "@" + it }
         }
         fa.clear()
+
+        lastField = node
     }
 
     private val List<Annotation>.generatorHint: GeneratorHint?
@@ -295,7 +298,8 @@ class EntityClassASTVisitor(val classesInPackage: List<String> = emptyList()) : 
                 javaFile, source,
                 keepSource,
                 createTable,
-                usedNotNullAnnotation
+                usedNotNullAnnotation,
+                lastField
             )
         } else {
             null
