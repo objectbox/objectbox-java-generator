@@ -127,7 +127,7 @@ class Greendao3Generator(formattingOptions: FormattingOptions? = null,
             }
 
             if (entity.active) {
-                ensureImport("de.greenrobot.dao.DaoException")
+                ensureImport("org.greenrobot.greendao.DaoException")
 
                 defField("daoSession", VariableType("$daoPackage.DaoSession", false, "DaoSession"),
                     "Used to resolve relations")

@@ -1,5 +1,5 @@
 /**
- * Convenient call for {@link de.greenrobot.dao.AbstractDao#refresh(Object)}.
+ * Convenient call for {@link org.greenrobot.greendao.AbstractDao#refresh(Object)}.
  * Entity must attached to an entity context.
  */
 @Generated
