@@ -1,4 +1,4 @@
-<#-- @ftlvariable name="entity" type="de.greenrobot.daogenerator.Entity" -->
+<#-- @ftlvariable name="entity" type="org.greenrobot.greendao.generator.Entity" -->
 /** called by internal mechanisms, do not call yourself. */
 @Generated
 public void __setDaoSession(DaoSession daoSession) {

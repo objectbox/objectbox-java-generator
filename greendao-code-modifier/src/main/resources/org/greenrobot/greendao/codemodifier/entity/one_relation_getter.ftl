@@ -1,4 +1,4 @@
-<#-- @ftlvariable name="toOne" type="de.greenrobot.daogenerator.ToOne" -->
+<#-- @ftlvariable name="toOne" type="org.greenrobot.greendao.generator.ToOne" -->
 /** To-one relationship, resolved on first access. */
 @Generated
 public ${toOne.targetEntity.className} get${toOne.name?cap_first}() {

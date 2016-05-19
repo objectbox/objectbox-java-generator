@@ -1,14 +1,14 @@
 package org.greenrobot.greendao.codemodifier
 
-import de.greenrobot.daogenerator.DaoGenerator
-import de.greenrobot.daogenerator.Entity
-import de.greenrobot.daogenerator.Schema
+import org.greenrobot.greendao.generator.DaoGenerator
+import org.greenrobot.greendao.generator.Entity
+import org.greenrobot.greendao.generator.Schema
 import java.io.File
 
 /**
  * Main generator.
  * - runs parsing and transformation of Entity classes.
- * - runs generation of dao classes within {@link de.greenrobot.daogenerator.DaoGenerator}
+ * - runs generation of dao classes within {@link org.greenrobot.greendao.generator.DaoGenerator}
  */
 class Greendao3Generator(formattingOptions: FormattingOptions? = null,
                          val skipTestGeneration: List<String> = emptyList(),

@@ -1,4 +1,4 @@
-<#-- @ftlvariable name="toOne" type="de.greenrobot.daogenerator.ToOne" -->
+<#-- @ftlvariable name="toOne" type="org.greenrobot.greendao.generator.ToOne" -->
 <#-- @ftlvariable name="notNullAnnotation" type="java.lang.String" -->
 /** called by internal mechanisms, do not call yourself. */
 @Generated

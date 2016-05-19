@@ -20,8 +20,8 @@ dependencies {
     // https://discuss.gradle.org/t/how-to-override-gradleapi-transitive-dependencies/10185
     compile 'org.eclipse.jdt:org.eclipse.jdt.core:3.10.0'
     compile 'org.freemarker:freemarker:2.3.23'
-    compile 'org.greenrobot:greendao:3.0.0-6-SNAPSHOT'
-    compile 'org.greenrobot:greendao-generator:3.0.0-6-SNAPSHOT'
+    compile 'org.greenrobot:greendao:3.0.0-7-SNAPSHOT'
+    compile 'org.greenrobot:greendao-generator:3.0.0-7-SNAPSHOT'
 
     testCompile 'junit:junit:4.12'
     testCompile 'org.mockito:mockito-all:1.10.19'

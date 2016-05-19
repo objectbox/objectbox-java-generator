@@ -1,6 +1,6 @@
 package org.greenrobot.greendao.codemodifier
 
-import de.greenrobot.daogenerator.*
+import org.greenrobot.greendao.generator.*
 
 object GreendaoModelTranslator {
     /**
