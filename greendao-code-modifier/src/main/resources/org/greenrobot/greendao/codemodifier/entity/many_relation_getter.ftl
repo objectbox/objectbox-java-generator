@@ -7,7 +7,7 @@
 @Generated
 public List<${toMany.targetEntity.className}> get${toMany.name?cap_first}() {
     if (${toMany.name} == null) {
-        final DaoSession daoSession = this.daoSession;
+        final ${entity.schema.prefix}DaoSession daoSession = this.daoSession;
         if (daoSession == null) {
             throw new DaoException("Entity is detached from DAO context");
         }

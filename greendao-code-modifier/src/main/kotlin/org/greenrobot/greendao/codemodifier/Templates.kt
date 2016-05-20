@@ -43,8 +43,8 @@ object Templates {
         fun oneRelationSetter(one: ToOne, notNullAnnotation: String) : String =
             oneRelationSetter(mapOf("toOne" to one, "notNullAnnotation" to notNullAnnotation))
 
-        fun oneRelationGetter(one: ToOne) : String =
-            oneRelationGetter(mapOf("toOne" to one))
+        fun oneRelationGetter(one: ToOne, entity: Entity) : String =
+            oneRelationGetter(mapOf("entity" to entity, "toOne" to one))
 
         fun oneRelationPeek(one: ToOne) : String =
             oneRelationPeek(mapOf("toOne" to one))

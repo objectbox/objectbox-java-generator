@@ -51,7 +51,7 @@ class Greendao3Generator(formattingOptions: FormattingOptions? = null,
         val outputDir = options.outputDir
         val testsOutputDir = options.testsOutputDir
 
-        val schema = Schema(options.version, daoPackage)
+        val schema = Schema(options.name, options.version, daoPackage)
         val mapping = GreendaoModelTranslator.translate(entities, schema)
 
         if (skipTestGeneration.isNotEmpty()) {
@@ -129,12 +129,13 @@ class Greendao3Generator(formattingOptions: FormattingOptions? = null,
             if (entity.active) {
                 ensureImport("org.greenrobot.greendao.DaoException")
 
-                defField("daoSession", VariableType("$daoPackage.DaoSession", false, "DaoSession"),
+                val daoSessionVarName = "${entity.schema.prefix}DaoSession"
+                defField("daoSession", VariableType("$daoPackage.$daoSessionVarName", false, daoSessionVarName),
                     "Used to resolve relations")
                 defField("myDao", VariableType("$daoPackage.${entity.classNameDao}", false, entity.classNameDao),
                     "Used for active entity operations.")
 
-                defMethod("__setDaoSession", "$daoPackage.DaoSession") {
+                defMethod("__setDaoSession", "$daoPackage.$daoSessionVarName") {
                     Templates.entity.daoSessionSetter(entity)
                 }
 
@@ -150,7 +151,7 @@ class Greendao3Generator(formattingOptions: FormattingOptions? = null,
                     }
 
                     defMethod("get${toOne.name.capitalize()}") {
-                        Templates.entity.oneRelationGetter(toOne)
+                        Templates.entity.oneRelationGetter(toOne, entity)
                     }
 
                     if (!toOne.isUseFkProperty) {

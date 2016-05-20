@@ -1,3 +1,4 @@
+<#-- @ftlvariable name="entity" type="org.greenrobot.greendao.generator.Entity" -->
 <#-- @ftlvariable name="toOne" type="org.greenrobot.greendao.generator.ToOne" -->
 /** To-one relationship, resolved on first access. */
 @Generated
@@ -7,7 +8,7 @@ ${toOne.fkProperties[0].javaType} __key = this.${toOne.fkProperties[0].propertyN
     if (${toOne.name}__resolvedKey == null || <#--
 --><#if toOne.resolvedKeyUseEquals[0]>!${toOne.name}__resolvedKey.equals(__key)<#--
 --><#else>${toOne.name}__resolvedKey != __key</#if>) {
-        final DaoSession daoSession = this.daoSession;
+        final ${entity.schema.prefix}DaoSession daoSession = this.daoSession;
         if (daoSession == null) {
             throw new DaoException("Entity is detached from DAO context");
         }
