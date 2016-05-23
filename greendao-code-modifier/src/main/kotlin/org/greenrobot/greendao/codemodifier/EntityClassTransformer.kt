@@ -23,6 +23,7 @@ import java.nio.charset.Charset
  */
 class EntityClassTransformer(val entityClass: EntityClass, val jdtOptions : MutableMap<Any, Any>,
                              val formattingOptions: FormattingOptions?, val charset: Charset = Charsets.UTF_8) {
+    private val hashStub = "GENERATED_HASH_STUB"
     private val cu = entityClass.node.root
     private val formatting = formattingOptions?.toFormatting()
         ?: Formatting.detect(entityClass.source, formattingOptions)
@@ -97,7 +98,7 @@ class EntityClassTransformer(val entityClass: EntityClass, val jdtOptions : Muta
             else -> "declaration"
         }
         when (hint) {
-            GeneratorHint.KEEP -> println("Keep $place in ${node.sourceLine}")
+            GeneratorHint.Keep -> println("Keep $place in ${node.sourceLine}")
             null -> throw RuntimeException(
                 """Can't replace $place in ${node.sourceLine} with generated version.
                     If you would like to keep it, it should be explicitly marked with @Keep annotation.
@@ -117,7 +118,7 @@ class EntityClassTransformer(val entityClass: EntityClass, val jdtOptions : Muta
         } ?: entityClass.constructors.find { it.generated }
         // replace only generated code
         if (constructor == null || constructor.generated) {
-            insertMethod(code(), constructor?.node,
+            insertMethod(code().replaceHashStub(), constructor?.node,
                 entityClass.lastConstructorDeclaration ?: entityClass.lastFieldDeclaration)
         } else {
             constructor.checkKeepPresent()
@@ -135,7 +136,7 @@ class EntityClassTransformer(val entityClass: EntityClass, val jdtOptions : Muta
         // replace only generated code
         if (method == null || method.generated) {
             paramTypes.filter { it.contains('.') }.forEach { ensureImport(it) }
-            insertMethod(code(), method?.node,
+            insertMethod(code().replaceHashStub(), method?.node,
                 entityClass.lastMethodDeclaration
                 ?: entityClass.lastConstructorDeclaration
                 ?: entityClass.lastFieldDeclaration)
@@ -159,13 +160,18 @@ class EntityClassTransformer(val entityClass: EntityClass, val jdtOptions : Muta
             }
             insertField(
                 """${if (comment != null) "/** $comment */" else ""}
-                   @Generated
-                   private transient ${type.simpleName} $name;""",
+                   @Generated(hash = $hashStub)
+                   private transient ${type.simpleName} $name;""".replaceHashStub(),
                 field?.node
             )
         } else {
             field.checkKeepPresent()
         }
+    }
+
+    private fun String.replaceHashStub(): String {
+        val hash = CodeCompare.codeHash(this)
+        return this.replace(hashStub, hash.toString())
     }
 
     fun writeToFile() {

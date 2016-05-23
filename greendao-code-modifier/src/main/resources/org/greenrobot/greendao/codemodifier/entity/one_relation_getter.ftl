@@ -1,7 +1,7 @@
 <#-- @ftlvariable name="entity" type="org.greenrobot.greendao.generator.Entity" -->
 <#-- @ftlvariable name="toOne" type="org.greenrobot.greendao.generator.ToOne" -->
 /** To-one relationship, resolved on first access. */
-@Generated
+@Generated(hash = GENERATED_HASH_STUB)
 public ${toOne.targetEntity.className} get${toOne.name?cap_first}() {
 <#if toOne.useFkProperty>
 ${toOne.fkProperties[0].javaType} __key = this.${toOne.fkProperties[0].propertyName};

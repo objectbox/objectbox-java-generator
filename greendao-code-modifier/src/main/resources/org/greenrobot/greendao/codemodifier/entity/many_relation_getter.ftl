@@ -4,7 +4,7 @@
  * To-many relationship, resolved on first access (and after reset).
  * Changes to to-many relations are not persisted, make changes to the target entity.
  */
-@Generated
+@Generated(hash = GENERATED_HASH_STUB)
 public List<${toMany.targetEntity.className}> get${toMany.name?cap_first}() {
     if (${toMany.name} == null) {
         final ${entity.schema.prefix}DaoSession daoSession = this.daoSession;

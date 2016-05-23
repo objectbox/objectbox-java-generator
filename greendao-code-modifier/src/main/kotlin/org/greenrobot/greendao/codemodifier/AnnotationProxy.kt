@@ -82,9 +82,20 @@ object AnnotationProxy {
                 }
                 return result as T
             }
-            expected == Boolean::class.javaPrimitiveType -> if (this is BooleanLiteral) return booleanValue() as T
-            expected == String::class.java -> if (this is StringLiteral) return literalValue as T
-            expected.isAnnotation -> if (this is Annotation) return AnnotationProxy(this, expected) as T
+            expected == Boolean::class.javaPrimitiveType -> if (this is BooleanLiteral) {
+                return booleanValue() as T
+            }
+            expected == Int::class.javaPrimitiveType -> when(this) {
+                is NumberLiteral, is PrefixExpression ->
+                    // does not handle binary numbers
+                    return Integer.decode(toString()) as T
+            }
+            expected == String::class.java -> if (this is StringLiteral) {
+                return literalValue as T
+            }
+            expected.isAnnotation -> if (this is Annotation) {
+                return AnnotationProxy(this, expected) as T
+            }
         }
 
         throw RuntimeException("Can't get ${expected.simpleName} value from ${this.javaClass}")

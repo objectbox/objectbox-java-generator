@@ -144,7 +144,7 @@ class EntityClassTransformerTest {
             class Foobar {
                 int age;
                 /** Name of the Foobar */
-                @Generated
+                @Generated(hash = 329081117)
                 private transient String name;
 
                 Foobar() {
@@ -200,7 +200,7 @@ class EntityClassTransformerTest {
                 }
 
                     public    int age=10000;
-                    @Generated
+                    @Generated(hash = 1478801502)
                     private transient int age;
 
                         private Foobar(){
@@ -229,15 +229,14 @@ class EntityClassTransformerTest {
             }
             """.trimIndent()
         )
-        val result = EntityClassTransformer(entityClass, jdtOptions, formattingOptions).apply {
-            defMethod("hello", "String", "int") {
-                """
-                @Generated
+        val methodCode = """
+                @Generated(hash = GENERATED_HASH_STUB)
                 public void hello(String name, int age) {
                     System.out.println("Hi, " + name);
                 }
                 """.trimIndent()
-            }
+        val result = EntityClassTransformer(entityClass, jdtOptions, formattingOptions).apply {
+            defMethod("hello", "String", "int") { methodCode }
         }.writeToString()
 
         assertEquals(
@@ -248,7 +247,7 @@ class EntityClassTransformerTest {
 
             @Entity
             class Foobar {
-                @Generated
+                @Generated(hash = ${CodeCompare.codeHash(methodCode)})
                 public void hello(String name, int age) {
                     System.out.println("Hi, " + name);
                 }
@@ -276,15 +275,17 @@ class EntityClassTransformerTest {
             }
             """.trimIndent()
         )
-        val result = EntityClassTransformer(entityClass, jdtOptions, formattingOptions).apply {
-            defConstructor(listOf("String", "int")) {
-                """
-                @Generated
+
+        val constructorCode = """
+                @Generated(hash = GENERATED_HASH_STUB)
                 public Foobar(String name, int age) {
                     throw new RuntimeException("Error");
                 }
                 """.trimIndent()
-            }
+
+
+        val result = EntityClassTransformer(entityClass, jdtOptions, formattingOptions).apply {
+            defConstructor(listOf("String", "int")) { constructorCode }
         }.writeToString()
 
         assertEquals(
@@ -295,7 +296,7 @@ class EntityClassTransformerTest {
 
             @Entity
             class Foobar {
-                @Generated
+                @Generated(hash = ${CodeCompare.codeHash(constructorCode)})
                 public Foobar(String name, int age) {
                     throw new RuntimeException("Error");
                 }
@@ -332,7 +333,7 @@ class EntityClassTransformerTest {
 
             @Entity
             class Foobar {
-                @Generated
+                @Generated(hash = 329081117)
                 private transient String name;
             }
             """.trimIndent(),
@@ -363,7 +364,7 @@ class EntityClassTransformerTest {
                 }
 
                 /** will be removed */
-                @Generated
+                @Generated(hash = -1)
                 public void hello() {
                 }
             }
@@ -381,7 +382,7 @@ class EntityClassTransformerTest {
 
             @Entity
             class Foobar {
-                @Generated
+                @Generated(hash = 329081117)
                 private transient String name;
             }
             """.trimIndent(),
@@ -408,7 +409,7 @@ class EntityClassTransformerTest {
         val result = EntityClassTransformer(entityClass, jdtOptions, formattingOptions).apply {
             defMethod("hello", "String", "int") {
                 """
-                @Generated
+                @Generated(hash = -1)
                 public void hello(String name, int age) {
                     System.out.println("Hi, " + name);
                 }
@@ -439,7 +440,7 @@ class EntityClassTransformerTest {
         val result = EntityClassTransformer(entityClass, jdtOptions, formattingOptions).apply {
             defConstructor(listOf("String", "int")) {
                 """
-                @Generated
+                @Generated(hash = -1)
                 public Foobar(String name, int age) {
                     throw new RuntimeException("Error");
                 }
@@ -489,7 +490,7 @@ class EntityClassTransformerTest {
         EntityClassTransformer(entityClass, jdtOptions, formattingOptions).apply {
             defMethod("hello", "String", "int") {
                 """
-                @Generated
+                @Generated(hash = -1)
                 public void hello(String name, int age) {
                     System.out.println("Hi, " + name);
                 }
@@ -517,7 +518,7 @@ class EntityClassTransformerTest {
         EntityClassTransformer(entityClass, jdtOptions, formattingOptions).apply {
             defConstructor(listOf("String", "int")) {
                 """
-                @Generated
+                @Generated(hash = -1)
                 public Foobar(String name, int age) {
                     throw new RuntimeException("Error");
                 }

@@ -130,8 +130,15 @@ class EntityClassASTVisitor(val classesInPackage: List<String> = emptyList()) : 
                 else -> fields += varNames.map { entityField(fa, it, node, variableType) }
             }
         } else {
+            val generatorHint = fa.generatorHint
+            if (generatorHint != null) {
+                // check code is not changed
+                if (generatorHint is GeneratorHint.Generated) {
+                    node.checkUntouched(generatorHint)
+                }
+            }
             transientFields += varNames.map {
-                TransientField(Variable(variableType, it.toString()), node, fa.generatorHint)
+                TransientField(Variable(variableType, it.toString()), node, generatorHint)
             }
         }
         if (usedNotNullAnnotation == null) {
@@ -144,11 +151,30 @@ class EntityClassASTVisitor(val classesInPackage: List<String> = emptyList()) : 
         lastField = node
     }
 
+    private val ASTNode.codePlace : String?
+        get() = "${typeDeclaration?.name?.identifier}:$lineNumber"
+
+    private fun ASTNode.checkUntouched(hint: GeneratorHint.Generated) {
+        if (hint.hash != -1 && hint.hash != CodeCompare.codeHash(this.toString())) {
+            val place = when(this) {
+                is MethodDeclaration -> if (this.isConstructor) "Constructor" else "Method '$name'"
+                is FieldDeclaration -> "Field '${this.toString().trim()}'"
+                else -> "Node"
+            }
+            throw RuntimeException("""
+                        $place (see ${codePlace}) has been changed after generation.
+                        Please either mark it with @Keep annotation instead of @Generated to keep it untouched,
+                        or use @Generated (without hash) to allow to replace it.
+                        """.trimIndent())
+
+        }
+    }
+
     private val List<Annotation>.generatorHint: GeneratorHint?
-        get() = when {
-            has<Keep>() -> GeneratorHint.KEEP
-            has<Generated>() -> GeneratorHint.GENERATED
-            else -> null
+        get() = if (has<Keep>()) {
+            GeneratorHint.Keep
+        } else {
+            proxy<Generated>()?.let { GeneratorHint.Generated(it.hash) }
         }
 
     private val List<Annotation>.hasNotNull: Boolean
@@ -246,6 +272,10 @@ class EntityClassASTVisitor(val classesInPackage: List<String> = emptyList()) : 
     override fun visit(node: MethodDeclaration): Boolean = isEntity
 
     override fun endVisit(node : MethodDeclaration) {
+        val generatorHint = methodAnnotations.generatorHint
+        if (generatorHint is GeneratorHint.Generated) {
+            node.checkUntouched(generatorHint)
+        }
         val method = Method(
             node.name.fullyQualifiedName,
             node.parameters()
@@ -253,7 +283,7 @@ class EntityClassASTVisitor(val classesInPackage: List<String> = emptyList()) : 
                 .map { it as SingleVariableDeclaration }
                 .map { it -> Variable(it.type.toVariableType(), it.name.identifier) },
             node,
-            methodAnnotations.generatorHint
+            generatorHint
         )
         if (node.isConstructor) {
             constructors += method
@@ -263,12 +293,12 @@ class EntityClassASTVisitor(val classesInPackage: List<String> = emptyList()) : 
         methodAnnotations.clear()
     }
 
-    override fun visit(typeDeclaration : TypeDeclaration) : Boolean {
-        if (typeDeclaration.parent is TypeDeclaration) {
+    override fun visit(node: TypeDeclaration) : Boolean {
+        if (node.parent is TypeDeclaration) {
             // skip inner classes
             return false
         } else {
-            this.typeDeclaration = typeDeclaration
+            this.typeDeclaration = node
             return true
         }
     }

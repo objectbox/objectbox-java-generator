@@ -13,6 +13,7 @@ class AnnotationProxyTest {
         val proxy = proxy("@MyAnnotation class SomeClass {}")
         assertEquals("default-value", proxy.value)
         assertFalse(proxy.logical)
+        assertEquals(42, proxy.number)
         assertArrayEquals(arrayOf("john", "jack"), proxy.names)
         assertArrayEquals(booleanArrayOf(), proxy.logicals)
         assertEquals("default-child-value", proxy.child.value)
@@ -41,6 +42,18 @@ class AnnotationProxyTest {
     fun stringLiteralNormalValue() {
         val proxy = proxy("""@MyAnnotation(value = "newvalue") class SomeClass {}""")
         assertEquals("newvalue", proxy.value)
+    }
+
+    @Test
+    fun intLiteralNormalValue() {
+        val proxy = proxy("""@MyAnnotation(number = 104) class SomeClass {}""")
+        assertEquals(104, proxy.number)
+    }
+
+    @Test
+    fun intLiteralNormalNegativeValue() {
+        val proxy = proxy("""@MyAnnotation(number = -104) class SomeClass {}""")
+        assertEquals(-104, proxy.number)
     }
 
     @Test
@@ -104,6 +117,7 @@ class AnnotationProxyTest {
     }
 
     annotation class MyAnnotation(val value: String = "default-value", val logical: Boolean = false,
+                                  val number: Int = 42,
                                   val names: Array<String> = arrayOf("john", "jack"),
                                   val logicals: BooleanArray = booleanArrayOf(),
                                   val child: Child = Child(),

@@ -93,25 +93,6 @@ fun Type.typeName(imports : Iterable<ImportDeclaration>, sourcePkg: String?,
     }
 }
 
-val REGEX_TOO_MANY_SPACES = Regex("[ \\n\\t]+")
-val REGEX_USELESS_SPACES = Regex("\\s?(\\W)\\s?")
-val REGEX_JAVA_COMMENT_ML = Regex("/\\*([^\\*]|\\*(?!/))*?\\*/")
-val REGEX_JAVA_COMMENT_SL = Regex("//.*$")
-
-/** checks code without formatting and comments are equal */
-fun ASTNode.isSameCode(code: String) : Boolean {
-    fun String.unformat() =
-        this.replace(REGEX_JAVA_COMMENT_ML, "")
-            .replace(REGEX_JAVA_COMMENT_SL, "")
-            .replace(REGEX_TOO_MANY_SPACES, " ")
-            .replace(REGEX_USELESS_SPACES, "$1")
-            .trim()
-
-    val nodeCode = toString().unformat()
-    val unformattedCode = code.unformat()
-    return nodeCode == unformattedCode
-}
-
 val ASTNode.lineNumber : Int?
     get() {
         val root = root

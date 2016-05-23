@@ -89,8 +89,27 @@ data class EntityClass(val name: String, val schema: String,
         get() = constructors.lastOrNull()?.node
 }
 
-enum class GeneratorHint {
-    KEEP, GENERATED
+sealed class GeneratorHint {
+    object Keep: GeneratorHint()
+
+    class Generated(val hash: Int): GeneratorHint() {
+        override fun equals(other: Any?): Boolean{
+            if (this === other) return true
+            if (other !is Generated) return false
+
+            if (hash != other.hash) return false
+
+            return true
+        }
+
+        override fun hashCode(): Int{
+            return hash
+        }
+
+        override fun toString(): String{
+            return "Generated(hash=$hash)"
+        }
+    }
 }
 
 enum class Order { ASC, DESC }
@@ -99,7 +118,7 @@ interface Generatable<NodeType : BodyDeclaration> {
     val hint: GeneratorHint?
     val node: NodeType
     val generated: Boolean
-        get() = hint == GeneratorHint.GENERATED
+        get() = hint is GeneratorHint.Generated
     val keep: Boolean
-        get() = hint == GeneratorHint.KEEP
+        get() = hint == GeneratorHint.Keep
 }

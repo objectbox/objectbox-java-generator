@@ -352,11 +352,64 @@ class EntityClassASTVisitorTest {
             transient int age;
 
             transient String surname;
+
+            @Generated(hash = 2078697104)
+            @Transient
+            String city;
         }
         """)!!
         assertThat(entity.transientFields.map { it.hint }, equalTo(
-            listOf(GeneratorHint.GENERATED, GeneratorHint.KEEP, null)
+            listOf(GeneratorHint.Generated(-1), GeneratorHint.Keep, null, GeneratorHint.Generated(2078697104))
         ))
+    }
+
+    @Test(expected = RuntimeException::class)
+    fun throwIfGeneratedFieldChanged() {
+        visit(
+            //language=java
+            """
+        import org.greenrobot.greendao.annotation.*;
+
+        @Entity
+        class Foobar {
+            @Generated(hash = 10)
+            transient String name;
+        }
+        """)!!
+    }
+
+    @Test(expected = RuntimeException::class)
+    fun throwIfGeneratedMethodChanged() {
+        visit(
+            //language=java
+            """
+        import org.greenrobot.greendao.annotation.*;
+
+        @Entity
+        class Foobar {
+            @Generated(hash = 10)
+            void hello() {
+                // body
+            }
+        }
+        """)!!
+    }
+
+    @Test(expected = RuntimeException::class)
+    fun throwIfGeneratedConstructorChanged() {
+        visit(
+            //language=java
+            """
+        import org.greenrobot.greendao.annotation.*;
+
+        @Entity
+        class Foobar {
+            @Generated(hash = 10)
+            Foobar() {
+                // body
+            }
+        }
+        """)!!
     }
 
     @Test
@@ -480,7 +533,7 @@ class EntityClassASTVisitorTest {
             String name;
             int age;
 
-            @Generated
+            @Generated(hash = -1)
             Foobar(String name, int age) {
             }
 
@@ -509,8 +562,12 @@ class EntityClassASTVisitorTest {
             String name;
             int age;
 
-            @Generated
+            @Generated(hash = -1)
             Foobar(String name) {
+            }
+
+            @Generated(hash = 643031143)
+            Foobar(String name, int age) {
             }
 
             @Keep
@@ -521,9 +578,10 @@ class EntityClassASTVisitorTest {
             }
         }
         """)!!
-        assertEquals(entity.constructors[0].hint, GeneratorHint.GENERATED)
-        assertEquals(entity.constructors[1].hint, GeneratorHint.KEEP)
-        assertNull(entity.constructors[2].hint)
+        assertEquals(entity.constructors[0].hint, GeneratorHint.Generated(-1))
+        assertEquals(entity.constructors[1].hint, GeneratorHint.Generated(643031143))
+        assertEquals(entity.constructors[2].hint, GeneratorHint.Keep)
+        assertNull(entity.constructors[3].hint)
     }
 
     @Test
@@ -578,8 +636,8 @@ class EntityClassASTVisitorTest {
             }
         }
         """)!!
-        assertEquals(entity.methods[0].hint, GeneratorHint.GENERATED)
-        assertEquals(entity.methods[1].hint, GeneratorHint.KEEP)
+        assertEquals(entity.methods[0].hint, GeneratorHint.Generated(-1))
+        assertEquals(entity.methods[1].hint, GeneratorHint.Keep)
         assertNull(entity.methods[2].hint)
     }
 
