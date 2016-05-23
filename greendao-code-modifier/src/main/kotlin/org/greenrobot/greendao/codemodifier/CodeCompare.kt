@@ -1,6 +1,6 @@
 package org.greenrobot.greendao.codemodifier
 
-import de.greenrobot.common.hash.Murmur3A
+import de.greenrobot.common.hash.Murmur3F
 import org.eclipse.jdt.core.dom.ASTNode
 
 object CodeCompare {
@@ -9,7 +9,7 @@ object CodeCompare {
     private val regexJavaCommentMl = Regex("/\\*([^\\*]|\\*(?!/))*?\\*/")
     private val regexJavaCommentSl = Regex("//.*$")
     private val regexGeneratedAnnotation = Regex("@(org.greenrobot.greendao.annotation.)?Generated[(][^)]+[)]")
-    private val murmur = Murmur3A()
+    private val murmur = Murmur3F()
 
     fun unformatCode(code: String) =
         code.replace(regexJavaCommentMl, "")
