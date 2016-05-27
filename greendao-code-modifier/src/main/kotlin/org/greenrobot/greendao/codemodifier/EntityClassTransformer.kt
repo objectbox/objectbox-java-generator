@@ -23,7 +23,6 @@ import java.nio.charset.Charset
  */
 class EntityClassTransformer(val entityClass: EntityClass, val jdtOptions : MutableMap<Any, Any>,
                              val formattingOptions: FormattingOptions?, val charset: Charset = Charsets.UTF_8) {
-    private val hashStub = "GENERATED_HASH_STUB"
     private val cu = entityClass.node.root
     private val formatting = formattingOptions?.toFormatting()
         ?: Formatting.detect(entityClass.source, formattingOptions)
@@ -130,7 +129,7 @@ class EntityClassTransformer(val entityClass: EntityClass, val jdtOptions : Muta
      * In case method with such signature already exist:
      *  - if it has @Generated annotation, then replace it with the new one
      *  - otherwise keep it
-     * */
+     */
     fun defMethod(name: String, vararg paramTypes: String, code: () -> String) {
         val method = entityClass.methods.find { it.hasSignature(name, paramTypes.toList()) }
         // replace only generated code
@@ -142,6 +141,20 @@ class EntityClassTransformer(val entityClass: EntityClass, val jdtOptions : Muta
                 ?: entityClass.lastFieldDeclaration)
         } else {
             method.checkKeepPresent()
+        }
+    }
+
+    /**
+     * Defines new method, only if there is not other method with same signature
+     * @see defMethod
+     */
+    fun defMethodIfMissing(name: String, vararg paramTypes: String, code: () -> String) {
+        val method = entityClass.methods.find { it.hasSignature(name, paramTypes.toList()) }
+        if (method == null) {
+            paramTypes.filter { it.contains('.') }.forEach { ensureImport(it) }
+            insertMethod(code(), null, entityClass.lastMethodDeclaration
+                    ?: entityClass.lastConstructorDeclaration
+                    ?: entityClass.lastFieldDeclaration)
         }
     }
 
@@ -160,7 +173,7 @@ class EntityClassTransformer(val entityClass: EntityClass, val jdtOptions : Muta
             }
             insertField(
                 """${if (comment != null) "/** $comment */" else ""}
-                   @Generated(hash = $hashStub)
+                   @Generated(hash = $HASH_STUB)
                    private transient ${type.simpleName} $name;""".replaceHashStub(),
                 field?.node
             )
@@ -171,7 +184,7 @@ class EntityClassTransformer(val entityClass: EntityClass, val jdtOptions : Muta
 
     private fun String.replaceHashStub(): String {
         val hash = CodeCompare.codeHash(this)
-        return this.replace(hashStub, hash.toString())
+        return this.replace(HASH_STUB, hash.toString())
     }
 
     fun writeToFile() {
@@ -210,3 +223,5 @@ class EntityClassTransformer(val entityClass: EntityClass, val jdtOptions : Muta
         }
     }
 }
+
+val HASH_STUB = "GENERATED_HASH_STUB"

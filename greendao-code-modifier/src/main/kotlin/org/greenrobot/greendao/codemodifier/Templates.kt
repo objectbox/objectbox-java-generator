@@ -30,6 +30,9 @@ object Templates {
         private val oneRelationPeek = get("entity/one_relation_peek.ftl")
         private val manyRelationGetter = get("entity/many_relation_getter.ftl")
         private val manyRelationReset = get("entity/many_relation_reset.ftl")
+        private val fieldGet = get("entity/field_get.ftl")
+        private val fieldSet = get("entity/field_set.ftl")
+
         val activeDelete = get("entity/active_delete.ftl")
         val activeUpdate = get("entity/active_update.ftl")
         val activeRefresh = get("entity/active_refresh.ftl")
@@ -54,6 +57,12 @@ object Templates {
 
         fun manyRelationReset(many: ToManyBase) : String =
             manyRelationReset(mapOf("toMany" to many))
+
+        fun fieldGet(variable: Variable) : String =
+            fieldGet(mapOf("variable" to variable))
+
+        fun fieldSet(variable: Variable) : String =
+            fieldSet(mapOf("variable" to variable))
     }
 }
 

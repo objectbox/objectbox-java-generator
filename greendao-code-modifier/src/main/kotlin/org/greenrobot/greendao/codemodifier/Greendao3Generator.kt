@@ -114,7 +114,7 @@ class Greendao3Generator(formattingOptions: FormattingOptions? = null,
                 && entityClass.constructors.none { it.parameters.isEmpty() && !it.generated }) {
                 defConstructor(emptyList()) {
                     """
-                    @Generated
+                    @Generated(hash = $HASH_STUB)
                     public ${entityClass.name}() {
                     }
                     """
@@ -190,6 +190,18 @@ class Greendao3Generator(formattingOptions: FormattingOptions? = null,
 
                 defMethod("refresh") {
                     Templates.entity.activeRefresh()
+                }
+            }
+
+            // define missing getters and setters
+            entityClass.fields.forEach { field ->
+                // define first set, because the transformer will write then in an opposite direction
+                defMethodIfMissing("set${field.variable.name.capitalize()}", field.variable.type.name) {
+                    Templates.entity.fieldSet(field.variable)
+                }
+
+                defMethodIfMissing("get${field.variable.name.capitalize()}") {
+                    Templates.entity.fieldGet(field.variable)
                 }
             }
         }
