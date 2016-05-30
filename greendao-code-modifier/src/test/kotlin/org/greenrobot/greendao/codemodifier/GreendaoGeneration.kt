@@ -15,7 +15,6 @@ object GreendaoGeneration {
         val schemaOptions = SchemaOptions(
             name = "default",
             version = 1,
-            encrypt = false,
             daoPackage = "com.example.greendao",
             outputDir = File("greendao-example/src/generated/main/java"),
             testsOutputDir = File("greendao-example/src/generated/test/java")
