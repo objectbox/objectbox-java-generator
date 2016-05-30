@@ -32,6 +32,7 @@ class EntityClassTransformer(val entityClass: EntityClass, val jdtOptions : Muta
     private val importsRewrite = astRewrite.getListRewrite(cu, CompilationUnit.IMPORTS_PROPERTY)
     private val bodyRewrite = astRewrite.getListRewrite(entityClass.node, TypeDeclaration.BODY_DECLARATIONS_PROPERTY)
     private val keepNodes = mutableSetOf<ASTNode>()
+    private val addedImports = mutableSetOf<String>()
 
     init {
         val tabulation = formatting.tabulation
@@ -41,10 +42,12 @@ class EntityClassTransformer(val entityClass: EntityClass, val jdtOptions : Muta
 
     fun ensureImport(name : String) {
         val packageName = name.substringBeforeLast('.', "")
-        if (packageName != entityClass.packageName && !entityClass.imports.has(name)) {
+        if (packageName != entityClass.packageName && !entityClass.imports.has(name)
+            && !addedImports.contains(name)) {
             val id = cu.ast.newImportDeclaration()
             id.name = cu.ast.newName(name.split('.').toTypedArray());
             importsRewrite.insertLast(id, null)
+            addedImports += name
         }
     }
 
