@@ -37,7 +37,15 @@ class Greendao3Generator(formattingOptions: FormattingOptions? = null,
         if (entities.isNotEmpty()) {
             entities.groupBy { it.schema }.forEach { entry ->
                 val (schemaName, schemaEntities) = entry
-                val options = schemaOptions[schemaName] ?: throw RuntimeException("Undefined schema $schemaName")
+                val options = schemaOptions[schemaName] ?: run {
+                    val affectedEntities = entities.filter { it.schema == schemaName }.map { it.name }.joinToString()
+                    throw RuntimeException(
+                        """
+                        Undefined schema \"$schemaName\" (defined in entities: $affectedEntities).
+                        Please, define non-default schemas explicitly inside build.gradle
+                        """
+                    )
+                }
 
                 generateSchema(schemaEntities, options, encrypt)
             }
