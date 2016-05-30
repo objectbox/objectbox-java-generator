@@ -29,7 +29,7 @@ class EntityClassParser(val jdtOptions: MutableMap<Any, Any>, val encoding: Stri
             throw RuntimeException("Found problem(s) parsing \"${javaFile}\". See above")
         }
 
-        val visitor = EntityClassASTVisitor(classesInPackage)
+        val visitor = EntityClassASTVisitor(source, classesInPackage)
         astRoot.accept(visitor)
 
         return visitor.toEntityClass(javaFile, source)

@@ -29,7 +29,7 @@ fun parseCompilationUnit(javaCode: String): CompilationUnit {
 }
 
 fun tryParseEntityClass(javaCode: String, classesInPackage: List<String> = emptyList()): EntityClass? {
-    val visitor = EntityClassASTVisitor(classesInPackage)
+    val visitor = EntityClassASTVisitor(javaCode, classesInPackage)
     val unit = parseCompilationUnit(javaCode)
     unit.accept(visitor)
     return visitor.toEntityClass(Mockito.mock(File::class.java), javaCode)

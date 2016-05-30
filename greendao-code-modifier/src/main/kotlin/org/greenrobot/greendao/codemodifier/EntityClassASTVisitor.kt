@@ -9,7 +9,7 @@ import kotlin.reflect.KClass
 /**
  * Visits compilation unit, find if it is an Entity and reads all the required information about it
  */
-class EntityClassASTVisitor(val classesInPackage: List<String> = emptyList()) : LazyVisitor() {
+class EntityClassASTVisitor(val source: String, val classesInPackage: List<String> = emptyList()) : LazyVisitor() {
     var isEntity = false
     var schemaName: String = "default"
     val fields = mutableListOf<EntityField>()
@@ -154,11 +154,14 @@ class EntityClassASTVisitor(val classesInPackage: List<String> = emptyList()) : 
     private val ASTNode.codePlace : String?
         get() = "${typeDeclaration?.name?.identifier}:$lineNumber"
 
+    private val ASTNode.originalCode: String
+        get() = source.substring(startPosition..(startPosition + length - 1))
+
     private fun ASTNode.checkUntouched(hint: GeneratorHint.Generated) {
-        if (hint.hash != -1 && hint.hash != CodeCompare.codeHash(this.toString())) {
+        if (hint.hash != -1 && hint.hash != CodeCompare.codeHash(this.originalCode)) {
             val place = when(this) {
                 is MethodDeclaration -> if (this.isConstructor) "Constructor" else "Method '$name'"
-                is FieldDeclaration -> "Field '${this.toString().trim()}'"
+                is FieldDeclaration -> "Field '${this.originalCode.trim()}'"
                 else -> "Node"
             }
             throw RuntimeException("""
