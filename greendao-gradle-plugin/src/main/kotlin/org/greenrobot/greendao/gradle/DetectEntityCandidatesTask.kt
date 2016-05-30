@@ -55,7 +55,7 @@ open class DetectEntityCandidatesTask : DefaultTask() {
         val buffer = CharArray(DEFAULT_BUFFER_SIZE)
 
         sourceFiles.asSequence()
-            .filter { it.containsIgnoreSpaces(token, buffer, charset) }
+            .filter { Util.containsIgnoreSpaces(it, token, buffer, charset) }
             .map { it.path }
             .let { writeCandidates(it, candidatesFile) }
     }
@@ -73,7 +73,7 @@ open class DetectEntityCandidatesTask : DefaultTask() {
         inputs.outOfDate { change: InputFileDetails ->
             val file = change.file
             if (file.isFile) {
-                if (file.containsIgnoreSpaces(token, buffer, charset)) {
+                if (Util.containsIgnoreSpaces(file, token, buffer, charset)) {
                     val listChanged = newCandidates.add(file.path)
                     modifiedExisting = !listChanged or modifiedExisting
                 } else {

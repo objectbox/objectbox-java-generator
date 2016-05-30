@@ -16,7 +16,7 @@ object GreendaoModelTranslator {
             val fieldsInOrder = it.fieldsInConstructorOrder ?: it.fields
             fieldsInOrder.forEach { field ->
                 try {
-                    val propertyType = (field.customType?.columnJavaType ?: field.variable.type).name.toPropertyType()
+                    val propertyType = getPropertyType((field.customType?.columnJavaType ?: field.variable.type).name)
                     val propertyBuilder = e.addProperty(propertyType, field.variable.name)
                     if (field.variable.type.isPrimitive) {
                         propertyBuilder.notNull()
@@ -189,7 +189,7 @@ object GreendaoModelTranslator {
         return mapping
     }
 
-    fun String.toPropertyType() : PropertyType = when (this) {
+    fun getPropertyType(javaTypeName: String): PropertyType = when (javaTypeName) {
         "boolean", "Boolean" -> PropertyType.Boolean
         "byte", "Byte" -> PropertyType.Byte
         "int", "Integer" -> PropertyType.Int
@@ -200,7 +200,7 @@ object GreendaoModelTranslator {
         "byte[]" -> PropertyType.ByteArray
         "String" -> PropertyType.String
         "java.util.Date", "Date" -> PropertyType.Date
-        else -> throw RuntimeException("Unsupported type ${this}")
+        else -> throw RuntimeException("Unsupported type ${javaTypeName}")
     }
 
     fun Entity.findProperty(name : String): Property {

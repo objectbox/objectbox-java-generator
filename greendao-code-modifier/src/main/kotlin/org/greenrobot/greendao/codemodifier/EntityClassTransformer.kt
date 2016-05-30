@@ -117,7 +117,7 @@ class EntityClassTransformer(val entityClass: EntityClass, val jdtOptions : Muta
         } ?: entityClass.constructors.find { it.generated }
         // replace only generated code
         if (constructor == null || constructor.generated) {
-            insertMethod(code().replaceHashStub(), constructor?.node,
+            insertMethod(replaceHashStub(code()), constructor?.node,
                 entityClass.lastConstructorDeclaration ?: entityClass.lastFieldDeclaration)
         } else {
             constructor.checkKeepPresent()
@@ -135,7 +135,7 @@ class EntityClassTransformer(val entityClass: EntityClass, val jdtOptions : Muta
         // replace only generated code
         if (method == null || method.generated) {
             paramTypes.filter { it.contains('.') }.forEach { ensureImport(it) }
-            insertMethod(code().replaceHashStub(), method?.node,
+            insertMethod(replaceHashStub(code()), method?.node,
                 entityClass.lastMethodDeclaration
                 ?: entityClass.lastConstructorDeclaration
                 ?: entityClass.lastFieldDeclaration)
@@ -172,9 +172,11 @@ class EntityClassTransformer(val entityClass: EntityClass, val jdtOptions : Muta
                 ensureImport(type.name)
             }
             insertField(
-                """${if (comment != null) "/** $comment */" else ""}
-                   @Generated(hash = $HASH_STUB)
-                   private transient ${type.simpleName} $name;""".replaceHashStub(),
+                replaceHashStub(
+                    """${if (comment != null) "/** $comment */" else ""}
+                       @Generated(hash = $HASH_STUB)
+                       private transient ${type.simpleName} $name;"""
+                ),
                 field?.node
             )
         } else {
@@ -182,9 +184,9 @@ class EntityClassTransformer(val entityClass: EntityClass, val jdtOptions : Muta
         }
     }
 
-    private fun String.replaceHashStub(): String {
-        val hash = CodeCompare.codeHash(this)
-        return this.replace(HASH_STUB, hash.toString())
+    private fun replaceHashStub(source: String): String {
+        val hash = CodeCompare.codeHash(source)
+        return source.replace(HASH_STUB, hash.toString())
     }
 
     fun writeToFile() {
