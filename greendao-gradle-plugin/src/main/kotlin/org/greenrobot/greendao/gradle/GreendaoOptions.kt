@@ -42,8 +42,6 @@ open class GreendaoOptions(val project: Project) {
 
     /**
      * Whether the DB should be encrypted. Disabled by default.
-     *
-     * FIXME: Not yet supported by the plugin
      */
     var encrypt = false
 
@@ -266,9 +264,6 @@ class SchemaOptionsExtension(val project: Project) {
     /** @see GreendaoOptions.schemaVersion */
     var version: Int? = null
 
-    /** @see GreendaoOptions.encrypt */
-    var encrypt: Boolean? = null
-
     /** @see GreendaoOptions.daoPackage */
     var daoPackage: String? = null
 
@@ -281,11 +276,6 @@ class SchemaOptionsExtension(val project: Project) {
     /** @see GreendaoOptions.version */
     fun version(value: Int) {
         this.version = value
-    }
-
-    /** @see GreendaoOptions.encrypt */
-    fun encrypt(value: Boolean) {
-        this.encrypt = value
     }
 
     /** @see GreendaoOptions.daoPackage */

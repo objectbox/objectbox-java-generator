@@ -69,7 +69,8 @@ class Greendao3GradlePlugin : Plugin<Project> {
                     Greendao3Generator(
                         options.formatting.data,
                         options.skipTestGeneration,
-                        encoding
+                        encoding,
+                        options.encrypt
                     ).run(candidatesFiles, schemaOptions)
                 }
             }
@@ -96,7 +97,6 @@ class Greendao3GradlePlugin : Plugin<Project> {
         val defaultOptions = SchemaOptions(
             name = "default",
             version = options.schemaVersion,
-            encrypt = options.encrypt,
             daoPackage = daoPackage,
             outputDir = genSrcDir,
             testsOutputDir = if (options.generateTests) options.testsGenSrcDir else null
@@ -109,7 +109,6 @@ class Greendao3GradlePlugin : Plugin<Project> {
             SchemaOptions(
                 name = name,
                 version = schemaExt.version ?: defaultOptions.version,
-                encrypt = schemaExt.encrypt ?: defaultOptions.encrypt,
                 daoPackage = schemaExt.daoPackage ?: defaultOptions.daoPackage?.let { "$it.$name" },
 //                outputDir = schemaExt.genSrcDir ?: defaultOptions.outputDir,
                 outputDir = defaultOptions.outputDir,

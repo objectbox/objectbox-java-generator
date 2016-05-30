@@ -12,7 +12,8 @@ import java.io.File
  */
 class Greendao3Generator(formattingOptions: FormattingOptions? = null,
                          val skipTestGeneration: List<String> = emptyList(),
-                         val encoding: String = "UTF-8") {
+                         val encoding: String = "UTF-8",
+                         val encrypt: Boolean = false) {
     val context = JdtCodeContext(formattingOptions, encoding)
 
     fun run(sourceFiles: Iterable<File>,
@@ -38,14 +39,14 @@ class Greendao3Generator(formattingOptions: FormattingOptions? = null,
                 val (schemaName, schemaEntities) = entry
                 val options = schemaOptions[schemaName] ?: throw RuntimeException("Undefined schema $schemaName")
 
-                generateSchema(schemaEntities, options)
+                generateSchema(schemaEntities, options, encrypt)
             }
         } else {
             System.err.println("No entities found among specified files")
         }
     }
 
-    fun generateSchema(entities: List<EntityClass>, options: SchemaOptions) {
+    fun generateSchema(entities: List<EntityClass>, options: SchemaOptions, encrypt: Boolean) {
         // take explicitly specified package name, or package name of the first entity
         val daoPackage = options.daoPackage ?: entities.first().packageName
         val outputDir = options.outputDir
@@ -64,7 +65,7 @@ class Greendao3Generator(formattingOptions: FormattingOptions? = null,
         outputDir.mkdirs()
         testsOutputDir?.mkdirs()
 
-        DaoGenerator().generateAll(schema, outputDir.path, outputDir.path, testsOutputDir?.path)
+        DaoGenerator(encrypt).generateAll(schema, outputDir.path, outputDir.path, testsOutputDir?.path)
 
         // modify existing entity classes after using DaoGenerator, because not all schema properties are available before
         // for each entity add missing fields/methods/constructors
