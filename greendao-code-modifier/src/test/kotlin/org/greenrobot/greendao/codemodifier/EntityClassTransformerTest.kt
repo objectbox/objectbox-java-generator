@@ -144,7 +144,7 @@ class EntityClassTransformerTest {
             class Foobar {
                 int age;
                 /** Name of the Foobar */
-                @Generated(hash = 863598746)
+                @Generated(hash = 802063436)
                 private transient String name;
 
                 Foobar() {
@@ -581,7 +581,7 @@ class EntityClassTransformerTest {
     }
 
     @Test
-    fun doNotReplaceGeneratedMethodIfOnlyJavaDocChanged() {
+    fun replaceGeneratedMethodEvenIfOnlyJavaDocChanged() {
         //language=java
         val originalCode = """
             import org.greenrobot.greendao.annotation.Entity;
@@ -609,6 +609,21 @@ class EntityClassTransformerTest {
             }
         }.writeToString()
 
-        assertNull(result)
+        assertEquals(
+            // language=java
+            """
+            import org.greenrobot.greendao.annotation.Entity;
+            import org.greenrobot.greendao.annotation.Generated;
+
+            @Entity
+            class Foobar {
+                /** Note is changed */
+                @Generated
+                public void hello(String name, int age) {
+                    System.out.println("Hello, " + name);
+                }
+            }
+            """.trimIndent(),
+            result)
     }
 }

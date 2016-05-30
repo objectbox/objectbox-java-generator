@@ -4,16 +4,18 @@ import de.greenrobot.common.hash.Murmur3F
 import org.eclipse.jdt.core.dom.ASTNode
 
 object CodeCompare {
-    private val regexTooManySpaces = Regex("[ \\n\\t]+")
+    private val regexTooManySpaces = Regex("[ \\n\\t\\r]+")
     private val regexUselessSpaces = Regex("\\s?(\\W)\\s?")
     private val regexJavaCommentMl = Regex("/\\*([^\\*]|\\*(?!/))*?\\*/")
-    private val regexJavaCommentSl = Regex("//.*$")
+    private val regexJavaCommentSl = Regex("//(.*)$")
     private val regexGeneratedAnnotation = Regex("@(org.greenrobot.greendao.annotation.)?Generated[(][^)]+[)]")
     private val murmur = Murmur3F()
 
+    /** IMPORTANT: do not change this method without real need, because all the hashes can be invalidated */
     fun unformatCode(code: String) =
-        code.replace(regexJavaCommentMl, "")
-            .replace(regexJavaCommentSl, "")
+        // replace single-line with multi-line to do no mess up the code after \n is replaced
+        code.replace(regexJavaCommentSl, "/*$1*/")
+            .replace(regexJavaCommentMl, { "/*" + it.value.replace("*", "").trim() + "*/" })
             .replace(regexTooManySpaces, " ")
             .replace(regexUselessSpaces, "$1")
             .trim()
