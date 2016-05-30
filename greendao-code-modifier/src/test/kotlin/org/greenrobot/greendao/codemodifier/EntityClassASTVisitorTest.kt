@@ -338,8 +338,8 @@ class EntityClassASTVisitorTest {
 
     @Test
     fun fieldGeneratorHint() {
+        val cityHash = CodeCompare.codeHash("@Transient String city;")
         val entity = visit(
-            //language=java
             """
         import org.greenrobot.greendao.annotation.*;
 
@@ -353,13 +353,13 @@ class EntityClassASTVisitorTest {
 
             transient String surname;
 
-            @Generated(hash = 2078697104)
+            @Generated(hash = $cityHash)
             @Transient
             String city;
         }
-        """)!!
+        """.trimIndent())!!
         assertThat(entity.transientFields.map { it.hint }, equalTo(
-            listOf(GeneratorHint.Generated(-1), GeneratorHint.Keep, null, GeneratorHint.Generated(2078697104))
+            listOf(GeneratorHint.Generated(-1), GeneratorHint.Keep, null, GeneratorHint.Generated(cityHash))
         ))
     }
 
@@ -552,6 +552,10 @@ class EntityClassASTVisitorTest {
 
     @Test
     fun constructorGeneratorHint() {
+        val constructorHash = CodeCompare.codeHash(
+           "Foobar(String name, int age){}"
+        )
+
         val entity = visit(
             //language=java
             """
@@ -562,11 +566,11 @@ class EntityClassASTVisitorTest {
             String name;
             int age;
 
-            @Generated(hash = -1)
+            @Generated
             Foobar(String name) {
             }
 
-            @Generated(hash = 643031143)
+            @Generated(hash = $constructorHash)
             Foobar(String name, int age) {
             }
 
@@ -579,7 +583,7 @@ class EntityClassASTVisitorTest {
         }
         """)!!
         assertEquals(entity.constructors[0].hint, GeneratorHint.Generated(-1))
-        assertEquals(entity.constructors[1].hint, GeneratorHint.Generated(643031143))
+        assertEquals(entity.constructors[1].hint, GeneratorHint.Generated(constructorHash))
         assertEquals(entity.constructors[2].hint, GeneratorHint.Keep)
         assertNull(entity.constructors[3].hint)
     }
