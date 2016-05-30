@@ -95,7 +95,29 @@ class CodeCompareTest {
             """.trimIndent()
         )
 
-        assertNotSame(hashA, hashB)
+        assertNotEquals(hashA, hashB)
+    }
+
+    @Test
+    fun codeHashConsiderJdocs2() {
+        val hashA = CodeCompare.codeHash(
+            """
+            @Generated(hash = 60841032)
+            public Customer() {
+            }
+            """.trimIndent()
+        )
+
+        val hashB = CodeCompare.codeHash(
+            """
+            @Generated(hash = 60841032)
+            public Customer() {
+                /** test*/
+            }
+            """.trimIndent()
+        )
+
+        assertNotEquals(hashA, hashB)
     }
 
     @Test
@@ -116,7 +138,7 @@ class CodeCompareTest {
             """.trimIndent()
         )
 
-        assertNotSame(hashA, hashB)
+        assertEquals(hashA, hashB)
     }
 
     @Test
@@ -137,7 +159,7 @@ class CodeCompareTest {
             """.trimIndent()
         )
 
-        assertNotSame(hashA, hashB)
+        assertNotEquals(hashA, hashB)
     }
 
     @Test
@@ -160,6 +182,6 @@ class CodeCompareTest {
             """.trimIndent()
         )
 
-        assertNotSame(hashA, hashB)
+        assertNotEquals(hashA, hashB)
     }
 }
