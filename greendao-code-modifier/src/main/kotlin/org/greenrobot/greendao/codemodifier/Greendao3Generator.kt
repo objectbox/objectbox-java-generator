@@ -43,7 +43,7 @@ class Greendao3Generator(formattingOptions: FormattingOptions? = null,
                         """
                         Undefined schema \"$schemaName\" (defined in entities: $affectedEntities).
                         Please, define non-default schemas explicitly inside build.gradle
-                        """
+                        """.trimIndent()
                     )
                 }
 
