@@ -153,7 +153,7 @@ class Greendao3Generator(formattingOptions: FormattingOptions? = null,
                 val daoSessionVarName = "${entity.schema.prefix}DaoSession"
                 defField("daoSession", VariableType("$daoPackage.$daoSessionVarName", false, daoSessionVarName),
                     "Used to resolve relations")
-                defField("myDao", VariableType("$daoPackage.${entity.classNameDao}", false, entity.classNameDao),
+                defField("myDao", VariableType("${entity.javaPackageDao}.${entity.classNameDao}", false, entity.classNameDao),
                     "Used for active entity operations.")
 
                 defMethod("__setDaoSession", "$daoPackage.$daoSessionVarName") {
@@ -161,7 +161,7 @@ class Greendao3Generator(formattingOptions: FormattingOptions? = null,
                 }
 
                 entity.toOneRelations.forEach { toOne ->
-                    ensureImport("$daoPackage.${toOne.targetEntity.classNameDao}")
+                    ensureImport("${toOne.targetEntity.javaPackageDao}.${toOne.targetEntity.classNameDao}")
 
                     // define fields
                     if (toOne.isUseFkProperty) {
@@ -190,7 +190,7 @@ class Greendao3Generator(formattingOptions: FormattingOptions? = null,
                 }
 
                 entity.toManyRelations.forEach { toMany ->
-                    ensureImport("${daoPackage}.${toMany.targetEntity.classNameDao}")
+                    ensureImport("${toMany.targetEntity.javaPackageDao}.${toMany.targetEntity.classNameDao}")
 
                     defMethod("get${toMany.name.capitalize()}") {
                         Templates.entity.manyRelationGetter(toMany, entity)

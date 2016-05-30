@@ -17,7 +17,7 @@ task wrapper(type: Wrapper) {
 subprojects {
     apply plugin: 'maven'
 
-    version = "0.13-SNAPSHOT"
+    version = "0.14-SNAPSHOT"
 
     configurations {
         deployerJars
