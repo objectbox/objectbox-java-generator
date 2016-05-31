@@ -41,7 +41,7 @@ class Greendao3Generator(formattingOptions: FormattingOptions? = null,
                     val affectedEntities = entities.filter { it.schema == schemaName }.map { it.name }.joinToString()
                     throw RuntimeException(
                         """
-                        Undefined schema \"$schemaName\" (defined in entities: $affectedEntities).
+                        Undefined schema \"$schemaName\" (referenced in entities: $affectedEntities).
                         Please, define non-default schemas explicitly inside build.gradle
                         """.trimIndent()
                     )
