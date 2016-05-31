@@ -51,12 +51,6 @@ open class GreendaoOptions(val project: Project) {
     var generateTests = false
 
     /**
-     * Whether the output folder should be also scanned for @Entity annotated classes
-     * Useful, if [genSrcDir] equals to main source directory
-     */
-    var scanOutputDir = false
-
-    /**
      * List of entities class names, for which test generation should be skipped
      *
      * Acceptable values:
@@ -171,11 +165,6 @@ open class GreendaoOptions(val project: Project) {
     /** @see generateTests */
     fun generateTests(value: Boolean) {
         this.generateTests = value
-    }
-
-    /** @see scanOutputDir */
-    fun scanOutputDir(value: Boolean) {
-        this.scanOutputDir = value
     }
 
     /** @see skipTestGeneration */
