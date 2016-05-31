@@ -28,7 +28,7 @@ class Formatter(var formatting: Formatting) {
         if (formatEdits != null) {
             formatEdits.apply(doc)
         } else {
-            throw RuntimeException("Can't format. Check syntax correctness of the code.")
+            throw RuntimeException("Can't format the code. Check syntax correctness of the code.")
         }
         return doc.get()
     }

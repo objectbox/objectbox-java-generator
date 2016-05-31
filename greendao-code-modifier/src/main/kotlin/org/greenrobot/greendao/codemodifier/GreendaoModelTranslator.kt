@@ -47,7 +47,8 @@ object GreendaoModelTranslator {
                         propertyBuilder.customType(field.variable.type.name, field.customType.converterClassName)
                     }
                 } catch (e : Exception) {
-                    throw RuntimeException("Can't add field `${field.variable}` for entity ${it.name}", e)
+                    throw RuntimeException("Can't add field `${field.variable}` for entity ${it.name} " +
+                        "due to: ${e.message}", e)
                 }
             }
             it.indexes.forEach { tableIndex ->
@@ -80,13 +81,15 @@ object GreendaoModelTranslator {
             entity.oneRelations.forEach { relation ->
                 val target = schema.entities.find {
                     it.className == relation.variable.type.simpleName
-                } ?: throw RuntimeException("${relation.variable.type.name} is not an entity")
+                } ?: throw RuntimeException("Class ${relation.variable.type.name} marked " +
+                                            "with @ToOne in class ${entity.name} is not an entity")
                 when {
                     relation.foreignKeyField != null -> {
                         // find fkProperty in current entity
                         val fkProperty = source.properties.find {
                             it.propertyName == relation.foreignKeyField
-                        } ?: throw RuntimeException("Can't find ${relation.foreignKeyField} in ${entity.name}")
+                        } ?: throw RuntimeException("Can't find ${relation.foreignKeyField} in ${entity.name} " +
+                            "for @ToOne relation")
                         if (relation.columnName != null || relation.unique) {
                             throw RuntimeException(
                                 "If @ToOne with foreign property used, @Column and @Unique are ignored. " +
@@ -123,7 +126,8 @@ object GreendaoModelTranslator {
 
                     val target = schema.entities.find {
                         it.className == argument.simpleName
-                    } ?: throw RuntimeException("${argument.name} is not an entity")
+                    } ?: throw RuntimeException("${argument.name} is not an entity, but it is referenced " +
+                        "for @ToMany relation in class (field: ${relation.variable.name})")
 
                     val options = if (relation.joinEntitySpec != null) 1 else 0 +
                         if (relation.mappedBy != null) 1 else 0 +

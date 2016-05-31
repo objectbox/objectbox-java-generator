@@ -10,7 +10,7 @@ fun parseIndexSpec(spec: String): List<OrderProperty> {
         "Index spec should not be empty"
     }
     return spec.split(',').map { it.trim() }.map { columnSpec ->
-        require(columnSpec.length > 0, { "Can't parse index spec: $spec" })
+        require(columnSpec.length > 0, { "Wrong index spec: $spec" })
         val specPair = columnSpec.split(' ')
         when {
             specPair.size == 1 -> OrderProperty(specPair[0], Order.ASC)
@@ -38,7 +38,7 @@ fun <T> Sequence<T>.mostPopular(): T? {
 }
 
 fun File.getJavaClassNames(): List<String> {
-    require(this.isDirectory)
+    require(this.isDirectory) { "The file should be a directory" }
     return list().filter { it.endsWith(".java", ignoreCase = true) }
         .map { File(this, it) }
         .filter { it.isFile }

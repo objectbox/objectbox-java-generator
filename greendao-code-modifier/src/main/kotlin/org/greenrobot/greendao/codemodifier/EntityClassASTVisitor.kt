@@ -90,7 +90,8 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
                                 TableIndex(it.name.nullIfBlank(), parseIndexSpec(it.value), it.unique)
                             }
                         } catch (e: IllegalArgumentException) {
-                            throw RuntimeException("Can't parse @Index.value for ${parent.name}")
+                            throw RuntimeException("Can't parse @Index.value for ${parent.name} " +
+                                "because of: ${e.message}", e)
                         }
                     }
                     node.hasType(Keep::class) -> {
@@ -230,7 +231,12 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
                 if (spec.isBlank()) {
                     emptyList()
                 } else {
-                    parseIndexSpec(spec)
+                    try {
+                        parseIndexSpec(spec)
+                    } catch (e: IllegalArgumentException) {
+                        throw RuntimeException("Can't parse @OrderBy.value for " +
+                            "${typeDeclaration?.name}.${fieldName} because of: ${e.message}.", e)
+                    }
                 }
             }
         )

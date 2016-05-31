@@ -74,7 +74,7 @@ val Project.sourceProvider: SourceProvider
 
         ANDROID_PLUGINS.any { project.plugins.hasPlugin(it) } -> AndroidPluginSourceProvider(project)
 
-        else -> throw RuntimeException("greenDAO supports only Java or Android projects. " +
+        else -> throw RuntimeException("greenDAO supports only Java and Android projects. " +
             "None of corresponding plugins have been applied to the project")
     }
 
