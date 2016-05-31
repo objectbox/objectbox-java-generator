@@ -55,13 +55,12 @@ class Greendao3Generator(formattingOptions: FormattingOptions? = null,
     }
 
     fun generateSchema(entities: List<EntityClass>, options: SchemaOptions, encrypt: Boolean) {
-        // take explicitly specified package name, or package name of the first entity
-        val daoPackage = options.daoPackage ?: entities.first().packageName
         val outputDir = options.outputDir
         val testsOutputDir = options.testsOutputDir
 
-        val schema = Schema(options.name, options.version, daoPackage)
-        val mapping = GreendaoModelTranslator.translate(entities, schema)
+        // take explicitly specified package name, or package name of the first entity
+        val schema = Schema(options.name, options.version, options.daoPackage ?: entities.first().packageName)
+        val mapping = GreendaoModelTranslator.translate(entities, schema, options.daoPackage)
 
         if (skipTestGeneration.isNotEmpty()) {
             schema.entities.forEach { e ->
@@ -82,7 +81,7 @@ class Greendao3Generator(formattingOptions: FormattingOptions? = null,
                 checkClass(entityClass)
                 println("Keep source for ${entityClass.name}")
             } else {
-                transformClass(daoPackage, entityClass, mapping)
+                transformClass(entityClass, mapping)
             }
         }
 
@@ -110,8 +109,9 @@ class Greendao3Generator(formattingOptions: FormattingOptions? = null,
         }
     }
 
-    private fun transformClass(daoPackage: String, entityClass: EntityClass, mapping: Map<EntityClass, Entity>) {
+    private fun transformClass(entityClass: EntityClass, mapping: Map<EntityClass, Entity>) {
         val entity = mapping[entityClass]!!
+        val daoPackage = entity.schema.defaultJavaPackage
 
         context.transform(entityClass) {
             ensureImport("org.greenrobot.greendao.annotation.Generated")

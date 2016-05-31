@@ -7,14 +7,14 @@ object GreendaoModelTranslator {
      * Modifies provided schema object according to entities list
      * @return mapping EntityClass to Entity
      * */
-    fun translate(entities : Iterable<EntityClass>, schema : Schema) : Map<EntityClass, Entity> {
+    fun translate(entities : Iterable<EntityClass>, schema : Schema, daoPackage: String?) : Map<EntityClass, Entity> {
         val mapping = entities.map {
             val e = schema.addEntity(it.name)
             if (it.tableName != null) e.tableName = it.tableName
             if (it.active) e.active = true
             e.isSkipTableCreation = !it.createTable
-            e.javaPackageDao = it.packageName
-            e.javaPackageTest = it.packageName
+            e.javaPackageDao = daoPackage ?: it.packageName
+            e.javaPackageTest = daoPackage ?: it.packageName
             val fieldsInOrder = it.fieldsInConstructorOrder ?: it.fields
             fieldsInOrder.forEach { field ->
                 try {
