@@ -14,6 +14,7 @@ object GreendaoModelTranslator {
             if (it.active) e.active = true
             e.isSkipTableCreation = !it.createTable
             e.javaPackageDao = it.packageName
+            e.javaPackageTest = it.packageName
             val fieldsInOrder = it.fieldsInConstructorOrder ?: it.fields
             fieldsInOrder.forEach { field ->
                 try {
