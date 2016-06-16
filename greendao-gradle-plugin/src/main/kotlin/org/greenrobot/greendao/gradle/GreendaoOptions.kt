@@ -14,8 +14,8 @@ import java.io.File
  */
 open class GreendaoOptions(val project: Project) {
     /**
-     * Package name for generated DAO (EntityDao, DaoMaster, DaoSession)
-     * The value is optional, by default package name is taken from source entities
+     * Package name for generated DAOs, DaoMaster, and DaoSession.
+     * The value is optional, by default package name is taken from source entities.
      */
     var daoPackage: String? = null
 
@@ -33,20 +33,19 @@ open class GreendaoOptions(val project: Project) {
     var testsGenSrcDir: File = project.file("src/androidTest/java")
 
     /**
-     * Version of the default schema.
-     * This is available then at runtime and useful for updating schema.
+     * Version of the default database schema, you can use to update your schema.
      *
      * @see SchemaOptionsExtension.version
      */
     var schemaVersion = 1
 
     /**
-     * Whether the DB should be encrypted. Disabled by default.
+     * Enable this flag to use the encryption version of greenDAO (see encryption documentation for setup steps).
      */
     var encrypt = false
 
     /**
-     * Whether unit tests should be automatically generated on a next build
+     * Whether unit tests should be automatically generated
      */
     var generateTests = false
 
