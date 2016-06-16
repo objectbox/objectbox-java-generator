@@ -61,6 +61,7 @@ tasks['compileKotlin'].dependsOn generateVersionProperties
 uploadArchives {
     repositories {
         mavenDeployer {
+            // Basic definitions are defined in root project
             pom.project {
                 name 'greenDAO Gradle Plugin'
                 description 'Gradle Plugin for greenDAO, the light and fast ORM for Android'

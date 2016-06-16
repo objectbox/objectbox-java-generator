@@ -27,8 +27,8 @@ dependencies {
     // https://discuss.gradle.org/t/how-to-override-gradleapi-transitive-dependencies/10185
     compile 'org.eclipse.jdt:org.eclipse.jdt.core:3.10.0'
     compile 'org.freemarker:freemarker:2.3.23'
-    compile 'org.greenrobot:greendao:3.0.0-11-SNAPSHOT'
-    compile 'org.greenrobot:greendao-generator:3.0.0-11-SNAPSHOT'
+    compile 'org.greenrobot:greendao:3.0.0-beta'
+    compile 'org.greenrobot:greendao-generator:3.0.0-beta'
     compile 'de.greenrobot:java-common:2.3.1'
 
     testCompile 'junit:junit:4.12'
@@ -40,6 +40,7 @@ dependencies {
 uploadArchives {
     repositories {
         mavenDeployer {
+            // Basic definitions are defined in root project
             pom.project {
                 name 'greenDAO Code Modifier'
                 description 'Code modifier for greenDAO, the light and fast ORM for Android'

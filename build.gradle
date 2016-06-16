@@ -16,8 +16,9 @@ task wrapper(type: Wrapper) {
 
 subprojects {
     apply plugin: 'maven'
+    apply plugin: 'signing'
 
-    version = "0.15-SNAPSHOT"
+    version = "3.0.0-beta"
 
     configurations {
         deployerJars
@@ -27,10 +28,23 @@ subprojects {
         deployerJars 'org.apache.maven.wagon:wagon-webdav:1.0-beta-2'
     }
 
+    signing {
+        if(project.hasProperty('signing.keyId') && project.hasProperty('signing.password') &&
+                project.hasProperty('signing.secretKeyRingFile')) {
+            sign configurations.archives
+        } else {
+            println "Signing information missing/incomplete for ${project.name}"
+        }
+    }
+
     afterEvaluate {
         uploadArchives {
             repositories {
                 mavenDeployer {
+                    def isSnapshot = version.endsWith('-SNAPSHOT')
+                    def sonatypeRepositoryUrl = isSnapshot ?
+                            "https://oss.sonatype.org/content/repositories/snapshots/"
+                            : "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
                     if (project.hasProperty('preferedRepo') && project.hasProperty('preferedUsername')
                             && project.hasProperty('preferedPassword')) {
                         configuration = configurations.deployerJars
