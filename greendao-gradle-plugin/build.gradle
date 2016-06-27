@@ -11,14 +11,14 @@ targetCompatibility = '1.7'
 repositories {
     jcenter()
     mavenCentral()
-    maven {
-        url 'https://example.org/mvnrepo'
-        credentials {
-            username exampleUser
-            password examplePassword
-        }
-    }
-    mavenLocal()
+//    maven {
+//        url 'https://example.org/mvnrepo'
+//        credentials {
+//            username exampleUser
+//            password examplePassword
+//        }
+//    }
+//    mavenLocal()
 }
 
 dependencies {
@@ -57,6 +57,22 @@ version=${project.version}
 }
 
 tasks['compileKotlin'].dependsOn generateVersionProperties
+
+task javadocJar(type: Jar) {
+    classifier = 'javadoc'
+    from 'README'
+}
+
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from 'README'
+}
+
+artifacts {
+    archives jar
+    archives javadocJar
+    archives sourcesJar
+}
 
 uploadArchives {
     repositories {
