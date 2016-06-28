@@ -134,7 +134,7 @@ object GreendaoModelTranslator {
                             if (relation.joinOnProperties.isNotEmpty()) 1 else 0
                     if (options != 1) {
                         throw RuntimeException("Can't create 1-M relation on ${relation.variable.name}. " +
-                            "Either mappedBy, joinOn or JoinEntity should be used to describe the relation")
+                            "Either referencedJoinProperty, joinProperties or @JoinEntity must be used to describe the relation")
                     }
                     val toMany = when {
                         relation.mappedBy != null -> {

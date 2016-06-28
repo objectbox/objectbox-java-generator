@@ -80,13 +80,10 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
                         val entityAnnotation = AnnotationProxy<Entity>(node)
                         schemaName = entityAnnotation.schema
                         active = entityAnnotation.active
-                    }
-                    node.hasType(Table::class) -> {
-                        val tableAnnotation = AnnotationProxy<Table>(node)
-                        entityTableName = tableAnnotation.name.nullIfBlank()
-                        createTable = tableAnnotation.create
+                        entityTableName = entityAnnotation.nameInDb.nullIfBlank()
+                        createTable = entityAnnotation.createInDb
                         try {
-                            tableIndexes = tableAnnotation.indexes.map {
+                            tableIndexes = entityAnnotation.indexes.map {
                                 TableIndex(it.name.nullIfBlank(), parseIndexSpec(it.value), it.unique)
                             }
                         } catch (e: IllegalArgumentException) {
@@ -200,8 +197,8 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
         val proxy = fa.proxy<ToOne>()!!
         return OneRelation(
             Variable(variableType, fieldName.toString()),
-            foreignKeyField = proxy.foreignKey.nullIfBlank(),
-            columnName = fa.proxy<Column>()?.name?.nullIfBlank(),
+            foreignKeyField = proxy.joinProperty.nullIfBlank(),
+            columnName = fa.proxy<Property>()?.nameInDb?.nullIfBlank(),
             isNotNull = fa.hasNotNull,
             unique = fa.has<Unique>()
         )
@@ -216,8 +213,8 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
         val orderByAnnotation = fa.proxy<OrderBy>()
         return ManyRelation(
             Variable(variableType, fieldName.toString()),
-            mappedBy = proxy.mappedBy.nullIfBlank(),
-            joinOnProperties = proxy.joinOn.map { JoinOnProperty(it.source, it.target) },
+            mappedBy = proxy.referencedJoinProperty.nullIfBlank(),
+            joinOnProperties = proxy.joinProperties.map { JoinOnProperty(it.name, it.referencedName) },
             joinEntitySpec = joinEntityAnnotation?.let {
                 val joinProxy = AnnotationProxy<JoinEntity>(it)
                 JoinEntitySpec(
@@ -244,7 +241,7 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
 
     private fun entityField(fa: MutableList<Annotation>, fieldName: SimpleName,
                             node: FieldDeclaration, variableType: VariableType): EntityField {
-        val columnAnnotation = fa.proxy<Column>()
+        val columnAnnotation = fa.proxy<Property>()
         val indexAnnotation = fa.proxy<Index>()
         val idAnnotation = fa.proxy<Id>()
 
@@ -260,7 +257,7 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
             id = idAnnotation?.let { TableId(it.autoincrement) },
             index = indexAnnotation?.let { PropertyIndex(indexAnnotation.name.nullIfBlank(), indexAnnotation.unique) },
             isNotNull = node.type.isPrimitiveType || fa.hasNotNull,
-            columnName = columnAnnotation?.name?.let { it.nullIfBlank() },
+            columnName = columnAnnotation?.nameInDb?.let { it.nullIfBlank() },
             customType = fa.find { it.hasType(Convert::class) }
                 ?.let { it as? NormalAnnotation }
                 ?.let { readConverterAnnotation(it) },

@@ -147,8 +147,7 @@ class EntityClassASTVisitorTest {
             """
         import org.greenrobot.greendao.annotation.*;
 
-        @Entity
-        @Table(name = "BAR")
+        @Entity(nameInDb = "BAR")
         class Foobar {}
         """)!!
         assertEquals("BAR", entity.tableName)
@@ -328,7 +327,7 @@ class EntityClassASTVisitorTest {
 
         @Entity
         class Foobar {
-            @Column(name = "SECOND_NAME")
+            @Property(nameInDb = "SECOND_NAME")
             String name;
         }
         """)!!
@@ -498,8 +497,7 @@ class EntityClassASTVisitorTest {
             """
         import org.greenrobot.greendao.annotation.*;
 
-        @Entity
-        @Table(indexes = {
+        @Entity(indexes = {
             @Index(value = "name DESC, age", unique = true, name = "NAME_AGE_INDEX"),
             @Index("age, name")
         })
@@ -660,7 +658,7 @@ class EntityClassASTVisitorTest {
             String name;
             long barId;
 
-            @ToOne(foreignKey = "barId")
+            @ToOne(joinProperty = "barId")
             Bar bar;
         }
         """)!!
@@ -698,12 +696,12 @@ class EntityClassASTVisitorTest {
     fun toOneWithoutPropertyMore() {
         val entity = visit(
             //language=java
-            """
+                """
         package com.example;
 
         import org.greenrobot.greendao.annotation.Column;
         import org.greenrobot.greendao.annotation.Entity;
-        import org.greenrobot.greendao.annotation.ToOne;
+        import org.greenrobot.greendao.annotation.Property;import org.greenrobot.greendao.annotation.ToOne;
         import org.greenrobot.greendao.annotation.Unique;
         import org.jetbrains.annotations.NotNull;
 
@@ -714,7 +712,7 @@ class EntityClassASTVisitorTest {
             @ToOne
             @Unique
             @NotNull
-            @Column(name = "BAR_ID")
+            @Property(nameInDb = "BAR_ID")
             Bar bar;
         }
         """)!!
@@ -739,7 +737,7 @@ class EntityClassASTVisitorTest {
         class Foobar {
             String name;
 
-            @ToMany(mappedBy = "barId")
+            @ToMany(referencedJoinProperty = "barId")
             List<Bar> bars;
         }
         """)!!
@@ -752,12 +750,12 @@ class EntityClassASTVisitorTest {
     fun toManyWithMulticolumnJoin() {
         val entity = visit(
             //language=java
-            """
+                """
         package com.example;
 
         import org.greenrobot.greendao.annotation.Entity;
         import org.greenrobot.greendao.annotation.JoinOn;
-        import org.greenrobot.greendao.annotation.ToMany;
+        import org.greenrobot.greendao.annotation.JoinProperty;import org.greenrobot.greendao.annotation.ToMany;
 
         import java.util.List;
 
@@ -767,9 +765,9 @@ class EntityClassASTVisitorTest {
             long barId;
             long barSubId;
 
-            @ToMany(joinOn = {
-                @JoinOn(source = "barId", target = "id"),
-                @JoinOn(source = "barSubId", target = "subId")
+            @ToMany(joinProperties = {
+                @JoinProperty(name = "barId", referencedName = "id"),
+                @JoinProperty(name = "barSubId", referencedName = "subId")
             })
             List<Bar> bars;
         }
@@ -829,7 +827,7 @@ class EntityClassASTVisitorTest {
             String name;
             long barId;
 
-            @ToMany(mappedBy = "barId")
+            @ToMany(referencedJoinProperty = "barId")
             @OrderBy("date, likes DESC")
             List<Bar> bars;
         }

@@ -1,5 +1,5 @@
 buildscript {
-    ext.kotlin_version = '1.0.2'
+    ext.kotlin_version = '1.0.2-1'
 
     repositories {
         mavenCentral()
@@ -18,7 +18,7 @@ subprojects {
     apply plugin: 'maven'
     apply plugin: 'signing'
 
-    version = "3.0.0-beta"
+    version = "3.0.0-beta3"
 
     configurations {
         deployerJars
@@ -73,8 +73,8 @@ subprojects {
 
                         licenses {
                             license {
-                                name 'TBD'
-                                url 'TBD'
+                                name 'GNU General Public License, Version 3'
+                                url 'http://www.gnu.org/licenses/gpl.txt'
                                 distribution 'repo'
                             }
                         }

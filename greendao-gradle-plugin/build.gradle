@@ -21,15 +21,6 @@ repositories {
 //    mavenLocal()
 }
 
-dependencies {
-    compile gradleApi()
-    compile project(':greendao-code-modifier')
-    compileOnly 'com.android.tools.build:gradle:2.1.0'
-
-    testCompile 'junit:junit:4.12'
-    testCompile 'org.mockito:mockito-all:1.10.19'
-}
-
 def genResourcesDir = new File(buildDir, 'src/generated/resources')
 def versionFile = new File(genResourcesDir, 'org/greenrobot/greendao/gradle/version.properties')
 
@@ -39,6 +30,15 @@ sourceSets {
             srcDir genResourcesDir
         }
     }
+}
+
+dependencies {
+    compile gradleApi()
+    compile project(':greendao-code-modifier')
+    compileOnly 'com.android.tools.build:gradle:2.1.2'
+
+    testCompile 'junit:junit:4.12'
+    testCompile 'org.mockito:mockito-all:1.10.19'
 }
 
 // puts artifact version to properties file inside resources
