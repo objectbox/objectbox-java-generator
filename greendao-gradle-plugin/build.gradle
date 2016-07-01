@@ -18,7 +18,7 @@ repositories {
 //            password examplePassword
 //        }
 //    }
-//    mavenLocal()
+    mavenLocal()
 }
 
 def genResourcesDir = new File(buildDir, 'src/generated/resources')

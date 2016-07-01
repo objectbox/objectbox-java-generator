@@ -16,7 +16,7 @@ repositories {
 //            password examplePassword
 //        }
 //    }
-//    mavenLocal()
+    mavenLocal()
 }
 
 dependencies {
@@ -27,8 +27,8 @@ dependencies {
     // https://discuss.gradle.org/t/how-to-override-gradleapi-transitive-dependencies/10185
     compile 'org.eclipse.jdt:org.eclipse.jdt.core:3.10.0'
     compile 'org.freemarker:freemarker:2.3.23'
-    compile 'org.greenrobot:greendao:3.0.0-beta3'
-    compile 'org.greenrobot:greendao-generator:3.0.0-beta3'
+    compile 'org.greenrobot:greendao:3.0.0-beta4-LOCAL1'
+    compile 'org.greenrobot:greendao-generator:3.0.0-beta4-LOCAL1'
     compile 'de.greenrobot:java-common:2.3.1'
 
     testCompile 'junit:junit:4.12'

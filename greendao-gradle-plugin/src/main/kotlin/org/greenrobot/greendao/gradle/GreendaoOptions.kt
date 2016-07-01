@@ -40,11 +40,6 @@ open class GreendaoOptions(val project: Project) {
     var schemaVersion = 1
 
     /**
-     * Enable this flag to use the encryption version of greenDAO (see encryption documentation for setup steps).
-     */
-    var encrypt = false
-
-    /**
      * Whether unit tests should be automatically generated
      */
     var generateTests = false
@@ -154,11 +149,6 @@ open class GreendaoOptions(val project: Project) {
     fun schemas(closure: Closure<*>) {
         closure.delegate = schemas
         closure.call()
-    }
-
-    /** @see encrypt */
-    fun encrypt(value: Boolean) {
-        encrypt = value
     }
 
     /** @see generateTests */

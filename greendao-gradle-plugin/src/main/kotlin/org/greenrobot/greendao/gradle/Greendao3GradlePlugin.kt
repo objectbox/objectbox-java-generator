@@ -50,6 +50,7 @@ class Greendao3GradlePlugin : Plugin<Project> {
     }
 
     private fun createGreendaoTask(project: Project, candidatesFile: File, encoding: String, version: String): Task {
+        val options = project.extensions.getByType(GreendaoOptions::class.java)
         val genSrcDir = File(project.buildDir, "generated/source/greendao")
         project.whenSourceProviderAvailable {
             it.addSourceDir(genSrcDir)
@@ -61,8 +62,6 @@ class Greendao3GradlePlugin : Plugin<Project> {
             inputs.property("plugin-version", version)
             inputs.property("source-encoding", encoding)
 
-            // put schema options into inputs
-            val options = project.extensions.getByType(GreendaoOptions::class.java)
             val schemaOptions = collectSchemaOptions(options.daoPackage, genSrcDir, options)
 
             schemaOptions.forEach { e ->
@@ -89,8 +88,7 @@ class Greendao3GradlePlugin : Plugin<Project> {
                 Greendao3Generator(
                         options.formatting.data,
                         options.skipTestGeneration,
-                        encoding,
-                        options.encrypt
+                        encoding
                 ).run(candidatesFiles, schemaOptions)
             }
         }

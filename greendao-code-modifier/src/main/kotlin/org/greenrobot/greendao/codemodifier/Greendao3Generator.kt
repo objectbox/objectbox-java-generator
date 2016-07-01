@@ -12,8 +12,7 @@ import java.io.File
  */
 class Greendao3Generator(formattingOptions: FormattingOptions? = null,
                          val skipTestGeneration: List<String> = emptyList(),
-                         val encoding: String = "UTF-8",
-                         val encrypt: Boolean = false) {
+                         val encoding: String = "UTF-8") {
     val context = JdtCodeContext(formattingOptions, encoding)
 
     fun run(sourceFiles: Iterable<File>,
@@ -47,14 +46,14 @@ class Greendao3Generator(formattingOptions: FormattingOptions? = null,
                     )
                 }
 
-                generateSchema(schemaEntities, options, encrypt)
+                generateSchema(schemaEntities, options)
             }
         } else {
             System.err.println("No entities found among specified files")
         }
     }
 
-    fun generateSchema(entities: List<EntityClass>, options: SchemaOptions, encrypt: Boolean) {
+    fun generateSchema(entities: List<EntityClass>, options: SchemaOptions) {
         val outputDir = options.outputDir
         val testsOutputDir = options.testsOutputDir
 
@@ -72,7 +71,7 @@ class Greendao3Generator(formattingOptions: FormattingOptions? = null,
         outputDir.mkdirs()
         testsOutputDir?.mkdirs()
 
-        DaoGenerator(encrypt).generateAll(schema, outputDir.path, outputDir.path, testsOutputDir?.path)
+        DaoGenerator().generateAll(schema, outputDir.path, outputDir.path, testsOutputDir?.path)
 
         // modify existing entity classes after using DaoGenerator, because not all schema properties are available before
         // for each entity add missing fields/methods/constructors
