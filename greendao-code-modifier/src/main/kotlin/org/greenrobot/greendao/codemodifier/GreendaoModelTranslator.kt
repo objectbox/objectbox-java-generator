@@ -2,6 +2,7 @@ package org.greenrobot.greendao.codemodifier
 
 import org.greenrobot.greendao.generator.*
 
+// TODO do we really need a separate model, can't we use greenDAO's?
 object GreendaoModelTranslator {
     /**
      * Modifies provided schema object according to entities list
@@ -18,34 +19,7 @@ object GreendaoModelTranslator {
             val fieldsInOrder = it.fieldsInConstructorOrder ?: it.fields
             fieldsInOrder.forEach { field ->
                 try {
-                    val propertyType = getPropertyType((field.customType?.columnJavaType ?: field.variable.type).name)
-                    val propertyBuilder = e.addProperty(propertyType, field.variable.name)
-                    if (field.variable.type.isPrimitive) {
-                        propertyBuilder.notNull()
-                    }
-                    if (field.isNotNull) propertyBuilder.notNull()
-                    if (field.unique && field.index != null) {
-                        throw RuntimeException("greenDAO: having unique constraint and index on the field " +
-                            "at the same time is redundant. Either @Unique or @Index should be used")
-                    }
-                    if (field.unique) {
-                        propertyBuilder.unique()
-                    }
-                    if (field.index != null) {
-                        propertyBuilder.indexAsc(field.index.name, field.index.unique)
-                    }
-                    if (field.id != null) {
-                        propertyBuilder.primaryKey()
-                        if (field.id.autoincrement) propertyBuilder.autoincrement()
-                    }
-                    if (field.columnName != null) {
-                        propertyBuilder.columnName(field.columnName)
-                    } else if (field.id != null && propertyType == PropertyType.Long) {
-                        propertyBuilder.columnName("_id")
-                    }
-                    if (field.customType != null) {
-                        propertyBuilder.customType(field.variable.type.name, field.customType.converterClassName)
-                    }
+                    convertField(e, field)
                 } catch (e : Exception) {
                     throw RuntimeException("Can't add field `${field.variable}` for entity ${it.name} " +
                         "due to: ${e.message}", e)
@@ -193,6 +167,37 @@ object GreendaoModelTranslator {
         }
 
         return mapping
+    }
+
+    private fun convertField(e: Entity, field: EntityField) {
+        val propertyType = getPropertyType((field.customType?.columnJavaType ?: field.variable.type).name)
+        val propertyBuilder = e.addProperty(propertyType, field.variable.name)
+        if (field.variable.type.isPrimitive) {
+            propertyBuilder.notNull()
+        }
+        if (field.isNotNull) propertyBuilder.notNull()
+        if (field.unique && field.index != null) {
+            throw RuntimeException("greenDAO: having unique constraint and index on the field " +
+                    "at the same time is redundant. Either @Unique or @Index should be used")
+        }
+        if (field.unique) {
+            propertyBuilder.unique()
+        }
+        if (field.index != null) {
+            propertyBuilder.indexAsc(field.index.name, field.index.unique)
+        }
+        if (field.id != null) {
+            propertyBuilder.primaryKey()
+            if (field.id.autoincrement) propertyBuilder.autoincrement()
+        }
+        if (field.columnName != null) {
+            propertyBuilder.columnName(field.columnName)
+        } else if (field.id != null && propertyType == PropertyType.Long) {
+            propertyBuilder.columnName("_id")
+        }
+        if (field.customType != null) {
+            propertyBuilder.customType(field.variable.type.name, field.customType.converterClassName)
+        }
     }
 
     fun getPropertyType(javaTypeName: String): PropertyType = when (javaTypeName) {
