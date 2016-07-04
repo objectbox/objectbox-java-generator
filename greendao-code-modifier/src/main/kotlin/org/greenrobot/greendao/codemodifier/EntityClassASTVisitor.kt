@@ -17,9 +17,9 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
     val constructors = mutableListOf<Method>()
     val methods = mutableListOf<Method>()
     val imports = mutableListOf<ImportDeclaration>()
-    var packageName : String? = null
-    var entityTableName : String? = null
-    var typeDeclaration : TypeDeclaration? = null
+    var packageName: String? = null
+    var entityTableName: String? = null
+    var typeDeclaration: TypeDeclaration? = null
     val oneRelations = mutableListOf<OneRelation>()
     val manyRelations = mutableListOf<ManyRelation>()
     var tableIndexes = emptyList<TableIndex>()
@@ -32,7 +32,7 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
     private val methodAnnotations = mutableListOf<Annotation>()
     private val fieldAnnotations = mutableListOf<Annotation>()
 
-    override fun visit(node: CompilationUnit): Boolean  = true
+    override fun visit(node: CompilationUnit): Boolean = true
 
     override fun visit(node: ImportDeclaration): Boolean {
         imports += node
@@ -44,7 +44,7 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
         return true
     }
 
-    private fun Annotation.hasType(klass : KClass<*>) : Boolean {
+    private fun Annotation.hasType(klass: KClass<*>): Boolean {
         return if (typeName.isSimpleName) {
             typeName.fullyQualifiedName == klass.simpleName && imports.has(klass)
         } else {
@@ -52,7 +52,7 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
         }
     }
 
-    private fun Type.toVariableType() : VariableType {
+    private fun Type.toVariableType(): VariableType {
         val arguments = if (this is ParameterizedType) {
             this.typeArguments().asSequence().map {
                 if (it is Type) it.toVariableType() else null
@@ -70,7 +70,7 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
             throw RuntimeException("Error processing \"${typeDeclaration?.name?.identifier}\": ${e.message}", e)
         }
 
-    fun visitAnnotation(node : Annotation) : Boolean {
+    fun visitAnnotation(node: Annotation): Boolean {
         val parent = node.parent
         when (parent) {
             is TypeDeclaration -> {
@@ -88,7 +88,7 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
                             }
                         } catch (e: IllegalArgumentException) {
                             throw RuntimeException("Can't parse @Index.value for ${parent.name} " +
-                                "because of: ${e.message}", e)
+                                    "because of: ${e.message}", e)
                         }
                     }
                     node.hasType(Keep::class) -> {
@@ -102,22 +102,22 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
         return true
     }
 
-    override fun visit(node : MarkerAnnotation) : Boolean = visitAnnotation(node)
+    override fun visit(node: MarkerAnnotation): Boolean = visitAnnotation(node)
 
     override fun visit(node: SingleMemberAnnotation): Boolean = visitAnnotation(node)
 
     override fun visit(node: NormalAnnotation): Boolean = visitAnnotation(node)
 
-    override fun visit(node : FieldDeclaration) : Boolean = isEntity
+    override fun visit(node: FieldDeclaration): Boolean = isEntity
 
     override fun endVisit(node: FieldDeclaration) {
         val fa = fieldAnnotations
         val varNames = node.fragments()
-            .filter { it is VariableDeclarationFragment }
-            .map { it as VariableDeclarationFragment }.map { it.name }
+                .filter { it is VariableDeclarationFragment }
+                .map { it as VariableDeclarationFragment }.map { it.name }
         val variableType = node.type.toVariableType()
         if (fa.none { it.typeName.fullyQualifiedName == "Transient" }
-            && !Modifier.isTransient(node.modifiers)) {
+                && !Modifier.isTransient(node.modifiers)) {
             when {
                 fa.has<ToOne>() -> {
                     oneRelations += varNames.map { oneRelation(fa, it, variableType) }
@@ -149,7 +149,7 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
         lastField = node
     }
 
-    private val ASTNode.codePlace : String?
+    private val ASTNode.codePlace: String?
         get() = "${typeDeclaration?.name?.identifier}:$lineNumber"
 
     private val ASTNode.originalCode: String
@@ -157,7 +157,7 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
 
     private fun ASTNode.checkUntouched(hint: GeneratorHint.Generated) {
         if (hint.hash != -1 && hint.hash != CodeCompare.codeHash(this.originalCode)) {
-            val place = when(this) {
+            val place = when (this) {
                 is MethodDeclaration -> if (this.isConstructor) "Constructor" else "Method '$name'"
                 is FieldDeclaration -> "Field '${this.originalCode.trim()}'"
                 else -> "Node"
@@ -193,49 +193,49 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
     }
 
     private fun oneRelation(fa: MutableList<Annotation>, fieldName: SimpleName,
-                            variableType: VariableType) : OneRelation {
+                            variableType: VariableType): OneRelation {
         val proxy = fa.proxy<ToOne>()!!
         return OneRelation(
-            Variable(variableType, fieldName.toString()),
-            foreignKeyField = proxy.joinProperty.nullIfBlank(),
-            columnName = fa.proxy<Property>()?.nameInDb?.nullIfBlank(),
-            isNotNull = fa.hasNotNull,
-            unique = fa.has<Unique>()
+                Variable(variableType, fieldName.toString()),
+                foreignKeyField = proxy.joinProperty.nullIfBlank(),
+                columnName = fa.proxy<Property>()?.nameInDb?.nullIfBlank(),
+                isNotNull = fa.hasNotNull,
+                unique = fa.has<Unique>()
         )
     }
 
     private fun manyRelation(fa: MutableList<Annotation>, fieldName: SimpleName,
-                             variableType: VariableType) : ManyRelation {
+                             variableType: VariableType): ManyRelation {
         val proxy = fa.proxy<ToMany>()!!
         val joinEntityAnnotation = fa.find {
             it.hasType(JoinEntity::class)
         } as? NormalAnnotation
         val orderByAnnotation = fa.proxy<OrderBy>()
         return ManyRelation(
-            Variable(variableType, fieldName.toString()),
-            mappedBy = proxy.referencedJoinProperty.nullIfBlank(),
-            joinOnProperties = proxy.joinProperties.map { JoinOnProperty(it.name, it.referencedName) },
-            joinEntitySpec = joinEntityAnnotation?.let {
-                val joinProxy = AnnotationProxy<JoinEntity>(it)
-                JoinEntitySpec(
-                    entityName = (it["entity"] as TypeLiteral).type.typeName,
-                    sourceIdProperty = joinProxy.sourceProperty,
-                    targetIdProperty = joinProxy.targetProperty
-                )
-            },
-            order = orderByAnnotation?.let {
-                val spec = it.value
-                if (spec.isBlank()) {
-                    emptyList()
-                } else {
-                    try {
-                        parseIndexSpec(spec)
-                    } catch (e: IllegalArgumentException) {
-                        throw RuntimeException("Can't parse @OrderBy.value for " +
-                            "${typeDeclaration?.name}.${fieldName} because of: ${e.message}.", e)
+                Variable(variableType, fieldName.toString()),
+                mappedBy = proxy.referencedJoinProperty.nullIfBlank(),
+                joinOnProperties = proxy.joinProperties.map { JoinOnProperty(it.name, it.referencedName) },
+                joinEntitySpec = joinEntityAnnotation?.let {
+                    val joinProxy = AnnotationProxy<JoinEntity>(it)
+                    JoinEntitySpec(
+                            entityName = (it["entity"] as TypeLiteral).type.typeName,
+                            sourceIdProperty = joinProxy.sourceProperty,
+                            targetIdProperty = joinProxy.targetProperty
+                    )
+                },
+                order = orderByAnnotation?.let {
+                    val spec = it.value
+                    if (spec.isBlank()) {
+                        emptyList()
+                    } else {
+                        try {
+                            parseIndexSpec(spec)
+                        } catch (e: IllegalArgumentException) {
+                            throw RuntimeException("Can't parse @OrderBy.value for " +
+                                    "${typeDeclaration?.name}.${fieldName} because of: ${e.message}.", e)
+                        }
                     }
                 }
-            }
         )
     }
 
@@ -247,49 +247,53 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
 
         if (indexAnnotation?.value?.isNotBlank() ?: false) {
             throw RuntimeException(
-                """greenDAO: setting value on @Index is not supported if @Index is used on the properties
+                    """greenDAO: setting value on @Index is not supported if @Index is used on the properties
                 See '$fieldName' in ${typeDeclaration?.name?.identifier}"""
             )
         }
 
+        val customType = findConvert(fieldName, fa)
         return EntityField(
-            variable = Variable(variableType, fieldName.toString()),
-            id = idAnnotation?.let { TableId(it.autoincrement) },
-            index = indexAnnotation?.let { PropertyIndex(indexAnnotation.name.nullIfBlank(), indexAnnotation.unique) },
-            isNotNull = node.type.isPrimitiveType || fa.hasNotNull,
-            columnName = columnAnnotation?.nameInDb?.let { it.nullIfBlank() },
-            customType = fa.find { it.hasType(Convert::class) }
-                ?.let { it as? NormalAnnotation }
-                ?.let { readConverterAnnotation(it) },
-            unique = fa.has<Unique>()
+                variable = Variable(variableType, fieldName.toString()),
+                id = idAnnotation?.let { TableId(it.autoincrement) },
+                index = indexAnnotation?.let { PropertyIndex(indexAnnotation.name.nullIfBlank(), indexAnnotation.unique) },
+                isNotNull = node.type.isPrimitiveType || fa.hasNotNull,
+                columnName = columnAnnotation?.nameInDb?.let { it.nullIfBlank() },
+                customType = customType,
+                unique = fa.has<Unique>()
         )
     }
 
-    private fun readConverterAnnotation(it: NormalAnnotation): CustomType? {
-        val converterClassName = (it["converter"] as? TypeLiteral)?.type?.typeName
-        val columnType = (it["columnType"] as? TypeLiteral)?.type
-        return if (converterClassName != null && columnType != null) {
-            CustomType(converterClassName, columnType.toVariableType())
-        } else {
-            null
+    private fun findConvert(fieldName: SimpleName, fa: MutableList<Annotation>): CustomType? {
+        val convert: Annotation? = fa.find { it.hasType(Convert::class) }
+        if (convert !is NormalAnnotation) {
+            return null;
         }
+
+        val converterClassName = (convert["converter"] as? TypeLiteral)?.type?.typeName
+        val columnType = (convert["columnType"] as? TypeLiteral)?.type
+        if (converterClassName == null || columnType == null) {
+            throw RuntimeException(
+                    "greenDAO: Missing @Convert arguments at '$fieldName' in ${typeDeclaration?.name?.identifier}")
+        }
+        return CustomType(converterClassName, columnType.toVariableType())
     }
 
     override fun visit(node: MethodDeclaration): Boolean = isEntity
 
-    override fun endVisit(node : MethodDeclaration) {
+    override fun endVisit(node: MethodDeclaration) {
         val generatorHint = methodAnnotations.generatorHint
         if (generatorHint is GeneratorHint.Generated) {
             node.checkUntouched(generatorHint)
         }
         val method = Method(
-            node.name.fullyQualifiedName,
-            node.parameters()
-                .filter { it is SingleVariableDeclaration }
-                .map { it as SingleVariableDeclaration }
-                .map { it -> Variable(it.type.toVariableType(), it.name.identifier) },
-            node,
-            generatorHint
+                node.name.fullyQualifiedName,
+                node.parameters()
+                        .filter { it is SingleVariableDeclaration }
+                        .map { it as SingleVariableDeclaration }
+                        .map { it -> Variable(it.type.toVariableType(), it.name.identifier) },
+                node,
+                generatorHint
         )
         if (node.isConstructor) {
             constructors += method
@@ -299,7 +303,7 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
         methodAnnotations.clear()
     }
 
-    override fun visit(node: TypeDeclaration) : Boolean {
+    override fun visit(node: TypeDeclaration): Boolean {
         if (node.parent is TypeDeclaration) {
             // skip inner classes
             return false
@@ -317,25 +321,25 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
         return if (isEntity) {
             val node = typeDeclaration!!
             EntityClass(
-                node.name.identifier,
-                schemaName,
-                active,
-                fields,
-                transientFields,
-                constructors,
-                methods,
-                node,
-                imports,
-                packageName ?: "",
-                entityTableName,
-                oneRelations,
-                manyRelations,
-                tableIndexes,
-                javaFile, source,
-                keepSource,
-                createTable,
-                usedNotNullAnnotation,
-                lastField
+                    node.name.identifier,
+                    schemaName,
+                    active,
+                    fields,
+                    transientFields,
+                    constructors,
+                    methods,
+                    node,
+                    imports,
+                    packageName ?: "",
+                    entityTableName,
+                    oneRelations,
+                    manyRelations,
+                    tableIndexes,
+                    javaFile, source,
+                    keepSource,
+                    createTable,
+                    usedNotNullAnnotation,
+                    lastField
             )
         } else {
             null

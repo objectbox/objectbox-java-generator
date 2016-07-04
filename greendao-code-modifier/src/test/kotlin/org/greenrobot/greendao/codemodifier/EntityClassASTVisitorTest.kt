@@ -6,6 +6,7 @@ import com.natpryce.hamkrest.hasSize
 import com.natpryce.hamkrest.isBlank
 import com.natpryce.hamkrest.isEmpty
 import org.junit.Assert.*
+import org.junit.Ignore
 import org.junit.Test
 
 class EntityClassASTVisitorTest {
@@ -14,13 +15,13 @@ class EntityClassASTVisitorTest {
     val BarListType = VariableType("java.util.List", false, "List<Bar>", listOf(BarType))
 
     fun visit(code: String, classesInPackage: List<String> = emptyList()) =
-        tryParseEntityClass(code, classesInPackage)
+            tryParseEntityClass(code, classesInPackage)
 
     @Test
     fun entityIsRecognised() {
         val entity = visit(
-            //language=java
-            """
+                //language=java
+                """
         import org.greenrobot.greendao.annotation.Entity;
 
         @Entity class Foobar {}
@@ -31,8 +32,8 @@ class EntityClassASTVisitorTest {
     @Test
     fun entityIsRecognisedQualifiedName() {
         val entity = visit(
-            //language=java
-            """
+                //language=java
+                """
         @org.greenrobot.greendao.annotation.Entity class Foobar {}
         """)
         assertNotNull(entity)
@@ -47,8 +48,8 @@ class EntityClassASTVisitorTest {
     @Test
     fun entityIsNotRecognizedIfWrongAnnotation() {
         val entity = visit(
-            //language=java
-            """
+                //language=java
+                """
         import myapp.Entity;
 
         @Entity class Foobar {}
@@ -59,8 +60,8 @@ class EntityClassASTVisitorTest {
     @Test
     fun entityIsNotRecognizedWithoutAnnotationImport() {
         val entity = visit(
-            //language=java
-            """
+                //language=java
+                """
         @Entity class Foobar {}
         """)
         assertNull(entity)
@@ -69,8 +70,8 @@ class EntityClassASTVisitorTest {
     @Test(expected = RuntimeException::class)
     fun entityIsNotRecognizedAmbigousImport() {
         visit(
-            //language=java
-            """
+                //language=java
+                """
         import org.greenrobot.greendao.annotation.*;
         import org.redrobot.reddao.annotations.*;
 
@@ -81,8 +82,8 @@ class EntityClassASTVisitorTest {
     @Test
     fun activeEntity() {
         val entity = visit(
-            //language=java
-            """
+                //language=java
+                """
         import org.greenrobot.greendao.annotation.Entity;
 
         @Entity(active = true) class Foobar {}
@@ -93,8 +94,8 @@ class EntityClassASTVisitorTest {
     @Test
     fun entityName() {
         val entity = visit(
-            //language=java
-            """
+                //language=java
+                """
         import org.greenrobot.greendao.annotation.*;
 
         @Entity class Foobar {}
@@ -105,8 +106,8 @@ class EntityClassASTVisitorTest {
     @Test
     fun packageName() {
         val entity = visit(
-            //language=java
-            """
+                //language=java
+                """
         package com.user.myapp;
 
         import org.greenrobot.greendao.annotation.*;
@@ -119,8 +120,8 @@ class EntityClassASTVisitorTest {
     @Test
     fun noPackageName() {
         val entity = visit(
-            //language=java
-            """
+                //language=java
+                """
         import org.greenrobot.greendao.annotation.*;
 
         @Entity class Foobar {}
@@ -131,8 +132,8 @@ class EntityClassASTVisitorTest {
     @Test
     fun noCustomTableName() {
         val entity = visit(
-            //language=java
-            """
+                //language=java
+                """
         import org.greenrobot.greendao.annotation.*;
 
         @Entity class Foobar {}
@@ -143,8 +144,8 @@ class EntityClassASTVisitorTest {
     @Test
     fun customTableName() {
         val entity = visit(
-            //language=java
-            """
+                //language=java
+                """
         import org.greenrobot.greendao.annotation.*;
 
         @Entity(nameInDb = "BAR")
@@ -156,8 +157,8 @@ class EntityClassASTVisitorTest {
     @Test
     fun defaultSchemaName() {
         val entity = visit(
-            //language=java
-            """
+                //language=java
+                """
         import org.greenrobot.greendao.annotation.*;
 
         @Entity
@@ -169,8 +170,8 @@ class EntityClassASTVisitorTest {
     @Test
     fun customSchemaName() {
         val entity = visit(
-            //language=java
-            """
+                //language=java
+                """
         import org.greenrobot.greendao.annotation.*;
 
         @Entity(schema="custom")
@@ -182,8 +183,8 @@ class EntityClassASTVisitorTest {
     @Test
     fun noKeepAnnotation() {
         val entity = visit(
-            //language=java
-            """
+                //language=java
+                """
         import org.greenrobot.greendao.annotation.*;
 
         @Entity
@@ -195,8 +196,8 @@ class EntityClassASTVisitorTest {
     @Test
     fun keepAnnotation() {
         val entity = visit(
-            //language=java
-            """
+                //language=java
+                """
         import org.greenrobot.greendao.annotation.*;
 
         @Entity
@@ -209,8 +210,8 @@ class EntityClassASTVisitorTest {
     @Test
     fun fieldDef() {
         val entity = visit(
-            //language=java
-            """
+                //language=java
+                """
         import org.greenrobot.greendao.annotation.*;
 
         @Entity
@@ -220,18 +221,18 @@ class EntityClassASTVisitorTest {
         }
         """)!!
         assertThat(entity.fields, equalTo(
-            listOf(
-                EntityField(Variable(StringType, "name")),
-                EntityField(Variable(IntType, "age"), isNotNull = true)
-            )
+                listOf(
+                        EntityField(Variable(StringType, "name")),
+                        EntityField(Variable(IntType, "age"), isNotNull = true)
+                )
         ))
     }
 
     @Test
     fun noDefinitions() {
         val entity = visit(
-            //language=java
-            """
+                //language=java
+                """
         import org.greenrobot.greendao.annotation.*;
 
         @Entity
@@ -249,8 +250,8 @@ class EntityClassASTVisitorTest {
     @Test
     fun transientModifierTest() {
         val entity = visit(
-            //language=java
-            """
+                //language=java
+                """
         import org.greenrobot.greendao.annotation.*;
 
         @Entity
@@ -268,8 +269,8 @@ class EntityClassASTVisitorTest {
     @Test
     fun transientAnnotationTest() {
         val entity = visit(
-            //language=java
-            """
+                //language=java
+                """
         import org.greenrobot.greendao.annotation.*;
 
         @Entity
@@ -287,8 +288,8 @@ class EntityClassASTVisitorTest {
     @Test
     fun idAnnotation() {
         val entity = visit(
-            //language=java
-            """
+                //language=java
+                """
         import org.greenrobot.greendao.annotation.*;
 
         @Entity
@@ -305,8 +306,8 @@ class EntityClassASTVisitorTest {
     @Test
     fun idAutoincrement() {
         val entity = visit(
-            //language=java
-            """
+                //language=java
+                """
         import org.greenrobot.greendao.annotation.*;
 
         @Entity
@@ -321,8 +322,8 @@ class EntityClassASTVisitorTest {
     @Test
     fun columnAnnotation() {
         val entity = visit(
-            //language=java
-            """
+                //language=java
+                """
         import org.greenrobot.greendao.annotation.*;
 
         @Entity
@@ -339,7 +340,7 @@ class EntityClassASTVisitorTest {
     fun fieldGeneratorHint() {
         val cityHash = CodeCompare.codeHash("@Transient String city;")
         val entity = visit(
-            """
+                """
         import org.greenrobot.greendao.annotation.*;
 
         @Entity
@@ -358,15 +359,15 @@ class EntityClassASTVisitorTest {
         }
         """.trimIndent())!!
         assertThat(entity.transientFields.map { it.hint }, equalTo(
-            listOf(GeneratorHint.Generated(-1), GeneratorHint.Keep, null, GeneratorHint.Generated(cityHash))
+                listOf(GeneratorHint.Generated(-1), GeneratorHint.Keep, null, GeneratorHint.Generated(cityHash))
         ))
     }
 
     @Test(expected = RuntimeException::class)
     fun throwIfGeneratedFieldChanged() {
         visit(
-            //language=java
-            """
+                //language=java
+                """
         import org.greenrobot.greendao.annotation.*;
 
         @Entity
@@ -380,8 +381,8 @@ class EntityClassASTVisitorTest {
     @Test(expected = RuntimeException::class)
     fun throwIfGeneratedMethodChanged() {
         visit(
-            //language=java
-            """
+                //language=java
+                """
         import org.greenrobot.greendao.annotation.*;
 
         @Entity
@@ -397,8 +398,8 @@ class EntityClassASTVisitorTest {
     @Test(expected = RuntimeException::class)
     fun throwIfGeneratedConstructorChanged() {
         visit(
-            //language=java
-            """
+                //language=java
+                """
         import org.greenrobot.greendao.annotation.*;
 
         @Entity
@@ -414,8 +415,8 @@ class EntityClassASTVisitorTest {
     @Test
     fun propertyIndexAnnotation() {
         val entity = visit(
-            //language=java
-            """
+                //language=java
+                """
         import org.greenrobot.greendao.annotation.*;
 
         @Entity
@@ -433,8 +434,8 @@ class EntityClassASTVisitorTest {
     @Test(expected = RuntimeException::class)
     fun propertyIndexAnnotationDoesNotAcceptIndexSpec() {
         visit(
-            //language=java
-            """
+                //language=java
+                """
         import org.greenrobot.greendao.annotation.*;
 
         @Entity
@@ -448,8 +449,8 @@ class EntityClassASTVisitorTest {
     @Test
     fun propertyUniqueAnnotation() {
         val entity = visit(
-            //language=java
-            """
+                //language=java
+                """
         import org.greenrobot.greendao.annotation.*;
 
         @Entity
@@ -464,8 +465,8 @@ class EntityClassASTVisitorTest {
     @Test
     fun convertAnnotation() {
         val entity = visit(
-            //language=java
-            """
+                //language=java
+                """
         package com.example.myapp;
 
         import org.greenrobot.greendao.annotation.Entity;
@@ -480,21 +481,62 @@ class EntityClassASTVisitorTest {
         """)!!
         val field = entity.fields[0]
         assertEquals(
-            EntityField(
-                Variable(VariableType("com.example.myapp.MyType", isPrimitive = false, originalName = "MyType"), "name"),
-                customType = CustomType(
-                    "com.example.myapp.Converter", StringType
-                )
-            ),
-            field
+                EntityField(
+                        Variable(VariableType("com.example.myapp.MyType", isPrimitive = false, originalName = "MyType"), "name"),
+                        customType = CustomType(
+                                "com.example.myapp.Converter", StringType
+                        )
+                ),
+                field
+        )
+    }
+
+    @Test
+    @Ignore("Not yet working")
+    fun convertAnnotation_innerClass() {
+        val entity = visit(
+                //language=java
+                """
+        package com.example.myapp;
+
+        import org.greenrobot.greendao.annotation.Entity;
+        import org.greenrobot.greendao.annotation.Convert;
+        import org.greenrobot.greendao.converter.PropertyConverter;
+
+        @Entity
+        class Foobar {
+            @Convert(converter = InnerConverter.class, columnType = String.class)
+            MyType name;
+            public static class InnerConverter implements PropertyConverter<MyType, String> {
+                @Override
+                public MyType convertToEntityProperty(String databaseValue) {
+                    return null;
+                }
+
+                @Override
+                public String convertToDatabaseValue(MyType entityProperty) {
+                    return null;
+                }
+            }
+        }
+        """)!!
+        val field = entity.fields[0]
+        assertEquals(
+                EntityField(
+                        Variable(VariableType("com.example.myapp.MyType", isPrimitive = false, originalName = "MyType"), "name"),
+                        customType = CustomType(
+                                "com.example.myapp.Foobar.InnerConverter", StringType
+                        )
+                ),
+                field
         )
     }
 
     @Test
     fun multiIndexes() {
         val entity = visit(
-            //language=java
-            """
+                //language=java
+                """
         import org.greenrobot.greendao.annotation.*;
 
         @Entity(indexes = {
@@ -508,22 +550,22 @@ class EntityClassASTVisitorTest {
         """)!!
 
         assertThat(entity.indexes, equalTo(listOf(
-            TableIndex("NAME_AGE_INDEX", listOf(
-                OrderProperty("name", Order.DESC),
-                OrderProperty("age", Order.ASC)
-            ), unique = true),
-            TableIndex(null, listOf(
-                OrderProperty("age", Order.ASC),
-                OrderProperty("name", Order.ASC)
-            ), unique = false)
+                TableIndex("NAME_AGE_INDEX", listOf(
+                        OrderProperty("name", Order.DESC),
+                        OrderProperty("age", Order.ASC)
+                ), unique = true),
+                TableIndex(null, listOf(
+                        OrderProperty("age", Order.ASC),
+                        OrderProperty("name", Order.ASC)
+                ), unique = false)
         )))
     }
 
     @Test
     fun constructors() {
         val entity = visit(
-            //language=java
-            """
+                //language=java
+                """
         import org.greenrobot.greendao.annotation.*;
 
         @Entity
@@ -541,7 +583,7 @@ class EntityClassASTVisitorTest {
         """)!!
         assertThat(entity.constructors, hasSize(equalTo(2)))
         assertThat(entity.constructors[0].parameters, equalTo(
-            listOf(Variable(StringType, "name"), Variable(IntType, "age"))
+                listOf(Variable(StringType, "name"), Variable(IntType, "age"))
         ))
         assertNull(entity.constructors[1].hint)
         assertThat(entity.constructors[1].parameters, equalTo(emptyList()))
@@ -551,12 +593,12 @@ class EntityClassASTVisitorTest {
     @Test
     fun constructorGeneratorHint() {
         val constructorHash = CodeCompare.codeHash(
-           "Foobar(String name, int age){}"
+                "Foobar(String name, int age){}"
         )
 
         val entity = visit(
-            //language=java
-            """
+                //language=java
+                """
         import org.greenrobot.greendao.annotation.*;
 
         @Entity
@@ -589,8 +631,8 @@ class EntityClassASTVisitorTest {
     @Test
     fun methods() {
         val entity = visit(
-            //language=java
-            """
+                //language=java
+                """
         import org.greenrobot.greendao.annotation.*;
 
         @Entity
@@ -617,8 +659,8 @@ class EntityClassASTVisitorTest {
     @Test
     fun methodGeneratorHint() {
         val entity = visit(
-            //language=java
-            """
+                //language=java
+                """
         import org.greenrobot.greendao.annotation.*;
 
         @Entity
@@ -646,8 +688,8 @@ class EntityClassASTVisitorTest {
     @Test
     fun toOne() {
         val entity = visit(
-            //language=java
-            """
+                //language=java
+                """
         package com.example;
 
         import org.greenrobot.greendao.annotation.Entity;
@@ -663,15 +705,15 @@ class EntityClassASTVisitorTest {
         }
         """)!!
         assertThat(entity.oneRelations, equalTo(
-            listOf(OneRelation(Variable(BarType, "bar"), foreignKeyField = "barId"))
+                listOf(OneRelation(Variable(BarType, "bar"), foreignKeyField = "barId"))
         ))
     }
 
     @Test
     fun toOneWithoutProperty() {
         val entity = visit(
-            //language=java
-            """
+                //language=java
+                """
         package com.example;
 
         import org.greenrobot.greendao.annotation.Column;
@@ -688,14 +730,14 @@ class EntityClassASTVisitorTest {
         }
         """)!!
         assertThat(entity.oneRelations, equalTo(
-            listOf(OneRelation(Variable(BarType, "bar")))
+                listOf(OneRelation(Variable(BarType, "bar")))
         ))
     }
 
     @Test
     fun toOneWithoutPropertyMore() {
         val entity = visit(
-            //language=java
+                //language=java
                 """
         package com.example;
 
@@ -717,15 +759,15 @@ class EntityClassASTVisitorTest {
         }
         """)!!
         assertThat(entity.oneRelations, equalTo(
-            listOf(OneRelation(Variable(BarType, "bar"), columnName = "BAR_ID", isNotNull = true, unique = true))
+                listOf(OneRelation(Variable(BarType, "bar"), columnName = "BAR_ID", isNotNull = true, unique = true))
         ))
     }
 
     @Test
     fun toMany() {
         val entity = visit(
-            //language=java
-            """
+                //language=java
+                """
         package com.example;
 
         import org.greenrobot.greendao.annotation.Entity;
@@ -742,14 +784,14 @@ class EntityClassASTVisitorTest {
         }
         """)!!
         assertThat(entity.manyRelations, equalTo(
-            listOf(ManyRelation(Variable(BarListType, "bars"), mappedBy = "barId"))
+                listOf(ManyRelation(Variable(BarListType, "bars"), mappedBy = "barId"))
         ))
     }
 
     @Test
     fun toManyWithMulticolumnJoin() {
         val entity = visit(
-            //language=java
+                //language=java
                 """
         package com.example;
 
@@ -773,18 +815,18 @@ class EntityClassASTVisitorTest {
         }
         """)!!
         assertThat(entity.manyRelations, equalTo(
-            listOf(ManyRelation(Variable(BarListType, "bars"), joinOnProperties = listOf(
-                JoinOnProperty("barId", "id"),
-                JoinOnProperty("barSubId", "subId")
-            )))
+                listOf(ManyRelation(Variable(BarListType, "bars"), joinOnProperties = listOf(
+                        JoinOnProperty("barId", "id"),
+                        JoinOnProperty("barSubId", "subId")
+                )))
         ))
     }
 
     @Test
     fun toManyWithJoinEntity() {
         val entity = visit(
-            //language=java
-            """
+                //language=java
+                """
         package com.example;
 
         import org.greenrobot.greendao.annotation.Entity;
@@ -803,17 +845,17 @@ class EntityClassASTVisitorTest {
         }
         """)!!
         assertThat(entity.manyRelations, equalTo(
-            listOf(ManyRelation(Variable(BarListType, "bars"), joinEntitySpec =
+                listOf(ManyRelation(Variable(BarListType, "bars"), joinEntitySpec =
                 JoinEntitySpec("com.example.Foobar", "fooId", "barId")
-            ))
+                ))
         ))
     }
 
     @Test
     fun toManyOrderBy() {
         val entity = visit(
-            //language=java
-            """
+                //language=java
+                """
         package com.example;
 
         import org.greenrobot.greendao.annotation.Entity;
@@ -833,17 +875,17 @@ class EntityClassASTVisitorTest {
         }
         """)!!
         assertThat(entity.manyRelations, equalTo(
-            listOf(ManyRelation(Variable(BarListType, "bars"), mappedBy = "barId",
-                order = listOf(OrderProperty("date", Order.ASC), OrderProperty("likes", Order.DESC))
-            ))
+                listOf(ManyRelation(Variable(BarListType, "bars"), mappedBy = "barId",
+                        order = listOf(OrderProperty("date", Order.ASC), OrderProperty("likes", Order.DESC))
+                ))
         ))
     }
 
     @Test(expected = RuntimeException::class)
     fun ambigousImport() {
         visit(
-            //language=java
-            """
+                //language=java
+                """
         package com.example;
 
         import org.greenrobot.greendao.annotation.Entity;
@@ -864,8 +906,8 @@ class EntityClassASTVisitorTest {
     @Test
     fun resolveQualifiedNameInSamePackage() {
         val entity = visit(
-            //language=java
-            """
+                //language=java
+                """
         package com.example;
 
         import org.greenrobot.greendao.annotation.Entity;
@@ -888,8 +930,8 @@ class EntityClassASTVisitorTest {
     @Test
     fun resolveInternalClassInSamePackage() {
         val entity = visit(
-            //language=java
-            """
+                //language=java
+                """
         package com.example;
 
         import org.greenrobot.greendao.annotation.Entity;
@@ -912,8 +954,8 @@ class EntityClassASTVisitorTest {
     @Test
     fun resolveFullyQualifiedNameIternalPackage() {
         val entity = visit(
-            //language=java
-            """
+                //language=java
+                """
         package com.example2;
 
         import org.greenrobot.greendao.annotation.Entity;
@@ -937,8 +979,8 @@ class EntityClassASTVisitorTest {
     @Test
     fun resolveFullyQualifiedName() {
         val entity = visit(
-            //language=java
-            """
+                //language=java
+                """
         package com.example2;
 
         import org.greenrobot.greendao.annotation.Entity;
