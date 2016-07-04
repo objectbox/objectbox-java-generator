@@ -18,7 +18,7 @@ subprojects {
     apply plugin: 'maven'
     apply plugin: 'signing'
 
-    version = "3.0.0-beta4-LOCAL2"
+    version = "3.0.0-beta4-LOCAL3"
 
     configurations {
         deployerJars

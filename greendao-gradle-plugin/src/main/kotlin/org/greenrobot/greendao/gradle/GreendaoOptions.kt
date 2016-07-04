@@ -19,18 +19,21 @@ open class GreendaoOptions(val project: Project) {
      */
     var daoPackage: String? = null
 
-//    /**
-//     * Base directory where generated DAO classes should be put
-//     * @see testsGenSrcDir
-//     */
-//    var genSrcDir: File = File(project.buildDir, "generated/source/greendao")
+    /**
+     * Base directory where generated DAO classes should be put (default: ${buildDir}/generated/source/greendao).
+     * Note that this must be configured to be a src directory. When the default (no-value) is used, the dir is added
+     * as a src folder automatically.
+     *
+     * @see targetGenDirTests
+     */
+    var targetGenDir: File? = null
 
     /**
      * Base directory where generated unit tests should be put.
      *
      * @see generateTests
      */
-    var testsGenSrcDir: File = project.file("src/androidTest/java")
+    var targetGenDirTests: File = project.file("src/androidTest/java")
 
     /**
      * Version of the default database schema, you can use to update your schema.
@@ -60,24 +63,24 @@ open class GreendaoOptions(val project: Project) {
     internal val formatting = FormattingExtension()
     internal val schemas = SchemasExtension(project)
 
-//    /** @see genSrcDir */
-//    fun genSrcDir(dir: File) {
-//        this.genSrcDir = dir
-//    }
-//
-//    /** @see genSrcDir */
-//    fun genSrcDir(path: String) {
-//        this.genSrcDir = project.file(path)
-//    }
-
-    /** @see testsGenSrcDir */
-    fun testsGenSrcDir(dir: File) {
-        this.testsGenSrcDir = dir
+    /** @see targetGenDir */
+    fun targetGenDir(dir: File) {
+        this.targetGenDir = dir
     }
 
-    /** @see testsGenSrcDir */
+    /** @see targetGenDir */
+    fun targetGenDir(path: String) {
+        this.targetGenDir = project.file(path)
+    }
+
+    /** @see targetGenDirTests */
+    fun testsGenSrcDir(dir: File) {
+        this.targetGenDirTests = dir
+    }
+
+    /** @see targetGenDirTests */
     fun testsGenSrcDir(path: String) {
-        this.testsGenSrcDir = project.file(path)
+        this.targetGenDirTests = project.file(path)
     }
 
     /** @see schemaVersion */
@@ -248,7 +251,7 @@ class SchemaOptionsExtension(val project: Project) {
 //    /** @see GreendaoOptions.genSrcDir */
 //    var genSrcDir: File? = null
 
-    /** @see GreendaoOptions.testsGenSrcDir */
+    /** @see GreendaoOptions.targetGenDirTests */
     var testsGenSrcDir: File? = null
 
     /** @see GreendaoOptions.version */
@@ -271,12 +274,12 @@ class SchemaOptionsExtension(val project: Project) {
 //        this.genSrcDir = project.file(value)
 //    }
 
-    /** @see GreendaoOptions.testsGenSrcDir */
+    /** @see GreendaoOptions.targetGenDirTests */
     fun testsGenSrcDir(value: File) {
         this.testsGenSrcDir = value
     }
 
-    /** @see GreendaoOptions.testsGenSrcDir */
+    /** @see GreendaoOptions.targetGenDirTests */
     fun testsGenSrcDir(value: String) {
         this.testsGenSrcDir = project.file(value)
     }

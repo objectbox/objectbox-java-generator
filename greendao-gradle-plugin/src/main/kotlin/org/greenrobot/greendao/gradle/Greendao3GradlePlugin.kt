@@ -42,7 +42,7 @@ class Greendao3GradlePlugin : Plugin<Project> {
 
             project.tasks.whenTaskAdded {
                 if (it.name.startsWith("compile")) {
-                    project.logger.debug("Make just added ${it.name} depend on greendao")
+                    project.logger.debug("Make just added task ${it.name} depend on greendao")
                     it.dependsOn(greendaoTask)
                 }
             }
@@ -51,9 +51,11 @@ class Greendao3GradlePlugin : Plugin<Project> {
 
     private fun createGreendaoTask(project: Project, candidatesFile: File, encoding: String, version: String): Task {
         val options = project.extensions.getByType(GreendaoOptions::class.java)
-        val genSrcDir = File(project.buildDir, "generated/source/greendao")
-        project.whenSourceProviderAvailable {
-            it.addSourceDir(genSrcDir)
+        val targetGenDir = options.targetGenDir?: File(project.buildDir, "generated/source/greendao")
+        if (options.targetGenDir == null) {
+            project.whenSourceProviderAvailable {
+                it.addSourceDir(targetGenDir)
+            }
         }
         val generateTask = project.task("greendao").apply {
             logging.captureStandardOutput(LogLevel.INFO)
@@ -62,19 +64,19 @@ class Greendao3GradlePlugin : Plugin<Project> {
             inputs.property("plugin-version", version)
             inputs.property("source-encoding", encoding)
 
-            val schemaOptions = collectSchemaOptions(options.daoPackage, genSrcDir, options)
+            val schemaOptions = collectSchemaOptions(options.daoPackage, targetGenDir, options)
 
             schemaOptions.forEach { e ->
                 inputs.property("schema-${e.key}", e.value.toString())
             }
 
-            val outputFileTree = project.fileTree(genSrcDir, Closure { pf: PatternFilterable ->
+            val outputFileTree = project.fileTree(targetGenDir, Closure { pf: PatternFilterable ->
                 pf.include("**/*Dao.java", "**/DaoSession.java", "**/DaoMaster.java")
             })
             outputs.files(outputFileTree)
 
             if (options.generateTests) {
-                outputs.dir(options.testsGenSrcDir)
+                outputs.dir(options.targetGenDirTests)
             }
 
             doLast {
@@ -111,7 +113,7 @@ class Greendao3GradlePlugin : Plugin<Project> {
                 version = options.schemaVersion,
                 daoPackage = daoPackage,
                 outputDir = genSrcDir,
-                testsOutputDir = if (options.generateTests) options.testsGenSrcDir else null
+                testsOutputDir = if (options.generateTests) options.targetGenDirTests else null
         )
 
         val schemaOptions = mutableMapOf("default" to defaultOptions)
