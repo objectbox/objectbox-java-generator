@@ -11,13 +11,6 @@ targetCompatibility = '1.7'
 repositories {
     jcenter()
     mavenCentral()
-//    maven {
-//        url 'https://example.org/mvnrepo'
-//        credentials {
-//            username exampleUser
-//            password examplePassword
-//        }
-//    }
     mavenLocal()
 }
 

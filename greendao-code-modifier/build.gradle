@@ -9,13 +9,6 @@ targetCompatibility = '1.7'
 repositories {
     jcenter()
     mavenCentral()
-//    maven {
-//        url 'https://example.org/mvnrepo'
-//        credentials {
-//            username exampleUser
-//            password examplePassword
-//        }
-//    }
     mavenLocal()
 }
 
@@ -26,9 +19,8 @@ dependencies {
     // and overriding does currently NOT work at least in the IDE
     // https://discuss.gradle.org/t/how-to-override-gradleapi-transitive-dependencies/10185
     compile 'org.eclipse.jdt:org.eclipse.jdt.core:3.10.0'
-    compile 'org.freemarker:freemarker:2.3.23'
-    compile 'org.greenrobot:greendao:3.0.0-beta4-LOCAL1'
-    compile 'org.greenrobot:greendao-generator:3.0.0-beta4-LOCAL1'
+    compile 'org.greenrobot:greendao-api:3.0.0'
+    compile 'org.greenrobot:greendao-generator:3.0.0'
     compile 'de.greenrobot:java-common:2.3.1'
 
     testCompile 'junit:junit:4.12'
