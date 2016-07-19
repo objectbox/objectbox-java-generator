@@ -116,8 +116,11 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
                 .filter { it is VariableDeclarationFragment }
                 .map { it as VariableDeclarationFragment }.map { it.name }
         val variableType = node.type.toVariableType()
+        // in addition to fields explicitly marked transient, also collect static fields as transient
+        // to avoid adding fields with the same name (see EntityClassTransformer.defField)
         if (fa.none { it.typeName.fullyQualifiedName == "Transient" }
-                && !Modifier.isTransient(node.modifiers)) {
+                && !Modifier.isTransient(node.modifiers)
+                && !Modifier.isStatic(node.modifiers)) {
             when {
                 fa.has<ToOne>() -> {
                     oneRelations += varNames.map { oneRelation(fa, it, variableType) }

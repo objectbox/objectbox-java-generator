@@ -286,6 +286,29 @@ class EntityClassASTVisitorTest {
     }
 
     @Test
+    fun staticFieldsAreTransientTest() {
+        val entity = visit(
+                //language=java
+                """
+        import org.greenrobot.greendao.annotation.*;
+
+        @Entity
+        class Foobar {
+            static String staticField;
+            static final String CONSTANT_FIELD;
+            String name;
+        }
+        """)!!
+
+        assertThat(entity.fields, hasSize(equalTo(1)))
+        assertThat(entity.fields[0].variable.name, equalTo("name"))
+
+        assertThat(entity.transientFields, hasSize(equalTo(2)))
+        assertThat(entity.transientFields[0].variable.name, equalTo("staticField"))
+        assertThat(entity.transientFields[1].variable.name, equalTo("CONSTANT_FIELD"))
+    }
+
+    @Test
     fun idAnnotation() {
         val entity = visit(
                 //language=java
