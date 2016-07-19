@@ -115,15 +115,30 @@ class EntityClassTransformer(val entityClass: EntityClass, val jdtOptions : Muta
      * */
     fun defConstructor(paramTypes: List<String>, code: () -> String) {
         // search for constructor with the same signature or any other generated constructor (consider field add/remove)
-        val constructor = entityClass.constructors.find {
+        val existingConstructor = entityClass.constructors.find {
             it.hasSignature(entityClass.name, paramTypes)
         } ?: entityClass.constructors.find { it.generated }
-        // replace only generated code
-        if (constructor == null || constructor.generated) {
-            insertMethod(replaceHashStub(code()), constructor?.node,
-                entityClass.lastConstructorDeclaration ?: entityClass.lastFieldDeclaration)
+
+        if (existingConstructor == null) {
+            // no generated constructor exists, just insert the desired one
+            insertMethod(replaceHashStub(code()), null,
+                    entityClass.lastConstructorDeclaration ?: entityClass.lastFieldDeclaration)
+        } else if (existingConstructor.generated) {
+            // generated constructor exists, check params
+            val nodeToReplace: MethodDeclaration?
+            if ((existingConstructor.parameters.isEmpty() && paramTypes.isNotEmpty())
+                    || (existingConstructor.parameters.isNotEmpty() && paramTypes.isEmpty())) {
+                // keep an existing no-param constructor if adding a params one
+                // keep an existing params constructor if adding a no-param one
+                keepNodes += existingConstructor.node
+                nodeToReplace = null
+            } else {
+                nodeToReplace = existingConstructor.node // otherwise replace the existing constructor
+            }
+            insertMethod(replaceHashStub(code()), nodeToReplace,
+                    entityClass.lastConstructorDeclaration ?: entityClass.lastFieldDeclaration)
         } else {
-            constructor.checkKeepPresent()
+            existingConstructor.checkKeepPresent()
         }
     }
 
