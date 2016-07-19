@@ -307,6 +307,57 @@ class EntityClassTransformerTest {
     }
 
     @Test
+    fun doNotReplaceEmptyGeneratedConstructor() {
+        val entityClass = parseEntityClass(
+                //language=java
+                """
+            import org.greenrobot.greendao.annotation.Entity;
+            import org.greenrobot.greendao.annotation.Generated;
+
+            @Entity
+            class Foobar {
+                @Generated(hash = 400782353)
+                public Foobar() {
+                }
+            }
+            """.trimIndent()
+        )
+
+        val constructorCode = """
+                @Generated(hash = GENERATED_HASH_STUB)
+                public Foobar(String name, int age) {
+                    throw new RuntimeException("Error");
+                }
+                """.trimIndent()
+
+
+        val result = EntityClassTransformer(entityClass, jdtOptions, formattingOptions).apply {
+            defConstructor(listOf("String", "int")) { constructorCode }
+        }.writeToString()
+
+        assertEquals(
+                //language=java
+                """
+            import org.greenrobot.greendao.annotation.Entity;
+            import org.greenrobot.greendao.annotation.Generated;
+
+            @Entity
+            class Foobar {
+                @Generated(hash = 400782353)
+                public Foobar() {
+                }
+
+                @Generated(hash = ${CodeCompare.codeHash(constructorCode)})
+                public Foobar(String name, int age) {
+                    throw new RuntimeException("Error");
+                }
+            }
+            """.trimIndent(),
+                result
+        )
+    }
+
+    @Test
     fun replaceGeneratedField() {
         val entityClass = parseEntityClass(
             //language=java
