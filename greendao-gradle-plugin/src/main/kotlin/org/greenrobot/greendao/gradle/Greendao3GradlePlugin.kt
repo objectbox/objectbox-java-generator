@@ -4,6 +4,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.logging.LogLevel
+import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.api.tasks.util.PatternFilterable
 import org.greenrobot.greendao.codemodifier.Greendao3Generator
 import org.greenrobot.greendao.codemodifier.SchemaOptions
@@ -35,18 +36,26 @@ class Greendao3GradlePlugin : Plugin<Project> {
             val greendaoTask = createGreendaoTask(project, candidatesFile, encoding, version)
             greendaoTask.dependsOn(prepareTask)
 
-            project.tasks.filter { it.name.startsWith("compile") }.forEach {
-                project.logger.debug("Make ${it.name} depend on greendao")
-                it.dependsOn(greendaoTask)
+            project.tasks.forEach {
+                if (it is JavaCompile) {
+                    project.logger.debug("Make ${it.name} depend on greendao")
+                    addGreenDaoTask(greendaoTask, it)
+                }
             }
 
             project.tasks.whenTaskAdded {
-                if (it.name.startsWith("compile")) {
+                if (it is JavaCompile) {
                     project.logger.debug("Make just added task ${it.name} depend on greendao")
-                    it.dependsOn(greendaoTask)
+                    addGreenDaoTask(greendaoTask, it)
                 }
             }
         }
+    }
+
+    private fun addGreenDaoTask(greendaoTask: Task, javaTask: JavaCompile) {
+        javaTask.dependsOn(greendaoTask)
+        // ensure generated files are on classpath, just adding a srcDir seems not enough
+        javaTask.setSource(greendaoTask.outputs.files + javaTask.source)
     }
 
     private fun createGreendaoTask(project: Project, candidatesFile: File, encoding: String, version: String): Task {
