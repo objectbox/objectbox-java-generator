@@ -37,6 +37,7 @@ subprojects {
         }
     }
 
+    // Use afterEvaluate or all dependencies will be lost in the generated POM
     afterEvaluate {
         uploadArchives {
             repositories {
