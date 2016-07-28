@@ -9,6 +9,7 @@ import org.junit.Assert.*
 import org.junit.Ignore
 import org.junit.Test
 
+// TODO split up into multiple test classes, e.g. ASTVisitorRelationsTest
 class EntityClassASTVisitorTest {
     val BarType = VariableType("com.example.Bar", false, "Bar")
     val BarItemType = VariableType("com.example.Bar.Item", false, "Bar.Item")
@@ -67,9 +68,9 @@ class EntityClassASTVisitorTest {
         assertNull(entity)
     }
 
-    @Test(expected = RuntimeException::class)
-    fun entityIsNotRecognizedAmbigousImport() {
-        visit(
+    @Test
+    fun entityIsRecognizedWithWildcardImports() {
+        val entity = visit(
                 //language=java
                 """
         import org.greenrobot.greendao.annotation.*;
@@ -77,6 +78,7 @@ class EntityClassASTVisitorTest {
 
         @Entity class Foobar {}
         """)
+        assertNotNull(entity)
     }
 
     @Test

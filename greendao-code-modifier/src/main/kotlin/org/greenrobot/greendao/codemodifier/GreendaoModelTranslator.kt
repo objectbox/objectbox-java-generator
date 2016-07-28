@@ -2,12 +2,12 @@ package org.greenrobot.greendao.codemodifier
 
 import org.greenrobot.greendao.generator.*
 
-// TODO do we really need a separate model, can't we use greenDAO's?
 object GreendaoModelTranslator {
     /**
      * Modifies provided schema object according to entities list
      * @return mapping EntityClass to Entity
      * */
+    // TODO refactor: divide into reasonable sized methods, which are called in this method
     fun translate(entities : Iterable<EntityClass>, schema : Schema, daoPackage: String?) : Map<EntityClass, Entity> {
         val mapping = entities.map {
             val e = schema.addEntity(it.name)
