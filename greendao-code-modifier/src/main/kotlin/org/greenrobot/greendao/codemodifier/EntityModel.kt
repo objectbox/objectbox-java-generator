@@ -9,13 +9,13 @@ import java.io.File
  * */
 data class VariableType(val name: String, val isPrimitive: Boolean, val originalName: String,
                         val typeArguments: List<VariableType>? = null) {
-    val simpleName : String
+    val simpleName: String
         get() = name.substringAfterLast('.')
 }
 
-data class Variable(val type : VariableType, val name : String)
+data class Variable(val type: VariableType, val name: String)
 
-data class EntityField(val variable : Variable,
+data class EntityField(val variable: Variable,
                        val id: TableId? = null,
                        val index: PropertyIndex? = null,
                        val isNotNull: Boolean = false,
@@ -41,13 +41,13 @@ data class OrderProperty(val name: String, val order: Order)
 data class Method(val name: String, val parameters: List<Variable>,
                   override val node: MethodDeclaration,
                   override val hint: GeneratorHint?) : Generatable<MethodDeclaration> {
-    fun hasSignature(name: String, paramsTypes: List<String>) : Boolean {
+    fun hasSignature(name: String, paramsTypes: List<String>): Boolean {
         return this.name == name
-            && (this.parameters.map { it.type.name } == paramsTypes
-            || this.parameters.map { it.type.simpleName } == paramsTypes)
+                && (this.parameters.map { it.type.name } == paramsTypes
+                || this.parameters.map { it.type.simpleName } == paramsTypes)
     }
 
-    fun hasFullSignature(name: String, params: List<Variable>) : Boolean {
+    fun hasFullSignature(name: String, params: List<Variable>): Boolean {
         return this.name == name && this.parameters == params
     }
 }
@@ -87,13 +87,22 @@ data class EntityClass(val name: String, val schema: String,
 
     val lastConstructorDeclaration: MethodDeclaration?
         get() = constructors.lastOrNull()?.node
+
+    /** @return entity fields in order of constructor parameters, if all-fields constructor exist,
+     *          otherwise null */
+    fun getFieldsInConstructorOrder(): List<EntityField>? {
+        val fieldVarsSet = fields.map { it.variable }.toSet()
+        return constructors.find { it.parameters.toSet() == fieldVarsSet }
+                ?.let { constructor -> fields.sortedBy { constructor.parameters.indexOf(it.variable) } }
+    }
+
 }
 
 sealed class GeneratorHint {
-    object Keep: GeneratorHint()
+    object Keep : GeneratorHint()
 
-    class Generated(val hash: Int): GeneratorHint() {
-        override fun equals(other: Any?): Boolean{
+    class Generated(val hash: Int) : GeneratorHint() {
+        override fun equals(other: Any?): Boolean {
             if (this === other) return true
             if (other !is Generated) return false
 
@@ -102,11 +111,11 @@ sealed class GeneratorHint {
             return true
         }
 
-        override fun hashCode(): Int{
+        override fun hashCode(): Int {
             return hash
         }
 
-        override fun toString(): String{
+        override fun toString(): String {
             return "Generated(hash=$hash)"
         }
     }

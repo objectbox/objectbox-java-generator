@@ -24,6 +24,7 @@ class JdtCodeContext(val formattingOptions: FormattingOptions? = null, val encod
 
     fun transformer(entityClass: EntityClass) = EntityClassTransformer(entityClass, jdtOptions, formattingOptions)
 
+    // TODO kill me
     fun transform(entityClass: EntityClass, block: EntityClassTransformer.() -> Unit) =
         transformer(entityClass).apply(block).writeToFile()
 }

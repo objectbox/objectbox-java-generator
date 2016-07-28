@@ -7,8 +7,8 @@ import java.io.File
 
 /**
  * Main generator.
- * - runs parsing and transformation of Entity classes.
  * - runs generation of dao classes within {@link org.greenrobot.greendao.generator.DaoGenerator}
+ * - runs parsing and transformation of Entity classes using {@link EntityClassTransformer}
  */
 class Greendao3Generator(formattingOptions: FormattingOptions? = null,
                          val skipTestGeneration: List<String> = emptyList(),
@@ -17,7 +17,7 @@ class Greendao3Generator(formattingOptions: FormattingOptions? = null,
 
     fun run(sourceFiles: Iterable<File>,
             schemaOptions: Map<String, SchemaOptions>) {
-        require(schemaOptions.size > 0) { "There should be options for at least one schema"}
+        require(schemaOptions.size > 0) { "There should be options for at least one schema" }
 
         val classesByDir = sourceFiles.map { it.parentFile }.distinct().map {
             it to it.getJavaClassNames()
@@ -25,9 +25,9 @@ class Greendao3Generator(formattingOptions: FormattingOptions? = null,
 
         val start = System.currentTimeMillis();
         val entities = sourceFiles.asSequence()
-            .map { context.parse(it, classesByDir[it.parentFile]!!) }
-            .filterNotNull()
-            .toList()
+                .map { context.parse(it, classesByDir[it.parentFile]!!) }
+                .filterNotNull()
+                .toList()
 
         val time = System.currentTimeMillis() - start;
         println("Parsed ${entities.size} entities in $time ms among ${sourceFiles.count()} source files: " +
@@ -39,7 +39,7 @@ class Greendao3Generator(formattingOptions: FormattingOptions? = null,
                 val options = schemaOptions[schemaName] ?: run {
                     val affectedEntities = entities.filter { it.schema == schemaName }.map { it.name }.joinToString()
                     throw RuntimeException(
-                        """
+                            """
                         Undefined schema \"$schemaName\" (referenced in entities: $affectedEntities).
                         Please, define non-default schemas explicitly inside build.gradle
                         """.trimIndent()
@@ -88,26 +88,27 @@ class Greendao3Generator(formattingOptions: FormattingOptions? = null,
         val keptMethods = entities.sumBy { it.constructors.count { it.keep } + it.methods.count { it.keep } }
         if (keptClasses + keptMethods > 0) {
             System.err.println(
-                "Kept source for $keptClasses classes and $keptMethods methods because of @Keep annotation")
+                    "Kept source for $keptClasses classes and $keptMethods methods because of @Keep annotation")
         }
     }
 
     private fun checkClass(entityClass: EntityClass) {
-        val noConstructor = entityClass.fieldsInConstructorOrder == null
-            && run {
-                val fieldVars = entityClass.fields.map { it.variable }
-                entityClass.constructors.none {
-                    it.hasFullSignature(entityClass.name, fieldVars)
-                }
+        val fieldsInConstructorOrder = entityClass.getFieldsInConstructorOrder()
+        val noConstructor = fieldsInConstructorOrder == null && run {
+            val fieldVars = entityClass.fields.map { it.variable }
+            entityClass.constructors.none {
+                it.hasFullSignature(entityClass.name, fieldVars)
             }
+        }
         if (noConstructor) {
             throw RuntimeException(
-                "Can't find constructor for entity ${entityClass.name} with all persistent fields. " +
-                "Note parameter names of such constructor should be equal to field names"
+                    "Can't find constructor for entity ${entityClass.name} with all persistent fields. " +
+                            "Note parameter names of such constructor should be equal to field names"
             )
         }
     }
 
+    // TODO refactor into separate class and divide into several methods?
     private fun transformClass(entityClass: EntityClass, mapping: Map<EntityClass, Entity>) {
         val entity = mapping[entityClass]!!
         val daoPackage = entity.schema.defaultJavaPackage
@@ -115,11 +116,11 @@ class Greendao3Generator(formattingOptions: FormattingOptions? = null,
         context.transform(entityClass) {
             ensureImport("org.greenrobot.greendao.annotation.Generated")
 
-            val fieldsInOrder = entityClass.fieldsInConstructorOrder ?: entityClass.fields
+            val fieldsInOrder = entityClass.getFieldsInConstructorOrder() ?: entityClass.fields
 
             // check there is need to generate default constructor to do not hide implicit one
             if (fieldsInOrder.isNotEmpty()
-                && entityClass.constructors.none { it.parameters.isEmpty() && !it.generated }) {
+                    && entityClass.constructors.none { it.parameters.isEmpty() && !it.generated }) {
                 defConstructor(emptyList()) {
                     """
                     @Generated(hash = $HASH_STUB)
@@ -131,7 +132,7 @@ class Greendao3Generator(formattingOptions: FormattingOptions? = null,
 
             defConstructor(fieldsInOrder.map { it.variable.type.name }) {
                 Templates.entity.constructor(entityClass.name, entityClass.fields,
-                    entityClass.notNullAnnotation ?: "@NotNull" )
+                        entityClass.notNullAnnotation ?: "@NotNull")
             }
 
             // define missing getters and setters
@@ -151,9 +152,9 @@ class Greendao3Generator(formattingOptions: FormattingOptions? = null,
 
                 val daoSessionVarName = "${entity.schema.prefix}DaoSession"
                 defField("daoSession", VariableType("$daoPackage.$daoSessionVarName", false, daoSessionVarName),
-                    "Used to resolve relations")
+                        "Used to resolve relations")
                 defField("myDao", VariableType("${entity.javaPackageDao}.${entity.classNameDao}", false, entity.classNameDao),
-                    "Used for active entity operations.")
+                        "Used for active entity operations.")
 
                 defMethod("__setDaoSession", "$daoPackage.$daoSessionVarName") {
                     Templates.entity.daoSessionSetter(entity)
@@ -165,7 +166,7 @@ class Greendao3Generator(formattingOptions: FormattingOptions? = null,
                     // define fields
                     if (toOne.isUseFkProperty) {
                         defField("${toOne.name}__resolvedKey",
-                            VariableType(toOne.resolvedKeyJavaType[0], false, toOne.resolvedKeyJavaType[0]))
+                                VariableType(toOne.resolvedKeyJavaType[0], false, toOne.resolvedKeyJavaType[0]))
                     } else {
                         defField("${toOne.name}__refreshed", VariableType("boolean", true, "boolean"))
                     }

@@ -21,15 +21,6 @@ fun parseIndexSpec(spec: String): List<OrderProperty> {
 
 fun String.nullIfBlank() : String? = if (isBlank()) null else this
 
-/** @return entity fields in order of constructor parameters, if all-fields constructor exist,
- *          otherwise null */
-val EntityClass.fieldsInConstructorOrder : List<EntityField>?
-    get() {
-        val fieldVarsSet = fields.map { it.variable }.toSet()
-        return constructors.find { it.parameters.toSet() == fieldVarsSet }
-            ?.let { constructor -> fields.sortedBy { constructor.parameters.indexOf(it.variable) } }
-    }
-
 /** More optimized than standard groupBy{}.maxBy{} */
 fun <T> Sequence<T>.mostPopular(): T? {
     val counts = mutableMapOf<T, Int>()
