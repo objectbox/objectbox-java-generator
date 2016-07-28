@@ -26,6 +26,7 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
     var active = false
     var keepSource = false
     var createTable = true
+    var generateConstructors = true
     var usedNotNullAnnotation: String? = null;
     var lastField: FieldDeclaration? = null
 
@@ -82,6 +83,7 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
                         active = entityAnnotation.active
                         entityTableName = entityAnnotation.nameInDb.nullIfBlank()
                         createTable = entityAnnotation.createInDb
+                        generateConstructors = entityAnnotation.generateConstructors
                         try {
                             tableIndexes = entityAnnotation.indexes.map {
                                 TableIndex(it.name.nullIfBlank(), parseIndexSpec(it.value), it.unique)
@@ -341,6 +343,7 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
                     javaFile, source,
                     keepSource,
                     createTable,
+                    generateConstructors,
                     usedNotNullAnnotation,
                     lastField
             )
