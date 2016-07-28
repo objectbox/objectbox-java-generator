@@ -6,16 +6,10 @@ import kotlin.reflect.KClass
 /** Tries to find exact import or import on demand (e.g. import java.lang.*) for the qualifiedName */
 fun Iterable<ImportDeclaration>.has(qualifiedName : String) : Boolean {
     val packageName = qualifiedName.substringBeforeLast('.', "")
-    val strictEnough = isAtLeastSemiStrict()
-    val result = any {
+    return any {
         val name = it.name
         name.fullyQualifiedName == qualifiedName
-                || (strictEnough && it.isOnDemand && name is QualifiedName && name.fullyQualifiedName == packageName)
-    }
-    return if (result || strictEnough) {
-        result
-    } else {
-        throw IllegalArgumentException("Can't check if $qualifiedName is imported. Imports are ambiguous")
+                || (it.isOnDemand && name is QualifiedName && name.fullyQualifiedName == packageName)
     }
 }
 
@@ -33,9 +27,6 @@ val Name.qualifier : String
 
 /** no on-demand imports */
 fun Iterable<ImportDeclaration>.isStrict() : Boolean = none { it.isOnDemand && !it.isStatic }
-
-/** only one on-demand import or less */
-fun Iterable<ImportDeclaration>.isAtLeastSemiStrict() : Boolean = count { it.isOnDemand && !it.isStatic } < 2
 
 private val JavaLangTypes = setOf("Long", "Byte", "Integer", "Boolean", "Short", "Float", "Double", "String")
 
