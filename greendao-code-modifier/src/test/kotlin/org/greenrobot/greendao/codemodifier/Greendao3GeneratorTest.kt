@@ -34,6 +34,13 @@ class Greendao3GeneratorTest {
         generateAndAssertFile("CreateConstructor")
     }
 
+    @Test
+    fun testRecreateConstructor() {
+        // deleting one constructor should properly re-create the missing one instead of replacing the remaining one
+        // currently the new constructor is inserted after the current one
+        generateAndAssertFile("RecreateConstructor")
+    }
+
     fun generateAndAssertFile(baseFileName : String) {
         // copy the input file to the test directory
         val inputFile = File(samplesDirectory, baseFileName + "Input.java")
