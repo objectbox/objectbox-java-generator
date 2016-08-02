@@ -46,6 +46,11 @@ class Greendao3GeneratorTest {
     }
 
     @Test
+    fun testInlineType() {
+        generateAndAssertFile("InlineType")
+    }
+
+    @Test
     fun testAllTestFiles() {
         // NOTE: test may output multiple failed files, make sure to scroll up :)
 
