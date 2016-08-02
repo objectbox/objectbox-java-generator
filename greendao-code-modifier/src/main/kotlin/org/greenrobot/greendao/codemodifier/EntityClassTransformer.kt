@@ -111,19 +111,43 @@ class EntityClassTransformer(val entityClass: EntityClass, val jdtOptions : Muta
     }
 
     /**
-     * Replaces old generated constructor (if any) with the result of block function
-     * */
+     * Insert a new constructor with the given code block or replace the code block of an existing constructor.
+     */
     fun defConstructor(paramTypes: List<String>, code: () -> String) {
-        // search for constructor with the same signature or any other generated constructor (consider field add/remove)
-        val constructor = entityClass.constructors.find {
-            it.hasSignature(entityClass.name, paramTypes)
-        } ?: entityClass.constructors.find { it.generated }
-        // replace only generated code
-        if (constructor == null || constructor.generated) {
-            insertMethod(replaceHashStub(code()), constructor?.node,
-                entityClass.lastConstructorDeclaration ?: entityClass.lastFieldDeclaration)
+        // constructor with the same signature already exists?
+        val matchingConstructor = entityClass.constructors.find { it.hasSignature(entityClass.name, paramTypes) }
+        if (matchingConstructor != null) {
+            if (matchingConstructor.generated) {
+                // annotated as generated, we can safely update it
+                insertMethod(replaceHashStub(code()), matchingConstructor.node,
+                        entityClass.lastConstructorDeclaration ?: entityClass.lastFieldDeclaration)
+            } else {
+                // no generated annotation, check if the user does not want us to replace it (has a keep annotation)
+                matchingConstructor.checkKeepPresent()
+            }
         } else {
-            constructor.checkKeepPresent()
+            // any generated constructor we could replace exists?
+            val generatedConstructor = entityClass.constructors.find { it.generated }
+            if (generatedConstructor != null) {
+                // can we replace it?
+                val nodeToReplace: MethodDeclaration?
+                if (generatedConstructor.parameters.isEmpty() || paramTypes.isEmpty()) {
+                    // do not replace () constructor with (x,y,z) constructor, keep it
+                    // do not replace (x,y,z) constructor with () constructor, keep it
+                    keepNodes += generatedConstructor.node
+                    nodeToReplace = null
+                } else {
+                    nodeToReplace = generatedConstructor.node
+                }
+                // insert or replace constructor
+                insertMethod(replaceHashStub(code()), nodeToReplace,
+                        entityClass.lastConstructorDeclaration ?: entityClass.lastFieldDeclaration)
+            } else {
+                // no generated constructor exists, just insert the desired one
+                // any existing ones will be deleted once writing to string
+                insertMethod(replaceHashStub(code()), null,
+                        entityClass.lastConstructorDeclaration ?: entityClass.lastFieldDeclaration)
+            }
         }
     }
 
