@@ -41,6 +41,11 @@ class Greendao3GeneratorTest {
         generateAndAssertFile("RecreateConstructor")
     }
 
+    @Test
+    fun testReplaceConstructorNewProperties() {
+        generateAndAssertFile("ReplaceConstructorNewProperties")
+    }
+
     fun generateAndAssertFile(baseFileName : String) {
         // copy the input file to the test directory
         val inputFile = File(samplesDirectory, baseFileName + "Input.java")
