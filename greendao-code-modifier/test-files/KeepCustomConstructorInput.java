@@ -4,25 +4,26 @@ import org.greenrobot.greendao.annotation.Entity;
 import org.greenrobot.greendao.annotation.Generated;
 import org.greenrobot.greendao.annotation.Id;
 
-@Entity(generateConstructors = false)
+@Entity
 public class Note {
 
     @Id
     private Long id;
+    private String text;
 
+    @Generated
     public Note() {
     }
 
     public Note(Long id) {
-        this.id = id;
+        // custom constructor
+        this.id = id + 1;
     }
 
-    public Long getId() {
-        return this.id;
-    }
-
-    public void setId(Long id) {
+    @Generated
+    public Note(Long id, String text) {
         this.id = id;
+        this.text = text;
     }
 
 }
