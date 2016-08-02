@@ -36,29 +36,47 @@ private val JavaLangTypes = setOf("Long", "Byte", "Integer", "Boolean", "Short",
  *         qualified name if it was simple,
  *         same simple name if qualified name can not be resolved
  **/
-fun Name.resolveName(imports : Iterable<ImportDeclaration>, sourcePkg : String?,
+fun Name.resolveName(outerClassName: String?, imports : Iterable<ImportDeclaration>, sourcePkg : String?,
                      classesInPackage: List<String>) : String {
     val simpleName = fullyQualifiedName
     return when {
         this is SimpleName -> {
             imports.find { it.name.simpleName == simpleName }?.let { it.name.fullyQualifiedName }
                 ?: run {
-                // assume that java.lang.* types are not overwritten
-                if (classesInPackage.contains(simpleName) || imports.isStrict() || JavaLangTypes.contains(simpleName)) {
-                    if (sourcePkg != null && !JavaLangTypes.contains(simpleName)) {
+                // not found name in imports, so...
+                // is it one of the classes in this package?
+                if (classesInPackage.contains(simpleName)) {
+                    if (sourcePkg != null) {
                         "$sourcePkg.$simpleName"
                     } else {
                         simpleName
                     }
+                } else if (imports.isStrict()) {
+                    // is it a java base type?
+                    if (JavaLangTypes.contains(simpleName)) {
+                        // assume that java.lang.* types are not overwritten
+                        simpleName
+                    } else {
+                        // assume it is defined inline
+                        if (outerClassName != null) {
+                            if (sourcePkg != null) {
+                                "$sourcePkg.$outerClassName.$simpleName"
+                            } else {
+                                "$outerClassName.$simpleName"
+                            }
+                        } else {
+                            simpleName
+                        }
+                    }
                 } else {
                     throw IllegalArgumentException("Can't resolve qualified name for $simpleName. " +
-                        "Try to do not use imports on demand or specify qualified name explicitly (line $lineNumber)")
+                            "Try to not use on-demand imports or specify qualified name explicitly (line $lineNumber)")
                 }
             }
         }
         // assume nobody starts name of global package with a capital letter
         this is QualifiedName && fullyQualifiedName[0].isUpperCase() ->
-            qualifier.resolveName(imports, sourcePkg, classesInPackage) + "." + this.name.identifier
+            qualifier.resolveName(outerClassName, imports, sourcePkg, classesInPackage) + "." + this.name.identifier
 
         else -> simpleName
     }
@@ -73,13 +91,13 @@ operator fun NormalAnnotation.get(fieldName: String) : Expression? {
         ?.value
 }
 
-fun Type.typeName(imports : Iterable<ImportDeclaration>, sourcePkg: String?,
+fun Type.typeName(containingClassIdentifier : String?, imports : Iterable<ImportDeclaration>, sourcePkg: String?,
                   classesInPackage: List<String>) : String {
     return when (this) {
-        is SimpleType -> name.resolveName(imports, sourcePkg, classesInPackage)
-        is ArrayType -> elementType.typeName(imports, sourcePkg, classesInPackage) + "[]"
-        is QualifiedType -> qualifier.typeName(imports, sourcePkg, classesInPackage) + "." + name.identifier
-        is ParameterizedType -> type.typeName(imports, sourcePkg, classesInPackage)
+        is SimpleType -> name.resolveName(containingClassIdentifier, imports, sourcePkg, classesInPackage)
+        is ArrayType -> elementType.typeName(null, imports, sourcePkg, classesInPackage) + "[]"
+        is QualifiedType -> qualifier.typeName(null, imports, sourcePkg, classesInPackage) + "." + name.identifier
+        is ParameterizedType -> type.typeName(null, imports, sourcePkg, classesInPackage)
         else -> toString()
     }
 }

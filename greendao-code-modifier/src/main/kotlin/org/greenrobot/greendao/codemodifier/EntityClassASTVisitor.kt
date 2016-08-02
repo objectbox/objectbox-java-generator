@@ -66,7 +66,7 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
 
     private val Type.typeName: String
         get() = try {
-            typeName(imports, packageName, classesInPackage)
+            typeName(typeDeclaration?.name?.identifier, imports, packageName, classesInPackage)
         } catch (e: IllegalArgumentException) {
             throw RuntimeException("Error processing \"${typeDeclaration?.name?.identifier}\": ${e.message}", e)
         }
