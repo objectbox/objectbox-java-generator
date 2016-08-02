@@ -35,6 +35,11 @@ class Greendao3GeneratorTest {
     }
 
     @Test
+    fun testNoConstructor() {
+        generateAndAssertFile("NoConstructor")
+    }
+
+    @Test
     fun testRecreateConstructor() {
         // deleting one constructor should properly re-create the missing one instead of replacing the remaining one
         // currently the new constructor is inserted after the current one
