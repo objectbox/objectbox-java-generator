@@ -12,7 +12,7 @@ import java.io.File
  */
 class Greendao3Generator(formattingOptions: FormattingOptions? = null,
                          val skipTestGeneration: List<String> = emptyList(),
-                         val encoding: String = "UTF-8") {
+                         encoding: String = "UTF-8") {
     val context = JdtCodeContext(formattingOptions, encoding)
 
     fun run(sourceFiles: Iterable<File>,
@@ -23,13 +23,13 @@ class Greendao3Generator(formattingOptions: FormattingOptions? = null,
             it to it.getJavaClassNames()
         }.toMap()
 
-        val start = System.currentTimeMillis();
+        val start = System.currentTimeMillis()
         val entities = sourceFiles.asSequence()
                 .map { context.parse(it, classesByDir[it.parentFile]!!) }
                 .filterNotNull()
                 .toList()
 
-        val time = System.currentTimeMillis() - start;
+        val time = System.currentTimeMillis() - start
         println("Parsed ${entities.size} entities in $time ms among ${sourceFiles.count()} source files: " +
                 "${entities.asSequence().map { it.name }.joinToString()}")
 
