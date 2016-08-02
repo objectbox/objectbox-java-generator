@@ -35,6 +35,11 @@ class Greendao3GeneratorTest {
     }
 
     @Test
+    fun testKeepCustomConstructor() {
+        generateAndAssertFile("KeepCustomConstructor")
+    }
+
+    @Test
     fun testNoConstructor() {
         generateAndAssertFile("NoConstructor")
     }
