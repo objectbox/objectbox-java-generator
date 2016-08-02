@@ -118,21 +118,24 @@ class Greendao3Generator(formattingOptions: FormattingOptions? = null,
 
             val fieldsInOrder = entityClass.getFieldsInConstructorOrder() ?: entityClass.fields
 
-            // check there is need to generate default constructor to do not hide implicit one
-            if (fieldsInOrder.isNotEmpty()
-                    && entityClass.constructors.none { it.parameters.isEmpty() && !it.generated }) {
-                defConstructor(emptyList()) {
-                    """
+            if (entityClass.generateConstructors) {
+                // check there is need to generate default constructor to do not hide implicit one
+                if (fieldsInOrder.isNotEmpty()
+                        && entityClass.constructors.none { it.parameters.isEmpty() && !it.generated }) {
+                    defConstructor(emptyList()) {
+                        """
                     @Generated(hash = $HASH_STUB)
                     public ${entityClass.name}() {
                     }
                     """
+                    }
                 }
-            }
 
-            defConstructor(fieldsInOrder.map { it.variable.type.name }) {
-                Templates.entity.constructor(entityClass.name, entityClass.fields,
-                        entityClass.notNullAnnotation ?: "@NotNull")
+                // generate all fields constructor
+                defConstructor(fieldsInOrder.map { it.variable.type.name }) {
+                    Templates.entity.constructor(entityClass.name, entityClass.fields,
+                            entityClass.notNullAnnotation ?: "@NotNull")
+                }
             }
 
             // define missing getters and setters
