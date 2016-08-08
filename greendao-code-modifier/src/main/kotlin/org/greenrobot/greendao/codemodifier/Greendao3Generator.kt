@@ -136,6 +136,9 @@ class Greendao3Generator(formattingOptions: FormattingOptions? = null,
                     Templates.entity.constructor(entityClass.name, entityClass.fields,
                             entityClass.notNullAnnotation ?: "@NotNull")
                 }
+            } else {
+                // DAOs require at minimum a default constructor, so:
+                ensureDefaultConstructor()
             }
 
             // define missing getters and setters
