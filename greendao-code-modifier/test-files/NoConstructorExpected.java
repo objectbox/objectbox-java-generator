@@ -10,6 +10,9 @@ public class Note {
     @Id
     private Long id;
 
+    public Note() {
+    }
+
     public Long getId() {
         return this.id;
     }
