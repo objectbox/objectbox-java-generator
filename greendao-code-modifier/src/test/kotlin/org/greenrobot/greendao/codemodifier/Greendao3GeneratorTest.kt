@@ -4,6 +4,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import java.io.File
+import java.util.ArrayList
 
 class Greendao3GeneratorTest {
 
@@ -27,6 +28,26 @@ class Greendao3GeneratorTest {
     fun ensureEmptyTestDirectory() {
         testDirectory.deleteRecursively()
         assert(!testDirectory.isDirectory || testDirectory.list().isEmpty())
+    }
+
+    @Test
+    fun testAllTestFiles() {
+        // WARNING: this test will *abort on the first failure*, so it may hide any other files failing
+
+        // get a list of all input test files
+        val testFiles = ArrayList<String>()
+        samplesDirectory.listFiles().filter { it.nameWithoutExtension.endsWith("Input") }.forEach {
+            val testName = it.nameWithoutExtension.substringBeforeLast("Input", "")
+            if (testName.length > 0) {
+                testFiles.add(testName)
+            }
+        }
+
+        // run the generator on each and check output
+        testFiles.forEach {
+            ensureEmptyTestDirectory()
+            generateAndAssertFile(it)
+        }
     }
 
     @Test
@@ -63,6 +84,8 @@ class Greendao3GeneratorTest {
     }
 
     fun generateAndAssertFile(baseFileName : String) {
+        System.out.println("Running generator test " + baseFileName)
+
         // copy the input file to the test directory
         val inputFile = File(samplesDirectory, baseFileName + "Input.java")
         val targetFile = inputFile.copyTo(File(testDirectory, baseFileName + "Actual.java"), true)
