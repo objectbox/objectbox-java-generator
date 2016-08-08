@@ -84,19 +84,21 @@ class Greendao3GeneratorTest {
     }
 
     fun generateAndAssertFile(baseFileName : String) {
-        System.out.println("Running generator test " + baseFileName)
+        val inputFileName = "${baseFileName}Input.java"
+        val actualFileName = "${baseFileName}Actual.java"
+        val expectedFileName = "${baseFileName}Expected.java"
 
         // copy the input file to the test directory
-        val inputFile = File(samplesDirectory, baseFileName + "Input.java")
-        val targetFile = inputFile.copyTo(File(testDirectory, baseFileName + "Actual.java"), true)
+        val inputFile = File(samplesDirectory, inputFileName)
+        val targetFile = inputFile.copyTo(File(testDirectory, actualFileName), true)
 
         // run the generator over the file
         Greendao3Generator(formattingOptions).run(listOf(targetFile), mapOf("default" to schemaOptions))
 
         // check if the modified file matches the expected output file
         val actualSource = targetFile.readText(charset("UTF-8"))
-        val expectedSource = File(samplesDirectory, baseFileName + "Expected.java").readText(charset("UTF-8"))
-        assertEquals(expectedSource, actualSource)
+        val expectedSource = File(samplesDirectory, expectedFileName).readText(charset("UTF-8"))
+        assertEquals("${expectedFileName} does not match with ${actualFileName}", expectedSource, actualSource)
     }
 
 }
