@@ -2,11 +2,15 @@ package org.greenrobot.greendao.codemodifier
 
 import org.junit.Assert.assertEquals
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.ErrorCollector
 import java.io.File
 import java.util.ArrayList
 
 class Greendao3GeneratorTest {
+
+    @get:Rule val collector = ErrorCollector()
 
     private val samplesDirectory: File = File("test-files/")
 
@@ -32,7 +36,7 @@ class Greendao3GeneratorTest {
 
     @Test
     fun testAllTestFiles() {
-        // WARNING: this test will *abort on the first failure*, so it may hide any other files failing
+        // NOTE: test may output multiple failed files, make sure to scroll up :)
 
         // get a list of all input test files
         val testFiles = ArrayList<String>()
@@ -50,39 +54,6 @@ class Greendao3GeneratorTest {
         }
     }
 
-    @Test
-    fun testCreateConstructor() {
-        generateAndAssertFile("CreateConstructor")
-    }
-
-    @Test
-    fun testKeepCustomConstructor() {
-        generateAndAssertFile("KeepCustomConstructor")
-    }
-
-    @Test
-    fun testKeepDefaultConstructor() {
-        // a default constructor is required by the entity DAO, ensure it is never removed
-        generateAndAssertFile("KeepDefaultConstructor")
-    }
-
-    @Test
-    fun testNoConstructor() {
-        generateAndAssertFile("NoConstructor")
-    }
-
-    @Test
-    fun testRecreateConstructor() {
-        // deleting one constructor should properly re-create the missing one instead of replacing the remaining one
-        // currently the new constructor is inserted after the current one
-        generateAndAssertFile("RecreateConstructor")
-    }
-
-    @Test
-    fun testReplaceConstructorNewProperties() {
-        generateAndAssertFile("ReplaceConstructorNewProperties")
-    }
-
     fun generateAndAssertFile(baseFileName : String) {
         val inputFileName = "${baseFileName}Input.java"
         val actualFileName = "${baseFileName}Actual.java"
@@ -98,7 +69,10 @@ class Greendao3GeneratorTest {
         // check if the modified file matches the expected output file
         val actualSource = targetFile.readText(charset("UTF-8"))
         val expectedSource = File(samplesDirectory, expectedFileName).readText(charset("UTF-8"))
-        assertEquals("${expectedFileName} does not match with ${actualFileName}", expectedSource, actualSource)
+
+        collector.checkSucceeds({
+            assertEquals("${expectedFileName} does not match with ${actualFileName}", expectedSource, actualSource)
+        })
     }
 
 }
