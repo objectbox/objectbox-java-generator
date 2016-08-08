@@ -19,8 +19,8 @@ dependencies {
     // and overriding does currently NOT work at least in the IDE
     // https://discuss.gradle.org/t/how-to-override-gradleapi-transitive-dependencies/10185
     compile 'org.eclipse.jdt:org.eclipse.jdt.core:3.10.0'
-    compile 'org.greenrobot:greendao-api:3.1.0-SNAPSHOT'
-    compile 'org.greenrobot:greendao-generator:3.1.0-SNAPSHOT'
+    compile 'org.greenrobot:greendao-api:3.1.0'
+    compile 'org.greenrobot:greendao-generator:3.1.0'
     compile 'de.greenrobot:java-common:2.3.1'
 
     testCompile 'junit:junit:4.12'
