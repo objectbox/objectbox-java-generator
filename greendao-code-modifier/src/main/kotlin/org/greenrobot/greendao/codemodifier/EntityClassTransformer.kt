@@ -152,6 +152,25 @@ class EntityClassTransformer(val entityClass: EntityClass, val jdtOptions : Muta
     }
 
     /**
+     * Add or replace a default constructor. Ensures it is not annotated with @Generated.
+     */
+    fun ensureDefaultConstructor() {
+        val defaultConstructor = entityClass.constructors.find { it.parameters.isEmpty() }
+        if (defaultConstructor == null || defaultConstructor.generated) {
+            // add a default constructor or replace the @Generated version
+            val defaultConstructorCode = """
+                    public ${entityClass.name}() {
+                    }
+                    """
+            insertMethod(defaultConstructorCode, defaultConstructor?.node,
+                    entityClass.lastConstructorDeclaration ?: entityClass.lastFieldDeclaration)
+        } else {
+            // there is one! just keep it
+            keepNodes += defaultConstructor.node
+        }
+    }
+
+    /**
      * Defines new method with the result of block function
      * In case method with such signature already exist:
      *  - if it has @Generated annotation, then replace it with the new one
