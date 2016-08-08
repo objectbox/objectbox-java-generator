@@ -40,6 +40,12 @@ class Greendao3GeneratorTest {
     }
 
     @Test
+    fun testKeepDefaultConstructor() {
+        // a default constructor is required by the entity DAO, ensure it is never removed
+        generateAndAssertFile("KeepDefaultConstructor")
+    }
+
+    @Test
     fun testNoConstructor() {
         generateAndAssertFile("NoConstructor")
     }
