@@ -75,6 +75,7 @@ class VisitorRelationsTest : VisitorTestBase() {
         class Foobar {
             String name;
 
+            @SuppressWarnings("NullableProblems")
             @ToOne
             @Unique
             @NotNull
