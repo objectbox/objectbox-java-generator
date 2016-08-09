@@ -231,7 +231,7 @@ class VisitorTest : VisitorTestBase() {
             @Convert(converter = Converter.class, columnType = String.class)
             MyType name;
         }
-        """)!!
+        """, listOf("MyType"))!!
         val field = entity.fields[0]
         assertEquals(
                 EntityField(
@@ -245,7 +245,6 @@ class VisitorTest : VisitorTestBase() {
     }
 
     @Test
-    @Ignore("Not yet working")
     fun convertAnnotation_innerClass() {
         val entity = visit(
                 //language=java
@@ -272,7 +271,7 @@ class VisitorTest : VisitorTestBase() {
                 }
             }
         }
-        """)!!
+        """, listOf("MyType"))!!
         val field = entity.fields[0]
         assertEquals(
                 EntityField(
