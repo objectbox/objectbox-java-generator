@@ -1,37 +1,60 @@
 package org.greenrobot.greendao.codemodifier
 
-import org.greenrobot.greendao.generator.*
+import org.greenrobot.greendao.generator.DaoUtil
+import org.greenrobot.greendao.generator.Entity
+import org.greenrobot.greendao.generator.Index
+import org.greenrobot.greendao.generator.Property
+import org.greenrobot.greendao.generator.PropertyType
+import org.greenrobot.greendao.generator.Schema
 
 object GreendaoModelTranslator {
+
     /**
      * Modifies provided schema object according to entities list
      * @return mapping EntityClass to Entity
      * */
-    // TODO refactor: divide into reasonable sized methods, which are called in this method
     fun translate(entities : Iterable<EntityClass>, schema : Schema, daoPackage: String?) : Map<EntityClass, Entity> {
-        val mapping = entities.map {
-            val e = schema.addEntity(it.name)
-            if (it.tableName != null) e.tableName = it.tableName
-            if (it.active) e.active = true
-            e.isSkipTableCreation = !it.createTable
-            e.isConstructors = it.generateConstructors
-            e.javaPackageDao = daoPackage ?: it.packageName
-            e.javaPackageTest = daoPackage ?: it.packageName
+        val mapping = mapEntityClassesToEntities(entities, schema, daoPackage)
+
+        resolveToOneRelations(mapping, entities, schema)
+        resolveToManyRelations(mapping, entities, schema)
+
+        return mapping
+    }
+
+    private fun mapEntityClassesToEntities(entities: Iterable<EntityClass>, schema: Schema,
+                                           daoPackage: String?): Map<EntityClass, Entity> {
+        return entities.map {
+            val entity = schema.addEntity(it.name)
+
+            if (it.tableName != null) entity.tableName = it.tableName
+            if (it.active) entity.active = true
+            entity.isSkipTableCreation = !it.createTable
+            entity.isConstructors = it.generateConstructors
+            entity.javaPackageDao = daoPackage ?: it.packageName
+            entity.javaPackageTest = daoPackage ?: it.packageName
+            entity.javaPackage = it.packageName
+            entity.isSkipGeneration = true
+
             val fieldsInOrder = it.getFieldsInConstructorOrder() ?: it.fields
-            fieldsInOrder.forEach { field ->
+            fieldsInOrder.forEach {
+                field ->
                 try {
-                    convertField(e, field)
-                } catch (e : Exception) {
+                    convertField(entity, field)
+                } catch (e: Exception) {
                     throw RuntimeException("Can't add field `${field.variable}` for entity ${it.name} " +
-                        "due to: ${e.message}", e)
+                            "due to: ${e.message}", e)
                 }
             }
-            it.indexes.forEach { tableIndex ->
-                e.addIndex(Index().apply {
-                    tableIndex.fields.forEach { field ->
-                        val property = e.properties.find {
+
+            it.indexes.forEach {
+                tableIndex ->
+                entity.addIndex(Index().apply {
+                    tableIndex.fields.forEach {
+                        field ->
+                        val property = entity.properties.find {
                             it.propertyName == field.name
-                        } ?: throw RuntimeException("Can't find property ${field.name} for index in ${e.className}")
+                        } ?: throw RuntimeException("Can't find property ${field.name} for index in ${entity.className}")
                         when (field.order) {
                             Order.ASC -> addPropertyAsc(property)
                             Order.DESC -> addPropertyDesc(property)
@@ -45,71 +68,80 @@ object GreendaoModelTranslator {
                     }
                 })
             }
-            e.javaPackage = it.packageName
-            e.isSkipGeneration = true
-            it to e
-        }.toMap()
 
-        // resolve ToOne relations
-        entities.filterNot { it.oneRelations.isEmpty() }.forEach { entity ->
+            it to entity
+        }.toMap()
+    }
+
+    private fun resolveToOneRelations(mapping: Map<EntityClass, Entity>, entities: Iterable<EntityClass>, schema: Schema) {
+        entities.filterNot {
+            it.oneRelations.isEmpty()
+        }.forEach {
+            entity ->
             val source = mapping[entity]!!
-            entity.oneRelations.forEach { relation ->
+            entity.oneRelations.forEach {
+                relation ->
                 val target = schema.entities.find {
                     it.className == relation.variable.type.simpleName
                 } ?: throw RuntimeException("Class ${relation.variable.type.name} marked " +
-                                            "with @ToOne in class ${entity.name} is not an entity")
+                        "with @ToOne in class ${entity.name} is not an entity")
                 when {
                     relation.foreignKeyField != null -> {
                         // find fkProperty in current entity
                         val fkProperty = source.properties.find {
                             it.propertyName == relation.foreignKeyField
                         } ?: throw RuntimeException("Can't find ${relation.foreignKeyField} in ${entity.name} " +
-                            "for @ToOne relation")
+                                "for @ToOne relation")
                         if (relation.columnName != null || relation.unique) {
                             throw RuntimeException(
-                                "If @ToOne with foreign property used, @Column and @Unique are ignored. " +
-                                "See ${entity.name}.${relation.variable.name}")
+                                    "If @ToOne with foreign property used, @Column and @Unique are ignored. " +
+                                            "See ${entity.name}.${relation.variable.name}")
                         }
                         source.addToOne(target, fkProperty, relation.variable.name)
                     }
                     else -> {
                         source.addToOneWithoutProperty(
-                            relation.variable.name,
-                            target,
-                            relation.columnName ?: DaoUtil.dbName(relation.variable.name),
-                            relation.isNotNull,
-                            relation.unique
+                                relation.variable.name,
+                                target,
+                                relation.columnName ?: DaoUtil.dbName(relation.variable.name),
+                                relation.isNotNull,
+                                relation.unique
                         )
                     }
                 }
             }
         }
+    }
 
-        // resolve ToMany relations
-        entities.filterNot { it.manyRelations.isEmpty() }.forEach { entity ->
+    private fun resolveToManyRelations(mapping: Map<EntityClass, Entity>, entities: Iterable<EntityClass>, schema: Schema) {
+        entities.filterNot {
+            it.manyRelations.isEmpty()
+        }.forEach {
+            entity ->
             val source = mapping[entity]!!
             try {
-                entity.manyRelations.forEach { relation ->
+                entity.manyRelations.forEach {
+                    relation ->
                     if (relation.variable.type.name != "java.util.List") {
                         throw RuntimeException("Can't create 1-M relation for ${entity.name} " +
-                            "on ${relation.variable.type.name} ${relation.variable.name}. " +
-                            "ToMany only supports java.util.List<T>")
+                                "on ${relation.variable.type.name} ${relation.variable.name}. " +
+                                "ToMany only supports java.util.List<T>")
                     }
                     val argument = relation.variable.type.typeArguments?.singleOrNull()
-                        ?: throw RuntimeException("Can't create 1-M relation on ${relation.variable.name}. " +
-                        "ToMany type should have specified exactly one type argument")
+                            ?: throw RuntimeException("Can't create 1-M relation on ${relation.variable.name}. " +
+                            "ToMany type should have specified exactly one type argument")
 
                     val target = schema.entities.find {
                         it.className == argument.simpleName
                     } ?: throw RuntimeException("${argument.name} is not an entity, but it is referenced " +
-                        "for @ToMany relation in class (field: ${relation.variable.name})")
+                            "for @ToMany relation in class (field: ${relation.variable.name})")
 
                     val options = if (relation.joinEntitySpec != null) 1 else 0 +
-                        if (relation.mappedBy != null) 1 else 0 +
-                            if (relation.joinOnProperties.isNotEmpty()) 1 else 0
+                            if (relation.mappedBy != null) 1 else 0 +
+                                    if (relation.joinOnProperties.isNotEmpty()) 1 else 0
                     if (options != 1) {
                         throw RuntimeException("Can't create 1-M relation on ${relation.variable.name}. " +
-                            "Either referencedJoinProperty, joinProperties or @JoinEntity must be used to describe the relation")
+                                "Either referencedJoinProperty, joinProperties or @JoinEntity must be used to describe the relation")
                     }
                     val toMany = when {
                         relation.mappedBy != null -> {
@@ -119,9 +151,9 @@ object GreendaoModelTranslator {
                         relation.joinOnProperties.isNotEmpty() -> {
                             val joinOn = relation.joinOnProperties
                             source.addToMany(
-                                joinOn.map { source.findProperty(it.source) }.toTypedArray(),
-                                target,
-                                joinOn.map { target.findProperty(it.target) }.toTypedArray()
+                                    joinOn.map { source.findProperty(it.source) }.toTypedArray(),
+                                    target,
+                                    joinOn.map { target.findProperty(it.target) }.toTypedArray()
                             ).apply {
                                 name = relation.variable.name
                             }
@@ -133,14 +165,14 @@ object GreendaoModelTranslator {
                             val spec = relation.joinEntitySpec
                             val joinEntity = entities.find {
                                 it.name == spec.entityName
-                                    || it.qualifiedClassName == spec.entityName
+                                        || it.qualifiedClassName == spec.entityName
                             }?.let { mapping[it] }
-                                ?: throw RuntimeException("Can't find join entity with name ${spec.entityName}")
+                                    ?: throw RuntimeException("Can't find join entity with name ${spec.entityName}")
                             source.addToMany(
-                                target,
-                                joinEntity,
-                                joinEntity.findProperty(spec.sourceIdProperty),
-                                joinEntity.findProperty(spec.targetIdProperty)
+                                    target,
+                                    joinEntity,
+                                    joinEntity.findProperty(spec.sourceIdProperty),
+                                    joinEntity.findProperty(spec.targetIdProperty)
                             ).apply {
                                 name = relation.variable.name
                             }
@@ -156,8 +188,8 @@ object GreendaoModelTranslator {
                             }
                         } else {
                             val pkProperty = target.properties.find { it.isPrimaryKey }
-                                ?: throw RuntimeException("@OrderBy used to order by primary key of " +
-                                "entity (${target.className}) without primary key")
+                                    ?: throw RuntimeException("@OrderBy used to order by primary key of " +
+                                    "entity (${target.className}) without primary key")
                             toMany.orderAsc(pkProperty)
                         }
                     }
@@ -166,8 +198,6 @@ object GreendaoModelTranslator {
                 throw RuntimeException("Can't process ${entity.name}: ${e.message}", e)
             }
         }
-
-        return mapping
     }
 
     private fun convertField(e: Entity, field: EntityField) {
@@ -201,7 +231,7 @@ object GreendaoModelTranslator {
         }
     }
 
-    fun getPropertyType(javaTypeName: String): PropertyType = when (javaTypeName) {
+    private fun getPropertyType(javaTypeName: String): PropertyType = when (javaTypeName) {
         "boolean", "Boolean" -> PropertyType.Boolean
         "byte", "Byte" -> PropertyType.Byte
         "int", "Integer" -> PropertyType.Int
@@ -215,7 +245,7 @@ object GreendaoModelTranslator {
         else -> throw RuntimeException("Unsupported type ${javaTypeName}")
     }
 
-    fun Entity.findProperty(name : String): Property {
+    private fun Entity.findProperty(name : String): Property {
         return properties.find {
             it.propertyName == name
         } ?: throw RuntimeException("Can't find $name field in $className")
