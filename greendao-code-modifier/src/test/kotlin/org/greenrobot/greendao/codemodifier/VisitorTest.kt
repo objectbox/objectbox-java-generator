@@ -284,6 +284,58 @@ class VisitorTest : VisitorTestBase() {
         )
     }
 
+    @Test(expected = IllegalArgumentException::class)
+    fun convertAnnotation_innerClassNotStatic() {
+        visit(
+                //language=java
+                """
+        package com.example.myapp;
+
+        import org.greenrobot.greendao.annotation.Entity;
+        import org.greenrobot.greendao.annotation.Convert;
+        import org.greenrobot.greendao.converter.PropertyConverter;
+
+        @Entity
+        class Foobar {
+            @Convert(converter = InnerConverter.class, columnType = String.class)
+            MyType name;
+            public class InnerConverter implements PropertyConverter<MyType, String> {
+                @Override
+                public MyType convertToEntityProperty(String databaseValue) {
+                    return null;
+                }
+
+                @Override
+                public String convertToDatabaseValue(MyType entityProperty) {
+                    return null;
+                }
+            }
+        }
+        """, listOf("MyType"))!!
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun convertAnnotation_innerTypeNotStatic() {
+        visit(
+                //language=java
+                """
+        package com.example.myapp;
+
+        import org.greenrobot.greendao.annotation.Entity;
+        import org.greenrobot.greendao.annotation.Convert;
+        import org.greenrobot.greendao.converter.PropertyConverter;
+
+        @Entity
+        class Foobar {
+            @Convert(converter = MyConverter.class, columnType = String.class)
+            MyType name;
+
+            public class MyType {
+            }
+        }
+        """, listOf("MyConverter"))!!
+    }
+
     @Test
     fun multiIndexes() {
         val entity = visit(

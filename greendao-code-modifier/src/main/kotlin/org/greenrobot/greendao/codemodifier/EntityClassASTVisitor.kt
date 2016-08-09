@@ -17,6 +17,7 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
     val constructors = mutableListOf<Method>()
     val methods = mutableListOf<Method>()
     val imports = mutableListOf<ImportDeclaration>()
+    val staticInnerClasses = mutableListOf<String>()
     var packageName: String? = null
     var entityTableName: String? = null
     var typeDeclaration: TypeDeclaration? = null
@@ -27,7 +28,7 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
     var keepSource = false
     var createTable = true
     var generateConstructors = true
-    var usedNotNullAnnotation: String? = null;
+    var usedNotNullAnnotation: String? = null
     var lastField: FieldDeclaration? = null
 
     private val methodAnnotations = mutableListOf<Annotation>()
@@ -272,7 +273,7 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
     private fun findConvert(fieldName: SimpleName, fa: MutableList<Annotation>): CustomType? {
         val convert: Annotation? = fa.find { it.hasType(Convert::class) }
         if (convert !is NormalAnnotation) {
-            return null;
+            return null
         }
 
         val converterClassName = (convert["converter"] as? TypeLiteral)?.type?.typeName
@@ -310,6 +311,10 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
 
     override fun visit(node: TypeDeclaration): Boolean {
         if (node.parent is TypeDeclaration) {
+            // collect all static inner classes to assert inner converters or custom types as static
+            if (Modifier.isStatic(node.modifiers)) {
+                staticInnerClasses.add(node.name.identifier)
+            }
             // skip inner classes
             return false
         } else {
@@ -319,10 +324,48 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
     }
 
     /**
+     * If a type converter is used and the property type or converter type is defined inline, checks that they are
+     * defined as static.
+     */
+    private fun checkInnerCustomTypes() {
+        val entityClassName = typeDeclaration?.name?.identifier ?: return
+        fields.forEach {
+            if (it.customType != null) {
+                // if the property type is defined inline, it should be static
+                val variableClassName = it.variable.type.name
+                checkIfInnerTypeThenStatic(variableClassName, entityClassName)
+
+                // if the converter is defined inline, it should be static
+                val converterClassName = it.customType.converterClassName
+                checkIfInnerTypeThenStatic(converterClassName, entityClassName)
+            }
+        }
+    }
+
+    private fun checkIfInnerTypeThenStatic(typeClassName: String, outerClassName: String) {
+        val split = typeClassName.split(".")
+        if (split.size < 2) {
+            return // no qualified name
+        }
+        // get <OuterClass> from a.b.c.<OuterClass>.<InnerClass>
+        val qualifiedNames = split.takeLast(2)
+        if (outerClassName.equals(qualifiedNames[0])) {
+            // check if inner class is static, otherwise warn
+            if (!staticInnerClasses.contains(qualifiedNames[1])) {
+                throw IllegalArgumentException("Inner class $typeClassName in $outerClassName has to be static. " +
+                        "Only static classes are supported if converters or custom types (@Convert) are defined as inner classes.")
+            }
+        }
+    }
+
+    /**
      * Collects parsed information into EntityClass, sets javaFile and source
      * @return null if parsed class it is not an entity
      * */
     fun toEntityClass(javaFile: File, source: String): EntityClass? {
+        // we only know about all inner classes after visiting all nodes, so do inner type and converter checks here
+        checkInnerCustomTypes()
+
         return if (isEntity) {
             val node = typeDeclaration!!
             EntityClass(
