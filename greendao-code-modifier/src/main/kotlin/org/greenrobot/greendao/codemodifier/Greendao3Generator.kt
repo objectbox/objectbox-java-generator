@@ -108,117 +108,133 @@ class Greendao3Generator(formattingOptions: FormattingOptions? = null,
         }
     }
 
-    // TODO refactor into separate class and divide into several methods?
     private fun transformClass(entityClass: EntityClass, mapping: Map<EntityClass, Entity>) {
         val entity = mapping[entityClass]!!
         val daoPackage = entity.schema.defaultJavaPackage
+        val transformer = context.transformer(entityClass)
 
-        context.transform(entityClass) {
-            ensureImport("org.greenrobot.greendao.annotation.Generated")
+        transformer.ensureImport("org.greenrobot.greendao.annotation.Generated")
 
+        generateConstructors(entityClass, transformer)
+        generateGettersAndSetters(entityClass, transformer)
+
+        if (entity.active) {
+            transformer.ensureImport("org.greenrobot.greendao.DaoException")
+
+            val daoSessionVarName = "${entity.schema.prefix}DaoSession"
+            transformer.defField("daoSession", VariableType("$daoPackage.$daoSessionVarName", false, daoSessionVarName),
+                    "Used to resolve relations")
+            transformer.defField("myDao", VariableType("${entity.javaPackageDao}.${entity.classNameDao}", false, entity.classNameDao),
+                    "Used for active entity operations.")
+
+            transformer.defMethod("__setDaoSession", "$daoPackage.$daoSessionVarName") {
+                Templates.entity.daoSessionSetter(entity)
+            }
+
+            generateToOneRelations(entity, entityClass, transformer)
+            generateToManyRelations(entity, transformer)
+            generateActiveMethods(transformer)
+        }
+
+        transformer.writeToFile()
+    }
+
+    private fun generateConstructors(entityClass: EntityClass, transformer: EntityClassTransformer) {
+        if (entityClass.generateConstructors) {
+            // check there is need to generate default constructor to do not hide implicit one
             val fieldsInOrder = entityClass.getFieldsInConstructorOrder() ?: entityClass.fields
-
-            if (entityClass.generateConstructors) {
-                // check there is need to generate default constructor to do not hide implicit one
-                if (fieldsInOrder.isNotEmpty()
-                        && entityClass.constructors.none { it.parameters.isEmpty() && !it.generated }) {
-                    defConstructor(emptyList()) {
-                        """
-                    @Generated(hash = $HASH_STUB)
-                    public ${entityClass.name}() {
-                    }
+            if (fieldsInOrder.isNotEmpty()
+                    && entityClass.constructors.none { it.parameters.isEmpty() && !it.generated }) {
+                transformer.defConstructor(emptyList()) {
                     """
-                    }
+                        @Generated(hash = $HASH_STUB)
+                        public ${entityClass.name}() {
+                        }
+                        """
                 }
+            }
 
-                // generate all fields constructor
-                defConstructor(fieldsInOrder.map { it.variable.type.name }) {
-                    Templates.entity.constructor(entityClass.name, entityClass.fields,
-                            entityClass.notNullAnnotation ?: "@NotNull")
-                }
+            // generate all fields constructor
+            transformer.defConstructor(fieldsInOrder.map { it.variable.type.name }) {
+                Templates.entity.constructor(entityClass.name, entityClass.fields,
+                        entityClass.notNullAnnotation ?: "@NotNull")
+            }
+        } else {
+            // DAOs require at minimum a default constructor, so:
+            transformer.ensureDefaultConstructor()
+        }
+    }
+
+    private fun generateGettersAndSetters(entityClass: EntityClass, transformer: EntityClassTransformer) {
+        // define missing getters and setters
+        entityClass.fields.forEach { field ->
+            // define first set, because the transformer will write then in an opposite direction
+            transformer.defMethodIfMissing("set${field.variable.name.capitalize()}", field.variable.type.name) {
+                Templates.entity.fieldSet(field.variable)
+            }
+
+            transformer.defMethodIfMissing("get${field.variable.name.capitalize()}") {
+                Templates.entity.fieldGet(field.variable)
+            }
+        }
+    }
+
+    private fun generateToOneRelations(entity: Entity, entityClass: EntityClass, transformer: EntityClassTransformer) {
+        entity.toOneRelations.forEach { toOne ->
+            transformer.ensureImport("${toOne.targetEntity.javaPackageDao}.${toOne.targetEntity.classNameDao}")
+
+            // define fields
+            if (toOne.isUseFkProperty) {
+                transformer.defField("${toOne.name}__resolvedKey",
+                        VariableType(toOne.resolvedKeyJavaType[0], false, toOne.resolvedKeyJavaType[0]))
             } else {
-                // DAOs require at minimum a default constructor, so:
-                ensureDefaultConstructor()
+                transformer.defField("${toOne.name}__refreshed", VariableType("boolean", true, "boolean"))
             }
 
-            // define missing getters and setters
-            entityClass.fields.forEach { field ->
-                // define first set, because the transformer will write then in an opposite direction
-                defMethodIfMissing("set${field.variable.name.capitalize()}", field.variable.type.name) {
-                    Templates.entity.fieldSet(field.variable)
-                }
+            transformer.defMethod("get${toOne.name.capitalize()}") {
+                Templates.entity.oneRelationGetter(toOne, entity)
+            }
 
-                defMethodIfMissing("get${field.variable.name.capitalize()}") {
-                    Templates.entity.fieldGet(field.variable)
+            if (!toOne.isUseFkProperty) {
+                transformer.defMethod("peak${toOne.name.capitalize()}") {
+                    Templates.entity.oneRelationPeek(toOne)
                 }
             }
 
-            if (entity.active) {
-                ensureImport("org.greenrobot.greendao.DaoException")
-
-                val daoSessionVarName = "${entity.schema.prefix}DaoSession"
-                defField("daoSession", VariableType("$daoPackage.$daoSessionVarName", false, daoSessionVarName),
-                        "Used to resolve relations")
-                defField("myDao", VariableType("${entity.javaPackageDao}.${entity.classNameDao}", false, entity.classNameDao),
-                        "Used for active entity operations.")
-
-                defMethod("__setDaoSession", "$daoPackage.$daoSessionVarName") {
-                    Templates.entity.daoSessionSetter(entity)
+            transformer.defMethod("set${toOne.name.capitalize()}", toOne.targetEntity.className) {
+                if (entityClass.notNullAnnotation == null && toOne.fkProperties[0].isNotNull) {
+                    transformer.ensureImport("org.greenrobot.greendao.annotation.NotNull")
                 }
-
-                entity.toOneRelations.forEach { toOne ->
-                    ensureImport("${toOne.targetEntity.javaPackageDao}.${toOne.targetEntity.classNameDao}")
-
-                    // define fields
-                    if (toOne.isUseFkProperty) {
-                        defField("${toOne.name}__resolvedKey",
-                                VariableType(toOne.resolvedKeyJavaType[0], false, toOne.resolvedKeyJavaType[0]))
-                    } else {
-                        defField("${toOne.name}__refreshed", VariableType("boolean", true, "boolean"))
-                    }
-
-                    defMethod("get${toOne.name.capitalize()}") {
-                        Templates.entity.oneRelationGetter(toOne, entity)
-                    }
-
-                    if (!toOne.isUseFkProperty) {
-                        defMethod("peak${toOne.name.capitalize()}") {
-                            Templates.entity.oneRelationPeek(toOne)
-                        }
-                    }
-
-                    defMethod("set${toOne.name.capitalize()}", toOne.targetEntity.className) {
-                        if (entityClass.notNullAnnotation == null && toOne.fkProperties[0].isNotNull) {
-                            ensureImport("org.greenrobot.greendao.annotation.NotNull")
-                        }
-                        Templates.entity.oneRelationSetter(toOne, entityClass.notNullAnnotation ?: "@NotNull")
-                    }
-                }
-
-                entity.toManyRelations.forEach { toMany ->
-                    ensureImport("${toMany.targetEntity.javaPackageDao}.${toMany.targetEntity.classNameDao}")
-
-                    defMethod("get${toMany.name.capitalize()}") {
-                        Templates.entity.manyRelationGetter(toMany, entity)
-                    }
-
-                    defMethod("reset${toMany.name.capitalize()}") {
-                        Templates.entity.manyRelationReset(toMany)
-                    }
-                }
-
-                defMethod("delete") {
-                    Templates.entity.activeDelete()
-                }
-
-                defMethod("update") {
-                    Templates.entity.activeUpdate()
-                }
-
-                defMethod("refresh") {
-                    Templates.entity.activeRefresh()
-                }
+                Templates.entity.oneRelationSetter(toOne, entityClass.notNullAnnotation ?: "@NotNull")
             }
+        }
+    }
+
+    private fun generateToManyRelations(entity: Entity, transformer: EntityClassTransformer) {
+        entity.toManyRelations.forEach { toMany ->
+            transformer.ensureImport("${toMany.targetEntity.javaPackageDao}.${toMany.targetEntity.classNameDao}")
+
+            transformer.defMethod("get${toMany.name.capitalize()}") {
+                Templates.entity.manyRelationGetter(toMany, entity)
+            }
+
+            transformer.defMethod("reset${toMany.name.capitalize()}") {
+                Templates.entity.manyRelationReset(toMany)
+            }
+        }
+    }
+
+    private fun generateActiveMethods(transformer: EntityClassTransformer) {
+        transformer.defMethod("delete") {
+            Templates.entity.activeDelete()
+        }
+
+        transformer.defMethod("update") {
+            Templates.entity.activeUpdate()
+        }
+
+        transformer.defMethod("refresh") {
+            Templates.entity.activeRefresh()
         }
     }
 }

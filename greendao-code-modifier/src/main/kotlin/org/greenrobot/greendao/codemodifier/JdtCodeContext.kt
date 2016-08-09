@@ -7,7 +7,7 @@ import java.io.File
 /**
  * Context for parsing and transformation
  */
-class JdtCodeContext(val formattingOptions: FormattingOptions? = null, val encoding: String) {
+class JdtCodeContext(val formattingOptions: FormattingOptions? = null, encoding: String) {
     private val jdtOptions: MutableMap<Any, Any>
     private val classParser: EntityClassParser
 
@@ -24,7 +24,4 @@ class JdtCodeContext(val formattingOptions: FormattingOptions? = null, val encod
 
     fun transformer(entityClass: EntityClass) = EntityClassTransformer(entityClass, jdtOptions, formattingOptions)
 
-    // TODO kill me
-    fun transform(entityClass: EntityClass, block: EntityClassTransformer.() -> Unit) =
-        transformer(entityClass).apply(block).writeToFile()
 }
