@@ -51,23 +51,20 @@ fun Name.resolveName(outerClassName: String?, imports : Iterable<ImportDeclarati
                     } else {
                         simpleName
                     }
-                } else if (imports.isStrict()) {
-                    // is it a java base type?
-                    if (JavaLangTypes.contains(simpleName)) {
-                        // assume that java.lang.* types are not overwritten
-                        simpleName
-                    } else {
-                        // assume it is defined inline
-                        if (outerClassName != null) {
-                            if (sourcePkg != null) {
-                                "$sourcePkg.$outerClassName.$simpleName"
-                            } else {
-                                "$outerClassName.$simpleName"
-                            }
+                } else if (imports.isStrict() && !JavaLangTypes.contains(simpleName)) {
+                    // assume it is defined inline
+                    if (outerClassName != null) {
+                        if (sourcePkg != null) {
+                            "$sourcePkg.$outerClassName.$simpleName"
                         } else {
-                            simpleName
+                            "$outerClassName.$simpleName"
                         }
+                    } else {
+                        simpleName
                     }
+                } else if (JavaLangTypes.contains(simpleName)) {
+                    // assume that java.lang.* types are not overwritten
+                    simpleName
                 } else {
                     throw IllegalArgumentException("Can't resolve qualified name for $simpleName. " +
                             "Try to not use on-demand imports or specify qualified name explicitly (line $lineNumber)")
