@@ -133,10 +133,9 @@ class Greendao3GradlePlugin : Plugin<Project> {
                     name = name,
                     version = schemaExt.version ?: defaultOptions.version,
                     daoPackage = schemaExt.daoPackage ?: defaultOptions.daoPackage?.let { "$it.$name" },
-                    // outputDir = schemaExt.genSrcDir ?: defaultOptions.outputDir,
                     outputDir = defaultOptions.outputDir,
                     testsOutputDir = if (options.generateTests) {
-                        schemaExt.testsGenSrcDir ?: defaultOptions.testsOutputDir
+                        schemaExt.targetGenDirTests ?: defaultOptions.testsOutputDir
                     } else null
             )
         }.associateTo(schemaOptions, { it.name to it })

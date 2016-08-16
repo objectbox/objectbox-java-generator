@@ -74,12 +74,12 @@ open class GreendaoOptions(val project: Project) {
     }
 
     /** @see targetGenDirTests */
-    fun testsGenSrcDir(dir: File) {
+    fun targetGenDirTests(dir: File) {
         this.targetGenDirTests = dir
     }
 
     /** @see targetGenDirTests */
-    fun testsGenSrcDir(path: String) {
+    fun targetGenDirTests(path: String) {
         this.targetGenDirTests = project.file(path)
     }
 
@@ -248,13 +248,10 @@ class SchemaOptionsExtension(val project: Project) {
     /** @see GreendaoOptions.daoPackage */
     var daoPackage: String? = null
 
-//    /** @see GreendaoOptions.genSrcDir */
-//    var genSrcDir: File? = null
-
     /** @see GreendaoOptions.targetGenDirTests */
-    var testsGenSrcDir: File? = null
+    var targetGenDirTests: File? = null
 
-    /** @see GreendaoOptions.version */
+    /** @see GreendaoOptions.schemaVersion */
     fun version(value: Int) {
         this.version = value
     }
@@ -264,23 +261,13 @@ class SchemaOptionsExtension(val project: Project) {
         this.daoPackage = value
     }
 
-//    /** @see GreendaoOptions.genSrcDir */
-//    fun genSrcDir(value: File) {
-//        this.genSrcDir = value
-//    }
-//
-//    /** @see GreendaoOptions.genSrcDir */
-//    fun genSrcDir(value: String) {
-//        this.genSrcDir = project.file(value)
-//    }
-
     /** @see GreendaoOptions.targetGenDirTests */
-    fun testsGenSrcDir(value: File) {
-        this.testsGenSrcDir = value
+    fun targetGenDirTests(value: File) {
+        this.targetGenDirTests = value
     }
 
     /** @see GreendaoOptions.targetGenDirTests */
-    fun testsGenSrcDir(value: String) {
-        this.testsGenSrcDir = project.file(value)
+    fun targetGenDirTests(value: String) {
+        this.targetGenDirTests = project.file(value)
     }
 }
