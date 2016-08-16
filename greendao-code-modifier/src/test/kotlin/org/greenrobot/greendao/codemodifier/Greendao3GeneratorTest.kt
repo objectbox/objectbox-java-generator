@@ -2,6 +2,7 @@ package org.greenrobot.greendao.codemodifier
 
 import org.junit.Assert.assertEquals
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.ErrorCollector
@@ -32,6 +33,16 @@ class Greendao3GeneratorTest {
     fun ensureEmptyTestDirectory() {
         testDirectory.deleteRecursively()
         assert(!testDirectory.isDirectory || testDirectory.list().isEmpty())
+    }
+
+    /**
+     * Configure and run on demand. Easier for bug hunting.
+     */
+    @Test
+    @Ignore
+    fun testSingleTestFile() {
+        val testFilePrefix = "InlineType"
+        generateAndAssertFile(testFilePrefix)
     }
 
     @Test
