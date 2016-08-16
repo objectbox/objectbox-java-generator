@@ -22,7 +22,7 @@ import java.nio.charset.Charset
  * TODO don't write AST to string if nothing is changed
  */
 class EntityClassTransformer(val entityClass: EntityClass, val jdtOptions : MutableMap<Any, Any>,
-                             val formattingOptions: FormattingOptions?, val charset: Charset = Charsets.UTF_8) {
+                             formattingOptions: FormattingOptions?, val charset: Charset = Charsets.UTF_8) {
     private val cu = entityClass.node.root
     private val formatting = formattingOptions?.toFormatting()
         ?: Formatting.detect(entityClass.source, formattingOptions)
@@ -42,10 +42,12 @@ class EntityClassTransformer(val entityClass: EntityClass, val jdtOptions : Muta
 
     fun ensureImport(name : String) {
         val packageName = name.substringBeforeLast('.', "")
-        if (packageName != entityClass.packageName && !entityClass.imports.has(name)
-            && !addedImports.contains(name)) {
+        // do not create import for inner classes
+        val maybeInnerClassName = packageName.substringAfterLast(".", "")
+        if (packageName != entityClass.packageName && maybeInnerClassName != entityClass.name
+                && !entityClass.imports.has(name) && !addedImports.contains(name)) {
             val id = cu.ast.newImportDeclaration()
-            id.name = cu.ast.newName(name.split('.').toTypedArray());
+            id.name = cu.ast.newName(name.split('.').toTypedArray())
             importsRewrite.insertLast(id, null)
             addedImports += name
         }
