@@ -363,10 +363,10 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
      * @return null if parsed class it is not an entity
      * */
     fun toEntityClass(javaFile: File, source: String): EntityClass? {
-        // we only know about all inner classes after visiting all nodes, so do inner type and converter checks here
-        checkInnerCustomTypes()
-
         return if (isEntity) {
+            // we only know about all inner classes after visiting all nodes, so do inner type and converter checks here
+            checkInnerCustomTypes()
+
             val node = typeDeclaration!!
             EntityClass(
                     node.name.identifier,
