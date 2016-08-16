@@ -309,6 +309,12 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
         methodAnnotations.clear()
     }
 
+    override fun visit(node: EnumDeclaration): Boolean {
+        // collect all inner enums to assert inner custom types as static (enum implies static)
+        staticInnerClasses.add(node.name.identifier)
+        return false
+    }
+
     override fun visit(node: TypeDeclaration): Boolean {
         if (node.parent is TypeDeclaration) {
             // collect all static inner classes to assert inner converters or custom types as static
