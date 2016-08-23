@@ -107,6 +107,12 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
         return true
     }
 
+    override fun visit(node: LineComment): Boolean {
+        // TODO ut: KEEP line comments are not part of nodes, figure out why (stripped by default?)
+        println("Line comment: $node")
+        return super.visit(node)
+    }
+
     override fun visit(node: MarkerAnnotation): Boolean = visitAnnotation(node)
 
     override fun visit(node: SingleMemberAnnotation): Boolean = visitAnnotation(node)
