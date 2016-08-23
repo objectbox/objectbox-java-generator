@@ -15,20 +15,20 @@ public class Note {
     @Convert(converter = NoteTypeConverter.class, columnType = String.class)
     private NoteType type;
 
-    public NoteType getType() {
-        return this.type;
-    }
-
-    public void setType(NoteType type) {
-        this.type = type;
-    }
-
     public Long getId() {
         return this.id;
     }
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public NoteType getType() {
+        return this.type;
+    }
+
+    public void setType(NoteType type) {
+        this.type = type;
     }
 
     @Generated(hash = 1415525089)

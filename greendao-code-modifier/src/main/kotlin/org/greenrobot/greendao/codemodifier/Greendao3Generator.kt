@@ -167,8 +167,8 @@ class Greendao3Generator(formattingOptions: FormattingOptions? = null,
 
     private fun generateGettersAndSetters(entityClass: EntityClass, transformer: EntityClassTransformer) {
         // define missing getters and setters
-        entityClass.fields.forEach { field ->
-            // define first set, because the transformer will write then in an opposite direction
+        // add everything (fields, set before get) in reverse as transformer writes in reverse direction
+        entityClass.fields.reversed().forEach { field ->
             transformer.defMethodIfMissing("set${field.variable.name.capitalize()}", field.variable.type.name) {
                 Templates.entity.fieldSet(field.variable)
             }

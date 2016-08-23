@@ -32,20 +32,20 @@ public class Note {
         this.id = id;
     }
 
-    public int getNewInt() {
-        return this.newInt;
-    }
-
-    public void setNewInt(int newInt) {
-        this.newInt = newInt;
-    }
-
     public String getString() {
         return this.string;
     }
 
     public void setString(String string) {
         this.string = string;
+    }
+
+    public int getNewInt() {
+        return this.newInt;
+    }
+
+    public void setNewInt(int newInt) {
+        this.newInt = newInt;
     }
 
 }
