@@ -20,6 +20,12 @@ public class Note {
         this.id = id + 1;
     }
 
+    @Generated(hash = 1816070532)
+    public Note(Long id, String text) {
+        this.id = id;
+        this.text = text;
+    }
+
     public Long getId() {
         return this.id;
     }
@@ -33,12 +39,6 @@ public class Note {
     }
 
     public void setText(String text) {
-        this.text = text;
-    }
-
-    @Generated(hash = 1816070532)
-    public Note(Long id, String text) {
-        this.id = id;
         this.text = text;
     }
 

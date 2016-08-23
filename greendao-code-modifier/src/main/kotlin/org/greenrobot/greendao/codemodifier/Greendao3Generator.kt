@@ -115,25 +115,28 @@ class Greendao3Generator(formattingOptions: FormattingOptions? = null,
 
         transformer.ensureImport("org.greenrobot.greendao.annotation.Generated")
 
-        generateConstructors(entityClass, transformer)
-        generateGettersAndSetters(entityClass, transformer)
-
+        // add everything (fields, constructors, methods) in reverse as transformer writes in reverse direction
+        val daoSessionVarName = "${entity.schema.prefix}DaoSession"
         if (entity.active) {
             transformer.ensureImport("org.greenrobot.greendao.DaoException")
-
-            val daoSessionVarName = "${entity.schema.prefix}DaoSession"
-            transformer.defField("daoSession", VariableType("$daoPackage.$daoSessionVarName", false, daoSessionVarName),
-                    "Used to resolve relations")
-            transformer.defField("myDao", VariableType("${entity.javaPackageDao}.${entity.classNameDao}", false, entity.classNameDao),
-                    "Used for active entity operations.")
 
             transformer.defMethod("__setDaoSession", "$daoPackage.$daoSessionVarName") {
                 Templates.entity.daoSessionSetter(entity)
             }
 
-            generateToOneRelations(entity, entityClass, transformer)
+            generateActiveMethodsAndFields(transformer)
             generateToManyRelations(entity, transformer)
-            generateActiveMethods(transformer)
+            generateToOneRelations(entity, entityClass, transformer)
+        }
+
+        generateGettersAndSetters(entityClass, transformer)
+        generateConstructors(entityClass, transformer)
+
+        if (entity.active) {
+            transformer.defField("myDao", VariableType("${entity.javaPackageDao}.${entity.classNameDao}", false, entity.classNameDao),
+                    "Used for active entity operations.")
+            transformer.defField("daoSession", VariableType("$daoPackage.$daoSessionVarName", false, daoSessionVarName),
+                    "Used to resolve relations")
         }
 
         transformer.writeToFile()
@@ -180,19 +183,16 @@ class Greendao3Generator(formattingOptions: FormattingOptions? = null,
     }
 
     private fun generateToOneRelations(entity: Entity, entityClass: EntityClass, transformer: EntityClassTransformer) {
-        entity.toOneRelations.forEach { toOne ->
+        // add everything in reverse as transformer writes in reverse direction
+        entity.toOneRelations.reversed().forEach { toOne ->
             transformer.ensureImport("${toOne.targetEntity.javaPackageDao}.${toOne.targetEntity.classNameDao}")
 
-            // define fields
-            if (toOne.isUseFkProperty) {
-                transformer.defField("${toOne.name}__resolvedKey",
-                        VariableType(toOne.resolvedKeyJavaType[0], false, toOne.resolvedKeyJavaType[0]))
-            } else {
-                transformer.defField("${toOne.name}__refreshed", VariableType("boolean", true, "boolean"))
-            }
-
-            transformer.defMethod("get${toOne.name.capitalize()}") {
-                Templates.entity.oneRelationGetter(toOne, entity)
+            // define methods
+            transformer.defMethod("set${toOne.name.capitalize()}", toOne.targetEntity.className) {
+                if (entityClass.notNullAnnotation == null && toOne.fkProperties[0].isNotNull) {
+                    transformer.ensureImport("org.greenrobot.greendao.annotation.NotNull")
+                }
+                Templates.entity.oneRelationSetter(toOne, entityClass.notNullAnnotation ?: "@NotNull")
             }
 
             if (!toOne.isUseFkProperty) {
@@ -201,40 +201,47 @@ class Greendao3Generator(formattingOptions: FormattingOptions? = null,
                 }
             }
 
-            transformer.defMethod("set${toOne.name.capitalize()}", toOne.targetEntity.className) {
-                if (entityClass.notNullAnnotation == null && toOne.fkProperties[0].isNotNull) {
-                    transformer.ensureImport("org.greenrobot.greendao.annotation.NotNull")
-                }
-                Templates.entity.oneRelationSetter(toOne, entityClass.notNullAnnotation ?: "@NotNull")
+            transformer.defMethod("get${toOne.name.capitalize()}") {
+                Templates.entity.oneRelationGetter(toOne, entity)
+            }
+
+            // define fields
+            if (toOne.isUseFkProperty) {
+                transformer.defField("${toOne.name}__resolvedKey",
+                        VariableType(toOne.resolvedKeyJavaType[0], false, toOne.resolvedKeyJavaType[0]))
+            } else {
+                transformer.defField("${toOne.name}__refreshed", VariableType("boolean", true, "boolean"))
             }
         }
     }
 
     private fun generateToManyRelations(entity: Entity, transformer: EntityClassTransformer) {
-        entity.toManyRelations.forEach { toMany ->
+        // add everything in reverse as transformer writes in reverse direction
+        entity.toManyRelations.reversed().forEach { toMany ->
             transformer.ensureImport("${toMany.targetEntity.javaPackageDao}.${toMany.targetEntity.classNameDao}")
-
-            transformer.defMethod("get${toMany.name.capitalize()}") {
-                Templates.entity.manyRelationGetter(toMany, entity)
-            }
 
             transformer.defMethod("reset${toMany.name.capitalize()}") {
                 Templates.entity.manyRelationReset(toMany)
             }
+
+            transformer.defMethod("get${toMany.name.capitalize()}") {
+                Templates.entity.manyRelationGetter(toMany, entity)
+            }
         }
     }
 
-    private fun generateActiveMethods(transformer: EntityClassTransformer) {
-        transformer.defMethod("delete") {
-            Templates.entity.activeDelete()
-        }
-
+    private fun generateActiveMethodsAndFields(transformer: EntityClassTransformer) {
+        // add everything in reverse as transformer writes in reverse direction
         transformer.defMethod("update") {
             Templates.entity.activeUpdate()
         }
 
         transformer.defMethod("refresh") {
             Templates.entity.activeRefresh()
+        }
+
+        transformer.defMethod("delete") {
+            Templates.entity.activeDelete()
         }
     }
 }

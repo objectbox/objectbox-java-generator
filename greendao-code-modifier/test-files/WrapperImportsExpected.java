@@ -23,6 +23,20 @@ public class Note {
     private Float floatProperty;
     private Double doubleProperty;
     private Short shortProperty;
+    @Generated(hash = 1322397276)
+    public Note(Long id, Boolean booleanProperty, Byte byteProperty, Integer integerProperty, Float floatProperty,
+            Double doubleProperty, Short shortProperty) {
+        this.id = id;
+        this.booleanProperty = booleanProperty;
+        this.byteProperty = byteProperty;
+        this.integerProperty = integerProperty;
+        this.floatProperty = floatProperty;
+        this.doubleProperty = doubleProperty;
+        this.shortProperty = shortProperty;
+    }
+    @Generated(hash = 1272611929)
+    public Note() {
+    }
     public Long getId() {
         return this.id;
     }
@@ -64,20 +78,6 @@ public class Note {
     }
     public void setShortProperty(Short shortProperty) {
         this.shortProperty = shortProperty;
-    }
-    @Generated(hash = 1322397276)
-    public Note(Long id, Boolean booleanProperty, Byte byteProperty, Integer integerProperty, Float floatProperty,
-            Double doubleProperty, Short shortProperty) {
-        this.id = id;
-        this.booleanProperty = booleanProperty;
-        this.byteProperty = byteProperty;
-        this.integerProperty = integerProperty;
-        this.floatProperty = floatProperty;
-        this.doubleProperty = doubleProperty;
-        this.shortProperty = shortProperty;
-    }
-    @Generated(hash = 1272611929)
-    public Note() {
     }
 
 }
