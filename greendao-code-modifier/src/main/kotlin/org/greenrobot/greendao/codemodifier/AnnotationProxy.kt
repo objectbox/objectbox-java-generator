@@ -50,13 +50,13 @@ object AnnotationProxy {
         override fun invoke(proxy: Any, method: Method, args: Array<out Any>?): Any? {
             return when (jdtAnnotation) {
                 is SingleMemberAnnotation -> if (method.name == "value") {
-                    jdtAnnotation.value.javaValue(method.returnType)
+                    jdtAnnotation.value.javaValue(method.name, method.returnType)
                 } else {
                     method.defaultValue
                 }
                 is NormalAnnotation -> {
                     jdtAnnotation[method.name]
-                        ?.let { it.javaValue(method.returnType) }
+                        ?.let { it.javaValue(method.name, method.returnType) }
                         ?: method.defaultValue
                 }
                 else -> method.defaultValue
@@ -71,14 +71,14 @@ object AnnotationProxy {
         this(jdtAnnotation, T::class.java) as T
 
     @Suppress("UNCHECKED_CAST")
-    private fun <T : Any, C : Class<out T>> Expression.javaValue(expected: C) : T {
+    private fun <T : Any, C : Class<out T>> Expression.javaValue(methodName: String, expected: C) : T {
         when {
             expected.isArray -> if (this is ArrayInitializer) {
                 val componentType = expected.componentType
                 val expressions = this.expressions()
                 val result = java.lang.reflect.Array.newInstance(componentType, expressions.size)
                 expressions.forEachIndexed { i, exp ->
-                    java.lang.reflect.Array.set(result, i, (exp as Expression).javaValue(componentType))
+                    java.lang.reflect.Array.set(result, i, (exp as Expression).javaValue(methodName, componentType))
                 }
                 return result as T
             }
@@ -92,6 +92,8 @@ object AnnotationProxy {
             }
             expected == String::class.java -> if (this is StringLiteral) {
                 return literalValue as T
+            } else if (this is SimpleName) {
+                throw RuntimeException("Using a constant for $methodName is not supported, explicitly set a string.")
             }
             expected.isAnnotation -> if (this is Annotation) {
                 return AnnotationProxy(this, expected) as T
