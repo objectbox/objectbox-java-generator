@@ -27,7 +27,7 @@ class VisitorRelationsTest : VisitorTestBase() {
             @ToOne(joinProperty = "barId")
             Bar bar;
         }
-        """)!!
+        """, listOf("Bar"))!!
         assertThat(entity.oneRelations, equalTo(
                 listOf(OneRelation(Variable(BarType, "bar"), foreignKeyField = "barId"))
         ))
@@ -52,7 +52,7 @@ class VisitorRelationsTest : VisitorTestBase() {
             @ToOne
             Bar bar;
         }
-        """)!!
+        """, listOf("Bar"))!!
         assertThat(entity.oneRelations, equalTo(
                 listOf(OneRelation(Variable(BarType, "bar")))
         ))
@@ -82,7 +82,7 @@ class VisitorRelationsTest : VisitorTestBase() {
             @Property(nameInDb = "BAR_ID")
             Bar bar;
         }
-        """)!!
+        """, listOf("Bar"))!!
         assertThat(entity.oneRelations, equalTo(
                 listOf(OneRelation(Variable(BarType, "bar"), columnName = "BAR_ID", isNotNull = true, unique = true))
         ))
@@ -107,7 +107,7 @@ class VisitorRelationsTest : VisitorTestBase() {
             @ToMany(referencedJoinProperty = "barId")
             List<Bar> bars;
         }
-        """)!!
+        """, listOf("Bar"))!!
         assertThat(entity.manyRelations, equalTo(
                 listOf(ManyRelation(Variable(BarListType, "bars"), mappedBy = "barId"))
         ))
@@ -122,7 +122,8 @@ class VisitorRelationsTest : VisitorTestBase() {
 
         import org.greenrobot.greendao.annotation.Entity;
         import org.greenrobot.greendao.annotation.JoinOn;
-        import org.greenrobot.greendao.annotation.JoinProperty;import org.greenrobot.greendao.annotation.ToMany;
+        import org.greenrobot.greendao.annotation.JoinProperty;
+        import org.greenrobot.greendao.annotation.ToMany;
 
         import java.util.List;
 
@@ -138,7 +139,7 @@ class VisitorRelationsTest : VisitorTestBase() {
             })
             List<Bar> bars;
         }
-        """)!!
+        """, listOf("Bar"))!!
         assertThat(entity.manyRelations, equalTo(
                 listOf(ManyRelation(Variable(BarListType, "bars"), joinOnProperties = listOf(
                         JoinOnProperty("barId", "id"),
@@ -168,7 +169,7 @@ class VisitorRelationsTest : VisitorTestBase() {
             @JoinEntity(entity = Foobar.class, sourceProperty = "fooId", targetProperty = "barId")
             List<Bar> bars;
         }
-        """)!!
+        """, listOf("Bar", "Foobar"))!!
         assertThat(entity.manyRelations, equalTo(
                 listOf(ManyRelation(Variable(BarListType, "bars"), joinEntitySpec =
                 JoinEntitySpec("com.example.Foobar", "fooId", "barId")
@@ -198,7 +199,7 @@ class VisitorRelationsTest : VisitorTestBase() {
             @OrderBy("date, likes DESC")
             List<Bar> bars;
         }
-        """)!!
+        """, listOf("Bar"))!!
         assertThat(entity.manyRelations, equalTo(
                 listOf(ManyRelation(Variable(BarListType, "bars"), mappedBy = "barId",
                         order = listOf(OrderProperty("date", Order.ASC), OrderProperty("likes", Order.DESC))

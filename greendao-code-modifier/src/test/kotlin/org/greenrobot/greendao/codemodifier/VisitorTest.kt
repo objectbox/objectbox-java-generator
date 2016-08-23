@@ -231,7 +231,7 @@ class VisitorTest : VisitorTestBase() {
             @Convert(converter = Converter.class, columnType = String.class)
             MyType name;
         }
-        """)!!
+        """, listOf("MyType"))!!
         val field = entity.fields[0]
         assertEquals(
                 EntityField(
@@ -245,7 +245,6 @@ class VisitorTest : VisitorTestBase() {
     }
 
     @Test
-    @Ignore("Not yet working")
     fun convertAnnotation_innerClass() {
         val entity = visit(
                 //language=java
@@ -272,7 +271,7 @@ class VisitorTest : VisitorTestBase() {
                 }
             }
         }
-        """)!!
+        """, listOf("MyType"))!!
         val field = entity.fields[0]
         assertEquals(
                 EntityField(
@@ -283,6 +282,58 @@ class VisitorTest : VisitorTestBase() {
                 ),
                 field
         )
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun convertAnnotation_innerClassNotStatic() {
+        visit(
+                //language=java
+                """
+        package com.example.myapp;
+
+        import org.greenrobot.greendao.annotation.Entity;
+        import org.greenrobot.greendao.annotation.Convert;
+        import org.greenrobot.greendao.converter.PropertyConverter;
+
+        @Entity
+        class Foobar {
+            @Convert(converter = InnerConverter.class, columnType = String.class)
+            MyType name;
+            public class InnerConverter implements PropertyConverter<MyType, String> {
+                @Override
+                public MyType convertToEntityProperty(String databaseValue) {
+                    return null;
+                }
+
+                @Override
+                public String convertToDatabaseValue(MyType entityProperty) {
+                    return null;
+                }
+            }
+        }
+        """, listOf("MyType"))!!
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun convertAnnotation_innerTypeNotStatic() {
+        visit(
+                //language=java
+                """
+        package com.example.myapp;
+
+        import org.greenrobot.greendao.annotation.Entity;
+        import org.greenrobot.greendao.annotation.Convert;
+        import org.greenrobot.greendao.converter.PropertyConverter;
+
+        @Entity
+        class Foobar {
+            @Convert(converter = MyConverter.class, columnType = String.class)
+            MyType name;
+
+            public class MyType {
+            }
+        }
+        """, listOf("MyConverter"))!!
     }
 
     @Test
