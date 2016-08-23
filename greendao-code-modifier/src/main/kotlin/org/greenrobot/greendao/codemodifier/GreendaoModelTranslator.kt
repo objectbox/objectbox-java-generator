@@ -232,15 +232,15 @@ object GreendaoModelTranslator {
     }
 
     private fun getPropertyType(javaTypeName: String): PropertyType = when (javaTypeName) {
-        "boolean", "Boolean" -> PropertyType.Boolean
-        "byte", "Byte" -> PropertyType.Byte
-        "int", "Integer" -> PropertyType.Int
-        "long", "Long" -> PropertyType.Long
-        "float", "Float" -> PropertyType.Float
-        "double", "Double" -> PropertyType.Double
-        "short", "Short" -> PropertyType.Short
+        "boolean", "java.lang.Boolean", "Boolean" -> PropertyType.Boolean
+        "byte", "java.lang.Byte", "Byte" -> PropertyType.Byte
+        "int", "java.lang.Integer", "Integer" -> PropertyType.Int
+        "long", "java.lang.Long", "Long" -> PropertyType.Long
+        "float", "java.lang.Float", "Float" -> PropertyType.Float
+        "double", "java.lang.Double", "Double" -> PropertyType.Double
+        "short", "java.lang.Short", "Short" -> PropertyType.Short
         "byte[]" -> PropertyType.ByteArray
-        "String" -> PropertyType.String
+        "java.lang.String", "String" -> PropertyType.String
         "java.util.Date", "Date" -> PropertyType.Date
         else -> throw RuntimeException("Unsupported type ${javaTypeName}")
     }
