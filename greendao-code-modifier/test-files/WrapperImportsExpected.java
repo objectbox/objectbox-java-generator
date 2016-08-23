@@ -23,48 +23,6 @@ public class Note {
     private Float floatProperty;
     private Double doubleProperty;
     private Short shortProperty;
-    public Short getShortProperty() {
-        return this.shortProperty;
-    }
-    public void setShortProperty(Short shortProperty) {
-        this.shortProperty = shortProperty;
-    }
-    public Double getDoubleProperty() {
-        return this.doubleProperty;
-    }
-    public void setDoubleProperty(Double doubleProperty) {
-        this.doubleProperty = doubleProperty;
-    }
-    public Float getFloatProperty() {
-        return this.floatProperty;
-    }
-    public void setFloatProperty(Float floatProperty) {
-        this.floatProperty = floatProperty;
-    }
-    public Integer getIntegerProperty() {
-        return this.integerProperty;
-    }
-    public void setIntegerProperty(Integer integerProperty) {
-        this.integerProperty = integerProperty;
-    }
-    public Byte getByteProperty() {
-        return this.byteProperty;
-    }
-    public void setByteProperty(Byte byteProperty) {
-        this.byteProperty = byteProperty;
-    }
-    public Boolean getBooleanProperty() {
-        return this.booleanProperty;
-    }
-    public void setBooleanProperty(Boolean booleanProperty) {
-        this.booleanProperty = booleanProperty;
-    }
-    public Long getId() {
-        return this.id;
-    }
-    public void setId(Long id) {
-        this.id = id;
-    }
     @Generated(hash = 1322397276)
     public Note(Long id, Boolean booleanProperty, Byte byteProperty, Integer integerProperty, Float floatProperty,
             Double doubleProperty, Short shortProperty) {
@@ -78,6 +36,48 @@ public class Note {
     }
     @Generated(hash = 1272611929)
     public Note() {
+    }
+    public Long getId() {
+        return this.id;
+    }
+    public void setId(Long id) {
+        this.id = id;
+    }
+    public Boolean getBooleanProperty() {
+        return this.booleanProperty;
+    }
+    public void setBooleanProperty(Boolean booleanProperty) {
+        this.booleanProperty = booleanProperty;
+    }
+    public Byte getByteProperty() {
+        return this.byteProperty;
+    }
+    public void setByteProperty(Byte byteProperty) {
+        this.byteProperty = byteProperty;
+    }
+    public Integer getIntegerProperty() {
+        return this.integerProperty;
+    }
+    public void setIntegerProperty(Integer integerProperty) {
+        this.integerProperty = integerProperty;
+    }
+    public Float getFloatProperty() {
+        return this.floatProperty;
+    }
+    public void setFloatProperty(Float floatProperty) {
+        this.floatProperty = floatProperty;
+    }
+    public Double getDoubleProperty() {
+        return this.doubleProperty;
+    }
+    public void setDoubleProperty(Double doubleProperty) {
+        this.doubleProperty = doubleProperty;
+    }
+    public Short getShortProperty() {
+        return this.shortProperty;
+    }
+    public void setShortProperty(Short shortProperty) {
+        this.shortProperty = shortProperty;
     }
 
 }

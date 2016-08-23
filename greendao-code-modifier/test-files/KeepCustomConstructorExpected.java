@@ -20,11 +20,9 @@ public class Note {
         this.id = id + 1;
     }
 
-    public String getText() {
-        return this.text;
-    }
-
-    public void setText(String text) {
+    @Generated(hash = 1816070532)
+    public Note(Long id, String text) {
+        this.id = id;
         this.text = text;
     }
 
@@ -36,9 +34,11 @@ public class Note {
         this.id = id;
     }
 
-    @Generated(hash = 1816070532)
-    public Note(Long id, String text) {
-        this.id = id;
+    public String getText() {
+        return this.text;
+    }
+
+    public void setText(String text) {
         this.text = text;
     }
 

@@ -15,12 +15,14 @@ public class Note {
     @Convert(converter = NoteTypeConverter.class, columnType = String.class)
     private NoteType type;
 
-    public NoteType getType() {
-        return this.type;
+    @Generated(hash = 1415525089)
+    public Note(Long id, NoteType type) {
+        this.id = id;
+        this.type = type;
     }
 
-    public void setType(NoteType type) {
-        this.type = type;
+    @Generated(hash = 1272611929)
+    public Note() {
     }
 
     public Long getId() {
@@ -31,14 +33,12 @@ public class Note {
         this.id = id;
     }
 
-    @Generated(hash = 1415525089)
-    public Note(Long id, NoteType type) {
-        this.id = id;
-        this.type = type;
+    public NoteType getType() {
+        return this.type;
     }
 
-    @Generated(hash = 1272611929)
-    public Note() {
+    public void setType(NoteType type) {
+        this.type = type;
     }
 
     enum NoteType {
