@@ -92,8 +92,15 @@ object AnnotationProxy {
             }
             expected == String::class.java -> if (this is StringLiteral) {
                 return literalValue as T
-            } else if (this is SimpleName) {
-                throw RuntimeException("Using a constant for $methodName is not supported, explicitly set a string.")
+            } else if (this is Expression) {
+                val constantValue = this.resolveConstantExpressionValue()
+                if (constantValue != null && constantValue is String) {
+                    return constantValue as T
+                } else {
+                    throw RuntimeException("Could not determine value for $methodName. Use a string or an inline constant.")
+                }
+            } else {
+                throw RuntimeException("Only a string or an inline constant are supported for $methodName.")
             }
             expected.isAnnotation -> if (this is Annotation) {
                 return AnnotationProxy(this, expected) as T
