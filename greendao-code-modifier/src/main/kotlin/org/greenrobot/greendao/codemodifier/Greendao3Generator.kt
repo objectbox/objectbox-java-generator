@@ -25,7 +25,15 @@ class Greendao3Generator(formattingOptions: FormattingOptions? = null,
 
         val start = System.currentTimeMillis()
         val entities = sourceFiles.asSequence()
-                .map { context.parse(it, classesByDir[it.parentFile]!!) }
+                .map {
+                    val entity = context.parse(it, classesByDir[it.parentFile]!!)
+                    if (entity != null && entity.fields.size == 0) {
+                        System.err.println("Skipping entity ${entity.name} as it has no properties.")
+                        null
+                    } else {
+                        entity
+                    }
+                }
                 .filterNotNull()
                 .toList()
 
