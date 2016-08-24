@@ -77,6 +77,7 @@ data class EntityClass(val name: String, val schema: String,
                        val keepSource: Boolean,
                        val createTable: Boolean,
                        val generateConstructors: Boolean,
+                       val generateGettersSetters: Boolean,
                        val notNullAnnotation: String?,
                        val lastFieldDeclaration: FieldDeclaration?) {
 

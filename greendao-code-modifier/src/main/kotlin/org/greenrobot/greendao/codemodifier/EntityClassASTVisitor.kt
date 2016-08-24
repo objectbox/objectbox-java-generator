@@ -28,6 +28,7 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
     var keepSource = false
     var createTable = true
     var generateConstructors = true
+    var generateGettersSetters = true
     var usedNotNullAnnotation: String? = null
     var lastField: FieldDeclaration? = null
 
@@ -85,6 +86,7 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
                         entityTableName = entityAnnotation.nameInDb.nullIfBlank()
                         createTable = entityAnnotation.createInDb
                         generateConstructors = entityAnnotation.generateConstructors
+                        generateGettersSetters = entityAnnotation.generateGettersSetters
                         try {
                             tableIndexes = entityAnnotation.indexes.map {
                                 TableIndex(it.name.nullIfBlank(), parseIndexSpec(it.value), it.unique)
@@ -393,6 +395,7 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
                     keepSource,
                     createTable,
                     generateConstructors,
+                    generateGettersSetters,
                     usedNotNullAnnotation,
                     lastField
             )

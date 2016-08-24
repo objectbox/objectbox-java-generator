@@ -177,6 +177,10 @@ class Greendao3Generator(formattingOptions: FormattingOptions? = null,
     }
 
     private fun generateGettersAndSetters(entityClass: EntityClass, transformer: EntityClassTransformer) {
+        if (!entityClass.generateGettersSetters) {
+            println("Not generating getters or setters for ${entityClass.name}.")
+            return
+        }
         // define missing getters and setters
         // add everything (fields, set before get) in reverse as transformer writes in reverse direction
         entityClass.fields.reversed().forEach { field ->
