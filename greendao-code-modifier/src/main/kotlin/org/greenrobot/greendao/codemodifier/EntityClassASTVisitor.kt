@@ -126,8 +126,8 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
         val isLegacyKeepField = lineNumber != null
                 && lineNumber > keepFieldsStartLineNumber && lineNumber < keepFieldsEndLineNumber
         if (isLegacyKeepField) {
-            System.err.println("Field $varNames in ${node.codePlace} should be annotated with @Transient " +
-                    "(legacy KEEP FIELDS).")
+            System.err.println("Field $varNames in ${node.codePlace} should be annotated with @Transient, " +
+                    "then remove the KEEP FIELDS comments.")
         }
         val variableType = node.type.toVariableType()
         // in addition to fields explicitly marked transient, also collect static fields as transient
