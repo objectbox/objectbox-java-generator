@@ -9,8 +9,9 @@ import org.greenrobot.greendao.annotation.Property;
 public class Note {
 
     static final String CONSTANT_COLUMN = "example-column";
+    static final boolean CONSTANT_TRUE = true;
 
-    @Id
+    @Id(autoincrement = CONSTANT_TRUE)
     private Long id;
 
     @Property(nameInDb = CONSTANT_COLUMN)

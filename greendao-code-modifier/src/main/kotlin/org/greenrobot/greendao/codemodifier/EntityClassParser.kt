@@ -31,6 +31,7 @@ class EntityClassParser(val jdtOptions: MutableMap<Any, Any>, val encoding: Stri
                     && problemId != IProblem.UndefinedType
                     && problemId != IProblem.UndefinedField
                     && problemId != IProblem.ImportNotFound
+                    && problemId != IProblem.UnresolvedVariable
         }
         if (problems != null && problems.size > 0) {
             System.err.println("Found ${problems.size} problem(s) parsing \"${javaFile}\":")

@@ -84,6 +84,11 @@ object AnnotationProxy {
             }
             expected == Boolean::class.javaPrimitiveType -> if (this is BooleanLiteral) {
                 return booleanValue() as T
+            } else if (this is Expression) {
+                val constantValue = this.resolveConstantExpressionValue()
+                if (constantValue != null && constantValue is Boolean) {
+                    return constantValue as T
+                }
             }
             expected == Int::class.javaPrimitiveType -> when(this) {
                 is NumberLiteral, is PrefixExpression ->
@@ -96,17 +101,14 @@ object AnnotationProxy {
                 val constantValue = this.resolveConstantExpressionValue()
                 if (constantValue != null && constantValue is String) {
                     return constantValue as T
-                } else {
-                    throw RuntimeException("Could not determine value for $methodName. Use a string or an inline constant.")
                 }
-            } else {
-                throw RuntimeException("Only a string or an inline constant are supported for $methodName.")
             }
             expected.isAnnotation -> if (this is Annotation) {
                 return AnnotationProxy(this, expected) as T
             }
         }
 
-        throw RuntimeException("Can't get ${expected.simpleName} value from ${this.javaClass}")
+        throw RuntimeException("Value for $methodName should be of type ${expected.simpleName} " +
+                "(could not convert from ${this.javaClass}). Note: only inline constants are supported.")
     }
 }
