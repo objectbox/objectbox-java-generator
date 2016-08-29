@@ -3,6 +3,7 @@ package org.greenrobot.greendao.codemodifier
 import org.eclipse.jdt.core.compiler.IProblem
 import org.eclipse.jdt.core.dom.AST
 import org.eclipse.jdt.core.dom.ASTParser
+import org.eclipse.jdt.core.dom.Comment
 import org.eclipse.jdt.core.dom.CompilationUnit
 import java.io.File
 
@@ -39,7 +40,18 @@ class EntityClassParser(val jdtOptions: MutableMap<Any, Any>, val encoding: Stri
             throw RuntimeException("Found problem(s) parsing \"${javaFile}\". See above")
         }
 
-        val visitor = EntityClassASTVisitor(source, classesInPackage)
+        // try to find legacy KEEP FIELDS section
+        val commentVisitor = KeepCommentVisitor(astRoot, source.split("\n"))
+        val commentList = astRoot.commentList
+        commentList.forEach {
+            if (it is Comment) {
+                it.accept(commentVisitor)
+            }
+        }
+        commentVisitor.validateLineNumbers()
+
+        val visitor = EntityClassASTVisitor(source, classesInPackage,
+                commentVisitor.keepFieldsStartLineNumber, commentVisitor.keepFieldsEndLineNumber)
         astRoot.accept(visitor)
 
         return visitor.toEntityClass(javaFile, source)

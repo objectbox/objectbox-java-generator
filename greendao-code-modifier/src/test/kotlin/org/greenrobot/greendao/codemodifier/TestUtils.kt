@@ -18,9 +18,9 @@ fun parseCompilationUnit(javaCode: String): CompilationUnit {
     parser.setSource(javaCode.toCharArray())
     val astRoot = parser.createAST(null) as CompilationUnit
 
-    val problems = astRoot.problems;
+    val problems = astRoot.problems
     if (problems != null && problems.size > 0) {
-        println("Got {} problems compiling the source file: ${problems.size}");
+        println("Got {} problems compiling the source file: ${problems.size}")
         problems.forEach { println(it) }
         Assert.fail("There was problems during source compilation")
     }
@@ -29,7 +29,7 @@ fun parseCompilationUnit(javaCode: String): CompilationUnit {
 }
 
 fun tryParseEntityClass(javaCode: String, classesInPackage: List<String> = emptyList()): EntityClass? {
-    val visitor = EntityClassASTVisitor(javaCode, classesInPackage)
+    val visitor = EntityClassASTVisitor(javaCode, classesInPackage, -1, -1)
     val unit = parseCompilationUnit(javaCode)
     unit.accept(visitor)
     return visitor.toEntityClass(Mockito.mock(File::class.java), javaCode)

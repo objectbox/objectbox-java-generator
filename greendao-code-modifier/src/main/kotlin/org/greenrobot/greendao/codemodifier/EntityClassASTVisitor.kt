@@ -9,7 +9,8 @@ import kotlin.reflect.KClass
 /**
  * Visits compilation unit, find if it is an Entity and reads all the required information about it
  */
-class EntityClassASTVisitor(val source: String, val classesInPackage: List<String> = emptyList()) : LazyVisitor() {
+class EntityClassASTVisitor(val source: String, val classesInPackage: List<String> = emptyList(),
+                            val keepFieldsStartLineNumber: Int, val keepFieldsEndLineNumber: Int) : LazyVisitor() {
     var isEntity = false
     var schemaName: String = "default"
     val fields = mutableListOf<EntityField>()
@@ -107,12 +108,6 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
         return true
     }
 
-    override fun visit(node: LineComment): Boolean {
-        // TODO ut: KEEP line comments are not part of nodes, figure out why (stripped by default?)
-        println("Line comment: $node")
-        return super.visit(node)
-    }
-
     override fun visit(node: MarkerAnnotation): Boolean = visitAnnotation(node)
 
     override fun visit(node: SingleMemberAnnotation): Boolean = visitAnnotation(node)
@@ -126,12 +121,21 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
         val varNames = node.fragments()
                 .filter { it is VariableDeclarationFragment }
                 .map { it as VariableDeclarationFragment }.map { it.name }
+
+        val lineNumber = node.lineNumber
+        val isLegacyKeepField = lineNumber != null
+                && lineNumber > keepFieldsStartLineNumber && lineNumber < keepFieldsEndLineNumber
+        if (isLegacyKeepField) {
+            System.err.println("Field $varNames in ${node.codePlace} should be annotated with @Transient " +
+                    "(legacy KEEP FIELDS).")
+        }
         val variableType = node.type.toVariableType()
         // in addition to fields explicitly marked transient, also collect static fields as transient
         // to avoid adding fields with the same name (see EntityClassTransformer.defField)
         if (fa.none { it.typeName.fullyQualifiedName == "Transient" }
                 && !Modifier.isTransient(node.modifiers)
-                && !Modifier.isStatic(node.modifiers)) {
+                && !Modifier.isStatic(node.modifiers)
+                && !isLegacyKeepField) {
             when {
                 fa.has<ToOne>() -> {
                     oneRelations += varNames.map { oneRelation(fa, it, variableType) }
