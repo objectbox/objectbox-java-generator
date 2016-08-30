@@ -27,6 +27,10 @@ object GreendaoModelTranslator {
         return entities.map {
             val entity = schema.addEntity(it.name)
             addBasicProperties(daoPackage, it, entity)
+            if (it.tableName != null) entity.tableName = it.tableName
+            if (it.active) entity.active = true
+            entity.isSkipTableCreation = !it.createTable
+            entity.javaPackage = it.packageName
             addFields(it, entity)
             addIndexes(it, entity)
 
@@ -35,7 +39,9 @@ object GreendaoModelTranslator {
                 val protobufEntity = schema.addProtobufEntity(it.protobufClassName.substringAfterLast("."))
                 addBasicProperties(daoPackage, it, protobufEntity)
                 protobufEntity.tableName = entity.tableName // TODO ut: handle default table name
+                protobufEntity.active = false
                 protobufEntity.isSkipTableCreation = true // table creation/deletion is handled by the original DAO
+                protobufEntity.javaPackage = it.protobufClassName.substringBeforeLast(".")
                 addFields(it, protobufEntity)
                 addIndexes(it, protobufEntity)
             }
@@ -45,13 +51,9 @@ object GreendaoModelTranslator {
     }
 
     private fun addBasicProperties(daoPackage: String?, it: EntityClass, entity: Entity) {
-        if (it.tableName != null) entity.tableName = it.tableName
-        if (it.active) entity.active = true
-        entity.isSkipTableCreation = !it.createTable
         entity.isConstructors = it.generateConstructors
         entity.javaPackageDao = daoPackage ?: it.packageName
         entity.javaPackageTest = daoPackage ?: it.packageName
-        entity.javaPackage = it.packageName
         entity.isSkipGeneration = true
     }
 
