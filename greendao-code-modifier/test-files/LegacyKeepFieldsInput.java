@@ -11,8 +11,13 @@ public class Note {
     private Long id;
 
     // KEEP FIELDS - put your custom fields here
-    private String text;
+
+    private String textInside;
+    private transient String textTransient;
+
     // KEEP FIELDS END
+
+    private String textOutside;
 
     @Generated(hash = 1390446558)
     public Note(Long id) {

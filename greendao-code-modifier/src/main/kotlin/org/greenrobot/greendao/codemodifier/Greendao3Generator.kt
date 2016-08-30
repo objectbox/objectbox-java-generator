@@ -122,6 +122,7 @@ class Greendao3Generator(formattingOptions: FormattingOptions? = null,
         val transformer = context.transformer(entityClass)
 
         transformer.ensureImport("org.greenrobot.greendao.annotation.Generated")
+        transformer.annotateLegacyKeepFields()
 
         // add everything (fields, constructors, methods) in reverse as transformer writes in reverse direction
         val daoSessionVarName = "${entity.schema.prefix}DaoSession"

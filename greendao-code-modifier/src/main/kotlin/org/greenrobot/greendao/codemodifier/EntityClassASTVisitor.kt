@@ -15,6 +15,7 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
     var schemaName: String = "default"
     val fields = mutableListOf<EntityField>()
     val transientFields = mutableListOf<TransientField>()
+    val legacyTransientFields = mutableListOf<TransientField>()
     val constructors = mutableListOf<Method>()
     val methods = mutableListOf<Method>()
     val imports = mutableListOf<ImportDeclaration>()
@@ -117,53 +118,60 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
     override fun visit(node: FieldDeclaration): Boolean = isEntity
 
     override fun endVisit(node: FieldDeclaration) {
-        val fa = fieldAnnotations
-        val varNames = node.fragments()
+        val variableNames = node.fragments()
                 .filter { it is VariableDeclarationFragment }
                 .map { it as VariableDeclarationFragment }.map { it.name }
+        val variableType = node.type.toVariableType()
 
         val lineNumber = node.lineNumber
-        val isLegacyKeepField = lineNumber != null
+        val isInLegacyKeepSection = lineNumber != null
                 && lineNumber > keepFieldsStartLineNumber && lineNumber < keepFieldsEndLineNumber
-        if (isLegacyKeepField) {
-            System.err.println("Field $varNames in ${node.codePlace} should be annotated with @Transient, " +
-                    "then remove the KEEP FIELDS comments.")
-        }
-        val variableType = node.type.toVariableType()
-        // in addition to fields explicitly marked transient, also collect static fields as transient
-        // to avoid adding fields with the same name (see EntityClassTransformer.defField)
-        if (fa.none { it.typeName.fullyQualifiedName == "Transient" }
-                && !Modifier.isTransient(node.modifiers)
-                && !Modifier.isStatic(node.modifiers)
-                && !isLegacyKeepField) {
-            when {
-                fa.has<ToOne>() -> {
-                    oneRelations += varNames.map { oneRelation(fa, it, variableType) }
-                }
-                fa.has<ToMany>() -> {
-                    manyRelations += varNames.map { manyRelation(fa, it, variableType) }
-                }
-                else -> fields += varNames.map { entityField(fa, it, node, variableType) }
-            }
-        } else {
-            val generatorHint = fa.generatorHint
+
+        // check how the field(s) should be treated
+        val annotations = fieldAnnotations
+        if (annotations.any { it.typeName.fullyQualifiedName == "Transient" }
+                || Modifier.isTransient(node.modifiers)
+                || Modifier.isStatic(node.modifiers)) {
+            // field is considered transient (@Transient, transient or static)
+            val generatorHint = annotations.generatorHint
             if (generatorHint != null) {
                 // check code is not changed
                 if (generatorHint is GeneratorHint.Generated) {
                     node.checkUntouched(generatorHint)
                 }
             }
-            transientFields += varNames.map {
+            transientFields += variableNames.map {
                 TransientField(Variable(variableType, it.toString()), node, generatorHint)
             }
+        } else if (isInLegacyKeepSection) {
+            // field in legacy KEEP FIELDS section not yet explicitly marked as transient
+            legacyTransientFields += variableNames.map {
+                TransientField(Variable(variableType, it.toString()), node, null)
+            }
+            System.err.println("Field $variableNames in ${node.codePlace} will be annotated with @Transient, " +
+                    "you can remove the KEEP FIELDS comments.")
+        } else {
+            // property field
+            when {
+                annotations.has<ToOne>() -> {
+                    oneRelations += variableNames.map { oneRelation(annotations, it, variableType) }
+                }
+                annotations.has<ToMany>() -> {
+                    manyRelations += variableNames.map { manyRelation(annotations, it, variableType) }
+                }
+                else -> fields += variableNames.map { entityField(annotations, it, node, variableType) }
+            }
         }
+
+        // check what type of not-null annotation is used
         if (usedNotNullAnnotation == null) {
-            usedNotNullAnnotation = fa.find {
+            usedNotNullAnnotation = annotations.find {
                 it.typeName.fullyQualifiedName == "NotNull" || it.typeName.fullyQualifiedName == "NonNull"
             }?.typeName?.fullyQualifiedName?.let { "@" + it }
         }
-        fa.clear()
 
+        // clear all collected annotations for this field
+        annotations.clear()
         lastField = node
     }
 
@@ -392,6 +400,7 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
                     active,
                     fields,
                     transientFields,
+                    legacyTransientFields,
                     constructors,
                     methods,
                     node,

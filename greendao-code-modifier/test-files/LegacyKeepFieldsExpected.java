@@ -12,13 +12,20 @@ public class Note {
     private Long id;
 
     // KEEP FIELDS - put your custom fields here
+
     @Transient
-    private String text;
+    private String textInside;
+
+    private transient String textTransient;
+
     // KEEP FIELDS END
 
-    @Generated(hash = 1390446558)
-    public Note(Long id) {
+    private String textOutside;
+
+    @Generated(hash = 1854957810)
+    public Note(Long id, String textOutside) {
         this.id = id;
+        this.textOutside = textOutside;
     }
 
     @Generated(hash = 1272611929)
@@ -31,6 +38,14 @@ public class Note {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getTextOutside() {
+        return this.textOutside;
+    }
+
+    public void setTextOutside(String textOutside) {
+        this.textOutside = textOutside;
     }
 
 }
