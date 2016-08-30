@@ -26,51 +26,70 @@ object GreendaoModelTranslator {
                                            daoPackage: String?): Map<EntityClass, Entity> {
         return entities.map {
             val entity = schema.addEntity(it.name)
+            addBasicProperties(daoPackage, it, entity)
+            addFields(it, entity)
+            addIndexes(it, entity)
 
-            if (it.tableName != null) entity.tableName = it.tableName
-            if (it.active) entity.active = true
-            entity.isSkipTableCreation = !it.createTable
-            entity.isConstructors = it.generateConstructors
-            entity.javaPackageDao = daoPackage ?: it.packageName
-            entity.javaPackageTest = daoPackage ?: it.packageName
-            entity.javaPackage = it.packageName
-            entity.isSkipGeneration = true
-
-            val fieldsInOrder = it.getFieldsInConstructorOrder() ?: it.fields
-            fieldsInOrder.forEach {
-                field ->
-                try {
-                    convertField(entity, field)
-                } catch (e: Exception) {
-                    throw RuntimeException("Can't add field `${field.variable}` for entity ${it.name} " +
-                            "due to: ${e.message}", e)
-                }
-            }
-
-            it.indexes.forEach {
-                tableIndex ->
-                entity.addIndex(Index().apply {
-                    tableIndex.fields.forEach {
-                        field ->
-                        val property = entity.properties.find {
-                            it.propertyName == field.name
-                        } ?: throw RuntimeException("Can't find property ${field.name} for index in ${entity.className}")
-                        when (field.order) {
-                            Order.ASC -> addPropertyAsc(property)
-                            Order.DESC -> addPropertyDesc(property)
-                        }
-                    }
-                    if (tableIndex.name != null) {
-                        this.name = tableIndex.name
-                    }
-                    if (tableIndex.unique) {
-                        makeUnique()
-                    }
-                })
+            // trigger creation of an additional protobuf dao
+            if (it.protobufClassName != null) {
+                val protobufEntity = schema.addProtobufEntity(it.protobufClassName.substringAfterLast("."))
+                addBasicProperties(daoPackage, it, protobufEntity)
+                protobufEntity.tableName = entity.tableName // TODO ut: handle default table name
+                protobufEntity.isSkipTableCreation = true // table creation/deletion is handled by the original DAO
+                addFields(it, protobufEntity)
+                addIndexes(it, protobufEntity)
             }
 
             it to entity
         }.toMap()
+    }
+
+    private fun addBasicProperties(daoPackage: String?, it: EntityClass, entity: Entity) {
+        if (it.tableName != null) entity.tableName = it.tableName
+        if (it.active) entity.active = true
+        entity.isSkipTableCreation = !it.createTable
+        entity.isConstructors = it.generateConstructors
+        entity.javaPackageDao = daoPackage ?: it.packageName
+        entity.javaPackageTest = daoPackage ?: it.packageName
+        entity.javaPackage = it.packageName
+        entity.isSkipGeneration = true
+    }
+
+    private fun addFields(it: EntityClass, entity: Entity) {
+        val fieldsInOrder = it.getFieldsInConstructorOrder() ?: it.fields
+        fieldsInOrder.forEach {
+            field ->
+            try {
+                convertField(entity, field)
+            } catch (e: Exception) {
+                throw RuntimeException("Can't add field `${field.variable}` for entity ${it.name} " +
+                        "due to: ${e.message}", e)
+            }
+        }
+    }
+
+    private fun addIndexes(it: EntityClass, entity: Entity) {
+        it.indexes.forEach {
+            tableIndex ->
+            entity.addIndex(Index().apply {
+                tableIndex.fields.forEach {
+                    field ->
+                    val property = entity.properties.find {
+                        it.propertyName == field.name
+                    } ?: throw RuntimeException("Can't find property ${field.name} for index in ${entity.className}")
+                    when (field.order) {
+                        Order.ASC -> addPropertyAsc(property)
+                        Order.DESC -> addPropertyDesc(property)
+                    }
+                }
+                if (tableIndex.name != null) {
+                    this.name = tableIndex.name
+                }
+                if (tableIndex.unique) {
+                    makeUnique()
+                }
+            })
+        }
     }
 
     private fun resolveToOneRelations(mapping: Map<EntityClass, Entity>, entities: Iterable<EntityClass>, schema: Schema) {

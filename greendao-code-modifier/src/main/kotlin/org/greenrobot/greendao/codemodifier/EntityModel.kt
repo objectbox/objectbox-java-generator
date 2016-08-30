@@ -78,6 +78,7 @@ data class EntityClass(val name: String, val schema: String,
                        val createTable: Boolean,
                        val generateConstructors: Boolean,
                        val generateGettersSetters: Boolean,
+                       val protobufClassName: String?,
                        val notNullAnnotation: String?,
                        val lastFieldDeclaration: FieldDeclaration?) {
 
