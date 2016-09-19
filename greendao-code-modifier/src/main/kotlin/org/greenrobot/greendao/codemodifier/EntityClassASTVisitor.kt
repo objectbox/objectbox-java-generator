@@ -89,7 +89,12 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
                         generateConstructors = entityAnnotation.generateConstructors
                         generateGettersSetters = entityAnnotation.generateGettersSetters
                         if (node is NormalAnnotation) {
-                            protobufClassName = (node["protobuf"] as? TypeLiteral)?.type?.typeName
+                            protobufClassName = (node["protobuf"] as? TypeLiteral)?.type?.typeName?.nullIfBlank()
+                            if (protobufClassName != null && entityTableName == null) {
+                                // explicitly require table name so the user is aware where both DAOs store their data
+                                throw RuntimeException("Set nameInDb in the ${parent.name} @Entity annotation. " +
+                                        "An explicit table name is required when specifying a protobuf class.")
+                            }
                         }
                         try {
                             tableIndexes = entityAnnotation.indexes.map {

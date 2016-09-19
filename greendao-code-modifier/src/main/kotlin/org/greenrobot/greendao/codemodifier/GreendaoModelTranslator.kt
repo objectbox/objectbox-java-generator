@@ -38,7 +38,7 @@ object GreendaoModelTranslator {
             if (it.protobufClassName != null) {
                 val protobufEntity = schema.addProtobufEntity(it.protobufClassName.substringAfterLast("."))
                 addBasicProperties(daoPackage, it, protobufEntity)
-                protobufEntity.tableName = entity.tableName // TODO ut: handle default table name
+                protobufEntity.tableName = entity.tableName // table name is required (checked in annotation visitor)
                 protobufEntity.active = false
                 protobufEntity.isSkipTableCreation = true // table creation/deletion is handled by the original DAO
                 protobufEntity.javaPackage = it.protobufClassName.substringBeforeLast(".")
