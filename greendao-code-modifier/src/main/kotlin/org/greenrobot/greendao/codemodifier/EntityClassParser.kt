@@ -28,8 +28,9 @@ class EntityClassParser(val jdtOptions: MutableMap<Any, Any>, val encoding: Stri
         val problems = astRoot.problems?.filter {
             val problemId = it.id
             problemId != IProblem.PublicClassMustMatchFileName // our tests violate this
-                    && problemId != IProblem.UndefinedType
                     && problemId != IProblem.UndefinedField
+                    && problemId != IProblem.UndefinedName // class refs, like TextUtils
+                    && problemId != IProblem.UndefinedType
                     && problemId != IProblem.ImportNotFound
                     && problemId != IProblem.UnresolvedVariable
         }
