@@ -4,7 +4,6 @@ import org.eclipse.jdt.core.dom.*
 import org.eclipse.jdt.core.dom.rewrite.ASTRewrite
 import org.eclipse.jface.text.Document
 import java.nio.charset.Charset
-import java.util.Hashtable
 
 /**
  * Helper class to perform transformations on Entity class
@@ -22,7 +21,7 @@ import java.util.Hashtable
  * TODO make formatting detection lazy
  * TODO don't write AST to string if nothing is changed
  */
-class EntityClassTransformer(val entityClass: EntityClass, val jdtOptions: Hashtable<String, String>,
+class EntityClassTransformer(val entityClass: EntityClass, val jdtOptions : MutableMap<Any, Any>,
                              formattingOptions: FormattingOptions?, val charset: Charset = Charsets.UTF_8) {
     private val cu = entityClass.node.root
     private val formatting = formattingOptions?.toFormatting()

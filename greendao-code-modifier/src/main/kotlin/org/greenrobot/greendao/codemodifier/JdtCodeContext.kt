@@ -3,13 +3,12 @@ package org.greenrobot.greendao.codemodifier
 import org.eclipse.jdt.core.JavaCore
 import org.eclipse.jdt.internal.compiler.impl.CompilerOptions
 import java.io.File
-import java.util.Hashtable
 
 /**
  * Context for parsing and transformation
  */
 class JdtCodeContext(val formattingOptions: FormattingOptions? = null, encoding: String) {
-    private val jdtOptions: Hashtable<String, String>
+    private val jdtOptions: MutableMap<Any, Any>
     private val classParser: EntityClassParser
 
     init {

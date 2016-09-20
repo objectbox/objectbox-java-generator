@@ -17,8 +17,48 @@ dependencies {
     compile "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
 
     // use JDT Core packaged by the Eclipse Scout project, has the latest versions
-    // requires special version resolution, see resolution strategy above
-    compile 'org.eclipse.scout.sdk.deps:org.eclipse.jdt.core:3.12.0.v20160516-2131'
+    // as a custom version resolution resolution strategy seems to not work on projects using the plugin
+    // manually include each dependency, but exclude its transitive dependencies
+    compile("org.eclipse.scout.sdk.deps:org.eclipse.core.commands:3.7.0+") {
+        transitive = false
+    }
+    compile('org.eclipse.scout.sdk.deps:org.eclipse.core.contenttype:3.5.0+') {
+        transitive = false
+    }
+    compile('org.eclipse.scout.sdk.deps:org.eclipse.core.expressions:3.5.0+') {
+        transitive = false
+    }
+    compile('org.eclipse.scout.sdk.deps:org.eclipse.core.jobs:3.7.0+') {
+        transitive = false
+    }
+    compile('org.eclipse.scout.sdk.deps:org.eclipse.core.filesystem:1.5.0+') {
+        transitive = false
+    }
+    compile('org.eclipse.scout.sdk.deps:org.eclipse.core.resources:3.10.0+') {
+        transitive = false
+    }
+    compile('org.eclipse.scout.sdk.deps:org.eclipse.core.runtime:3.11.0+') {
+        transitive = false
+    }
+    compile('org.eclipse.scout.sdk.deps:org.eclipse.equinox.common:3.7.0+') {
+        transitive = false
+    }
+    compile('org.eclipse.scout.sdk.deps:org.eclipse.equinox.registry:3.6.0+') {
+        transitive = false
+    }
+    compile('org.eclipse.scout.sdk.deps:org.eclipse.equinox.preferences:3.5.300+') {
+        transitive = false
+    }
+    compile('org.eclipse.scout.sdk.deps:org.eclipse.osgi:3.10.100+') {
+        transitive = false
+    }
+    compile('org.eclipse.scout.sdk.deps:org.eclipse.text:3.5.400+') {
+        transitive = false
+    }
+    // This is the latest version known to work with Gradle 2.14.1 and the Android Gradle Plugin 2.2.0
+    compile("org.eclipse.scout.sdk.deps:org.eclipse.jdt.core:3.11.0.v20150602-1242") {
+        transitive = false
+    }
 
     compile 'org.greenrobot:greendao-api:3.2.0-SNAPSHOT'
     compile 'org.greenrobot:greendao-generator:3.2.0-SNAPSHOT'
