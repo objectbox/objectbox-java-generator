@@ -161,10 +161,9 @@ class EntityClassTransformer(val entityClass: EntityClass, val jdtOptions: Hasht
         val defaultConstructor = entityClass.constructors.find { it.parameters.isEmpty() }
         if (defaultConstructor == null || defaultConstructor.generated) {
             // add a default constructor or replace the @Generated version
-            val defaultConstructorCode = """
-                    public ${entityClass.name}() {
-                    }
-                    """
+            val defaultConstructorCode =
+                    """public ${entityClass.name}() {
+                    }"""
             insertMethod(defaultConstructorCode, defaultConstructor?.node,
                     entityClass.lastConstructorDeclaration ?: entityClass.lastFieldDeclaration)
         } else {
@@ -221,12 +220,12 @@ class EntityClassTransformer(val entityClass: EntityClass, val jdtOptions: Hasht
                 ensureImport(type.name)
             }
             insertField(
-                replaceHashStub(
-                    """${if (comment != null) "/** $comment */" else ""}
-                       @Generated(hash = $HASH_STUB)
-                       private transient ${type.simpleName} $name;"""
-                ),
-                field?.node
+                    replaceHashStub(
+                            """${if (comment != null) """/** $comment */
+""" else ""}@Generated(hash = $HASH_STUB)
+private transient ${type.simpleName} $name;"""
+                    ),
+                    field?.node
             )
         } else {
             field.checkKeepPresent()
