@@ -15,10 +15,11 @@ repositories {
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     compile "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
-    // warning: gradle API includes JDT core 3.1.0
-    // and overriding does currently NOT work at least in the IDE
-    // https://discuss.gradle.org/t/how-to-override-gradleapi-transitive-dependencies/10185
-    compile 'org.eclipse.jdt:org.eclipse.jdt.core:3.10.0'
+
+    // use JDT Core packaged by the Eclipse Scout project, has the latest versions
+    // requires special version resolution, see resolution strategy above
+    compile 'org.eclipse.scout.sdk.deps:org.eclipse.jdt.core:3.12.0.v20160516-2131'
+
     compile 'org.greenrobot:greendao-api:3.1.1'
     compile 'org.greenrobot:greendao-generator:3.1.0'
     compile 'de.greenrobot:java-common:2.3.1'

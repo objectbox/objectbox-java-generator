@@ -24,6 +24,19 @@ subprojects {
         deployerJars
     }
 
+    configurations.all {
+        resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+            if (details.requested.group == 'org.eclipse.scout.sdk.deps') {
+                // Eclipse Scout JDT core POM dependencies have version format like '[3.11.0,3.11.1)'
+                // fix resolution to actual version numbers used, like 3.11.0.v20160516-2131, by using 3.11.0+
+                if (details.requested.name != 'org.eclipse.jdt.core') {
+                    def requestedVersion = details.requested.version
+                    details.useVersion requestedVersion.substring(1, requestedVersion.indexOf(",")) + "+"
+                }
+            }
+        }
+    }
+
     dependencies {
         deployerJars 'org.apache.maven.wagon:wagon-webdav:1.0-beta-2'
     }

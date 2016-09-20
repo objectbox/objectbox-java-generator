@@ -5,8 +5,9 @@ import org.eclipse.jdt.core.dom.AST
 import org.eclipse.jdt.core.dom.ASTParser
 import org.eclipse.jdt.core.dom.CompilationUnit
 import java.io.File
+import java.util.Hashtable
 
-class EntityClassParser(val jdtOptions: MutableMap<Any, Any>, val encoding: String) {
+class EntityClassParser(val jdtOptions: Hashtable<String, String>, val encoding: String) {
     fun parse(javaFile : File, classesInPackage: List<String>) : EntityClass? {
         val source = javaFile.readText(charset(encoding))
 
