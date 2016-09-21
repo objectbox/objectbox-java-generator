@@ -232,6 +232,22 @@ class EntityClassTransformer(val entityClass: EntityClass, val jdtOptions : Muta
         }
     }
 
+    fun annotateLegacyKeepFields() {
+        if (entityClass.legacyTransientFields.isEmpty()) {
+            return // no legacy fields to migrate
+        }
+
+        ensureImport("org.greenrobot.greendao.annotation.Transient")
+        entityClass.legacyTransientFields.forEach {
+            // simplest solution is to just replace the field expression
+            insertField(
+                    """@Transient
+                       private ${it.variable.type.simpleName} ${it.variable.name};"""
+                    , it.node
+            )
+        }
+    }
+
     private fun replaceHashStub(source: String): String {
         val hash = CodeCompare.codeHash(source)
         return source.replace(HASH_STUB, hash.toString())

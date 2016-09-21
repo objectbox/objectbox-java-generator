@@ -41,7 +41,7 @@ class Greendao3GeneratorTest {
     @Test
     @Ignore
     fun testSingleTestFile() {
-        val testFilePrefix = "InlineType"
+        val testFilePrefix = "LegacyKeepFields"
         generateAndAssertFile(testFilePrefix)
     }
 
