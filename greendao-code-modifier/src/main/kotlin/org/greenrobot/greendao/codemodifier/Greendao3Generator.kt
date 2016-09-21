@@ -158,11 +158,9 @@ class Greendao3Generator(formattingOptions: FormattingOptions? = null,
             if (fieldsInOrder.isNotEmpty()
                     && entityClass.constructors.none { it.parameters.isEmpty() && !it.generated }) {
                 transformer.defConstructor(emptyList()) {
-                    """
-                        @Generated(hash = $HASH_STUB)
+                    """ @Generated(hash = $HASH_STUB)
                         public ${entityClass.name}() {
-                        }
-                        """
+                        }"""
                 }
             }
 

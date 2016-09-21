@@ -12,7 +12,7 @@ class Formatter(var formatting: Formatting) {
     private val formatter : DefaultCodeFormatter
 
     init {
-        val options = DefaultCodeFormatterOptions(DefaultCodeFormatterConstants.getJavaConventionsSettings())
+        val options = DefaultCodeFormatterOptions(DefaultCodeFormatterOptions.getJavaConventionsSettings().map)
         options.tab_size = formatting.tabulation.size
         options.tab_char = if (formatting.tabulation.tabChar == ' ') DefaultCodeFormatterOptions.SPACE
                            else DefaultCodeFormatterOptions.TAB
