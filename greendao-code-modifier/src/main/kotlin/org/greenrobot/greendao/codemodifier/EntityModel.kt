@@ -6,7 +6,7 @@ import java.io.File
 /**
  * @param name is fully qualified name (if it was resolved)
  * @param originalName original type name how it was appeared in the source (qualified or not)
- * */
+ */
 data class VariableType(val name: String, val isPrimitive: Boolean, val originalName: String,
                         val typeArguments: List<VariableType>? = null) {
     val simpleName: String

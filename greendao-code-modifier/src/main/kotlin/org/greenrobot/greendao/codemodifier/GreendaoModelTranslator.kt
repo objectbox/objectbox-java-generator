@@ -8,6 +8,10 @@ import org.greenrobot.greendao.generator.PropertyType
 import org.greenrobot.greendao.generator.Schema
 
 object GreendaoModelTranslator {
+    // TODO types seems not consistent? (thus listing both here)
+    var WRAPPER_TYPES = listOf("Boolean", "Byte", "Character", "Short", "Integer", "Long", "Float", "Double",
+            "java.lang.Boolean", "java.lang.Byte", "java.lang.Character", "java.lang.Short", "java.lang.Integer",
+            "java.lang.Long", "java.lang.Float", "java.lang.Double")
 
     /**
      * Modifies provided schema object according to entities list
@@ -226,6 +230,8 @@ object GreendaoModelTranslator {
         val propertyBuilder = e.addProperty(propertyType, field.variable.name)
         if (field.variable.type.isPrimitive) {
             propertyBuilder.notNull()
+        } else if (WRAPPER_TYPES.contains(field.variable.type.name)) {
+            propertyBuilder.nonPrimitiveType()
         }
         if (field.isNotNull) propertyBuilder.notNull()
         if (field.unique && field.index != null) {
