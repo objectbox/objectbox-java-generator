@@ -132,7 +132,7 @@ class VisitorEntityAnnotationTest : VisitorTestBase() {
 
         @Entity class Foobar {}
         """)!!
-        Assert.assertNull(entity.tableName)
+        Assert.assertNull(entity.dbName)
     }
 
     @Test
@@ -145,7 +145,7 @@ class VisitorEntityAnnotationTest : VisitorTestBase() {
         @Entity(nameInDb = "BAR")
         class Foobar {}
         """)!!
-        Assert.assertEquals("BAR", entity.tableName)
+        Assert.assertEquals("BAR", entity.dbName)
     }
 
     @Test

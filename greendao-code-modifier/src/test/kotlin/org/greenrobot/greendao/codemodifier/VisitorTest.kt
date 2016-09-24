@@ -162,7 +162,7 @@ class VisitorTest : VisitorTestBase() {
         }
         """)!!
         val field = entity.fields[0]
-        assertEquals("SECOND_NAME", field.columnName)
+        assertEquals("SECOND_NAME", field.dbName)
     }
 
     @Test

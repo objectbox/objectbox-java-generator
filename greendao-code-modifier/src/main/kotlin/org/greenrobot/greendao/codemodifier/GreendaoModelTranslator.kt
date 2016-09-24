@@ -27,9 +27,9 @@ object GreendaoModelTranslator {
         return entities.map {
             val entity = schema.addEntity(it.name)
             addBasicProperties(daoPackage, it, entity)
-            if (it.tableName != null) entity.dbName = it.tableName
+            if (it.dbName != null) entity.dbName = it.dbName
             if (it.active) entity.active = true
-            entity.isSkipCreationInDb = !it.createTable
+            entity.isSkipCreationInDb = !it.createInDb
             entity.javaPackage = it.packageName
             addFields(it, entity)
             addIndexes(it, entity)
@@ -242,8 +242,8 @@ object GreendaoModelTranslator {
             propertyBuilder.primaryKey()
             if (field.id.autoincrement) propertyBuilder.autoincrement()
         }
-        if (field.columnName != null) {
-            propertyBuilder.dbName(field.columnName)
+        if (field.dbName != null) {
+            propertyBuilder.dbName(field.dbName)
         } else if (field.id != null && propertyType == PropertyType.Long) {
             propertyBuilder.dbName("_id")
         }
