@@ -27,9 +27,9 @@ object GreendaoModelTranslator {
         return entities.map {
             val entity = schema.addEntity(it.name)
             addBasicProperties(daoPackage, it, entity)
-            if (it.tableName != null) entity.tableName = it.tableName
+            if (it.tableName != null) entity.dbName = it.tableName
             if (it.active) entity.active = true
-            entity.isSkipTableCreation = !it.createTable
+            entity.isSkipCreationInDb = !it.createTable
             entity.javaPackage = it.packageName
             addFields(it, entity)
             addIndexes(it, entity)
@@ -38,9 +38,9 @@ object GreendaoModelTranslator {
             if (it.protobufClassName != null) {
                 val protobufEntity = schema.addProtobufEntity(it.protobufClassName.substringAfterLast("."))
                 addBasicProperties(daoPackage, it, protobufEntity)
-                protobufEntity.tableName = entity.tableName // table name is required (checked in annotation visitor)
+                protobufEntity.dbName = entity.dbName // table name is required (checked in annotation visitor)
                 protobufEntity.active = false
-                protobufEntity.isSkipTableCreation = true // table creation/deletion is handled by the original DAO
+                protobufEntity.isSkipCreationInDb = true // table creation/deletion is handled by the original DAO
                 protobufEntity.javaPackage = it.protobufClassName.substringBeforeLast(".")
                 addFields(it, protobufEntity)
                 addIndexes(it, protobufEntity)
@@ -243,9 +243,9 @@ object GreendaoModelTranslator {
             if (field.id.autoincrement) propertyBuilder.autoincrement()
         }
         if (field.columnName != null) {
-            propertyBuilder.columnName(field.columnName)
+            propertyBuilder.dbName(field.columnName)
         } else if (field.id != null && propertyType == PropertyType.Long) {
-            propertyBuilder.columnName("_id")
+            propertyBuilder.dbName("_id")
         }
         if (field.customType != null) {
             propertyBuilder.customType(field.variable.type.name, field.customType.converterClassName)
