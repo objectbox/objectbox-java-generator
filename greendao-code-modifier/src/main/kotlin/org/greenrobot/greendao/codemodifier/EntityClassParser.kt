@@ -8,7 +8,7 @@ import org.eclipse.jdt.core.dom.CompilationUnit
 import java.io.File
 
 class EntityClassParser(val jdtOptions: MutableMap<Any, Any>, val encoding: String) {
-    fun parse(javaFile : File, classesInPackage: List<String>) : EntityClass? {
+    fun parse(javaFile: File, classesInPackage: List<String>): EntityClass? {
         val source = javaFile.readText(charset(encoding))
 
         val parser = ASTParser.newParser(AST.JLS8)
@@ -28,17 +28,27 @@ class EntityClassParser(val jdtOptions: MutableMap<Any, Any>, val encoding: Stri
         // in a future version we might include the whole classpath so all bindings can be resolved
         val problems = astRoot.problems?.filter {
             val problemId = it.id
-            problemId != IProblem.PublicClassMustMatchFileName // our tests violate this
+            val keep = problemId != IProblem.PublicClassMustMatchFileName // our tests violate this
                     && problemId != IProblem.UndefinedField
                     && problemId != IProblem.UndefinedName // class refs, like TextUtils
                     && problemId != IProblem.UndefinedType
                     && problemId != IProblem.ImportNotFound
                     && problemId != IProblem.UnresolvedVariable
+            if (!keep) {
+                System.out.println(
+                        "[Verbose] Ignoring ID $problemId in ${javaFile}:${it.sourceLineNumber} (${it.message})")
+            }
+            keep
         }
         if (problems != null && problems.size > 0) {
             System.err.println("Found ${problems.size} problem(s) parsing \"${javaFile}\":")
-            problems.forEach { System.err.println(it) }
-            throw RuntimeException("Found problem(s) parsing \"${javaFile}\". See above")
+            problems.forEachIndexed { i, problem ->
+                System.err.println("#$i @${problem.sourceLineNumber}: ${problem.message}" +
+                        " (ID: ${problem.id}; error: ${problem.isError})")
+            }
+            val first = problems[0]
+            throw RuntimeException("Found ${problems.size} problem(s) parsing \"${javaFile}\". First problem:\n" +
+                    first + " (${first.id} at line ${first.sourceLineNumber}\nRun gradle with --info for more details")
         }
 
         // try to find legacy KEEP FIELDS section

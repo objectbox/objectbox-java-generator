@@ -93,6 +93,8 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
                         if (node is NormalAnnotation) {
                             protobufClassName = (node["protobuf"] as? TypeLiteral)?.type?.typeName?.nullIfBlank()
                             if (protobufClassName != null && entityTableName == null) {
+                                // TODO remove this requirement (the following is just a workaround to fill
+                                // protobufEntity.tableName):
                                 // explicitly require table name so the user is aware where both DAOs store their data
                                 throw RuntimeException("Set nameInDb in the ${parent.name} @Entity annotation. " +
                                         "An explicit table name is required when specifying a protobuf class.")
