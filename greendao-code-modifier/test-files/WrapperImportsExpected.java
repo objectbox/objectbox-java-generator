@@ -1,7 +1,7 @@
 package org.greenrobot.greendao.example;
 
-import org.greenrobot.greendao.annotation.Entity;
-import org.greenrobot.greendao.annotation.Id;
+import io.objectbox.annotation.Entity;
+import io.objectbox.annotation.Id;
 import java.lang.Boolean;
 import java.lang.Byte;
 import java.lang.Integer;
@@ -9,7 +9,7 @@ import java.lang.Long;
 import java.lang.Float;
 import java.lang.Double;
 import java.lang.Short;
-import org.greenrobot.greendao.annotation.Generated;
+import io.objectbox.annotation.Generated;
 
 @Entity
 public class Note {

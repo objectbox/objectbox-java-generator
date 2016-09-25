@@ -36,7 +36,7 @@ open class DetectEntityCandidatesTask : DefaultTask() {
     @Input
     var charset: String = "UTF-8"
 
-    private val token = "org.greenrobot.greendao.annotation".toCharArray()
+    private val token = "io.objectbox.annotation".toCharArray()
 
     @TaskAction
     fun execute(inputs: IncrementalTaskInputs) {

@@ -1,9 +1,9 @@
 package org.greenrobot.greendao.example;
 
-import org.greenrobot.greendao.annotation.Entity;
-import org.greenrobot.greendao.annotation.Generated;
-import org.greenrobot.greendao.annotation.Id;
-import org.greenrobot.greendao.annotation.Property;
+import io.objectbox.annotation.Entity;
+import io.objectbox.annotation.Generated;
+import io.objectbox.annotation.Id;
+import io.objectbox.annotation.Property;
 
 @Entity
 public class Note {

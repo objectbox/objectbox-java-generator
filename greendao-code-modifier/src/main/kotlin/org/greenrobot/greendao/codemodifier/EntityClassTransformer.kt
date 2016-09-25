@@ -236,7 +236,7 @@ private transient ${type.simpleName} $name;"""
             return // no legacy fields to migrate
         }
 
-        ensureImport("org.greenrobot.greendao.annotation.Transient")
+        ensureImport("io.objectbox.annotation.Transient")
         entityClass.legacyTransientFields.forEach {
             // simplest solution is to just replace the field expression
             insertField(

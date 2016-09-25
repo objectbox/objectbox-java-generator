@@ -8,11 +8,11 @@ import org.greenrobot.greendao.codemodifier.Tabulation
 import java.io.File
 
 /**
- * Gradle plugin extension, which collects all greenDAO options
+ * Gradle plugin extension, which collects all ObjectBox options
  *
  * NOTE class should be opened because gradle inherits from it
  */
-open class GreendaoOptions(val project: Project) {
+open class ObjectBoxOptions(val project: Project) {
     /**
      * Package name for generated DAOs, DaoMaster, and DaoSession.
      * The value is optional, by default package name is taken from source entities.
@@ -108,7 +108,7 @@ open class GreendaoOptions(val project: Project) {
      * }
      * ```
      *
-     * By default greenDAO generator tries to detect preferred tabulation and line width by analyzing Entity's source.
+     * By default objectbox generator tries to detect preferred tabulation and line width by analyzing Entity's source.
      * However if you are not satisfied with the results, you can enforce the desired formatting.
      * If any formatting option is not specified, then automatic detection is performed
      *
@@ -127,7 +127,7 @@ open class GreendaoOptions(val project: Project) {
      * 1. Specify schema name for each entity with @Entity(schema=...)
      * 2. Describe schemas like this:
      * ```
-     * greendao {
+     * objectbox {
      *    daoPackage "com.example.myapp.defaultdao" // configures default daoPackage
      *    schemaVersion 124
      *    genSrcDir "src/greendao-gen-src/java"
@@ -182,11 +182,11 @@ class FormattingExtension {
         if (spec.size > 0) {
             val key = spec.entries.first().key
             val size = spec[key] as Int
-            require(size > 0) { "greendao formatting: tabulation size should be greater than 0"}
+            require(size > 0) { "ObjectBox formatting: tabulation size should be greater than 0"}
             data.tabulation = when(key.toLowerCase()) {
                 "tab" -> Tabulation('\t', size)
                 "space" -> Tabulation(' ', size)
-                else -> throw IllegalArgumentException("greendao formatting: Unsupported tab char. Use 'space' or 'tab'")
+                else -> throw IllegalArgumentException("ObjectBox formatting: Unsupported tab char. Use 'space' or 'tab'")
             }
         }
     }
@@ -242,31 +242,31 @@ class SchemasExtension(val project: Project) : GroovyObjectSupport() {
  * Collects per schema properties
  */
 class SchemaOptionsExtension(val project: Project) {
-    /** @see GreendaoOptions.schemaVersion */
+    /** @see ObjectBoxOptions.schemaVersion */
     var version: Int? = null
 
-    /** @see GreendaoOptions.daoPackage */
+    /** @see ObjectBoxOptions.daoPackage */
     var daoPackage: String? = null
 
-    /** @see GreendaoOptions.targetGenDirTests */
+    /** @see ObjectBoxOptions.targetGenDirTests */
     var targetGenDirTests: File? = null
 
-    /** @see GreendaoOptions.schemaVersion */
+    /** @see ObjectBoxOptions.schemaVersion */
     fun version(value: Int) {
         this.version = value
     }
 
-    /** @see GreendaoOptions.daoPackage */
+    /** @see ObjectBoxOptions.daoPackage */
     fun daoPackage(value: String) {
         this.daoPackage = value
     }
 
-    /** @see GreendaoOptions.targetGenDirTests */
+    /** @see ObjectBoxOptions.targetGenDirTests */
     fun targetGenDirTests(value: File) {
         this.targetGenDirTests = value
     }
 
-    /** @see GreendaoOptions.targetGenDirTests */
+    /** @see ObjectBoxOptions.targetGenDirTests */
     fun targetGenDirTests(value: String) {
         this.targetGenDirTests = project.file(value)
     }

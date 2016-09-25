@@ -1,7 +1,7 @@
 package org.greenrobot.greendao.example;
 
-import org.greenrobot.greendao.annotation.Entity;
-import org.greenrobot.greendao.annotation.Id;
+import io.objectbox.annotation.Entity;
+import io.objectbox.annotation.Id;
 
 @Entity(generateGettersSetters = false)
 public class Note {

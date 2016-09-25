@@ -6,12 +6,12 @@ import static org.mockito.Matchers.any
 import static org.mockito.Mockito.mock
 import static org.mockito.Mockito.when
 
-class GreendaoOptionsTest extends GroovyTestCase {
+class ObjectBoxOptionsTest extends GroovyTestCase {
     void testSchemaOptions() {
         def project = mock(Project)
         when(project.file(any(String))).thenReturn(mock(File))
 
-        def options = new GreendaoOptions(project)
+        def options = new ObjectBoxOptions(project)
         options.with {
             schemas {
                 notes

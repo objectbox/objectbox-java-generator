@@ -1,10 +1,10 @@
 package org.greenrobot.greendao.example;
 
-import org.greenrobot.greendao.annotation.Convert;
-import org.greenrobot.greendao.annotation.Entity;
-import org.greenrobot.greendao.annotation.Id;
+import io.objectbox.annotation.Convert;
+import io.objectbox.annotation.Entity;
+import io.objectbox.annotation.Id;
 import org.greenrobot.greendao.converter.PropertyConverter;
-import org.greenrobot.greendao.annotation.Generated;
+import io.objectbox.annotation.Generated;
 
 @Entity
 public class Note {

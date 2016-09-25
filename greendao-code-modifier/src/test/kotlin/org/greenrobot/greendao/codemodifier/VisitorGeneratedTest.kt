@@ -15,7 +15,7 @@ class VisitorGeneratedTest : VisitorTestBase() {
         val cityHash = CodeCompare.codeHash("@Transient String city;")
         val entity = visit(
                 """
-        import org.greenrobot.greendao.annotation.*;
+        import io.objectbox.annotation.*;
 
         @Entity
         class Foobar {
@@ -46,7 +46,7 @@ class VisitorGeneratedTest : VisitorTestBase() {
         val entity = visit(
                 //language=java
                 """
-        import org.greenrobot.greendao.annotation.*;
+        import io.objectbox.annotation.*;
 
         @Entity
         class Foobar {
@@ -80,7 +80,7 @@ class VisitorGeneratedTest : VisitorTestBase() {
         val entity = visit(
                 //language=java
                 """
-        import org.greenrobot.greendao.annotation.*;
+        import io.objectbox.annotation.*;
 
         @Entity
         class Foobar {
@@ -109,7 +109,7 @@ class VisitorGeneratedTest : VisitorTestBase() {
         visit(
                 //language=java
                 """
-        import org.greenrobot.greendao.annotation.*;
+        import io.objectbox.annotation.*;
 
         @Entity
         class Foobar {
@@ -124,7 +124,7 @@ class VisitorGeneratedTest : VisitorTestBase() {
         visit(
                 //language=java
                 """
-        import org.greenrobot.greendao.annotation.*;
+        import io.objectbox.annotation.*;
 
         @Entity
         class Foobar {
@@ -141,7 +141,7 @@ class VisitorGeneratedTest : VisitorTestBase() {
         visit(
                 //language=java
                 """
-        import org.greenrobot.greendao.annotation.*;
+        import io.objectbox.annotation.*;
 
         @Entity
         class Foobar {

@@ -18,7 +18,7 @@ class VisitorTest : VisitorTestBase() {
         val entity = visit(
                 //language=java
                 """
-        import org.greenrobot.greendao.annotation.*;
+        import io.objectbox.annotation.*;
 
         @Entity
         class Foobar {
@@ -39,7 +39,7 @@ class VisitorTest : VisitorTestBase() {
         val entity = visit(
                 //language=java
                 """
-        import org.greenrobot.greendao.annotation.*;
+        import io.objectbox.annotation.*;
 
         @Entity
         class Foobar {}
@@ -58,7 +58,7 @@ class VisitorTest : VisitorTestBase() {
         val entity = visit(
                 //language=java
                 """
-        import org.greenrobot.greendao.annotation.*;
+        import io.objectbox.annotation.*;
 
         @Entity
         class Foobar {
@@ -77,7 +77,7 @@ class VisitorTest : VisitorTestBase() {
         val entity = visit(
                 //language=java
                 """
-        import org.greenrobot.greendao.annotation.*;
+        import io.objectbox.annotation.*;
 
         @Entity
         class Foobar {
@@ -96,7 +96,7 @@ class VisitorTest : VisitorTestBase() {
         val entity = visit(
                 //language=java
                 """
-        import org.greenrobot.greendao.annotation.*;
+        import io.objectbox.annotation.*;
 
         @Entity
         class Foobar {
@@ -119,7 +119,7 @@ class VisitorTest : VisitorTestBase() {
         val entity = visit(
                 //language=java
                 """
-        import org.greenrobot.greendao.annotation.*;
+        import io.objectbox.annotation.*;
 
         @Entity
         class Foobar {
@@ -137,7 +137,7 @@ class VisitorTest : VisitorTestBase() {
         val entity = visit(
                 //language=java
                 """
-        import org.greenrobot.greendao.annotation.*;
+        import io.objectbox.annotation.*;
 
         @Entity
         class Foobar {
@@ -153,7 +153,7 @@ class VisitorTest : VisitorTestBase() {
         val entity = visit(
                 //language=java
                 """
-        import org.greenrobot.greendao.annotation.*;
+        import io.objectbox.annotation.*;
 
         @Entity
         class Foobar {
@@ -170,7 +170,7 @@ class VisitorTest : VisitorTestBase() {
         val entity = visit(
                 //language=java
                 """
-        import org.greenrobot.greendao.annotation.*;
+        import io.objectbox.annotation.*;
 
         @Entity
         class Foobar {
@@ -189,7 +189,7 @@ class VisitorTest : VisitorTestBase() {
         visit(
                 //language=java
                 """
-        import org.greenrobot.greendao.annotation.*;
+        import io.objectbox.annotation.*;
 
         @Entity
         class Foobar {
@@ -204,7 +204,7 @@ class VisitorTest : VisitorTestBase() {
         val entity = visit(
                 //language=java
                 """
-        import org.greenrobot.greendao.annotation.*;
+        import io.objectbox.annotation.*;
 
         @Entity
         class Foobar {
@@ -222,8 +222,8 @@ class VisitorTest : VisitorTestBase() {
                 """
         package com.example.myapp;
 
-        import org.greenrobot.greendao.annotation.Entity;
-        import org.greenrobot.greendao.annotation.Convert;
+        import io.objectbox.annotation.Entity;
+        import io.objectbox.annotation.Convert;
         import com.example.myapp.Converter;
 
         @Entity
@@ -251,8 +251,8 @@ class VisitorTest : VisitorTestBase() {
                 """
         package com.example.myapp;
 
-        import org.greenrobot.greendao.annotation.Entity;
-        import org.greenrobot.greendao.annotation.Convert;
+        import io.objectbox.annotation.Entity;
+        import io.objectbox.annotation.Convert;
         import org.greenrobot.greendao.converter.PropertyConverter;
 
         @Entity
@@ -291,8 +291,8 @@ class VisitorTest : VisitorTestBase() {
                 """
         package com.example.myapp;
 
-        import org.greenrobot.greendao.annotation.Entity;
-        import org.greenrobot.greendao.annotation.Convert;
+        import io.objectbox.annotation.Entity;
+        import io.objectbox.annotation.Convert;
         import org.greenrobot.greendao.converter.PropertyConverter;
 
         @Entity
@@ -321,8 +321,8 @@ class VisitorTest : VisitorTestBase() {
                 """
         package com.example.myapp;
 
-        import org.greenrobot.greendao.annotation.Entity;
-        import org.greenrobot.greendao.annotation.Convert;
+        import io.objectbox.annotation.Entity;
+        import io.objectbox.annotation.Convert;
         import org.greenrobot.greendao.converter.PropertyConverter;
 
         @Entity
@@ -341,7 +341,7 @@ class VisitorTest : VisitorTestBase() {
         val entity = visit(
                 //language=java
                 """
-        import org.greenrobot.greendao.annotation.*;
+        import io.objectbox.annotation.*;
 
         @Entity(indexes = {
             @Index(value = "name DESC, age", unique = true, name = "NAME_AGE_INDEX"),
@@ -370,7 +370,7 @@ class VisitorTest : VisitorTestBase() {
         val entity = visit(
                 //language=java
                 """
-        import org.greenrobot.greendao.annotation.*;
+        import io.objectbox.annotation.*;
 
         @Entity
         class Foobar {
@@ -399,7 +399,7 @@ class VisitorTest : VisitorTestBase() {
         val entity = visit(
                 //language=java
                 """
-        import org.greenrobot.greendao.annotation.*;
+        import io.objectbox.annotation.*;
 
         @Entity
         class Foobar {

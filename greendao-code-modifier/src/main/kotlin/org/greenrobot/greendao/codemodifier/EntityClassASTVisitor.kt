@@ -2,7 +2,7 @@ package org.greenrobot.greendao.codemodifier
 
 import org.eclipse.jdt.core.dom.*
 import org.eclipse.jdt.core.dom.Annotation
-import org.greenrobot.greendao.annotation.*
+import io.objectbox.annotation.*
 import java.io.File
 import kotlin.reflect.KClass
 

@@ -8,7 +8,7 @@ object CodeCompare {
     private val regexUselessSpaces = Regex("\\s?(\\W)\\s?")
     private val regexJavaCommentMl = Regex("/\\*([^\\*]|\\*(?!/))*?\\*/")
     private val regexJavaCommentSl = Regex("//(.*)$")
-    private val regexGeneratedAnnotation = Regex("@(org.greenrobot.greendao.annotation.)?Generated[(][^)]+[)]")
+    private val regexGeneratedAnnotation = Regex("@(io.objectbox.annotation.)?Generated[(][^)]+[)]")
     private val murmur = Murmur3F()
 
     /** IMPORTANT: do not change this method without real need, because all the hashes can be invalidated */

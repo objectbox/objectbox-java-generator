@@ -17,7 +17,7 @@ class EntityClassTransformerTest {
         val entityClass = parseEntityClass(
             //language=java
             """
-            import org.greenrobot.greendao.annotation.Entity;
+            import io.objectbox.annotation.Entity;
 
             @Entity
             class Foobar {
@@ -41,7 +41,7 @@ class EntityClassTransformerTest {
         assertEquals(
             //language=java
             """
-            import org.greenrobot.greendao.annotation.Entity;
+            import io.objectbox.annotation.Entity;
 
             @Entity
             class Foobar {
@@ -64,7 +64,7 @@ class EntityClassTransformerTest {
         val entityClass = parseEntityClass(
             //language=java
             """
-            import org.greenrobot.greendao.annotation.Entity;
+            import io.objectbox.annotation.Entity;
 
             @Entity
             class Foobar {
@@ -91,7 +91,7 @@ class EntityClassTransformerTest {
         assertEquals(
             //language=java
             """
-            import org.greenrobot.greendao.annotation.Entity;
+            import io.objectbox.annotation.Entity;
 
             @Entity
             class Foobar {
@@ -115,7 +115,7 @@ class EntityClassTransformerTest {
         val entityClass = parseEntityClass(
             //language=java
             """
-            import org.greenrobot.greendao.annotation.Entity;
+            import io.objectbox.annotation.Entity;
 
             @Entity
             class Foobar {
@@ -138,7 +138,7 @@ class EntityClassTransformerTest {
         assertEquals(
             //language=java
             """
-            import org.greenrobot.greendao.annotation.Entity;
+            import io.objectbox.annotation.Entity;
 
             @Entity
             class Foobar {
@@ -162,7 +162,7 @@ class EntityClassTransformerTest {
     fun doNotTouchUserFormatting() {
         //language=java
         val javaCode = """
-            import org.greenrobot.greendao.annotation.Entity;
+            import io.objectbox.annotation.Entity;
 
             @Entity
             class Foobar {
@@ -188,7 +188,7 @@ class EntityClassTransformerTest {
 
         //language=java
         val expectedChangedCode = """
-            import org.greenrobot.greendao.annotation.Entity;
+            import io.objectbox.annotation.Entity;
 
             @Entity
             class Foobar {
@@ -217,8 +217,8 @@ class EntityClassTransformerTest {
         val entityClass = parseEntityClass(
             //language=java
             """
-            import org.greenrobot.greendao.annotation.Entity;
-            import org.greenrobot.greendao.annotation.Generated;
+            import io.objectbox.annotation.Entity;
+            import io.objectbox.annotation.Generated;
 
             @Entity
             class Foobar {
@@ -242,8 +242,8 @@ class EntityClassTransformerTest {
         assertEquals(
             //language=java
             """
-            import org.greenrobot.greendao.annotation.Entity;
-            import org.greenrobot.greendao.annotation.Generated;
+            import io.objectbox.annotation.Entity;
+            import io.objectbox.annotation.Generated;
 
             @Entity
             class Foobar {
@@ -262,8 +262,8 @@ class EntityClassTransformerTest {
         val entityClass = parseEntityClass(
             //language=java
             """
-            import org.greenrobot.greendao.annotation.Entity;
-            import org.greenrobot.greendao.annotation.Generated;
+            import io.objectbox.annotation.Entity;
+            import io.objectbox.annotation.Generated;
 
             @Entity
             class Foobar {
@@ -291,8 +291,8 @@ class EntityClassTransformerTest {
         assertEquals(
             //language=java
             """
-            import org.greenrobot.greendao.annotation.Entity;
-            import org.greenrobot.greendao.annotation.Generated;
+            import io.objectbox.annotation.Entity;
+            import io.objectbox.annotation.Generated;
 
             @Entity
             class Foobar {
@@ -311,8 +311,8 @@ class EntityClassTransformerTest {
         val entityClass = parseEntityClass(
                 //language=java
                 """
-            import org.greenrobot.greendao.annotation.Entity;
-            import org.greenrobot.greendao.annotation.Generated;
+            import io.objectbox.annotation.Entity;
+            import io.objectbox.annotation.Generated;
 
             @Entity
             class Foobar {
@@ -338,8 +338,8 @@ class EntityClassTransformerTest {
         assertEquals(
                 //language=java
                 """
-            import org.greenrobot.greendao.annotation.Entity;
-            import org.greenrobot.greendao.annotation.Generated;
+            import io.objectbox.annotation.Entity;
+            import io.objectbox.annotation.Generated;
 
             @Entity
             class Foobar {
@@ -362,8 +362,8 @@ class EntityClassTransformerTest {
         val entityClass = parseEntityClass(
             //language=java
             """
-            import org.greenrobot.greendao.annotation.Entity;
-            import org.greenrobot.greendao.annotation.Generated;
+            import io.objectbox.annotation.Entity;
+            import io.objectbox.annotation.Generated;
 
             @Entity
             class Foobar {
@@ -379,8 +379,8 @@ class EntityClassTransformerTest {
         assertEquals(
             //language=java
             """
-            import org.greenrobot.greendao.annotation.Entity;
-            import org.greenrobot.greendao.annotation.Generated;
+            import io.objectbox.annotation.Entity;
+            import io.objectbox.annotation.Generated;
 
             @Entity
             class Foobar {
@@ -397,8 +397,8 @@ class EntityClassTransformerTest {
         val entityClass = parseEntityClass(
             //language=java
             """
-            import org.greenrobot.greendao.annotation.Entity;
-            import org.greenrobot.greendao.annotation.Generated;
+            import io.objectbox.annotation.Entity;
+            import io.objectbox.annotation.Generated;
 
             @Entity
             class Foobar {
@@ -428,8 +428,8 @@ class EntityClassTransformerTest {
         assertEquals(
             //language=java
             """
-            import org.greenrobot.greendao.annotation.Entity;
-            import org.greenrobot.greendao.annotation.Generated;
+            import io.objectbox.annotation.Entity;
+            import io.objectbox.annotation.Generated;
 
             @Entity
             class Foobar {
@@ -445,8 +445,8 @@ class EntityClassTransformerTest {
     fun doNotReplaceKeepMarkedMethod() {
         //language=java
         val originalCode = """
-            import org.greenrobot.greendao.annotation.Entity;
-            import org.greenrobot.greendao.annotation.Keep;
+            import io.objectbox.annotation.Entity;
+            import io.objectbox.annotation.Keep;
 
             @Entity
             class Foobar {
@@ -475,8 +475,8 @@ class EntityClassTransformerTest {
     fun doNotReplaceKeepMarkedConstructor() {
         //language=java
         val originalCode = """
-            import org.greenrobot.greendao.annotation.Entity;
-            import org.greenrobot.greendao.annotation.Keep;
+            import io.objectbox.annotation.Entity;
+            import io.objectbox.annotation.Keep;
 
             @Entity
             class Foobar {
@@ -506,8 +506,8 @@ class EntityClassTransformerTest {
     fun doNotReplaceKeepMarkedField() {
         //language=java
         val originalCode = """
-            import org.greenrobot.greendao.annotation.Entity;
-            import org.greenrobot.greendao.annotation.Keep;
+            import io.objectbox.annotation.Entity;
+            import io.objectbox.annotation.Keep;
 
             @Entity
             class Foobar {
@@ -527,8 +527,8 @@ class EntityClassTransformerTest {
     fun failOnMethodConflict() {
         //language=java
         val originalCode = """
-            import org.greenrobot.greendao.annotation.Entity;
-            import org.greenrobot.greendao.annotation.Keep;
+            import io.objectbox.annotation.Entity;
+            import io.objectbox.annotation.Keep;
 
             @Entity
             class Foobar {
@@ -554,8 +554,8 @@ class EntityClassTransformerTest {
     fun failOnConstructorConflict() {
         //language=java
         val originalCode = """
-            import org.greenrobot.greendao.annotation.Entity;
-            import org.greenrobot.greendao.annotation.Keep;
+            import io.objectbox.annotation.Entity;
+            import io.objectbox.annotation.Keep;
 
             @Entity
             class Foobar {
@@ -582,8 +582,8 @@ class EntityClassTransformerTest {
     fun failOnFieldConflict() {
         //language=java
         val originalCode = """
-            import org.greenrobot.greendao.annotation.Entity;
-            import org.greenrobot.greendao.annotation.Keep;
+            import io.objectbox.annotation.Entity;
+            import io.objectbox.annotation.Keep;
 
             @Entity
             class Foobar {
@@ -601,8 +601,8 @@ class EntityClassTransformerTest {
         // use 2-space formatting and less spaces for for-statement
         //language=java
         val originalCode = """
-            import org.greenrobot.greendao.annotation.Entity;
-            import org.greenrobot.greendao.annotation.Generated;
+            import io.objectbox.annotation.Entity;
+            import io.objectbox.annotation.Generated;
 
             @Entity
             class Foobar {
@@ -635,8 +635,8 @@ class EntityClassTransformerTest {
     fun replaceGeneratedMethodEvenIfOnlyJavaDocChanged() {
         //language=java
         val originalCode = """
-            import org.greenrobot.greendao.annotation.Entity;
-            import org.greenrobot.greendao.annotation.Generated;
+            import io.objectbox.annotation.Entity;
+            import io.objectbox.annotation.Generated;
 
             @Entity
             class Foobar {
@@ -663,8 +663,8 @@ class EntityClassTransformerTest {
         assertEquals(
             // language=java
             """
-            import org.greenrobot.greendao.annotation.Entity;
-            import org.greenrobot.greendao.annotation.Generated;
+            import io.objectbox.annotation.Entity;
+            import io.objectbox.annotation.Generated;
 
             @Entity
             class Foobar {

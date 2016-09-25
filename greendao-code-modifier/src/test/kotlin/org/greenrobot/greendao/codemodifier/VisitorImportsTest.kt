@@ -15,8 +15,8 @@ class VisitorImportsTest : VisitorTestBase() {
                 """
         package com.example;
 
-        import org.greenrobot.greendao.annotation.Entity;
-        import org.greenrobot.greendao.annotation.ToOne;
+        import io.objectbox.annotation.Entity;
+        import io.objectbox.annotation.ToOne;
 
         import net.yetanotherlib.*;
 
@@ -37,8 +37,8 @@ class VisitorImportsTest : VisitorTestBase() {
                 """
         package com.example;
 
-        import org.greenrobot.greendao.annotation.Entity;
-        import org.greenrobot.greendao.annotation.ToOne;
+        import io.objectbox.annotation.Entity;
+        import io.objectbox.annotation.ToOne;
 
         import net.yetanotherlib.*;
 
@@ -61,8 +61,8 @@ class VisitorImportsTest : VisitorTestBase() {
                 """
         package com.example;
 
-        import org.greenrobot.greendao.annotation.Entity;
-        import org.greenrobot.greendao.annotation.ToOne;
+        import io.objectbox.annotation.Entity;
+        import io.objectbox.annotation.ToOne;
 
         import net.yetanotherlib.*;
 
@@ -85,8 +85,8 @@ class VisitorImportsTest : VisitorTestBase() {
                 """
         package com.example2;
 
-        import org.greenrobot.greendao.annotation.Entity;
-        import org.greenrobot.greendao.annotation.ToOne;
+        import io.objectbox.annotation.Entity;
+        import io.objectbox.annotation.ToOne;
 
         import net.yetanotherlib.*;
 
@@ -110,8 +110,8 @@ class VisitorImportsTest : VisitorTestBase() {
                 """
         package com.example2;
 
-        import org.greenrobot.greendao.annotation.Entity;
-        import org.greenrobot.greendao.annotation.ToOne;
+        import io.objectbox.annotation.Entity;
+        import io.objectbox.annotation.ToOne;
 
         import net.yetanotherlib.*;
 

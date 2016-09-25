@@ -16,8 +16,8 @@ class VisitorRelationsTest : VisitorTestBase() {
                 """
         package com.example;
 
-        import org.greenrobot.greendao.annotation.Entity;
-        import org.greenrobot.greendao.annotation.ToOne;
+        import io.objectbox.annotation.Entity;
+        import io.objectbox.annotation.ToOne;
 
         @Entity
         class Foobar {
@@ -40,9 +40,9 @@ class VisitorRelationsTest : VisitorTestBase() {
                 """
         package com.example;
 
-        import org.greenrobot.greendao.annotation.Column;
-        import org.greenrobot.greendao.annotation.Entity;
-        import org.greenrobot.greendao.annotation.ToOne;
+        import io.objectbox.annotation.Column;
+        import io.objectbox.annotation.Entity;
+        import io.objectbox.annotation.ToOne;
         import org.jetbrains.annotations.NotNull;
 
         @Entity
@@ -65,10 +65,10 @@ class VisitorRelationsTest : VisitorTestBase() {
                 """
         package com.example;
 
-        import org.greenrobot.greendao.annotation.Column;
-        import org.greenrobot.greendao.annotation.Entity;
-        import org.greenrobot.greendao.annotation.Property;import org.greenrobot.greendao.annotation.ToOne;
-        import org.greenrobot.greendao.annotation.Unique;
+        import io.objectbox.annotation.Column;
+        import io.objectbox.annotation.Entity;
+        import io.objectbox.annotation.Property;import io.objectbox.annotation.ToOne;
+        import io.objectbox.annotation.Unique;
         import org.jetbrains.annotations.NotNull;
 
         @Entity
@@ -95,8 +95,8 @@ class VisitorRelationsTest : VisitorTestBase() {
                 """
         package com.example;
 
-        import org.greenrobot.greendao.annotation.Entity;
-        import org.greenrobot.greendao.annotation.ToMany;
+        import io.objectbox.annotation.Entity;
+        import io.objectbox.annotation.ToMany;
 
         import java.util.List;
 
@@ -120,10 +120,10 @@ class VisitorRelationsTest : VisitorTestBase() {
                 """
         package com.example;
 
-        import org.greenrobot.greendao.annotation.Entity;
-        import org.greenrobot.greendao.annotation.JoinOn;
-        import org.greenrobot.greendao.annotation.JoinProperty;
-        import org.greenrobot.greendao.annotation.ToMany;
+        import io.objectbox.annotation.Entity;
+        import io.objectbox.annotation.JoinOn;
+        import io.objectbox.annotation.JoinProperty;
+        import io.objectbox.annotation.ToMany;
 
         import java.util.List;
 
@@ -155,9 +155,9 @@ class VisitorRelationsTest : VisitorTestBase() {
                 """
         package com.example;
 
-        import org.greenrobot.greendao.annotation.Entity;
-        import org.greenrobot.greendao.annotation.JoinEntity;
-        import org.greenrobot.greendao.annotation.ToMany;
+        import io.objectbox.annotation.Entity;
+        import io.objectbox.annotation.JoinEntity;
+        import io.objectbox.annotation.ToMany;
 
         import java.util.List;
 
@@ -184,9 +184,9 @@ class VisitorRelationsTest : VisitorTestBase() {
                 """
         package com.example;
 
-        import org.greenrobot.greendao.annotation.Entity;
-        import org.greenrobot.greendao.annotation.OrderBy;
-        import org.greenrobot.greendao.annotation.ToMany;
+        import io.objectbox.annotation.Entity;
+        import io.objectbox.annotation.OrderBy;
+        import io.objectbox.annotation.ToMany;
 
         import java.util.List;
 

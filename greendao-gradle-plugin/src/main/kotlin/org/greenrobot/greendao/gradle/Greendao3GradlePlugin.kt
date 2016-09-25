@@ -13,19 +13,19 @@ import java.util.*
 
 class Greendao3GradlePlugin : Plugin<Project> {
     override fun apply(project: Project) {
-        project.logger.debug("greendao plugin starting...")
-        project.extensions.create("greendao", GreendaoOptions::class.java, project)
+        project.logger.debug("ObjectBox plugin starting...")
+        project.extensions.create("objectbox", ObjectBoxOptions::class.java, project)
 
         // Use afterEvaluate so order of applying the plugins in consumer projects does not matter
         project.afterEvaluate {
             val version = getVersion()
-            project.logger.debug("greendao plugin ${version} preparing tasks...")
-            val candidatesFile = project.file("build/cache/greendao-candidates.list")
+            project.logger.debug("objectbox plugin ${version} preparing tasks...")
+            val candidatesFile = project.file("build/cache/objectbox-candidates.list")
             val sourceProvider = project.sourceProvider
             val encoding = sourceProvider.encoding ?: "UTF-8"
 
             val taskArgs = mapOf("type" to DetectEntityCandidatesTask::class.java)
-            val prepareTask = project.task(taskArgs, "greendaoPrepare") as DetectEntityCandidatesTask
+            val prepareTask = project.task(taskArgs, "objectboxPrepare") as DetectEntityCandidatesTask
             prepareTask.sourceFiles = sourceProvider.sourceTree().matching(Closure { pf: PatternFilterable ->
                 pf.include("**/*.java")
             })
@@ -38,14 +38,14 @@ class Greendao3GradlePlugin : Plugin<Project> {
 
             project.tasks.forEach {
                 if (it is JavaCompile) {
-                    project.logger.debug("Make ${it.name} depend on greendao")
+                    project.logger.debug("Make ${it.name} depend on objectbox")
                     addGreenDaoTask(greendaoTask, it)
                 }
             }
 
             project.tasks.whenTaskAdded {
                 if (it is JavaCompile) {
-                    project.logger.debug("Make just added task ${it.name} depend on greendao")
+                    project.logger.debug("Make just added task ${it.name} depend on objectbox")
                     addGreenDaoTask(greendaoTask, it)
                 }
             }
@@ -59,14 +59,14 @@ class Greendao3GradlePlugin : Plugin<Project> {
     }
 
     private fun createGreendaoTask(project: Project, candidatesFile: File, encoding: String, version: String): Task {
-        val options = project.extensions.getByType(GreendaoOptions::class.java)
-        val targetGenDir = options.targetGenDir?: File(project.buildDir, "generated/source/greendao")
+        val options = project.extensions.getByType(ObjectBoxOptions::class.java)
+        val targetGenDir = options.targetGenDir?: File(project.buildDir, "generated/source/objectbox")
         if (options.targetGenDir == null) {
             project.whenSourceProviderAvailable {
                 it.addSourceDir(targetGenDir)
             }
         }
-        val generateTask = project.task("greendao").apply {
+        val generateTask = project.task("objectbox").apply {
             logging.captureStandardOutput(LogLevel.INFO)
 
             inputs.file(candidatesFile)
@@ -108,14 +108,14 @@ class Greendao3GradlePlugin : Plugin<Project> {
 
     private fun getVersion(): String {
         return Greendao3GradlePlugin::class.java.getResourceAsStream(
-                "/org/greenrobot/greendao/gradle/version.properties")?.let {
+                "/io/objectbox/gradle/version.properties")?.let {
             val properties = Properties()
             properties.load(it)
             properties.getProperty("version") ?: throw RuntimeException("No version in version.properties")
         } ?: "0"
     }
 
-    private fun collectSchemaOptions(daoPackage: String?, genSrcDir: File, options: GreendaoOptions)
+    private fun collectSchemaOptions(daoPackage: String?, genSrcDir: File, options: ObjectBoxOptions)
             : MutableMap<String, SchemaOptions> {
         val defaultOptions = SchemaOptions(
                 name = "default",

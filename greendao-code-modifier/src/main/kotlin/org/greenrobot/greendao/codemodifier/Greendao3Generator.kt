@@ -121,7 +121,7 @@ class Greendao3Generator(formattingOptions: FormattingOptions? = null,
         val daoPackage = entity.schema.defaultJavaPackage
         val transformer = context.transformer(entityClass)
 
-        transformer.ensureImport("org.greenrobot.greendao.annotation.Generated")
+        transformer.ensureImport("io.objectbox.annotation.Generated")
         transformer.annotateLegacyKeepFields()
 
         // add everything (fields, constructors, methods) in reverse as transformer writes in reverse direction
@@ -201,7 +201,7 @@ class Greendao3Generator(formattingOptions: FormattingOptions? = null,
             // define methods
             transformer.defMethod("set${toOne.name.capitalize()}", toOne.targetEntity.className) {
                 if (entityClass.notNullAnnotation == null && toOne.fkProperties[0].isNotNull) {
-                    transformer.ensureImport("org.greenrobot.greendao.annotation.NotNull")
+                    transformer.ensureImport("io.objectbox.annotation.NotNull")
                 }
                 Templates.entity.oneRelationSetter(toOne, entityClass.notNullAnnotation ?: "@NotNull")
             }
