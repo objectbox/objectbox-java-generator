@@ -1,6 +1,6 @@
 package org.greenrobot.greendao.codemodifier
 
-import org.greenrobot.greendao.generator.DaoGenerator
+import io.objectbox.generator.BoxGenerator
 import org.greenrobot.greendao.generator.Entity
 import org.greenrobot.greendao.generator.Schema
 import java.io.File
@@ -79,7 +79,7 @@ class Greendao3Generator(formattingOptions: FormattingOptions? = null,
         outputDir.mkdirs()
         testsOutputDir?.mkdirs()
 
-        DaoGenerator().generateAll(schema, outputDir.path, outputDir.path, testsOutputDir?.path)
+        BoxGenerator().generateAll(schema, outputDir.path, outputDir.path, testsOutputDir?.path)
 
         // modify existing entity classes after using DaoGenerator, because not all schema properties are available before
         // for each entity add missing fields/methods/constructors

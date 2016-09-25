@@ -37,6 +37,19 @@ subprojects {
 
     version = '0.8.0-SNAPSHOT'
 
+    repositories {
+        jcenter()
+        mavenCentral()
+        maven {
+            credentials {
+                username exampleUser
+                password examplePassword
+            }
+            url "https://example.org/mvnrepo/"
+        }
+        mavenLocal()
+    }
+
     configurations {
         deployerJars
     }

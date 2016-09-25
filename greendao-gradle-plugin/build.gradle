@@ -9,12 +9,6 @@ archivesBaseName = 'objectbox-code-modifier'
 sourceCompatibility = '1.7'
 targetCompatibility = '1.7'
 
-repositories {
-    jcenter()
-    mavenCentral()
-    mavenLocal()
-}
-
 def genResourcesDir = new File(buildDir, 'src/generated/resources')
 def versionFile = new File(genResourcesDir, 'io/objectbox/gradle/version.properties')
 

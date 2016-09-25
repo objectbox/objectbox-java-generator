@@ -7,19 +7,6 @@ archivesBaseName = 'objectbox-code-modifier'
 sourceCompatibility = '1.7'
 targetCompatibility = '1.7'
 
-repositories {
-    jcenter()
-    mavenCentral()
-    maven {
-        credentials {
-            username exampleUser
-            password examplePassword
-        }
-        url "https://example.org/mvnrepo/"
-    }
-    mavenLocal()
-}
-
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     compile "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
@@ -71,7 +58,11 @@ dependencies {
     compile 'io.objectbox:objectbox-api:0.8.0-SNAPSHOT'
     compile 'io.objectbox:objectbox-generator:0.8.0-SNAPSHOT'
 
+    // TODO remove
     compile 'de.greenrobot:java-common:2.3.1'
+
+    // TODO this should be part of objectbox-generator (publish publicly!!)
+    compile 'org.greenrobot:essentials:3.0.0-SNAPSHOT'
 
     testCompile 'junit:junit:4.12'
     testCompile 'org.mockito:mockito-all:1.10.19'
