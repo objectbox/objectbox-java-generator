@@ -10,7 +10,7 @@ import java.io.File
  * - runs generation of dao classes within {@link org.greenrobot.greendao.generator.DaoGenerator}
  * - runs parsing and transformation of Entity classes using {@link EntityClassTransformer}
  */
-class Greendao3Generator(formattingOptions: FormattingOptions? = null,
+class ObjectBoxGenerator(formattingOptions: FormattingOptions? = null,
                          val skipTestGeneration: List<String> = emptyList(),
                          encoding: String = "UTF-8") {
     val context = JdtCodeContext(formattingOptions, encoding)

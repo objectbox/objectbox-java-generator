@@ -4,7 +4,6 @@ apply plugin: 'groovy' // for dsl tests
 apply plugin: 'maven'
 
 group = 'io.objectbox'
-archivesBaseName = 'objectbox-gradle-plugin'
 
 sourceCompatibility = '1.7'
 targetCompatibility = '1.7'

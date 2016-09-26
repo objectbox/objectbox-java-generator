@@ -1,4 +1,4 @@
-package org.greenrobot.greendao.gradle
+package io.objectbox.gradle
 
 import com.android.build.gradle.AndroidConfig
 import org.gradle.api.Project

@@ -1,4 +1,4 @@
-package org.greenrobot.greendao.gradle
+package io.objectbox.gradle
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -6,12 +6,16 @@ import org.gradle.api.Task
 import org.gradle.api.logging.LogLevel
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.api.tasks.util.PatternFilterable
-import org.greenrobot.greendao.codemodifier.Greendao3Generator
+import org.greenrobot.greendao.codemodifier.ObjectBoxGenerator
 import org.greenrobot.greendao.codemodifier.SchemaOptions
+import io.objectbox.gradle.Closure
+import io.objectbox.gradle.ObjectBoxOptions
+import io.objectbox.gradle.sourceProvider
+import io.objectbox.gradle.whenSourceProviderAvailable
 import java.io.File
 import java.util.*
 
-class Greendao3GradlePlugin : Plugin<Project> {
+class ObjectBoxGradlePlugin : Plugin<Project> {
     override fun apply(project: Project) {
         project.logger.debug("ObjectBox plugin starting...")
         project.extensions.create("objectbox", ObjectBoxOptions::class.java, project)
@@ -33,32 +37,32 @@ class Greendao3GradlePlugin : Plugin<Project> {
             prepareTask.version = version
             prepareTask.charset = encoding
 
-            val greendaoTask = createGreendaoTask(project, candidatesFile, encoding, version)
-            greendaoTask.dependsOn(prepareTask)
+            val objectboxTask = createObjectBoxTask(project, candidatesFile, encoding, version)
+            objectboxTask.dependsOn(prepareTask)
 
             project.tasks.forEach {
                 if (it is JavaCompile) {
                     project.logger.debug("Make ${it.name} depend on objectbox")
-                    addGreenDaoTask(greendaoTask, it)
+                    addObjectBoxTask(objectboxTask, it)
                 }
             }
 
             project.tasks.whenTaskAdded {
                 if (it is JavaCompile) {
                     project.logger.debug("Make just added task ${it.name} depend on objectbox")
-                    addGreenDaoTask(greendaoTask, it)
+                    addObjectBoxTask(objectboxTask, it)
                 }
             }
         }
     }
 
-    private fun addGreenDaoTask(greendaoTask: Task, javaTask: JavaCompile) {
-        javaTask.dependsOn(greendaoTask)
+    private fun addObjectBoxTask(objectboxTask: Task, javaTask: JavaCompile) {
+        javaTask.dependsOn(objectboxTask)
         // ensure generated files are on classpath, just adding a srcDir seems not enough
-        javaTask.setSource(greendaoTask.outputs.files + javaTask.source)
+        javaTask.setSource(objectboxTask.outputs.files + javaTask.source)
     }
 
-    private fun createGreendaoTask(project: Project, candidatesFile: File, encoding: String, version: String): Task {
+    private fun createObjectBoxTask(project: Project, candidatesFile: File, encoding: String, version: String): Task {
         val options = project.extensions.getByType(ObjectBoxOptions::class.java)
         val targetGenDir = options.targetGenDir?: File(project.buildDir, "generated/source/objectbox")
         if (options.targetGenDir == null) {
@@ -96,7 +100,7 @@ class Greendao3GradlePlugin : Plugin<Project> {
                 // read candidates file skipping first for timestamp
                 val candidatesFiles = candidatesFile.readLines().asSequence().drop(1).map { File(it) }.asIterable()
 
-                Greendao3Generator(
+                ObjectBoxGenerator(
                         options.formatting.data,
                         options.skipTestGeneration,
                         encoding
@@ -107,7 +111,7 @@ class Greendao3GradlePlugin : Plugin<Project> {
     }
 
     private fun getVersion(): String {
-        return Greendao3GradlePlugin::class.java.getResourceAsStream(
+        return ObjectBoxGradlePlugin::class.java.getResourceAsStream(
                 "/io/objectbox/gradle/version.properties")?.let {
             val properties = Properties()
             properties.load(it)

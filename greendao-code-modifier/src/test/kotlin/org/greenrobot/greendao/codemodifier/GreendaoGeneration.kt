@@ -27,7 +27,7 @@ object GreendaoGeneration {
 //            version = 2
 //        )
 
-        Greendao3Generator(formattingOptions).run(files, mapOf(
+        ObjectBoxGenerator(formattingOptions).run(files, mapOf(
             "default" to schemaOptions
 //            "notes" to notesSchemaOptions
         ))

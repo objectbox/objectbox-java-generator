@@ -1,4 +1,4 @@
-package org.greenrobot.greendao.gradle
+package io.objectbox.gradle
 
 import org.codehaus.groovy.runtime.MethodClosure
 import java.io.File

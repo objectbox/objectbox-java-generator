@@ -9,7 +9,7 @@ import org.junit.rules.ErrorCollector
 import java.io.File
 import java.util.ArrayList
 
-class Greendao3GeneratorTest {
+class ObjectBoxGeneratorTest {
 
     @get:Rule val collector = ErrorCollector()
 
@@ -75,7 +75,7 @@ class Greendao3GeneratorTest {
         val targetFile = inputFile.copyTo(File(testDirectory, actualFileName), true)
 
         // run the generator over the file
-        Greendao3Generator(formattingOptions).run(listOf(targetFile), mapOf("default" to schemaOptions))
+        ObjectBoxGenerator(formattingOptions).run(listOf(targetFile), mapOf("default" to schemaOptions))
 
         // check if the modified file matches the expected output file
         val actualSource = targetFile.readText(charset("UTF-8"))

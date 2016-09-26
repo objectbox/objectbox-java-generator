@@ -1,4 +1,4 @@
-package org.greenrobot.greendao.gradle
+package io.objectbox.gradle
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.FileCollection
@@ -8,6 +8,7 @@ import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.incremental.IncrementalTaskInputs
 import org.gradle.api.tasks.incremental.InputFileDetails
+import io.objectbox.gradle.Util
 import java.io.File
 import java.nio.charset.Charset
 

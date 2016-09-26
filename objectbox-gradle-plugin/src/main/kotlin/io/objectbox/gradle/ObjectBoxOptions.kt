@@ -1,4 +1,4 @@
-package org.greenrobot.greendao.gradle
+package io.objectbox.gradle
 
 import groovy.lang.Closure
 import groovy.lang.GroovyObjectSupport

@@ -1,2 +1,2 @@
 include 'greendao-code-modifier'
-include 'greendao-gradle-plugin'
+include 'objectbox-gradle-plugin'
