@@ -13,40 +13,40 @@ dependencies {
     // use JDT Core packaged by the Eclipse Scout project, has the latest versions
     // as a custom version resolution resolution strategy seems to not work on projects using the plugin
     // manually include each dependency, but exclude its transitive dependencies
-    compile("org.eclipse.scout.sdk.deps:org.eclipse.core.commands:3.7.0+") {
+    compile("org.eclipse.scout.sdk.deps:org.eclipse.core.commands:3.7.0.v20150422-0725") {
         transitive = false
     }
-    compile('org.eclipse.scout.sdk.deps:org.eclipse.core.contenttype:3.5.0+') {
+    compile('org.eclipse.scout.sdk.deps:org.eclipse.core.contenttype:3.5.0.v20150421-2214') {
         transitive = false
     }
-    compile('org.eclipse.scout.sdk.deps:org.eclipse.core.expressions:3.5.0+') {
+    compile('org.eclipse.scout.sdk.deps:org.eclipse.core.expressions:3.5.0.v20150421-2214') {
         transitive = false
     }
-    compile('org.eclipse.scout.sdk.deps:org.eclipse.core.jobs:3.7.0+') {
+    compile('org.eclipse.scout.sdk.deps:org.eclipse.core.jobs:3.7.0.v20150330-2103') {
         transitive = false
     }
-    compile('org.eclipse.scout.sdk.deps:org.eclipse.core.filesystem:1.5.0+') {
+    compile('org.eclipse.scout.sdk.deps:org.eclipse.core.filesystem:1.5.0.v20150421-0713') {
         transitive = false
     }
-    compile('org.eclipse.scout.sdk.deps:org.eclipse.core.resources:3.10.0+') {
+    compile('org.eclipse.scout.sdk.deps:org.eclipse.core.resources:3.10.0.v20150423-0755') {
         transitive = false
     }
-    compile('org.eclipse.scout.sdk.deps:org.eclipse.core.runtime:3.11.0+') {
+    compile('org.eclipse.scout.sdk.deps:org.eclipse.core.runtime:3.11.0.v20150405-1723') {
         transitive = false
     }
-    compile('org.eclipse.scout.sdk.deps:org.eclipse.equinox.common:3.7.0+') {
+    compile('org.eclipse.scout.sdk.deps:org.eclipse.equinox.common:3.7.0.v20150402-1709') {
         transitive = false
     }
-    compile('org.eclipse.scout.sdk.deps:org.eclipse.equinox.registry:3.6.0+') {
+    compile('org.eclipse.scout.sdk.deps:org.eclipse.equinox.registry:3.6.0.v20150318-1503') {
         transitive = false
     }
-    compile('org.eclipse.scout.sdk.deps:org.eclipse.equinox.preferences:3.5.300+') {
+    compile('org.eclipse.scout.sdk.deps:org.eclipse.equinox.preferences:3.5.300.v20150408-1437') {
         transitive = false
     }
-    compile('org.eclipse.scout.sdk.deps:org.eclipse.osgi:3.10.100+') {
+    compile('org.eclipse.scout.sdk.deps:org.eclipse.osgi:3.10.100.v20150529-1857') {
         transitive = false
     }
-    compile('org.eclipse.scout.sdk.deps:org.eclipse.text:3.5.400+') {
+    compile('org.eclipse.scout.sdk.deps:org.eclipse.text:3.5.400.v20150505-1044') {
         transitive = false
     }
     // This is the latest version known to work with Gradle 2.14.1 and the Android Gradle Plugin 2.2.0
