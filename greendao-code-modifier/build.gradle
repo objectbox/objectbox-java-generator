@@ -62,7 +62,7 @@ dependencies {
 
     compile 'org.greenrobot:greendao-api:3.2.0-SNAPSHOT'
     compile 'org.greenrobot:greendao-generator:3.2.0-SNAPSHOT'
-    compile 'de.greenrobot:java-common:2.3.1'
+    compile 'org.greenrobot:essentials:3.0.0-RC1'
 
     testCompile 'junit:junit:4.12'
     testCompile 'org.mockito:mockito-all:1.10.19'
