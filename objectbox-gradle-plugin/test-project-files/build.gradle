@@ -1,0 +1,20 @@
+apply plugin: 'java'
+
+//apply plugin: 'java'
+//apply plugin: 'io.objectbox.gradle.ObjectBoxGradlePlugin'
+apply plugin: 'io.objectbox'
+
+targetCompatibility = '1.7'
+sourceCompatibility = '1.7'
+
+
+//objectbox {
+//    schemaVersion 1000
+//    generateTests true
+//}
+
+dependencies {
+    compile project(':objectbox-java')
+}
+
+uploadArchives.enabled = false

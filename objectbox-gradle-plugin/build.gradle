@@ -26,6 +26,7 @@ dependencies {
 
     testCompile 'junit:junit:4.12'
     testCompile 'org.mockito:mockito-all:1.10.19'
+    testCompile gradleTestKit()
 }
 
 // puts artifact version to properties file inside resources
