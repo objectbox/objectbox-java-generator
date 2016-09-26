@@ -15,7 +15,7 @@ class UtilKtTest {
 
     @Test
     fun containsIgnoreSpaces2() {
-        val source = "@org\t.greenrobot .greendao\n\n\r.annotation.Entity".toByteArray().inputStream()
+        val source = "@io\t.objectbox\n\n\r.annotation .Entity".toByteArray().inputStream()
         assertTrue(Util.containsIgnoreSpaces(source, token, buffer, Charsets.UTF_8))
     }
 
