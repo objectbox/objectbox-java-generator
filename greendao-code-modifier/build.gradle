@@ -6,12 +6,6 @@ group = 'org.greenrobot'
 sourceCompatibility = '1.7'
 targetCompatibility = '1.7'
 
-repositories {
-    jcenter()
-    mavenCentral()
-    mavenLocal()
-}
-
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     compile "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
@@ -60,8 +54,8 @@ dependencies {
         transitive = false
     }
 
-    compile 'org.greenrobot:greendao-api:3.2.0-SNAPSHOT'
-    compile 'org.greenrobot:greendao-generator:3.2.0-SNAPSHOT'
+    compile 'org.greenrobot:greendao-api:3.2.0'
+    compile 'org.greenrobot:greendao-generator:3.2.0'
     compile 'org.greenrobot:essentials:3.0.0-RC1'
 
     testCompile 'junit:junit:4.12'

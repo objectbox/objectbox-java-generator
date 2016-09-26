@@ -8,12 +8,6 @@ group = 'org.greenrobot'
 sourceCompatibility = '1.7'
 targetCompatibility = '1.7'
 
-repositories {
-    jcenter()
-    mavenCentral()
-    mavenLocal()
-}
-
 def genResourcesDir = new File(buildDir, 'src/generated/resources')
 def versionFile = new File(genResourcesDir, 'org/greenrobot/greendao/gradle/version.properties')
 

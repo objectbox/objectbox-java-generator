@@ -35,7 +35,20 @@ subprojects {
     apply plugin: 'maven'
     apply plugin: 'signing'
 
-    version = "3.2.0-SNAPSHOT"
+    version = "3.2.0"
+
+    repositories {
+        jcenter()
+        mavenCentral()
+        maven {
+            credentials {
+                username exampleUser
+                password examplePassword
+            }
+            url "https://example.org/mvnrepo/"
+        }
+        mavenLocal()
+    }
 
     configurations {
         deployerJars
