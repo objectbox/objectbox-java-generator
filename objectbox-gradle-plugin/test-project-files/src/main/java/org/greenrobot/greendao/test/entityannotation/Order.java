@@ -1,11 +1,11 @@
 package org.greenrobot.greendao.test.entityannotation;
 
-import org.greenrobot.greendao.DaoException;
-import org.greenrobot.greendao.annotation.Entity;
-import org.greenrobot.greendao.annotation.Generated;
-import org.greenrobot.greendao.annotation.Id;
-import org.greenrobot.greendao.annotation.NotNull;
-import org.greenrobot.greendao.annotation.ToOne;
+import io.objectbox.DaoException;
+import io.objectbox.annotation.Entity;
+import io.objectbox.annotation.Generated;
+import io.objectbox.annotation.Id;
+import io.objectbox.annotation.NotNull;
+import io.objectbox.annotation.ToOne;
 
 /**
  * Entity mapped to table "ORDERS".

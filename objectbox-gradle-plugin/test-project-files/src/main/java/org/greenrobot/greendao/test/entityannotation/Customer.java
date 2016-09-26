@@ -1,14 +1,14 @@
 package org.greenrobot.greendao.test.entityannotation;
 
 import org.greenrobot.greendao.DaoException;
-import org.greenrobot.greendao.annotation.Entity;
-import org.greenrobot.greendao.annotation.Generated;
-import org.greenrobot.greendao.annotation.Id;
-import org.greenrobot.greendao.annotation.JoinProperty;
-import org.greenrobot.greendao.annotation.NotNull;
-import org.greenrobot.greendao.annotation.OrderBy;
-import org.greenrobot.greendao.annotation.ToMany;
-import org.greenrobot.greendao.annotation.Unique;
+import io.objectbox.annotation.Entity;
+import io.objectbox.annotation.Generated;
+import io.objectbox.annotation.Id;
+import io.objectbox.annotation.JoinProperty;
+import io.objectbox.annotation.NotNull;
+import io.objectbox.annotation.OrderBy;
+import io.objectbox.annotation.ToMany;
+import io.objectbox.annotation.Unique;
 
 import java.util.List;
 

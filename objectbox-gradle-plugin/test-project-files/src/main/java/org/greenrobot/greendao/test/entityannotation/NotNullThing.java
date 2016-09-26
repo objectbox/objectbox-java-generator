@@ -1,9 +1,9 @@
 package org.greenrobot.greendao.test.entityannotation;
 
-import org.greenrobot.greendao.annotation.Entity;
-import org.greenrobot.greendao.annotation.Generated;
-import org.greenrobot.greendao.annotation.Id;
-import org.greenrobot.greendao.annotation.NotNull;
+import io.objectbox.annotation.Entity;
+import io.objectbox.annotation.Generated;
+import io.objectbox.annotation.Id;
+import io.objectbox.annotation.NotNull;
 
 @Entity
 public class NotNullThing {
