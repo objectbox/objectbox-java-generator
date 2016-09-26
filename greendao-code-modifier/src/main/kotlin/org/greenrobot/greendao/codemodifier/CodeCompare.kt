@@ -1,6 +1,6 @@
 package org.greenrobot.greendao.codemodifier
 
-import de.greenrobot.common.hash.Murmur3F
+import org.greenrobot.essentials.hash.Murmur3F
 import org.eclipse.jdt.core.dom.ASTNode
 
 object CodeCompare {
