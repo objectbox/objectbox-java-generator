@@ -87,6 +87,9 @@ task createClasspathManifest {
     }
 }
 
+// Works with gradle build, but not in IntelliJ -> run manually
+tasks['test'].dependsOn createClasspathManifest
+
 //
 //dependencies {
 //    testRuntime files(createClasspathManifest)
