@@ -60,6 +60,8 @@ open class ObjectBoxOptions(val project: Project) {
      */
     var skipTestGeneration = mutableListOf<String>()
 
+    var daoCompat = false
+
     internal val formatting = FormattingExtension()
     internal val schemas = SchemasExtension(project)
 
@@ -162,6 +164,13 @@ open class ObjectBoxOptions(val project: Project) {
     /** @see skipTestGeneration */
     fun skipTestGeneration(vararg value: String) {
         this.skipTestGeneration.addAll(value)
+    }
+
+    /**
+     * If enabled, will generate DAO classes for compatibility with greenDAO.
+     */
+    fun daoCompat(value: Boolean) {
+        this.daoCompat = value
     }
 }
 

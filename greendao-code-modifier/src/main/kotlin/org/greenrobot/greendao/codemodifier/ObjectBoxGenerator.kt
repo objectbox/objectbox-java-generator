@@ -12,6 +12,7 @@ import java.io.File
  */
 class ObjectBoxGenerator(formattingOptions: FormattingOptions? = null,
                          val skipTestGeneration: List<String> = emptyList(),
+                         val daoCompat: Boolean = false,
                          encoding: String = "UTF-8") {
     val context = JdtCodeContext(formattingOptions, encoding)
 
@@ -79,7 +80,7 @@ class ObjectBoxGenerator(formattingOptions: FormattingOptions? = null,
         outputDir.mkdirs()
         testsOutputDir?.mkdirs()
 
-        BoxGenerator().generateAll(schema, outputDir.path, outputDir.path, testsOutputDir?.path)
+        BoxGenerator(daoCompat).generateAll(schema, outputDir.path, outputDir.path, testsOutputDir?.path)
 
         // modify existing entity classes after using DaoGenerator, because not all schema properties are available before
         // for each entity add missing fields/methods/constructors

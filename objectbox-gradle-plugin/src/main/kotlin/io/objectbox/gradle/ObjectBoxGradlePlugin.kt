@@ -103,6 +103,7 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
                 ObjectBoxGenerator(
                         options.formatting.data,
                         options.skipTestGeneration,
+                        options.daoCompat,
                         encoding
                 ).run(candidatesFiles, schemaOptions)
             }
