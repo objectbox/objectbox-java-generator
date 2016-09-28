@@ -28,27 +28,32 @@ class EntityClassParser(val jdtOptions: MutableMap<Any, Any>, val encoding: Stri
         // in a future version we might include the whole classpath so all bindings can be resolved
         val problems = astRoot.problems?.filter {
             val problemId = it.id
-            val keep = problemId != IProblem.PublicClassMustMatchFileName // our tests violate this
-                    && problemId != IProblem.UndefinedField
-                    && problemId != IProblem.UndefinedName // class refs, like TextUtils
-                    && problemId != IProblem.UndefinedType
-                    && problemId != IProblem.ImportNotFound
-                    && problemId != IProblem.UnresolvedVariable
+            // ignore errors about broken references to types/names defined outside of the entity class
+            // the number is (problem id & IProblem.IgnoreCategoriesMask) as shown in log output
+            val keep = problemId != IProblem.UndefinedType // 2
+                    && problemId != IProblem.UndefinedName // 50, external class refs, like TextUtils
+                    && problemId != IProblem.UndefinedField // 70
+                    && problemId != IProblem.UnresolvedVariable // 83
+                    && problemId != IProblem.MissingTypeInMethod // 120
+                    && problemId != IProblem.MissingTypeInConstructor // 129
+                    && problemId != IProblem.MissingTypeInLambda // 271
+                    && problemId != IProblem.ImportNotFound // 390
+                    && problemId != IProblem.PublicClassMustMatchFileName // 325 our tests violate this
             if (!keep) {
-                System.out.println(
-                        "[Verbose] Ignoring ID $problemId in ${javaFile}:${it.sourceLineNumber} (${it.message})")
+                System.out.println("[Verbose] Ignoring parser problem in ${javaFile}:${it.sourceLineNumber}: $it.")
             }
             keep
         }
         if (problems != null && problems.size > 0) {
             System.err.println("Found ${problems.size} problem(s) parsing \"${javaFile}\":")
             problems.forEachIndexed { i, problem ->
-                System.err.println("#$i @${problem.sourceLineNumber}: ${problem.message}" +
+                System.err.println("#${i + 1} @${problem.sourceLineNumber}: $problem" +
                         " (ID: ${problem.id}; error: ${problem.isError})")
             }
             val first = problems[0]
             throw RuntimeException("Found ${problems.size} problem(s) parsing \"${javaFile}\". First problem:\n" +
-                    first + " (${first.id} at line ${first.sourceLineNumber}\nRun gradle with --info for more details")
+                    first + " (${first.id} at line ${first.sourceLineNumber}).\n" +
+                    "Run gradle with --info for more details.")
         }
 
         // try to find legacy KEEP FIELDS section
