@@ -39,6 +39,7 @@ class EntityClassParser(val jdtOptions: MutableMap<Any, Any>, val encoding: Stri
                     && problemId != IProblem.MissingTypeInLambda // 271
                     && problemId != IProblem.ImportNotFound // 390
                     && problemId != IProblem.PublicClassMustMatchFileName // 325 our tests violate this
+                    && problemId != IProblem.UnhandledWarningToken // 631 SuppressWarnings tokens supported by IntelliJ, but not Eclipse
             if (!keep) {
                 System.out.println("[Verbose] Ignoring parser problem in ${javaFile}:${it.sourceLineNumber}: $it.")
             }
