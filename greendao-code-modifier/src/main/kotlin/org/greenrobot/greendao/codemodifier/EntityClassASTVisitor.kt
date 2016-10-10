@@ -308,7 +308,7 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
         }
 
         val converterClassName = (convert["converter"] as? TypeLiteral)?.type?.typeName
-        val columnType = (convert["columnType"] as? TypeLiteral)?.type
+        val columnType = (convert["dbType"] as? TypeLiteral)?.type
         if (converterClassName == null || columnType == null) {
             throw RuntimeException(
                     "Missing @Convert arguments for field '$fieldName' in ${typeDeclaration?.name?.identifier}")

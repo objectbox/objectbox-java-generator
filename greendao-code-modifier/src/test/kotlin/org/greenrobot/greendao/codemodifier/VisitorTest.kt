@@ -228,7 +228,7 @@ class VisitorTest : VisitorTestBase() {
 
         @Entity
         class Foobar {
-            @Convert(converter = Converter.class, columnType = String.class)
+            @Convert(converter = Converter.class, dbType = String.class)
             MyType name;
         }
         """, listOf("MyType"))!!
@@ -257,7 +257,7 @@ class VisitorTest : VisitorTestBase() {
 
         @Entity
         class Foobar {
-            @Convert(converter = InnerConverter.class, columnType = String.class)
+            @Convert(converter = InnerConverter.class, dbType = String.class)
             MyType name;
             public static class InnerConverter implements PropertyConverter<MyType, String> {
                 @Override
@@ -297,7 +297,7 @@ class VisitorTest : VisitorTestBase() {
 
         @Entity
         class Foobar {
-            @Convert(converter = InnerConverter.class, columnType = String.class)
+            @Convert(converter = InnerConverter.class, dbType = String.class)
             MyType name;
             public class InnerConverter implements PropertyConverter<MyType, String> {
                 @Override
@@ -327,7 +327,7 @@ class VisitorTest : VisitorTestBase() {
 
         @Entity
         class Foobar {
-            @Convert(converter = MyConverter.class, columnType = String.class)
+            @Convert(converter = MyConverter.class, dbType = String.class)
             MyType name;
 
             public class MyType {
