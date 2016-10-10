@@ -311,7 +311,7 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
         val columnType = (convert["columnType"] as? TypeLiteral)?.type
         if (converterClassName == null || columnType == null) {
             throw RuntimeException(
-                    "greenDAO: Missing @Convert arguments at '$fieldName' in ${typeDeclaration?.name?.identifier}")
+                    "Missing @Convert arguments for field '$fieldName' in ${typeDeclaration?.name?.identifier}")
         }
         return CustomType(converterClassName, columnType.toVariableType())
     }
