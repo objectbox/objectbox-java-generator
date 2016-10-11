@@ -56,7 +56,7 @@ class EntityClassTransformer(val entityClass: EntityClass, val jdtOptions : Muta
     fun remove(node : ASTNode) = bodyRewrite.remove(node, null)
 
     private fun insertMethod(code: String, replaceOld: ASTNode?, insertAfter: ASTNode?) {
-        if (replaceOld != null && replaceOld.isSameCode(code)) {
+        if (replaceOld != null && CodeCompare.isSameCode(replaceOld, code)) {
             keepNodes += replaceOld
         } else {
             val formatted = formatter.format(code)
@@ -66,7 +66,7 @@ class EntityClassTransformer(val entityClass: EntityClass, val jdtOptions : Muta
     }
 
     private fun insertField(code: String, replaceOld: ASTNode? = null) {
-        if (replaceOld != null && replaceOld.isSameCode(code)) {
+        if (replaceOld != null && CodeCompare.isSameCode(replaceOld, code)) {
             keepNodes += replaceOld
         } else {
             val formatted = formatter.format(code)
