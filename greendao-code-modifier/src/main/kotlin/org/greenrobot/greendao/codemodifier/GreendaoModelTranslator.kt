@@ -36,7 +36,6 @@ object GreendaoModelTranslator {
             entity.isSkipCreationInDb = !it.createInDb
             entity.javaPackage = it.packageName
             addFields(it, entity)
-            addIndexes(it, entity)
 
             // trigger creation of an additional protobuf dao
             if (it.protobufClassName != null) {
@@ -47,7 +46,6 @@ object GreendaoModelTranslator {
                 protobufEntity.isSkipCreationInDb = true // table creation/deletion is handled by the original DAO
                 protobufEntity.javaPackage = it.protobufClassName.substringBeforeLast(".")
                 addFields(it, protobufEntity)
-                addIndexes(it, protobufEntity)
             }
 
             it to entity
@@ -71,30 +69,6 @@ object GreendaoModelTranslator {
                 throw RuntimeException("Can't add field `${field.variable}` for entity ${it.name} " +
                         "due to: ${e.message}", e)
             }
-        }
-    }
-
-    private fun addIndexes(it: EntityClass, entity: Entity) {
-        it.indexes.forEach {
-            tableIndex ->
-            entity.addIndex(Index().apply {
-                tableIndex.fields.forEach {
-                    field ->
-                    val property = entity.properties.find {
-                        it.propertyName == field.name
-                    } ?: throw RuntimeException("Can't find property ${field.name} for index in ${entity.className}")
-                    when (field.order) {
-                        Order.ASC -> addPropertyAsc(property)
-                        Order.DESC -> addPropertyDesc(property)
-                    }
-                }
-                if (tableIndex.name != null) {
-                    this.name = tableIndex.name
-                }
-                if (tableIndex.unique) {
-                    makeUnique()
-                }
-            })
         }
     }
 
@@ -234,13 +208,6 @@ object GreendaoModelTranslator {
             propertyBuilder.nonPrimitiveType()
         }
         if (field.isNotNull) propertyBuilder.notNull()
-        if (field.unique && field.index != null) {
-            throw RuntimeException("greenDAO: having unique constraint and index on the field " +
-                    "at the same time is redundant. Either @Unique or @Index should be used")
-        }
-        if (field.unique) {
-            propertyBuilder.unique()
-        }
         if (field.index != null) {
             propertyBuilder.indexAsc(field.index.name, field.index.unique)
         }

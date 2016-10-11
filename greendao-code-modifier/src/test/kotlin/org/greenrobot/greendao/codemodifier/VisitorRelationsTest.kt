@@ -2,11 +2,13 @@ package org.greenrobot.greendao.codemodifier
 
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
+import org.junit.Ignore
 import org.junit.Test
 
 /**
  * Tests if the @ToOne and @ToMany annotations are properly parsed.
  */
+@Ignore("Feature not yet available")
 class VisitorRelationsTest : VisitorTestBase() {
 
     @Test

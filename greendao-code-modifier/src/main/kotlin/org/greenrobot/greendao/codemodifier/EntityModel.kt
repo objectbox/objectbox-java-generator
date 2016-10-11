@@ -20,8 +20,7 @@ data class EntityField(val variable: Variable,
                        val index: PropertyIndex? = null,
                        val isNotNull: Boolean = false,
                        val dbName: String? = null,
-                       val customType: CustomType? = null,
-                       val unique: Boolean = false)
+                       val customType: CustomType? = null)
 
 data class TransientField(val variable: Variable,
                           override val node: FieldDeclaration,
@@ -73,7 +72,6 @@ data class EntityClass(val name: String, val schema: String,
                        val imports: List<ImportDeclaration>, val packageName: String,
                        val dbName: String?,
                        val oneRelations: List<OneRelation>, val manyRelations: List<ManyRelation>,
-                       val indexes: List<TableIndex>,
                        val sourceFile: File, val source: String,
                        val keepSource: Boolean,
                        val createInDb: Boolean,

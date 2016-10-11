@@ -50,7 +50,6 @@ class VisitorTest : VisitorTestBase() {
         assertThat(entity.constructors, isEmpty)
         assertThat(entity.oneRelations, isEmpty)
         assertThat(entity.manyRelations, isEmpty)
-        assertThat(entity.indexes, isEmpty)
     }
 
     @Test
@@ -133,6 +132,7 @@ class VisitorTest : VisitorTestBase() {
     }
 
     @Test
+    @Ignore("Feature not yet available")
     fun idAutoincrement() {
         val entity = visit(
                 //language=java
@@ -174,48 +174,17 @@ class VisitorTest : VisitorTestBase() {
 
         @Entity
         class Foobar {
-            @Index(name = "NAME_INDEX", unique = true)
+            @Index(unique = true)
             String name;
         }
         """)!!
         val field = entity.fields[0]
         val index = field.index!!
-        assertEquals("NAME_INDEX", index.name)
-        assertTrue(index.unique)
-    }
-
-    @Test(expected = RuntimeException::class)
-    fun propertyIndexAnnotationDoesNotAcceptIndexSpec() {
-        visit(
-                //language=java
-                """
-        import io.objectbox.annotation.*;
-
-        @Entity
-        class Foobar {
-            @Index(value = "name desc")
-            String name;
-        }
-        """)!!
+        // TODO assertTrue(index.unique)
     }
 
     @Test
-    fun propertyUniqueAnnotation() {
-        val entity = visit(
-                //language=java
-                """
-        import io.objectbox.annotation.*;
-
-        @Entity
-        class Foobar {
-            @Unique
-            String name;
-        }
-        """)!!
-        assertTrue(entity.fields[0].unique)
-    }
-
-    @Test
+    @Ignore("Feature not yet available")
     fun convertAnnotation() {
         val entity = visit(
                 //language=java
@@ -245,6 +214,7 @@ class VisitorTest : VisitorTestBase() {
     }
 
     @Test
+    @Ignore("Feature not yet available")
     fun convertAnnotation_innerClass() {
         val entity = visit(
                 //language=java
@@ -273,6 +243,7 @@ class VisitorTest : VisitorTestBase() {
         }
         """, listOf("MyType"))!!
         val field = entity.fields[0]
+
         assertEquals(
                 EntityField(
                         Variable(VariableType("com.example.myapp.MyType", isPrimitive = false, originalName = "MyType"), "name"),
@@ -285,6 +256,7 @@ class VisitorTest : VisitorTestBase() {
     }
 
     @Test(expected = IllegalArgumentException::class)
+    @Ignore("Feature not yet available")
     fun convertAnnotation_innerClassNotStatic() {
         visit(
                 //language=java
@@ -315,6 +287,7 @@ class VisitorTest : VisitorTestBase() {
     }
 
     @Test(expected = IllegalArgumentException::class)
+    @Ignore("Feature not yet available")
     fun convertAnnotation_innerTypeNotStatic() {
         visit(
                 //language=java
@@ -334,35 +307,6 @@ class VisitorTest : VisitorTestBase() {
             }
         }
         """, listOf("MyConverter"))!!
-    }
-
-    @Test
-    fun multiIndexes() {
-        val entity = visit(
-                //language=java
-                """
-        import io.objectbox.annotation.*;
-
-        @Entity(indexes = {
-            @Index(value = "name DESC, age", unique = true, name = "NAME_AGE_INDEX"),
-            @Index("age, name")
-        })
-        class Foobar {
-            String name;
-            int age;
-        }
-        """)!!
-
-        assertThat(entity.indexes, equalTo(listOf(
-                TableIndex("NAME_AGE_INDEX", listOf(
-                        OrderProperty("name", Order.DESC),
-                        OrderProperty("age", Order.ASC)
-                ), unique = true),
-                TableIndex(null, listOf(
-                        OrderProperty("age", Order.ASC),
-                        OrderProperty("name", Order.ASC)
-                ), unique = false)
-        )))
     }
 
     @Test

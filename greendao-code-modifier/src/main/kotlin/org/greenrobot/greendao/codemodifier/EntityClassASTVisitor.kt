@@ -25,7 +25,6 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
     var typeDeclaration: TypeDeclaration? = null
     val oneRelations = mutableListOf<OneRelation>()
     val manyRelations = mutableListOf<ManyRelation>()
-    var tableIndexes = emptyList<TableIndex>()
     var active = false
     var keepSource = false
     var createTable = true
@@ -84,14 +83,14 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
                     node.hasType(Entity::class) -> {
                         isEntity = true
                         val entityAnnotation = AnnotationProxy<Entity>(node)
-                        schemaName = entityAnnotation.schema
-                        active = entityAnnotation.active
+                        // schemaName = "entityAnnotation.schema
+                        // active = entityAnnotation.active
                         entityTableName = entityAnnotation.nameInDb.nullIfBlank()
-                        createTable = entityAnnotation.createInDb
+                        // createTable = entityAnnotation.createInDb
                         generateConstructors = entityAnnotation.generateConstructors
                         generateGettersSetters = entityAnnotation.generateGettersSetters
                         if (node is NormalAnnotation) {
-                            protobufClassName = (node["protobuf"] as? TypeLiteral)?.type?.typeName?.nullIfBlank()
+                            // protobufClassName = (node["protobuf"] as? TypeLiteral)?.type?.typeName?.nullIfBlank()
                             if (protobufClassName != null && entityTableName == null) {
                                 // TODO remove this requirement (the following is just a workaround to fill
                                 // protobufEntity.dbName):
@@ -99,14 +98,6 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
                                 throw RuntimeException("Set nameInDb in the ${parent.name} @Entity annotation. " +
                                         "An explicit table name is required when specifying a protobuf class.")
                             }
-                        }
-                        try {
-                            tableIndexes = entityAnnotation.indexes.map {
-                                TableIndex(it.name.nullIfBlank(), parseIndexSpec(it.value), it.unique)
-                            }
-                        } catch (e: IllegalArgumentException) {
-                            throw RuntimeException("Can't parse @Index.value for ${parent.name} " +
-                                    "because of: ${e.message}", e)
                         }
                     }
                     node.hasType(Keep::class) -> {
@@ -164,12 +155,14 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
         } else {
             // property field
             when {
+                /*
                 annotations.has<ToOne>() -> {
                     oneRelations += variableNames.map { oneRelation(annotations, it, variableType) }
                 }
                 annotations.has<ToMany>() -> {
                     manyRelations += variableNames.map { manyRelation(annotations, it, variableType) }
-                }
+                }*/
+                false -> {}
                 else -> fields += variableNames.map { entityField(annotations, it, node, variableType) }
             }
         }
@@ -229,6 +222,7 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
         return find { it.hasType(T::class) }?.let { AnnotationProxy<T>(it) }
     }
 
+    /*
     private fun oneRelation(fa: MutableList<Annotation>, fieldName: SimpleName,
                             variableType: VariableType): OneRelation {
         val proxy = fa.proxy<ToOne>()!!
@@ -275,6 +269,7 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
                 }
         )
     }
+    */
 
     private fun entityField(fa: MutableList<Annotation>, fieldName: SimpleName,
                             node: FieldDeclaration, variableType: VariableType): EntityField {
@@ -282,27 +277,19 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
         val indexAnnotation = fa.proxy<Index>()
         val idAnnotation = fa.proxy<Id>()
 
-        if (indexAnnotation?.value?.isNotBlank() ?: false) {
-            throw RuntimeException(
-                    """greenDAO: setting value on @Index is not supported if @Index is used on the properties
-                See '$fieldName' in ${typeDeclaration?.name?.identifier}"""
-            )
-        }
-
         val customType = findConvert(fieldName, fa)
         return EntityField(
                 variable = Variable(variableType, fieldName.toString()),
-                id = idAnnotation?.let { TableId(it.autoincrement) },
-                index = indexAnnotation?.let { PropertyIndex(indexAnnotation.name.nullIfBlank(), indexAnnotation.unique) },
+                id = idAnnotation?.let { TableId(it.monotonic) },
+                index = indexAnnotation?.let { PropertyIndex(null, false /* TODO indexAnnotation.unique*/) },
                 isNotNull = node.type.isPrimitiveType || fa.hasNotNull,
                 dbName = columnAnnotation?.nameInDb?.let { it.nullIfBlank() },
-                customType = customType,
-                unique = fa.has<Unique>()
+                customType = customType
         )
     }
 
     private fun findConvert(fieldName: SimpleName, fa: MutableList<Annotation>): CustomType? {
-        val convert: Annotation? = fa.find { it.hasType(Convert::class) }
+        val convert: Annotation? = null // TODO fa.find { it.hasType(Convert::class) }
         if (convert !is NormalAnnotation) {
             return null
         }
@@ -405,6 +392,7 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
             checkInnerCustomTypes()
 
             val node = typeDeclaration!!
+            // TODO use named params
             EntityClass(
                     node.name.identifier,
                     schemaName,
@@ -420,7 +408,6 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
                     entityTableName,
                     oneRelations,
                     manyRelations,
-                    tableIndexes,
                     javaFile, source,
                     keepSource,
                     createTable,

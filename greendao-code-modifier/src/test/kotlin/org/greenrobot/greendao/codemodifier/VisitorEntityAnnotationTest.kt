@@ -3,6 +3,7 @@ package org.greenrobot.greendao.codemodifier
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.isBlank
 import org.junit.Assert
+import org.junit.Ignore
 import org.junit.Test
 
 /**
@@ -74,6 +75,7 @@ class VisitorEntityAnnotationTest : VisitorTestBase() {
     }
 
     @Test
+    @Ignore("Feature not yet available")
     fun activeEntity() {
         val entity = visit(
                 //language=java
@@ -162,6 +164,7 @@ class VisitorEntityAnnotationTest : VisitorTestBase() {
     }
 
     @Test
+    @Ignore("Feature not yet available")
     fun customSchemaName() {
         val entity = visit(
                 //language=java
