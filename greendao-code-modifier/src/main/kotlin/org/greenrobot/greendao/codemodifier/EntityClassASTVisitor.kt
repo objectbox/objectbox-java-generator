@@ -88,7 +88,7 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
                         entityTableName = entityAnnotation.nameInDb.nullIfBlank()
                         // createTable = entityAnnotation.createInDb
                         generateConstructors = entityAnnotation.generateConstructors
-                        generateGettersSetters = entityAnnotation.generateGettersSetters
+                        generateGettersSetters = true // TODO trouble with that - getters and setter are gone in tests - entityAnnotation.generateGettersSetters
                         if (node is NormalAnnotation) {
                             // protobufClassName = (node["protobuf"] as? TypeLiteral)?.type?.typeName?.nullIfBlank()
                             if (protobufClassName != null && entityTableName == null) {
@@ -162,7 +162,7 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
                 annotations.has<ToMany>() -> {
                     manyRelations += variableNames.map { manyRelation(annotations, it, variableType) }
                 }*/
-                false -> {}
+                false -> { throw RuntimeException("Malfunction in space time drive")}
                 else -> fields += variableNames.map { entityField(annotations, it, node, variableType) }
             }
         }
