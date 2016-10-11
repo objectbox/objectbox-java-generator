@@ -28,11 +28,12 @@ object CodeCompare {
         // get rid of minus
         return intHash shl 1 ushr 1
     }
+
+    /** checks code without formatting and comments are equal */
+    fun isSameCode(node: ASTNode, code: String) : Boolean {
+        val nodeCode = CodeCompare.unformatCode(node.toString())
+        val unformattedCode = CodeCompare.unformatCode(code)
+        return nodeCode == unformattedCode
+    }
 }
 
-/** checks code without formatting and comments are equal */
-fun ASTNode.isSameCode(code: String) : Boolean {
-    val nodeCode = CodeCompare.unformatCode(toString())
-    val unformattedCode = CodeCompare.unformatCode(code)
-    return nodeCode == unformattedCode
-}
