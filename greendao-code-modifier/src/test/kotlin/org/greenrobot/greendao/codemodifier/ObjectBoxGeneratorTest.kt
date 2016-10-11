@@ -72,8 +72,9 @@ class ObjectBoxGeneratorTest {
 
         // copy the input file to the test directory
         val inputFile = File(samplesDirectory, inputFileName)
-        if(inputFile.readText().contains("@Convert")) {
-            // TODO allow @Convert again
+        val inputContent = inputFile.readText()
+        if(inputContent.contains("@Convert") || inputContent.contains("generateGettersSetters = false")) {
+            // TODO allow @Convert and generateGettersSetters again
             return;
         }
         val targetFile = inputFile.copyTo(File(testDirectory, actualFileName), true)
