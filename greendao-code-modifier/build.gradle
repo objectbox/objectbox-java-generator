@@ -55,7 +55,7 @@ dependencies {
         transitive = false
     }
 
-    compile 'io.objectbox:objectbox-api:0.8.0-SNAPSHOT'
+    compile 'io.objectbox:objectbox-java-api:0.8.0-SNAPSHOT'
     compile 'io.objectbox:objectbox-generator:0.8.0-SNAPSHOT'
     compile 'org.greenrobot:essentials:3.0.0-RC1'
 

@@ -12,7 +12,7 @@ public class Note {
     @Id
     private Long id;
 
-    @Convert(converter = NoteTypeConverter.class, columnType = String.class)
+    @Convert(converter = NoteTypeConverter.class, dbType = String.class)
     private NoteType type;
 
     @Generated(hash = 1415525089)
