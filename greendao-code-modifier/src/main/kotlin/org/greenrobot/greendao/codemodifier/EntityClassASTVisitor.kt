@@ -289,7 +289,7 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
     }
 
     private fun findConvert(fieldName: SimpleName, fa: MutableList<Annotation>): CustomType? {
-        val convert: Annotation? = null // TODO fa.find { it.hasType(Convert::class) }
+        val convert: Annotation? = fa.find { it.hasType(Convert::class) }
         if (convert !is NormalAnnotation) {
             return null
         }

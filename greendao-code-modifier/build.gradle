@@ -55,8 +55,8 @@ dependencies {
         transitive = false
     }
 
-    compile 'io.objectbox:objectbox-java-api:0.9.0'
-    compile 'io.objectbox:objectbox-generator:0.9.0'
+    compile 'io.objectbox:objectbox-java-api:0.9.1'
+    compile 'io.objectbox:objectbox-generator:0.9.1'
     compile 'org.greenrobot:essentials:3.0.0-RC1'
 
     testCompile 'junit:junit:4.12'

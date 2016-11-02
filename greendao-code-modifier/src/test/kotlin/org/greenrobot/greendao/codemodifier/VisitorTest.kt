@@ -184,7 +184,6 @@ class VisitorTest : VisitorTestBase() {
     }
 
     @Test
-    @Ignore("Feature not yet available")
     fun convertAnnotation() {
         val entity = visit(
                 //language=java
@@ -214,7 +213,6 @@ class VisitorTest : VisitorTestBase() {
     }
 
     @Test
-    @Ignore("Feature not yet available")
     fun convertAnnotation_innerClass() {
         val entity = visit(
                 //language=java
@@ -256,7 +254,6 @@ class VisitorTest : VisitorTestBase() {
     }
 
     @Test(expected = IllegalArgumentException::class)
-    @Ignore("Feature not yet available")
     fun convertAnnotation_innerClassNotStatic() {
         visit(
                 //language=java
@@ -287,7 +284,6 @@ class VisitorTest : VisitorTestBase() {
     }
 
     @Test(expected = IllegalArgumentException::class)
-    @Ignore("Feature not yet available")
     fun convertAnnotation_innerTypeNotStatic() {
         visit(
                 //language=java
