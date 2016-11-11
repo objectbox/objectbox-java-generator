@@ -280,7 +280,7 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
         val customType = findConvert(fieldName, fa)
         return EntityField(
                 variable = Variable(variableType, fieldName.toString()),
-                id = idAnnotation?.let { TableId(it.monotonic) },
+                id = idAnnotation?.let { TableId(it.monotonic, it.assignable) },
                 index = indexAnnotation?.let { PropertyIndex(null, false /* TODO indexAnnotation.unique*/) },
                 isNotNull = node.type.isPrimitiveType || fa.hasNotNull,
                 dbName = columnAnnotation?.nameInDb?.let { it.nullIfBlank() },

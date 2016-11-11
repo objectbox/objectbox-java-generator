@@ -214,6 +214,7 @@ object GreendaoModelTranslator {
         if (field.id != null) {
             propertyBuilder.primaryKey()
             if (field.id.autoincrement) propertyBuilder.autoincrement()
+            if (field.id.assignable) propertyBuilder.idAssignable()
         }
         if (field.dbName != null) {
             propertyBuilder.dbName(field.dbName)
