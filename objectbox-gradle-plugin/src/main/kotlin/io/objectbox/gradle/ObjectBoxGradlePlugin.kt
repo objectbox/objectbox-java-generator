@@ -8,11 +8,12 @@ import org.gradle.api.tasks.util.PatternFilterable
 import org.greenrobot.greendao.codemodifier.ObjectBoxGenerator
 import org.greenrobot.greendao.codemodifier.SchemaOptions
 import java.io.File
+import java.io.IOException
 import java.util.Properties
 
 class ObjectBoxGradlePlugin : Plugin<Project> {
 
-    val name : String = "objectbox"
+    val name: String = "objectbox"
     val packageName: String = "io/objectbox"
 
     override fun apply(project: Project) {
@@ -96,12 +97,16 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
     }
 
     private fun getVersion(): String {
-        return ObjectBoxGradlePlugin::class.java.getResourceAsStream(
-                "/$packageName/gradle/version.properties")?.let {
-            val properties = Properties()
-            properties.load(it)
-            properties.getProperty("version") ?: throw RuntimeException("No version in version.properties")
-        } ?: "0"
+        val properties = Properties()
+        val stream = ObjectBoxGradlePlugin::class.java.getResourceAsStream("/$packageName/gradle/version.properties")
+        stream?.use {
+            try {
+                properties.load(stream)
+            } catch (e: IOException) {
+                e.printStackTrace()
+            }
+        }
+        return properties.getProperty("version") ?: "Unknown (bad build)"
     }
 
     private fun collectSchemaOptions(daoPackage: String?, genSrcDir: File, options: ObjectBoxOptions)
