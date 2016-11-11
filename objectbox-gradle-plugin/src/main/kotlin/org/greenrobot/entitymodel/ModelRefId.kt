@@ -1,9 +1,14 @@
-package io.objectbox.gradle
+package org.greenrobot.entitymodel
 
 import org.greenrobot.essentials.hash.Murmur3F
 import java.util.*
 
-object SchemaIdRef {
+/**
+ * A random ID to be assigned to model artifacts such as entities and properties.
+ * This is preferred in referencing, because they are unique and thus detect illegal copy&paste.
+ */
+// Note: make it independent from the (real) ID, it will be necessary to change ID after git conflicts.
+object ModelRefId {
     val random = Random();
 
     fun create(): Long {
