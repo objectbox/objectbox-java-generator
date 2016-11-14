@@ -406,6 +406,8 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
                     imports,
                     packageName ?: "",
                     entityTableName,
+                    // TODO
+                    null,
                     oneRelations,
                     manyRelations,
                     javaFile, source,

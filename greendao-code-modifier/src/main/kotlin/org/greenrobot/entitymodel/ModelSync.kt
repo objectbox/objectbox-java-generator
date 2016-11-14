@@ -5,9 +5,11 @@ import com.squareup.moshi.JsonWriter
 import com.squareup.moshi.Moshi
 import okio.Buffer
 import okio.Okio
+import okio.Source
 import org.greenrobot.greendao.codemodifier.EntityClass
 import org.greenrobot.greendao.generator.Schema
 import java.io.File
+import java.io.FileNotFoundException
 import java.util.*
 
 class ModelSync(
@@ -16,25 +18,23 @@ class ModelSync(
         val schemaGenerator: Schema,
         val entitiesGenerator: Map<EntityClass, org.greenrobot.greendao.generator.Entity>) {
 
-    private var modelJsonAdapter: JsonAdapter<Model>
+    private val modelJsonAdapter: JsonAdapter<Model>
 
-    private var modelRefId: ModelRefId
+    private val modelRefId: ModelRefId
+
+    private val entitiesReadByRefId = HashMap<Long, Entity>()
+    private val entitiesReadByName = HashMap<String, Entity>()
+
+    private var modelRead: Model? = null
 
     init {
         val moshi = Moshi.Builder().build()
         modelJsonAdapter = moshi.adapter<Model>(Model::class.java)
-        modelRefId = ModelRefId
+        modelRefId = ModelRefId()
+        initModel()
     }
 
     fun sync() {
-        val source = Okio.source(jsonFile)
-        val modelRead: Model;
-        try {
-            modelRead = modelJsonAdapter.fromJson(Okio.buffer(source))
-        } finally {
-            source.close()
-        }
-
         var entityId = 1
         val entitiesModel = ArrayList<org.greenrobot.entitymodel.Entity>()
 
@@ -50,8 +50,14 @@ class ModelSync(
                 propertyId++
                 properties.add(property)
             }
-            val refId = modelRefId.create()
-            val modelEntity = org.greenrobot.entitymodel.Entity(name = entityParsed.name, id = entityId, refId = refId,
+            val name = entityParsed.name
+            var refId = entityParsed.refId
+            var existingEntity = findEntity(name, refId)
+            if (refId == null) {
+                refId = existingEntity?.refId ?: modelRefId.create()
+            }
+
+            val modelEntity = org.greenrobot.entitymodel.Entity(name = name, id = entityId, refId = refId,
                     properties = properties, lastPropertyId = propertyId - 1)
             entitiesModel.add(modelEntity)
             entityId++;
@@ -65,6 +71,38 @@ class ModelSync(
                 lastSequenceId = 0,
                 entities = entitiesModel)
 
+        writeModel(model)
+    }
+
+    private fun  findEntity(name: String, refId: Long?): Entity? {
+        if(refId != null) {
+            return entitiesReadByRefId[refId]
+        } else {
+            return entitiesReadByName[name]
+        }
+    }
+
+    private fun initModel() {
+        var source: Source? = null;
+        try {
+            source = Okio.source(jsonFile)
+            modelRead = modelJsonAdapter.fromJson(Okio.buffer(source))
+        } catch (e: FileNotFoundException) {
+        } finally {
+            source?.close()
+        }
+        modelRead?.entities?.forEach {
+            if (!modelRefId.addExistingId(it.refId)) {
+                throw RuntimeException("Duplicate ref ID ${it.refId} in " + jsonFile.absolutePath)
+            }
+            entitiesReadByRefId.put(it.refId, it)
+            if(entitiesReadByName.put(it.name, it) != null) {
+                throw RuntimeException("Duplicate entity name ${it.name} in " + jsonFile.absolutePath)
+            }
+        }
+    }
+
+    private fun writeModel(model: Model) {
         val buffer = Buffer()
         val jsonWriter = JsonWriter.of(buffer)
         jsonWriter.setIndent("  ")
@@ -75,35 +113,6 @@ class ModelSync(
         } finally {
             sink.close()
         }
-    }
-
-    fun findEntity(model: Model, name: String, refId: Long?)
-            : Entity? {
-        if (refId != null) {
-            val filtered: List<Entity>
-            filtered = model.entities.filter {
-                it.refId == refId
-            }
-            if (filtered.isEmpty()) {
-                throw RuntimeException("No entity found with ref ID " + refId)
-            } else if (filtered.size != 1) {
-                throw RuntimeException("More than one entity found with ref ID " + refId)
-            }
-            return filtered.first()
-        } else {
-            val filtered: List<Entity>
-            filtered = model.entities.filter {
-                it.name == name
-            }
-            if (filtered.isEmpty()) {
-                throw RuntimeException("No entity found with name " + name)
-            } else if (filtered.size != 1) {
-                throw RuntimeException("More than one entity found with name " + name)
-            }
-            return filtered.first()
-        }
-
-
     }
 
 }
