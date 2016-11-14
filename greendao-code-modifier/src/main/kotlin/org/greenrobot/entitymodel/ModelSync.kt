@@ -6,7 +6,6 @@ import com.squareup.moshi.Moshi
 import okio.Buffer
 import okio.Okio
 import org.greenrobot.greendao.codemodifier.EntityClass
-import org.greenrobot.greendao.generator.Entity
 import org.greenrobot.greendao.generator.Schema
 import java.io.File
 import java.util.*
@@ -15,13 +14,16 @@ class ModelSync(
         val jsonFile: File,
         val entitiesParser: List<EntityClass>,
         val schemaGenerator: Schema,
-        val entitiesGenerator: Map<EntityClass, Entity>) {
+        val entitiesGenerator: Map<EntityClass, org.greenrobot.greendao.generator.Entity>) {
 
     private var modelJsonAdapter: JsonAdapter<Model>
+
+    private var modelRefId: ModelRefId
 
     init {
         val moshi = Moshi.Builder().build()
         modelJsonAdapter = moshi.adapter<Model>(Model::class.java)
+        modelRefId = ModelRefId
     }
 
     fun sync() {
@@ -37,16 +39,19 @@ class ModelSync(
         val entitiesModel = ArrayList<org.greenrobot.entitymodel.Entity>()
 
         for (entityParsed in entitiesParser) {
-            val entityGenerator: Entity = entitiesGenerator[entityParsed]!!
+            val entityGenerator: org.greenrobot.greendao.generator.Entity = entitiesGenerator[entityParsed]!!
             var propertyId = 1
             val properties = ArrayList<Property>()
             for (field in entityGenerator.properties) {
                 val name = field.dbName ?: field.propertyName
-                val property = Property(name = name, id = propertyId, targetEntityId = 0, indexId = 0, flags = 0, type = 0)
+                val refId = modelRefId.create()
+                val property = Property(name = name, id = propertyId,
+                        refId = refId, targetEntityId = 0, indexId = 0, flags = 0, type = 0)
                 propertyId++
                 properties.add(property)
             }
-            val modelEntity = org.greenrobot.entitymodel.Entity(name = entityParsed.name, id = entityId,
+            val refId = modelRefId.create()
+            val modelEntity = org.greenrobot.entitymodel.Entity(name = entityParsed.name, id = entityId, refId = refId,
                     properties = properties, lastPropertyId = propertyId - 1)
             entitiesModel.add(modelEntity)
             entityId++;
@@ -70,6 +75,35 @@ class ModelSync(
         } finally {
             sink.close()
         }
+    }
+
+    fun findEntity(model: Model, name: String, refId: Long?)
+            : Entity? {
+        if (refId != null) {
+            val filtered: List<Entity>
+            filtered = model.entities.filter {
+                it.refId == refId
+            }
+            if (filtered.isEmpty()) {
+                throw RuntimeException("No entity found with ref ID " + refId)
+            } else if (filtered.size != 1) {
+                throw RuntimeException("More than one entity found with ref ID " + refId)
+            }
+            return filtered.first()
+        } else {
+            val filtered: List<Entity>
+            filtered = model.entities.filter {
+                it.name == name
+            }
+            if (filtered.isEmpty()) {
+                throw RuntimeException("No entity found with name " + name)
+            } else if (filtered.size != 1) {
+                throw RuntimeException("More than one entity found with name " + name)
+            }
+            return filtered.first()
+        }
+
+
     }
 
 }
