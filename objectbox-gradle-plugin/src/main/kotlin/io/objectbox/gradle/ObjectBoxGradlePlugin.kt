@@ -98,10 +98,10 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
 
     private fun getVersion(): String {
         val properties = Properties()
-        val stream = ObjectBoxGradlePlugin::class.java.getResourceAsStream("/$packageName/gradle/version.properties")
+        val stream = javaClass.getResourceAsStream("/$packageName/gradle/version.properties")
         stream?.use {
             try {
-                properties.load(stream)
+                properties.load(it)
             } catch (e: IOException) {
                 e.printStackTrace()
             }
