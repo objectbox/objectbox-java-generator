@@ -1,20 +1,43 @@
 package org.greenrobot.entitymodel
 
+import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.JsonWriter
 import com.squareup.moshi.Moshi
 import okio.Buffer
+import okio.Okio
 import org.greenrobot.greendao.codemodifier.EntityClass
 import org.greenrobot.greendao.generator.Entity
 import org.greenrobot.greendao.generator.Schema
+import java.io.File
 import java.util.*
 
-class ModelSync(val entities: List<EntityClass>, val schema: Schema, val mapping: Map<EntityClass, Entity>) {
-    fun sync() {
-        var entityId = 1
-        val modelEntities = ArrayList<org.greenrobot.entitymodel.Entity>()
+class ModelSync(
+        val jsonFile: File,
+        val entitiesParser: List<EntityClass>,
+        val schemaGenerator: Schema,
+        val entitiesGenerator: Map<EntityClass, Entity>) {
 
-        for (entityParsed in entities) {
-            val entityGenerator: Entity = mapping[entityParsed]!!
+    private var modelJsonAdapter: JsonAdapter<Model>
+
+    init {
+        val moshi = Moshi.Builder().build()
+        modelJsonAdapter = moshi.adapter<Model>(Model::class.java)
+    }
+
+    fun sync() {
+        val source = Okio.source(jsonFile)
+        val modelRead: Model;
+        try {
+            modelRead = modelJsonAdapter.fromJson(Okio.buffer(source))
+        } finally {
+            source.close()
+        }
+
+        var entityId = 1
+        val entitiesModel = ArrayList<org.greenrobot.entitymodel.Entity>()
+
+        for (entityParsed in entitiesParser) {
+            val entityGenerator: Entity = entitiesGenerator[entityParsed]!!
             var propertyId = 1
             val properties = ArrayList<Property>()
             for (field in entityGenerator.properties) {
@@ -25,7 +48,7 @@ class ModelSync(val entities: List<EntityClass>, val schema: Schema, val mapping
             }
             val modelEntity = org.greenrobot.entitymodel.Entity(name = entityParsed.name, id = entityId,
                     properties = properties, lastPropertyId = propertyId - 1)
-            modelEntities.add(modelEntity)
+            entitiesModel.add(modelEntity)
             entityId++;
         }
 
@@ -35,16 +58,18 @@ class ModelSync(val entities: List<EntityClass>, val schema: Schema, val mapping
                 lastEntityId = entityId - 1,
                 lastIndexId = 0,
                 lastSequenceId = 0,
-                entities = modelEntities)
-        val moshi = Moshi.Builder().build()
-        val modelJsonAdapter = moshi.adapter<Model>(Model::class.java)
+                entities = entitiesModel)
 
         val buffer = Buffer()
         val jsonWriter = JsonWriter.of(buffer)
-        jsonWriter.setIndent("    ")
+        jsonWriter.setIndent("  ")
         modelJsonAdapter.toJson(jsonWriter, model)
-        val json = buffer.readUtf8();
-        System.out.println(json)
+        val sink = Okio.sink(jsonFile)
+        try {
+            buffer.readAll(sink)
+        } finally {
+            sink.close()
+        }
     }
 
 }
