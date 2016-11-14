@@ -1,6 +1,7 @@
 package org.greenrobot.greendao.codemodifier
 
 import io.objectbox.generator.BoxGenerator
+import org.greenrobot.entitymodel.ModelSync
 import org.greenrobot.greendao.generator.Entity
 import org.greenrobot.greendao.generator.Schema
 import java.io.File
@@ -68,7 +69,9 @@ class ObjectBoxGenerator(formattingOptions: FormattingOptions? = null,
 
         // take explicitly specified package name, or package name of the first entity
         val schema = Schema(options.name, options.version, options.daoPackage ?: entities.first().packageName)
-        val mapping = GreendaoModelTranslator.translate(entities, schema, options.daoPackage)
+        val mapping: Map<EntityClass, Entity> = GreendaoModelTranslator.translate(entities, schema, options.daoPackage)
+        val modelSync = ModelSync(entities, schema, mapping)
+        modelSync.sync()
 
         if (skipTestGeneration.isNotEmpty()) {
             schema.entities.forEach { e ->
