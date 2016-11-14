@@ -8,6 +8,7 @@ import org.gradle.api.tasks.util.PatternFilterable
 import org.greenrobot.greendao.codemodifier.Greendao3Generator
 import org.greenrobot.greendao.codemodifier.SchemaOptions
 import java.io.File
+import java.io.IOException
 import java.util.Properties
 
 class Greendao3GradlePlugin : Plugin<Project> {
@@ -95,12 +96,16 @@ class Greendao3GradlePlugin : Plugin<Project> {
     }
 
     private fun getVersion(): String {
-        return Greendao3GradlePlugin::class.java.getResourceAsStream(
-                "/$packageName/gradle/version.properties")?.let {
-            val properties = Properties()
-            properties.load(it)
-            properties.getProperty("version") ?: throw RuntimeException("No version in version.properties")
-        } ?: "0"
+        val properties = Properties()
+        val stream = javaClass.getResourceAsStream("/$packageName/gradle/version.properties")
+        stream?.use {
+            try {
+                properties.load(it)
+            } catch (e: IOException) {
+                e.printStackTrace()
+            }
+        }
+        return properties.getProperty("version") ?: "Unknown (bad build)"
     }
 
     private fun collectSchemaOptions(daoPackage: String?, genSrcDir: File, options: GreendaoOptions)
