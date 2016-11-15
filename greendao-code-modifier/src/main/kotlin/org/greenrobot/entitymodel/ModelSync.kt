@@ -40,24 +40,27 @@ class ModelSync(
 
         for (entityParsed in entitiesParser) {
             val entityGenerator: org.greenrobot.greendao.generator.Entity = entitiesGenerator[entityParsed]!!
+            val name = entityParsed.name
+            var entityRefId = entityParsed.refId
+            var existingEntity = findEntity(name, entityRefId)
+            if (entityRefId == null) {
+                entityRefId = existingEntity?.refId ?: modelRefId.create()
+            }
             var propertyId = 1
             val properties = ArrayList<Property>()
             for (field in entityGenerator.properties) {
                 val name = field.dbName ?: field.propertyName
+                if(existingEntity != null) {
+                    val existingProperty = findProperty(existingEntity, name, null)
+                }
                 val refId = modelRefId.create()
                 val property = Property(name = name, id = propertyId,
                         refId = refId, targetEntityId = 0, indexId = 0, flags = 0, type = 0)
                 propertyId++
                 properties.add(property)
             }
-            val name = entityParsed.name
-            var refId = entityParsed.refId
-            var existingEntity = findEntity(name, refId)
-            if (refId == null) {
-                refId = existingEntity?.refId ?: modelRefId.create()
-            }
 
-            val modelEntity = org.greenrobot.entitymodel.Entity(name = name, id = entityId, refId = refId,
+            val modelEntity = org.greenrobot.entitymodel.Entity(name = name, id = entityId, refId = entityRefId,
                     properties = properties, lastPropertyId = propertyId - 1)
             entitiesModel.add(modelEntity)
             entityId++;
@@ -74,13 +77,6 @@ class ModelSync(
         writeModel(model)
     }
 
-    private fun  findEntity(name: String, refId: Long?): Entity? {
-        if(refId != null) {
-            return entitiesReadByRefId[refId]
-        } else {
-            return entitiesReadByName[name]
-        }
-    }
 
     private fun initModel() {
         var source: Source? = null;
@@ -96,11 +92,37 @@ class ModelSync(
                 throw RuntimeException("Duplicate ref ID ${it.refId} in " + jsonFile.absolutePath)
             }
             entitiesReadByRefId.put(it.refId, it)
-            if(entitiesReadByName.put(it.name, it) != null) {
+            if (entitiesReadByName.put(it.name, it) != null) {
                 throw RuntimeException("Duplicate entity name ${it.name} in " + jsonFile.absolutePath)
             }
         }
     }
+
+    private fun findEntity(name: String, refId: Long?): Entity? {
+        if (refId != null) {
+            return entitiesReadByRefId[refId] ?:
+                    throw RuntimeException("No entity with refID $refId found in " + jsonFile.absolutePath)
+        } else {
+            return entitiesReadByName[name]
+        }
+    }
+
+    private fun findProperty(entity: Entity, name: String, refId: Long?): Property? {
+        if (refId != null) {
+            val filtered = entity.properties.filter { it.refId == refId }
+            if (filtered.isEmpty()) {
+                throw RuntimeException("In entity ${entity.name}, no property with refID $refId found in " +
+                        jsonFile.absolutePath)
+            }
+            check(filtered.size == 1)
+            return filtered.first()
+        } else {
+            val filtered = entity.properties.filter { it.name == name}
+            check (filtered.size <= 1)
+            return if(filtered.isNotEmpty()) filtered.first() else null
+        }
+    }
+
 
     private fun writeModel(model: Model) {
         val buffer = Buffer()
