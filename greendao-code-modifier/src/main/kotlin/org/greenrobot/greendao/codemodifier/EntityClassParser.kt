@@ -8,7 +8,7 @@ import org.eclipse.jdt.core.dom.CompilationUnit
 import java.io.File
 
 class EntityClassParser(val jdtOptions: MutableMap<Any, Any>, val encoding: String) {
-    fun parse(javaFile: File, classesInPackage: List<String>): EntityClass? {
+    fun parse(javaFile: File, classesInPackage: List<String>): ParsedEntity? {
         val source = javaFile.readText(charset(encoding))
 
         val parser = ASTParser.newParser(AST.JLS8)
@@ -40,6 +40,7 @@ class EntityClassParser(val jdtOptions: MutableMap<Any, Any>, val encoding: Stri
                     && problemId != IProblem.ImportNotFound // 390
                     && problemId != IProblem.PublicClassMustMatchFileName // 325 our tests violate this
                     && problemId != IProblem.UnhandledWarningToken // 631 SuppressWarnings tokens supported by IntelliJ, but not Eclipse
+                    && problemId != IProblem.MethodMustOverrideOrImplement // 634 Inner defined PropertyConverter overrides
             if (!keep) {
                 System.out.println("[Verbose] Ignoring parser problem in ${javaFile}:${it.sourceLineNumber}: $it.")
             }
@@ -71,6 +72,6 @@ class EntityClassParser(val jdtOptions: MutableMap<Any, Any>, val encoding: Stri
                 commentVisitor.keepFieldsStartLineNumber, commentVisitor.keepFieldsEndLineNumber)
         astRoot.accept(visitor)
 
-        return visitor.toEntityClass(javaFile, source)
+        return visitor.createParsedEntity(javaFile, source)
     }
 }

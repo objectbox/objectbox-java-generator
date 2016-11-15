@@ -37,8 +37,8 @@ object Templates {
         val activeUpdate = get("entity/active_update.ftl")
         val activeRefresh = get("entity/active_refresh.ftl")
 
-        fun constructor(className: String, fields: List<EntityField>, notNullAnnotation: String) : String =
-            constructor(mapOf("className" to className, "fields" to fields, "notNullAnnotation" to notNullAnnotation))
+        fun constructor(className: String, properties: List<ParsedProperty>, notNullAnnotation: String) : String =
+            constructor(mapOf("className" to className, "properties" to properties, "notNullAnnotation" to notNullAnnotation))
 
         fun daoSessionSetter(entity : Entity) : String =
             daoSessionSetter(mapOf("entity" to entity))

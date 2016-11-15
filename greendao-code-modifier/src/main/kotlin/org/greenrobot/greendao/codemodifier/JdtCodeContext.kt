@@ -14,6 +14,7 @@ class JdtCodeContext(val formattingOptions: FormattingOptions? = null, encoding:
     init {
         jdtOptions = JavaCore.getOptions()
         jdtOptions.put(CompilerOptions.OPTION_Source, CompilerOptions.VERSION_1_7)
+        jdtOptions.put(CompilerOptions.OPTION_Compliance, CompilerOptions.VERSION_1_7)
         // it could be the encoding is never used by JDT itself for our use case, but just to be sure (and for future)
         jdtOptions.put(CompilerOptions.OPTION_Encoding, encoding)
 
@@ -22,6 +23,6 @@ class JdtCodeContext(val formattingOptions: FormattingOptions? = null, encoding:
 
     fun parse(javaFile: File, classesInPackage: List<String>) = classParser.parse(javaFile, classesInPackage)
 
-    fun transformer(entityClass: EntityClass) = EntityClassTransformer(entityClass, jdtOptions, formattingOptions)
+    fun transformer(parsedEntity: ParsedEntity) = EntityClassTransformer(parsedEntity, jdtOptions, formattingOptions)
 
 }

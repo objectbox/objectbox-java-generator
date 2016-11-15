@@ -7,6 +7,6 @@ open class VisitorTestBase {
     val BarListType = VariableType("java.util.List", false, "List<Bar>", listOf(BarType))
 
     fun visit(code: String, classesInPackage: List<String> = emptyList()) =
-            tryParseEntityClass(code, classesInPackage)
+            tryParseEntity(code, classesInPackage)
 
 }
