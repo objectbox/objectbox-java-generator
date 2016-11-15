@@ -26,10 +26,10 @@ class VisitorTest : VisitorTestBase() {
             int age;
         }
         """)!!
-        assertThat(entity.fields, equalTo(
+        assertThat(entity.properties, equalTo(
                 listOf(
-                        EntityField(Variable(StringType, "name")),
-                        EntityField(Variable(IntType, "age"), isNotNull = true)
+                        ParsedProperty(Variable(StringType, "name")),
+                        ParsedProperty(Variable(IntType, "age"), isNotNull = true)
                 )
         ))
     }
@@ -44,7 +44,7 @@ class VisitorTest : VisitorTestBase() {
         @Entity
         class Foobar {}
         """)!!
-        assertThat(entity.fields, isEmpty)
+        assertThat(entity.properties, isEmpty)
         assertThat(entity.transientFields, isEmpty)
         assertThat(entity.methods, isEmpty)
         assertThat(entity.constructors, isEmpty)
@@ -66,9 +66,9 @@ class VisitorTest : VisitorTestBase() {
             transient int age;
         }
         """)!!
-        assertThat(entity.fields, hasSize(equalTo(1)))
+        assertThat(entity.properties, hasSize(equalTo(1)))
         assertThat(entity.transientFields, hasSize(equalTo(1)))
-        assertThat(entity.fields[0].variable.name, equalTo("name"))
+        assertThat(entity.properties[0].variable.name, equalTo("name"))
         assertThat(entity.transientFields[0].variable.name, equalTo("age"))
     }
 
@@ -85,9 +85,9 @@ class VisitorTest : VisitorTestBase() {
             @Transient int age;
         }
         """)!!
-        assertThat(entity.fields, hasSize(equalTo(1)))
+        assertThat(entity.properties, hasSize(equalTo(1)))
         assertThat(entity.transientFields, hasSize(equalTo(1)))
-        assertThat(entity.fields[0].variable.name, equalTo("name"))
+        assertThat(entity.properties[0].variable.name, equalTo("name"))
         assertThat(entity.transientFields[0].variable.name, equalTo("age"))
     }
 
@@ -106,8 +106,8 @@ class VisitorTest : VisitorTestBase() {
         }
         """)!!
 
-        assertThat(entity.fields, hasSize(equalTo(1)))
-        assertThat(entity.fields[0].variable.name, equalTo("name"))
+        assertThat(entity.properties, hasSize(equalTo(1)))
+        assertThat(entity.properties[0].variable.name, equalTo("name"))
 
         assertThat(entity.transientFields, hasSize(equalTo(2)))
         assertThat(entity.transientFields[0].variable.name, equalTo("staticField"))
@@ -127,7 +127,7 @@ class VisitorTest : VisitorTestBase() {
             String name;
         }
         """)!!
-        val entityField = entity.fields[0]
+        val entityField = entity.properties[0]
         assertNotNull(entityField.id)
         assertFalse(entityField.id!!.autoincrement)
     }
@@ -145,7 +145,7 @@ class VisitorTest : VisitorTestBase() {
             String name;
         }
         """)!!
-        assertTrue(entity.fields[0].id!!.autoincrement)
+        assertTrue(entity.properties[0].id!!.autoincrement)
     }
 
     @Test
@@ -161,7 +161,7 @@ class VisitorTest : VisitorTestBase() {
             String name;
         }
         """)!!
-        val field = entity.fields[0]
+        val field = entity.properties[0]
         assertEquals("SECOND_NAME", field.dbName)
     }
 
@@ -178,7 +178,7 @@ class VisitorTest : VisitorTestBase() {
             String name;
         }
         """)!!
-        val field = entity.fields[0]
+        val field = entity.properties[0]
         val index = field.index!!
         assertEquals("NAME_INDEX", index.name)
         assertTrue(index.unique)
@@ -212,7 +212,7 @@ class VisitorTest : VisitorTestBase() {
             String name;
         }
         """)!!
-        assertTrue(entity.fields[0].unique)
+        assertTrue(entity.properties[0].unique)
     }
 
     @Test
@@ -232,9 +232,9 @@ class VisitorTest : VisitorTestBase() {
             MyType name;
         }
         """, listOf("MyType"))!!
-        val field = entity.fields[0]
+        val field = entity.properties[0]
         assertEquals(
-                EntityField(
+                ParsedProperty(
                         Variable(VariableType("com.example.myapp.MyType", isPrimitive = false, originalName = "MyType"), "name"),
                         customType = CustomType(
                                 "com.example.myapp.Converter", StringType
@@ -272,9 +272,9 @@ class VisitorTest : VisitorTestBase() {
             }
         }
         """, listOf("MyType"))!!
-        val field = entity.fields[0]
+        val field = entity.properties[0]
         assertEquals(
-                EntityField(
+                ParsedProperty(
                         Variable(VariableType("com.example.myapp.MyType", isPrimitive = false, originalName = "MyType"), "name"),
                         customType = CustomType(
                                 "com.example.myapp.Foobar.InnerConverter", StringType

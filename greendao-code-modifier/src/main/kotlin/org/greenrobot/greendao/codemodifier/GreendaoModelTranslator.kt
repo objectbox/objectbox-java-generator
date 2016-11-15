@@ -17,7 +17,7 @@ object GreendaoModelTranslator {
      * Modifies provided schema object according to entities list
      * @return mapping EntityClass to Entity
      * */
-    fun translate(entities : Iterable<EntityClass>, schema : Schema, daoPackage: String?) : Map<EntityClass, Entity> {
+    fun translate(entities : Iterable<ParsedEntity>, schema : Schema, daoPackage: String?) : Map<ParsedEntity, Entity> {
         val mapping = mapEntityClassesToEntities(entities, schema, daoPackage)
 
         resolveToOneRelations(mapping, entities, schema)
@@ -26,8 +26,8 @@ object GreendaoModelTranslator {
         return mapping
     }
 
-    private fun mapEntityClassesToEntities(entities: Iterable<EntityClass>, schema: Schema,
-                                           daoPackage: String?): Map<EntityClass, Entity> {
+    private fun mapEntityClassesToEntities(entities: Iterable<ParsedEntity>, schema: Schema,
+                                           daoPackage: String?): Map<ParsedEntity, Entity> {
         return entities.map {
             val entity = schema.addEntity(it.name)
             addBasicProperties(daoPackage, it, entity)
@@ -54,15 +54,15 @@ object GreendaoModelTranslator {
         }.toMap()
     }
 
-    private fun addBasicProperties(daoPackage: String?, it: EntityClass, entity: Entity) {
+    private fun addBasicProperties(daoPackage: String?, it: ParsedEntity, entity: Entity) {
         entity.isConstructors = it.generateConstructors
         entity.javaPackageDao = daoPackage ?: it.packageName
         entity.javaPackageTest = daoPackage ?: it.packageName
         entity.isSkipGeneration = true
     }
 
-    private fun addFields(it: EntityClass, entity: Entity) {
-        val fieldsInOrder = it.getFieldsInConstructorOrder() ?: it.fields
+    private fun addFields(it: ParsedEntity, entity: Entity) {
+        val fieldsInOrder = it.getFieldsInConstructorOrder() ?: it.properties
         fieldsInOrder.forEach {
             field ->
             try {
@@ -74,7 +74,7 @@ object GreendaoModelTranslator {
         }
     }
 
-    private fun addIndexes(it: EntityClass, entity: Entity) {
+    private fun addIndexes(it: ParsedEntity, entity: Entity) {
         it.indexes.forEach {
             tableIndex ->
             entity.addIndex(Index().apply {
@@ -98,7 +98,7 @@ object GreendaoModelTranslator {
         }
     }
 
-    private fun resolveToOneRelations(mapping: Map<EntityClass, Entity>, entities: Iterable<EntityClass>, schema: Schema) {
+    private fun resolveToOneRelations(mapping: Map<ParsedEntity, Entity>, entities: Iterable<ParsedEntity>, schema: Schema) {
         entities.filterNot {
             it.oneRelations.isEmpty()
         }.forEach {
@@ -138,7 +138,7 @@ object GreendaoModelTranslator {
         }
     }
 
-    private fun resolveToManyRelations(mapping: Map<EntityClass, Entity>, entities: Iterable<EntityClass>, schema: Schema) {
+    private fun resolveToManyRelations(mapping: Map<ParsedEntity, Entity>, entities: Iterable<ParsedEntity>, schema: Schema) {
         entities.filterNot {
             it.manyRelations.isEmpty()
         }.forEach {
@@ -225,7 +225,7 @@ object GreendaoModelTranslator {
         }
     }
 
-    private fun convertField(e: Entity, field: EntityField) {
+    private fun convertField(e: Entity, field: ParsedProperty) {
         val propertyType = getPropertyType((field.customType?.columnJavaType ?: field.variable.type).name)
         val propertyBuilder = e.addProperty(propertyType, field.variable.name)
         if (field.variable.type.isPrimitive) {

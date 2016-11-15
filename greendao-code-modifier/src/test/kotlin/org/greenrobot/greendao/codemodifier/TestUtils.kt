@@ -28,14 +28,14 @@ fun parseCompilationUnit(javaCode: String): CompilationUnit {
     return astRoot
 }
 
-fun tryParseEntityClass(javaCode: String, classesInPackage: List<String> = emptyList()): EntityClass? {
+fun tryParseEntity(javaCode: String, classesInPackage: List<String> = emptyList()): ParsedEntity? {
     val visitor = EntityClassASTVisitor(javaCode, classesInPackage, -1, -1)
     val unit = parseCompilationUnit(javaCode)
     unit.accept(visitor)
-    return visitor.toEntityClass(Mockito.mock(File::class.java), javaCode)
+    return visitor.createParsedEntity(Mockito.mock(File::class.java), javaCode)
 }
 
-fun parseEntityClass(javaCode: String): EntityClass = tryParseEntityClass(javaCode)!!
+fun parseEntity(javaCode: String): ParsedEntity = tryParseEntity(javaCode)!!
 
 val StringType = VariableType("String", isPrimitive = false, originalName = "String")
 val IntType = VariableType("int", isPrimitive = true, originalName = "int")

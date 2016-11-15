@@ -27,7 +27,7 @@ class Greendao3Generator(formattingOptions: FormattingOptions? = null,
         val entities = sourceFiles.asSequence()
                 .map {
                     val entity = context.parse(it, classesByDir[it.parentFile]!!)
-                    if (entity != null && entity.fields.size == 0) {
+                    if (entity != null && entity.properties.size == 0) {
                         System.err.println("Skipping entity ${entity.name} as it has no properties.")
                         null
                     } else {
@@ -61,7 +61,7 @@ class Greendao3Generator(formattingOptions: FormattingOptions? = null,
         }
     }
 
-    fun generateSchema(entities: List<EntityClass>, options: SchemaOptions) {
+    fun generateSchema(entities: List<ParsedEntity>, options: SchemaOptions) {
         val outputDir = options.outputDir
         val testsOutputDir = options.testsOutputDir
 
@@ -100,26 +100,26 @@ class Greendao3Generator(formattingOptions: FormattingOptions? = null,
         }
     }
 
-    private fun checkClass(entityClass: EntityClass) {
-        val fieldsInConstructorOrder = entityClass.getFieldsInConstructorOrder()
+    private fun checkClass(parsedEntity: ParsedEntity) {
+        val fieldsInConstructorOrder = parsedEntity.getFieldsInConstructorOrder()
         val noConstructor = fieldsInConstructorOrder == null && run {
-            val fieldVars = entityClass.fields.map { it.variable }
-            entityClass.constructors.none {
-                it.hasFullSignature(entityClass.name, fieldVars)
+            val fieldVars = parsedEntity.properties.map { it.variable }
+            parsedEntity.constructors.none {
+                it.hasFullSignature(parsedEntity.name, fieldVars)
             }
         }
         if (noConstructor) {
             throw RuntimeException(
-                    "Can't find constructor for entity ${entityClass.name} with all persistent fields. " +
+                    "Can't find constructor for entity ${parsedEntity.name} with all persistent fields. " +
                             "Note parameter names of such constructor should be equal to field names"
             )
         }
     }
 
-    private fun transformClass(entityClass: EntityClass, mapping: Map<EntityClass, Entity>) {
-        val entity = mapping[entityClass]!!
+    private fun transformClass(parsedEntity: ParsedEntity, mapping: Map<ParsedEntity, Entity>) {
+        val entity = mapping[parsedEntity]!!
         val daoPackage = entity.schema.defaultJavaPackage
-        val transformer = context.transformer(entityClass)
+        val transformer = context.transformer(parsedEntity)
 
         transformer.ensureImport("org.greenrobot.greendao.annotation.Generated")
         transformer.annotateLegacyKeepFields()
@@ -135,11 +135,11 @@ class Greendao3Generator(formattingOptions: FormattingOptions? = null,
 
             generateActiveMethodsAndFields(transformer)
             generateToManyRelations(entity, transformer)
-            generateToOneRelations(entity, entityClass, transformer)
+            generateToOneRelations(entity, parsedEntity, transformer)
         }
 
-        generateGettersAndSetters(entityClass, transformer)
-        generateConstructors(entityClass, transformer)
+        generateGettersAndSetters(parsedEntity, transformer)
+        generateConstructors(parsedEntity, transformer)
 
         if (entity.active) {
             transformer.defField("myDao", VariableType("${entity.javaPackageDao}.${entity.classNameDao}", false, entity.classNameDao),
@@ -151,23 +151,23 @@ class Greendao3Generator(formattingOptions: FormattingOptions? = null,
         transformer.writeToFile()
     }
 
-    private fun generateConstructors(entityClass: EntityClass, transformer: EntityClassTransformer) {
-        if (entityClass.generateConstructors) {
+    private fun generateConstructors(parsedEntity: ParsedEntity, transformer: EntityClassTransformer) {
+        if (parsedEntity.generateConstructors) {
             // check there is need to generate default constructor to do not hide implicit one
-            val fieldsInOrder = entityClass.getFieldsInConstructorOrder() ?: entityClass.fields
+            val fieldsInOrder = parsedEntity.getFieldsInConstructorOrder() ?: parsedEntity.properties
             if (fieldsInOrder.isNotEmpty()
-                    && entityClass.constructors.none { it.parameters.isEmpty() && !it.generated }) {
+                    && parsedEntity.constructors.none { it.parameters.isEmpty() && !it.generated }) {
                 transformer.defConstructor(emptyList()) {
                     """ @Generated(hash = $HASH_STUB)
-                        public ${entityClass.name}() {
+                        public ${parsedEntity.name}() {
                         }"""
                 }
             }
 
             // generate all fields constructor
             transformer.defConstructor(fieldsInOrder.map { it.variable.type.name }) {
-                Templates.entity.constructor(entityClass.name, entityClass.fields,
-                        entityClass.notNullAnnotation ?: "@NotNull")
+                Templates.entity.constructor(parsedEntity.name, parsedEntity.properties,
+                        parsedEntity.notNullAnnotation ?: "@NotNull")
             }
         } else {
             // DAOs require at minimum a default constructor, so:
@@ -175,14 +175,14 @@ class Greendao3Generator(formattingOptions: FormattingOptions? = null,
         }
     }
 
-    private fun generateGettersAndSetters(entityClass: EntityClass, transformer: EntityClassTransformer) {
-        if (!entityClass.generateGettersSetters) {
-            println("Not generating getters or setters for ${entityClass.name}.")
+    private fun generateGettersAndSetters(parsedEntity: ParsedEntity, transformer: EntityClassTransformer) {
+        if (!parsedEntity.generateGettersSetters) {
+            println("Not generating getters or setters for ${parsedEntity.name}.")
             return
         }
         // define missing getters and setters
         // add everything (fields, set before get) in reverse as transformer writes in reverse direction
-        entityClass.fields.reversed().forEach { field ->
+        parsedEntity.properties.reversed().forEach { field ->
             transformer.defMethodIfMissing("set${field.variable.name.capitalize()}", field.variable.type.name) {
                 Templates.entity.fieldSet(field.variable)
             }
@@ -193,17 +193,17 @@ class Greendao3Generator(formattingOptions: FormattingOptions? = null,
         }
     }
 
-    private fun generateToOneRelations(entity: Entity, entityClass: EntityClass, transformer: EntityClassTransformer) {
+    private fun generateToOneRelations(entity: Entity, parsedEntity: ParsedEntity, transformer: EntityClassTransformer) {
         // add everything in reverse as transformer writes in reverse direction
         entity.toOneRelations.reversed().forEach { toOne ->
             transformer.ensureImport("${toOne.targetEntity.javaPackageDao}.${toOne.targetEntity.classNameDao}")
 
             // define methods
             transformer.defMethod("set${toOne.name.capitalize()}", toOne.targetEntity.className) {
-                if (entityClass.notNullAnnotation == null && toOne.fkProperties[0].isNotNull) {
+                if (parsedEntity.notNullAnnotation == null && toOne.fkProperties[0].isNotNull) {
                     transformer.ensureImport("org.greenrobot.greendao.annotation.NotNull")
                 }
-                Templates.entity.oneRelationSetter(toOne, entityClass.notNullAnnotation ?: "@NotNull")
+                Templates.entity.oneRelationSetter(toOne, parsedEntity.notNullAnnotation ?: "@NotNull")
             }
 
             if (!toOne.isUseFkProperty) {

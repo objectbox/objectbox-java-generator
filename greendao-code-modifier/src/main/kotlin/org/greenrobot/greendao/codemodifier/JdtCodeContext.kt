@@ -23,6 +23,6 @@ class JdtCodeContext(val formattingOptions: FormattingOptions? = null, encoding:
 
     fun parse(javaFile: File, classesInPackage: List<String>) = classParser.parse(javaFile, classesInPackage)
 
-    fun transformer(entityClass: EntityClass) = EntityClassTransformer(entityClass, jdtOptions, formattingOptions)
+    fun transformer(parsedEntity: ParsedEntity) = EntityClassTransformer(parsedEntity, jdtOptions, formattingOptions)
 
 }

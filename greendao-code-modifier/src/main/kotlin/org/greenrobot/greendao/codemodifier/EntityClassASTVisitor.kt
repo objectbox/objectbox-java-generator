@@ -13,7 +13,7 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
                             val keepFieldsStartLineNumber: Int, val keepFieldsEndLineNumber: Int) : LazyVisitor() {
     var isEntity = false
     var schemaName: String = "default"
-    val fields = mutableListOf<EntityField>()
+    val properties = mutableListOf<ParsedProperty>()
     val transientFields = mutableListOf<TransientField>()
     val legacyTransientFields = mutableListOf<TransientField>()
     val constructors = mutableListOf<Method>()
@@ -170,7 +170,7 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
                 annotations.has<ToMany>() -> {
                     manyRelations += variableNames.map { manyRelation(annotations, it, variableType) }
                 }
-                else -> fields += variableNames.map { entityField(annotations, it, node, variableType) }
+                else -> properties += variableNames.map { parseProperty(annotations, it, node, variableType) }
             }
         }
 
@@ -276,8 +276,8 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
         )
     }
 
-    private fun entityField(fa: MutableList<Annotation>, fieldName: SimpleName,
-                            node: FieldDeclaration, variableType: VariableType): EntityField {
+    private fun parseProperty(fa: MutableList<Annotation>, fieldName: SimpleName,
+                              node: FieldDeclaration, variableType: VariableType): ParsedProperty {
         val columnAnnotation = fa.proxy<Property>()
         val indexAnnotation = fa.proxy<Index>()
         val idAnnotation = fa.proxy<Id>()
@@ -290,9 +290,9 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
         }
 
         val customType = findConvert(fieldName, fa)
-        return EntityField(
+        return ParsedProperty(
                 variable = Variable(variableType, fieldName.toString()),
-                id = idAnnotation?.let { TableId(it.autoincrement) },
+                id = idAnnotation?.let { EntityIdParams(it.autoincrement) },
                 index = indexAnnotation?.let { PropertyIndex(indexAnnotation.name.nullIfBlank(), indexAnnotation.unique) },
                 isNotNull = node.type.isPrimitiveType || fa.hasNotNull,
                 dbName = columnAnnotation?.nameInDb?.let { it.nullIfBlank() },
@@ -366,7 +366,7 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
      */
     private fun checkInnerCustomTypes() {
         val entityClassName = typeDeclaration?.name?.identifier ?: return
-        fields.forEach {
+        properties.forEach {
             if (it.customType != null) {
                 // if the property type is defined inline, it should be static
                 val variableClassName = it.variable.type.name
@@ -396,39 +396,40 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
     }
 
     /**
-     * Collects parsed information into EntityClass, sets javaFile and source
+     * Collects parsed information into ParsedEntity, sets javaFile and source
      * @return null if parsed class it is not an entity
      * */
-    fun toEntityClass(javaFile: File, source: String): EntityClass? {
+    fun createParsedEntity(javaFile: File, source: String): ParsedEntity? {
         return if (isEntity) {
             // we only know about all inner classes after visiting all nodes, so do inner type and converter checks here
             checkInnerCustomTypes()
 
             val node = typeDeclaration!!
-            EntityClass(
-                    node.name.identifier,
-                    schemaName,
-                    active,
-                    fields,
-                    transientFields,
-                    legacyTransientFields,
-                    constructors,
-                    methods,
-                    node,
-                    imports,
-                    packageName ?: "",
-                    entityTableName,
-                    oneRelations,
-                    manyRelations,
-                    tableIndexes,
-                    javaFile, source,
-                    keepSource,
-                    createTable,
-                    generateConstructors,
-                    generateGettersSetters,
-                    protobufClassName,
-                    usedNotNullAnnotation,
-                    lastField
+            ParsedEntity(
+                    name = node.name.identifier,
+                    schema = schemaName,
+                    active = active,
+                    properties = properties,
+                    transientFields = transientFields,
+                    legacyTransientFields = legacyTransientFields,
+                    constructors = constructors,
+                    methods = methods,
+                    node = node,
+                    imports = imports,
+                    packageName = packageName ?: "",
+                    dbName = entityTableName,
+                    oneRelations = oneRelations,
+                    manyRelations = manyRelations,
+                    indexes = tableIndexes,
+                    sourceFile = javaFile,
+                    source = source,
+                    keepSource = keepSource,
+                    createInDb = createTable,
+                    generateConstructors = generateConstructors,
+                    generateGettersSetters = generateGettersSetters,
+                    protobufClassName = protobufClassName,
+                    notNullAnnotation = usedNotNullAnnotation,
+                    lastFieldDeclaration = lastField
             )
         } else {
             null

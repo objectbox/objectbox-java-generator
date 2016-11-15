@@ -15,13 +15,13 @@ data class VariableType(val name: String, val isPrimitive: Boolean, val original
 
 data class Variable(val type: VariableType, val name: String)
 
-data class EntityField(val variable: Variable,
-                       val id: TableId? = null,
-                       val index: PropertyIndex? = null,
-                       val isNotNull: Boolean = false,
-                       val dbName: String? = null,
-                       val customType: CustomType? = null,
-                       val unique: Boolean = false)
+data class ParsedProperty(val variable: Variable,
+                          val id: EntityIdParams? = null,
+                          val index: PropertyIndex? = null,
+                          val isNotNull: Boolean = false,
+                          val dbName: String? = null,
+                          val customType: CustomType? = null,
+                          val unique: Boolean = false)
 
 data class TransientField(val variable: Variable,
                           override val node: FieldDeclaration,
@@ -30,7 +30,7 @@ data class TransientField(val variable: Variable,
 data class CustomType(val converterClassName: String,
                       val columnJavaType: VariableType)
 
-data class TableId(val autoincrement: Boolean)
+data class EntityIdParams(val autoincrement: Boolean)
 
 data class PropertyIndex(val name: String?, val unique: Boolean)
 
@@ -64,24 +64,24 @@ data class ManyRelation(val variable: Variable, val mappedBy: String? = null,
                         val joinEntitySpec: JoinEntitySpec? = null,
                         val order: List<OrderProperty>? = null)
 
-data class EntityClass(val name: String, val schema: String,
-                       val active: Boolean,
-                       val fields: List<EntityField>, val transientFields: List<TransientField>,
-                       val legacyTransientFields: List<TransientField>,
-                       val constructors: List<Method>, val methods: List<Method>,
-                       val node: TypeDeclaration,
-                       val imports: List<ImportDeclaration>, val packageName: String,
-                       val dbName: String?,
-                       val oneRelations: List<OneRelation>, val manyRelations: List<ManyRelation>,
-                       val indexes: List<TableIndex>,
-                       val sourceFile: File, val source: String,
-                       val keepSource: Boolean,
-                       val createInDb: Boolean,
-                       val generateConstructors: Boolean,
-                       val generateGettersSetters: Boolean,
-                       val protobufClassName: String?,
-                       val notNullAnnotation: String?,
-                       val lastFieldDeclaration: FieldDeclaration?) {
+data class ParsedEntity(val name: String, val schema: String,
+                        val active: Boolean,
+                        val properties: List<ParsedProperty>, val transientFields: List<TransientField>,
+                        val legacyTransientFields: List<TransientField>,
+                        val constructors: List<Method>, val methods: List<Method>,
+                        val node: TypeDeclaration,
+                        val imports: List<ImportDeclaration>, val packageName: String,
+                        val dbName: String?,
+                        val oneRelations: List<OneRelation>, val manyRelations: List<ManyRelation>,
+                        val indexes: List<TableIndex>,
+                        val sourceFile: File, val source: String,
+                        val keepSource: Boolean,
+                        val createInDb: Boolean,
+                        val generateConstructors: Boolean,
+                        val generateGettersSetters: Boolean,
+                        val protobufClassName: String?,
+                        val notNullAnnotation: String?,
+                        val lastFieldDeclaration: FieldDeclaration?) {
 
     val qualifiedClassName: String
         get() = "$packageName.$name"
@@ -94,10 +94,10 @@ data class EntityClass(val name: String, val schema: String,
 
     /** @return entity fields in order of constructor parameters, if all-fields constructor exist,
      *          otherwise null */
-    fun getFieldsInConstructorOrder(): List<EntityField>? {
-        val fieldVarsSet = fields.map { it.variable }.toSet()
+    fun getFieldsInConstructorOrder(): List<ParsedProperty>? {
+        val fieldVarsSet = properties.map { it.variable }.toSet()
         return constructors.find { it.parameters.toSet() == fieldVarsSet }
-                ?.let { constructor -> fields.sortedBy { constructor.parameters.indexOf(it.variable) } }
+                ?.let { constructor -> properties.sortedBy { constructor.parameters.indexOf(it.variable) } }
     }
 
 }

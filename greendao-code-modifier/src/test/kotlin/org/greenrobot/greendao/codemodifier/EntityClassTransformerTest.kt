@@ -14,7 +14,7 @@ class EntityClassTransformerTest {
 
     @Test
     fun addMethod() {
-        val entityClass = parseEntityClass(
+        val entityClass = parseEntity(
             //language=java
             """
             import org.greenrobot.greendao.annotation.Entity;
@@ -61,7 +61,7 @@ class EntityClassTransformerTest {
 
     @Test
     fun addConstructor() {
-        val entityClass = parseEntityClass(
+        val entityClass = parseEntity(
             //language=java
             """
             import org.greenrobot.greendao.annotation.Entity;
@@ -112,7 +112,7 @@ class EntityClassTransformerTest {
 
     @Test
     fun addField() {
-        val entityClass = parseEntityClass(
+        val entityClass = parseEntity(
             //language=java
             """
             import org.greenrobot.greendao.annotation.Entity;
@@ -180,7 +180,7 @@ class EntityClassTransformerTest {
                         }
             }
             """.trimIndent()
-        val entityClass = parseEntityClass(javaCode)
+        val entityClass = parseEntity(javaCode)
 
         val result = EntityClassTransformer(entityClass, jdtOptions, formattingOptions).apply {
             defField("age", IntType)
@@ -214,7 +214,7 @@ class EntityClassTransformerTest {
 
     @Test
     fun replaceGeneratedMethod() {
-        val entityClass = parseEntityClass(
+        val entityClass = parseEntity(
             //language=java
             """
             import org.greenrobot.greendao.annotation.Entity;
@@ -259,7 +259,7 @@ class EntityClassTransformerTest {
 
     @Test
     fun replaceGeneratedConstructor() {
-        val entityClass = parseEntityClass(
+        val entityClass = parseEntity(
             //language=java
             """
             import org.greenrobot.greendao.annotation.Entity;
@@ -308,7 +308,7 @@ class EntityClassTransformerTest {
 
     @Test
     fun doNotReplaceEmptyGeneratedConstructor() {
-        val entityClass = parseEntityClass(
+        val entityClass = parseEntity(
                 //language=java
                 """
             import org.greenrobot.greendao.annotation.Entity;
@@ -359,7 +359,7 @@ class EntityClassTransformerTest {
 
     @Test
     fun replaceGeneratedField() {
-        val entityClass = parseEntityClass(
+        val entityClass = parseEntity(
             //language=java
             """
             import org.greenrobot.greendao.annotation.Entity;
@@ -394,7 +394,7 @@ class EntityClassTransformerTest {
 
     @Test
     fun removeUnrequiredGeneratedCode() {
-        val entityClass = parseEntityClass(
+        val entityClass = parseEntity(
             //language=java
             """
             import org.greenrobot.greendao.annotation.Entity;
@@ -456,7 +456,7 @@ class EntityClassTransformerTest {
                 }
             }
             """.trimIndent()
-        val entityClass = parseEntityClass(originalCode)
+        val entityClass = parseEntity(originalCode)
         val result = EntityClassTransformer(entityClass, jdtOptions, formattingOptions).apply {
             defMethod("hello", "String", "int") {
                 """
@@ -487,7 +487,7 @@ class EntityClassTransformerTest {
                 }
             }
             """.trimIndent()
-        val entityClass = parseEntityClass(originalCode)
+        val entityClass = parseEntity(originalCode)
         val result = EntityClassTransformer(entityClass, jdtOptions, formattingOptions).apply {
             defConstructor(listOf("String", "int")) {
                 """
@@ -515,7 +515,7 @@ class EntityClassTransformerTest {
                 private transient String name = "John Lennon";
             }
             """.trimIndent()
-        val entityClass = parseEntityClass(originalCode)
+        val entityClass = parseEntity(originalCode)
         val result = EntityClassTransformer(entityClass, jdtOptions, formattingOptions).apply {
             defField("name", StringType)
         }.writeToString()
@@ -537,7 +537,7 @@ class EntityClassTransformerTest {
                 }
             }
             """.trimIndent()
-        val entityClass = parseEntityClass(originalCode)
+        val entityClass = parseEntity(originalCode)
         EntityClassTransformer(entityClass, jdtOptions, formattingOptions).apply {
             defMethod("hello", "String", "int") {
                 """
@@ -565,7 +565,7 @@ class EntityClassTransformerTest {
                 }
             }
             """.trimIndent()
-        val entityClass = parseEntityClass(originalCode)
+        val entityClass = parseEntity(originalCode)
         EntityClassTransformer(entityClass, jdtOptions, formattingOptions).apply {
             defConstructor(listOf("String", "int")) {
                 """
@@ -590,7 +590,7 @@ class EntityClassTransformerTest {
                 private transient String name = "John Lennon";
             }
             """.trimIndent()
-        val entityClass = parseEntityClass(originalCode)
+        val entityClass = parseEntity(originalCode)
         EntityClassTransformer(entityClass, jdtOptions, formattingOptions).apply {
             defField("name", StringType)
         }
@@ -614,7 +614,7 @@ class EntityClassTransformerTest {
               }
             }
             """.trimIndent()
-        val entityClass = parseEntityClass(originalCode)
+        val entityClass = parseEntity(originalCode)
         val result = EntityClassTransformer(entityClass, jdtOptions, formattingOptions).apply {
             defMethod("hello", "String", "int") {
                 """
@@ -647,7 +647,7 @@ class EntityClassTransformerTest {
                 }
             }
             """.trimIndent()
-        val entityClass = parseEntityClass(originalCode)
+        val entityClass = parseEntity(originalCode)
         val result = EntityClassTransformer(entityClass, jdtOptions, formattingOptions).apply {
             defMethod("hello", "String", "int") {
                 """
