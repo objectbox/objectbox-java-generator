@@ -35,7 +35,7 @@ object GreendaoModelTranslator {
             if (it.active) entity.active = true
             entity.isSkipCreationInDb = !it.createInDb
             entity.javaPackage = it.packageName
-            addFields(it, entity)
+            convertProperties(it, entity)
             addIndexes(it, entity)
 
             // trigger creation of an additional protobuf dao
@@ -46,7 +46,7 @@ object GreendaoModelTranslator {
                 protobufEntity.active = false
                 protobufEntity.isSkipCreationInDb = true // table creation/deletion is handled by the original DAO
                 protobufEntity.javaPackage = it.protobufClassName.substringBeforeLast(".")
-                addFields(it, protobufEntity)
+                convertProperties(it, protobufEntity)
                 addIndexes(it, protobufEntity)
             }
 
@@ -61,14 +61,13 @@ object GreendaoModelTranslator {
         entity.isSkipGeneration = true
     }
 
-    private fun addFields(it: ParsedEntity, entity: Entity) {
-        val fieldsInOrder = it.getFieldsInConstructorOrder() ?: it.properties
-        fieldsInOrder.forEach {
-            field ->
+    private fun convertProperties(parsedEntity: ParsedEntity, entity: Entity) {
+        val properties = parsedEntity.getPropertiesInConstructorOrder() ?: parsedEntity.properties
+        properties.forEach {
             try {
-                convertField(entity, field)
+                convertProperty(entity, it)
             } catch (e: Exception) {
-                throw RuntimeException("Can't add field `${field.variable}` for entity ${it.name} " +
+                throw RuntimeException("Can't add property '${it.variable}' to entity ${parsedEntity.name} " +
                         "due to: ${e.message}", e)
             }
         }
@@ -225,40 +224,40 @@ object GreendaoModelTranslator {
         }
     }
 
-    private fun convertField(e: Entity, field: ParsedProperty) {
-        val propertyType = getPropertyType((field.customType?.columnJavaType ?: field.variable.type).name)
-        val propertyBuilder = e.addProperty(propertyType, field.variable.name)
-        if (field.variable.type.isPrimitive) {
+    private fun convertProperty(entity: Entity, property: ParsedProperty) {
+        val propertyType = convertPropertyType((property.customType?.columnJavaType ?: property.variable.type).name)
+        val propertyBuilder = entity.addProperty(propertyType, property.variable.name)
+        if (property.variable.type.isPrimitive) {
             propertyBuilder.notNull()
-        } else if (WRAPPER_TYPES.contains(field.variable.type.name)) {
+        } else if (WRAPPER_TYPES.contains(property.variable.type.name)) {
             propertyBuilder.nonPrimitiveType()
         }
-        if (field.isNotNull) propertyBuilder.notNull()
-        if (field.unique && field.index != null) {
+        if (property.isNotNull) propertyBuilder.notNull()
+        if (property.unique && property.index != null) {
             throw RuntimeException("greenDAO: having unique constraint and index on the field " +
                     "at the same time is redundant. Either @Unique or @Index should be used")
         }
-        if (field.unique) {
+        if (property.unique) {
             propertyBuilder.unique()
         }
-        if (field.index != null) {
-            propertyBuilder.indexAsc(field.index.name, field.index.unique)
+        if (property.index != null) {
+            propertyBuilder.indexAsc(property.index.name, property.index.unique)
         }
-        if (field.id != null) {
+        if (property.id != null) {
             propertyBuilder.primaryKey()
-            if (field.id.autoincrement) propertyBuilder.autoincrement()
+            if (property.id.autoincrement) propertyBuilder.autoincrement()
         }
-        if (field.dbName != null) {
-            propertyBuilder.dbName(field.dbName)
-        } else if (field.id != null && propertyType == PropertyType.Long) {
+        if (property.dbName != null) {
+            propertyBuilder.dbName(property.dbName)
+        } else if (property.id != null && propertyType == PropertyType.Long) {
             propertyBuilder.dbName("_id")
         }
-        if (field.customType != null) {
-            propertyBuilder.customType(field.variable.type.name, field.customType.converterClassName)
+        if (property.customType != null) {
+            propertyBuilder.customType(property.variable.type.name, property.customType.converterClassName)
         }
     }
 
-    private fun getPropertyType(javaTypeName: String): PropertyType = when (javaTypeName) {
+    private fun convertPropertyType(javaTypeName: String): PropertyType = when (javaTypeName) {
         "boolean", "java.lang.Boolean", "Boolean" -> PropertyType.Boolean
         "byte", "java.lang.Byte", "Byte" -> PropertyType.Byte
         "int", "java.lang.Integer", "Integer" -> PropertyType.Int

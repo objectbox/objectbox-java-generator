@@ -94,7 +94,7 @@ data class ParsedEntity(val name: String, val schema: String,
 
     /** @return entity fields in order of constructor parameters, if all-fields constructor exist,
      *          otherwise null */
-    fun getFieldsInConstructorOrder(): List<ParsedProperty>? {
+    fun getPropertiesInConstructorOrder(): List<ParsedProperty>? {
         val fieldVarsSet = properties.map { it.variable }.toSet()
         return constructors.find { it.parameters.toSet() == fieldVarsSet }
                 ?.let { constructor -> properties.sortedBy { constructor.parameters.indexOf(it.variable) } }
