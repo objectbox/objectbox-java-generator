@@ -106,8 +106,8 @@ class ObjectBoxGenerator(formattingOptions: FormattingOptions? = null,
     }
 
     private fun checkClass(parsedEntity: ParsedEntity) {
-        val fieldsInConstructorOrder = parsedEntity.getFieldsInConstructorOrder()
-        val noConstructor = fieldsInConstructorOrder == null && run {
+        val propertiesInConstructorOrder = parsedEntity.getPropertiesInConstructorOrder()
+        val noConstructor = propertiesInConstructorOrder == null && run {
             val fieldVars = parsedEntity.properties.map { it.variable }
             parsedEntity.constructors.none {
                 it.hasFullSignature(parsedEntity.name, fieldVars)
@@ -159,8 +159,8 @@ class ObjectBoxGenerator(formattingOptions: FormattingOptions? = null,
     private fun generateConstructors(parsedEntity: ParsedEntity, transformer: EntityClassTransformer) {
         if (parsedEntity.generateConstructors) {
             // check there is need to generate default constructor to do not hide implicit one
-            val fieldsInOrder = parsedEntity.getFieldsInConstructorOrder() ?: parsedEntity.properties
-            if (fieldsInOrder.isNotEmpty()
+            val properties = parsedEntity.getPropertiesInConstructorOrder() ?: parsedEntity.properties
+            if (properties.isNotEmpty()
                     && parsedEntity.constructors.none { it.parameters.isEmpty() && !it.generated }) {
                 transformer.defConstructor(emptyList()) {
                     """ @Generated(hash = $HASH_STUB)
@@ -170,7 +170,7 @@ class ObjectBoxGenerator(formattingOptions: FormattingOptions? = null,
             }
 
             // generate all fields constructor
-            transformer.defConstructor(fieldsInOrder.map { it.variable.type.name }) {
+            transformer.defConstructor(properties.map { it.variable.type.name }) {
                 Templates.entity.constructor(parsedEntity.name, parsedEntity.properties,
                         parsedEntity.notNullAnnotation ?: "@NotNull")
             }
