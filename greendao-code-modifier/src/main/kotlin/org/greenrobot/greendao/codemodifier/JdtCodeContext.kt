@@ -14,6 +14,7 @@ class JdtCodeContext(val formattingOptions: FormattingOptions? = null, encoding:
     init {
         jdtOptions = JavaCore.getOptions()
         jdtOptions.put(CompilerOptions.OPTION_Source, CompilerOptions.VERSION_1_7)
+        jdtOptions.put(CompilerOptions.OPTION_Compliance, CompilerOptions.VERSION_1_7)
         // it could be the encoding is never used by JDT itself for our use case, but just to be sure (and for future)
         jdtOptions.put(CompilerOptions.OPTION_Encoding, encoding)
 
