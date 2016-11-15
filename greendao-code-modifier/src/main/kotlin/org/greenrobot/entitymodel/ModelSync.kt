@@ -6,7 +6,7 @@ import com.squareup.moshi.Moshi
 import okio.Buffer
 import okio.Okio
 import okio.Source
-import org.greenrobot.greendao.codemodifier.EntityClass
+import org.greenrobot.greendao.codemodifier.ParsedEntity
 import org.greenrobot.greendao.generator.Schema
 import java.io.File
 import java.io.FileNotFoundException
@@ -14,9 +14,9 @@ import java.util.*
 
 class ModelSync(
         val jsonFile: File,
-        val entitiesParser: List<EntityClass>,
+        val entitiesParser: List<ParsedEntity>,
         val schemaGenerator: Schema,
-        val entitiesGenerator: Map<EntityClass, org.greenrobot.greendao.generator.Entity>) {
+        val entitiesGenerator: Map<ParsedEntity, org.greenrobot.greendao.generator.Entity>) {
 
     private val modelJsonAdapter: JsonAdapter<Model>
 
@@ -40,9 +40,9 @@ class ModelSync(
 
         for (entityParsed in entitiesParser) {
             val entityGenerator: org.greenrobot.greendao.generator.Entity = entitiesGenerator[entityParsed]!!
-            val name = entityParsed.name
+            val entityName = entityParsed.name
             var entityRefId = entityParsed.refId
-            var existingEntity = findEntity(name, entityRefId)
+            var existingEntity = findEntity(entityName, entityRefId)
             if (entityRefId == null) {
                 entityRefId = existingEntity?.refId ?: modelRefId.create()
             }
@@ -60,7 +60,7 @@ class ModelSync(
                 properties.add(property)
             }
 
-            val modelEntity = org.greenrobot.entitymodel.Entity(name = name, id = entityId, refId = entityRefId,
+            val modelEntity = org.greenrobot.entitymodel.Entity(name = entityName, id = entityId, refId = entityRefId,
                     properties = properties, lastPropertyId = propertyId - 1)
             entitiesModel.add(modelEntity)
             entityId++;
