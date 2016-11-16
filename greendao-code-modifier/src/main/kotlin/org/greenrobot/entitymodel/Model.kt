@@ -22,10 +22,10 @@ data class Entity(
 data class Property(
         val name: String,
         val id: Int,
-        val refId: Long,
-        val targetEntityId: Int,
-        val indexId: Int,
-        val flags: Int,
-        val type: Int
+        val refId: Long
+//        val targetEntityId: Int,
+//        val indexId: Int,
+//        val flags: Int,
+//        val type: Int
 )
 

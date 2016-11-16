@@ -7,25 +7,27 @@ import okio.Buffer
 import okio.Okio
 import okio.Source
 import org.greenrobot.greendao.codemodifier.ParsedEntity
-import org.greenrobot.greendao.generator.Schema
 import java.io.File
 import java.io.FileNotFoundException
 import java.util.*
 
 class ModelSync(
         val jsonFile: File,
-        val entitiesParser: List<ParsedEntity>,
-        val schemaGenerator: Schema,
-        val entitiesGenerator: Map<ParsedEntity, org.greenrobot.greendao.generator.Entity>) {
+        val parsedEntities: List<ParsedEntity>) {
 
     private val modelJsonAdapter: JsonAdapter<Model>
 
     private val modelRefId: ModelRefId
 
+
     private val entitiesReadByRefId = HashMap<Long, Entity>()
     private val entitiesReadByName = HashMap<String, Entity>()
 
     private var modelRead: Model? = null
+
+    var lastEntityId: Int = 0
+    var lastIndexId: Int = 0
+    var lastSequenceId: Int = 0
 
     init {
         val moshi = Moshi.Builder().build()
@@ -35,41 +37,40 @@ class ModelSync(
     }
 
     fun sync() {
-        var entityId = 1
         val entitiesModel = ArrayList<org.greenrobot.entitymodel.Entity>()
 
-        for (entityParsed in entitiesParser) {
-            val entityGenerator: org.greenrobot.greendao.generator.Entity = entitiesGenerator[entityParsed]!!
-            val entityName = entityParsed.name
-            var entityRefId = entityParsed.refId
+        for (parsedEntity in parsedEntities) {
+            val entityName = parsedEntity.name
+            var entityRefId = parsedEntity.refId
             var existingEntity = findEntity(entityName, entityRefId)
             if (entityRefId == null) {
                 entityRefId = existingEntity?.refId ?: modelRefId.create()
             }
             var propertyId = 1
             val properties = ArrayList<Property>()
-            for (field in entityGenerator.properties) {
-                val name = field.dbName ?: field.propertyName
-                if(existingEntity != null) {
+            for (parsedProperty in parsedEntity.properties) {
+                val name = parsedProperty.dbName ?: parsedProperty.variable.name
+                if (existingEntity != null) {
                     val existingProperty = findProperty(existingEntity, name, null)
                 }
                 val refId = modelRefId.create()
-                val property = Property(name = name, id = propertyId,
-                        refId = refId, targetEntityId = 0, indexId = 0, flags = 0, type = 0)
+                val property = Property(name = name, id = propertyId, refId = refId)
                 propertyId++
                 properties.add(property)
             }
 
-            val modelEntity = org.greenrobot.entitymodel.Entity(name = entityName, id = entityId, refId = entityRefId,
-                    properties = properties, lastPropertyId = propertyId - 1)
+            val modelEntity = org.greenrobot.entitymodel.Entity(
+                    name = entityName,
+                    id = ++lastEntityId, refId = entityRefId,
+                    properties = properties,
+                    lastPropertyId = propertyId - 1)
             entitiesModel.add(modelEntity)
-            entityId++;
         }
 
         val model = Model(
                 version = 1,
                 metaVersion = 1,
-                lastEntityId = entityId - 1,
+                lastEntityId = lastEntityId,
                 lastIndexId = 0,
                 lastSequenceId = 0,
                 entities = entitiesModel)
@@ -117,9 +118,9 @@ class ModelSync(
             check(filtered.size == 1)
             return filtered.first()
         } else {
-            val filtered = entity.properties.filter { it.name == name}
-            check (filtered.size <= 1)
-            return if(filtered.isNotEmpty()) filtered.first() else null
+            val filtered = entity.properties.filter { it.name == name }
+            check(filtered.size <= 1)
+            return if (filtered.isNotEmpty()) filtered.first() else null
         }
     }
 
