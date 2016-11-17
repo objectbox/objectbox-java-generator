@@ -36,6 +36,22 @@ class IdSync(val jsonFile: File) {
         initModel()
     }
 
+    private fun initModel() {
+        modelRead = justRead()
+        if (modelRead != null) {
+            modelRead!!.entities?.forEach {
+                if (!modelRefId.addExistingId(it.refId)) {
+                    throw IdSyncException("Duplicate ref ID ${it.refId} in " + jsonFile.absolutePath)
+                }
+                entitiesReadByRefId.put(it.refId, it)
+                if (entitiesReadByName.put(it.name, it) != null) {
+                    throw IdSyncException("Duplicate entity name ${it.name} in " + jsonFile.absolutePath)
+                }
+            }
+            lastEntityId = modelRead!!.lastEntityId
+        }
+    }
+
     fun sync(parsedEntities: List<ParsedEntity>) {
         val entitiesModel = ArrayList<org.greenrobot.idsync.Entity>()
 
@@ -63,9 +79,6 @@ class IdSync(val jsonFile: File) {
                     parsedEntity.sourceFile.absolutePath)
         }
         var existingEntity = findEntity(entityName, entityRefId)
-        if (entityRefId == null) {
-            entityRefId = existingEntity?.refId ?: modelRefId.create()
-        }
         var lastPropertyId = existingEntity?.lastPropertyId ?: 0
         val properties = ArrayList<Property>()
         for (parsedProperty in parsedEntity.properties) {
@@ -76,8 +89,8 @@ class IdSync(val jsonFile: File) {
 
         return Entity(
                 name = entityName,
-                id = ++lastEntityId,
-                refId = entityRefId,
+                id = existingEntity?.id ?: ++lastEntityId,
+                refId = existingEntity?.refId ?: modelRefId.create(),
                 properties = properties,
                 lastPropertyId = lastPropertyId
         )
@@ -120,18 +133,6 @@ class IdSync(val jsonFile: File) {
         }
     }
 
-    private fun initModel() {
-        modelRead = justRead()
-        modelRead?.entities?.forEach {
-            if (!modelRefId.addExistingId(it.refId)) {
-                throw IdSyncException("Duplicate ref ID ${it.refId} in " + jsonFile.absolutePath)
-            }
-            entitiesReadByRefId.put(it.refId, it)
-            if (entitiesReadByName.put(it.name, it) != null) {
-                throw IdSyncException("Duplicate entity name ${it.name} in " + jsonFile.absolutePath)
-            }
-        }
-    }
 
     private fun findEntity(name: String, refId: Long?): Entity? {
         if (refId != null) {
