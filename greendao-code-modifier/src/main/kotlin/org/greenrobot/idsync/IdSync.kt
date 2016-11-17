@@ -6,6 +6,7 @@ import com.squareup.moshi.Moshi
 import okio.Buffer
 import okio.Okio
 import okio.Source
+import org.greenrobot.essentials.collections.LongHashSet
 import org.greenrobot.greendao.codemodifier.ParsedEntity
 import java.io.File
 import java.io.FileNotFoundException
@@ -20,6 +21,7 @@ class IdSync(val jsonFile: File) {
 
     private val entitiesReadByRefId = HashMap<Long, Entity>()
     private val entitiesReadByName = HashMap<String, Entity>()
+    val parsedRefIds = LongHashSet()
 
     private var modelRead: IdSyncModel? = null
 
@@ -40,6 +42,10 @@ class IdSync(val jsonFile: File) {
         for (parsedEntity in parsedEntities) {
             val entityName = parsedEntity.dbName ?: parsedEntity.name
             var entityRefId = parsedEntity.refId
+            if (entityRefId != null && !parsedRefIds.add(entityRefId)) {
+                throw IdSyncException("Non-unique refId $entityRefId in parsed entity ${parsedEntity.name} in file " +
+                        parsedEntity.sourceFile?.absolutePath)
+            }
             var existingEntity = findEntity(entityName, entityRefId)
             if (entityRefId == null) {
                 entityRefId = existingEntity?.refId ?: modelRefId.create()
@@ -50,8 +56,14 @@ class IdSync(val jsonFile: File) {
                 val name = parsedProperty.dbName ?: parsedProperty.variable.name
                 val refId: Long
                 if (existingEntity != null) {
-                    val existingProperty = findProperty(existingEntity, name, parsedProperty.refId)
-                    refId = existingProperty?.refId ?: modelRefId.create()
+                    val propertyRefId = parsedProperty.refId
+                    if (propertyRefId != null && !parsedRefIds.add(propertyRefId)) {
+                        throw IdSyncException("Non-unique refId $propertyRefId in parsed entity ${parsedEntity.name} " +
+                                "and property ${parsedProperty.variable.name} in file " +
+                                parsedEntity.sourceFile?.absolutePath)
+                    }
+                    val existingProperty = findProperty(existingEntity, name, propertyRefId)
+                    refId = propertyRefId ?: modelRefId.create()
                 } else {
                     refId = modelRefId.create()
                 }
@@ -99,11 +111,11 @@ class IdSync(val jsonFile: File) {
         modelRead = justRead()
         modelRead?.entities?.forEach {
             if (!modelRefId.addExistingId(it.refId)) {
-                throw RuntimeException("Duplicate ref ID ${it.refId} in " + jsonFile.absolutePath)
+                throw IdSyncException("Duplicate ref ID ${it.refId} in " + jsonFile.absolutePath)
             }
             entitiesReadByRefId.put(it.refId, it)
             if (entitiesReadByName.put(it.name, it) != null) {
-                throw RuntimeException("Duplicate entity name ${it.name} in " + jsonFile.absolutePath)
+                throw IdSyncException("Duplicate entity name ${it.name} in " + jsonFile.absolutePath)
             }
         }
     }
@@ -111,7 +123,7 @@ class IdSync(val jsonFile: File) {
     private fun findEntity(name: String, refId: Long?): Entity? {
         if (refId != null) {
             return entitiesReadByRefId[refId] ?:
-                    throw RuntimeException("No entity with refID $refId found in " + jsonFile.absolutePath)
+                    throw IdSyncException("No entity with refID $refId found in " + jsonFile.absolutePath)
         } else {
             return entitiesReadByName[name]
         }
@@ -121,7 +133,7 @@ class IdSync(val jsonFile: File) {
         if (refId != null) {
             val filtered = entity.properties.filter { it.refId == refId }
             if (filtered.isEmpty()) {
-                throw RuntimeException("In entity ${entity.name}, no property with refID $refId found in " +
+                throw IdSyncException("In entity ${entity.name}, no property with refID $refId found in " +
                         jsonFile.absolutePath)
             }
             check(filtered.size == 1)

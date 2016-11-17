@@ -93,14 +93,10 @@ class IdSyncTest {
     fun testAddEntity() {
         val model1 = syncBasicModel()
         val entityRefId = model1.entities.first().refId
-        val properties = listOf<ParsedProperty>(
-                createProperty("foo", null),
-                createProperty("bar", null)
-        )
         idSync = IdSync(file)
-        val parsedEntities = listOf<ParsedEntity>(
-                createEntity("Entity1A", properties, entityRefId),
-                createEntity("Entity2", properties))
+        val parsedEntities = listOf(
+                createEntity("Entity1A", basicProperties(), entityRefId),
+                createEntity("Entity2", basicProperties()))
         idSync!!.sync(parsedEntities)
 
         val model2 = idSync!!.justRead()!!
@@ -111,16 +107,54 @@ class IdSyncTest {
         assertTrue(entity.refId > 1)
     }
 
+    @Test(expected = IdSyncException::class)
+    fun testAddEntityWithDuplicateRefId() {
+        val model1 = syncBasicModel()
+        val entityRefId = model1.entities.first().refId
+        val parsedEntities = listOf(
+                createEntity("Entity1A", basicProperties(), entityRefId),
+                createEntity("Entity2", basicProperties(), entityRefId))
+        idSync = IdSync(file)
+        idSync!!.sync(parsedEntities)
+    }
+
+    @Test(expected = IdSyncException::class)
+    fun testAddEntityPropertyWithDuplicateRefId() {
+        val model1 = syncBasicModel()
+        val propertyRefId = model1.entities.first().properties.first().refId
+        val entityRefId = model1.entities.first().refId
+        val properties = basicProperties()
+        properties.forEach { it.refId = propertyRefId }
+        val parsedEntities = listOf(createEntity("Entity1", properties, entityRefId))
+        idSync = IdSync(file)
+        idSync!!.sync(parsedEntities)
+    }
+
+    @Test(expected = IdSyncException::class)
+    fun testEntityPropertyRefIdCollision() {
+        val model1 = syncBasicModel()
+        val entityRefId = model1.entities.first().refId
+        val properties = basicProperties()
+        properties.last().refId = entityRefId
+        val parsedEntities = listOf(createEntity("Entity1", properties, entityRefId))
+        idSync = IdSync(file)
+        idSync!!.sync(parsedEntities)
+    }
+
     private fun syncBasicModel(): IdSyncModel {
-        val properties = listOf<ParsedProperty>(
-                createProperty("foo", null),
-                createProperty("bar", null)
-        )
-        val entity1 = createEntity("Entity1", properties)
+        val entity1 = createEntity("Entity1", basicProperties())
         idSync!!.sync(listOf<ParsedEntity>(entity1))
 
         val model = idSync!!.justRead()!!
         return model
+    }
+
+    private fun basicProperties(): List<ParsedProperty> {
+        val properties = mutableListOf<ParsedProperty>(
+                createProperty("foo", null),
+                createProperty("bar", null)
+        )
+        return properties
     }
 
     private fun createProperty(name: String, refId: Long? = null): ParsedProperty {
