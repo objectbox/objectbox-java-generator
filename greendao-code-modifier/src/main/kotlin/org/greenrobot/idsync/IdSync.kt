@@ -11,9 +11,7 @@ import java.io.File
 import java.io.FileNotFoundException
 import java.util.*
 
-class IdSync(
-        val jsonFile: File,
-        val parsedEntities: List<ParsedEntity>) {
+class IdSync(val jsonFile: File) {
 
     private val modelJsonAdapter: JsonAdapter<IdSyncModel>
 
@@ -36,7 +34,7 @@ class IdSync(
         initModel()
     }
 
-    fun sync() {
+    fun sync(parsedEntities: List<ParsedEntity>) {
         val entitiesModel = ArrayList<org.greenrobot.idsync.Entity>()
 
         for (parsedEntity in parsedEntities) {
@@ -82,7 +80,7 @@ class IdSync(
     /**
      * Justs reads the model without changing any state of this object. Nice for testing.
      */
-    fun justRead(file: File): IdSyncModel? {
+    fun justRead(file: File = jsonFile): IdSyncModel? {
         var source: Source? = null;
         try {
             source = Okio.source(file)
@@ -95,7 +93,7 @@ class IdSync(
     }
 
     private fun initModel() {
-        modelRead = justRead(jsonFile)
+        modelRead = justRead()
         modelRead?.entities?.forEach {
             if (!modelRefId.addExistingId(it.refId)) {
                 throw RuntimeException("Duplicate ref ID ${it.refId} in " + jsonFile.absolutePath)

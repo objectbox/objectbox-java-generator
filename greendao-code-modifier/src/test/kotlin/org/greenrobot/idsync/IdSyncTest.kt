@@ -1,18 +1,36 @@
 package org.greenrobot.idsync
 
-import org.eclipse.jdt.core.dom.AST
+import org.eclipse.jdt.core.dom.TypeDeclaration
 import org.greenrobot.greendao.codemodifier.ParsedEntity
 import org.greenrobot.greendao.codemodifier.ParsedProperty
+import org.junit.After
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Test
+import org.mockito.Mockito
 import java.io.File
 import java.util.*
 
 class IdSyncTest {
+
+    val file = File.createTempFile("idsync-test", "json")
+    var idSync: IdSync? = null
+
+    @Before
+    fun initIdSync() {
+        file.delete()
+        idSync = IdSync(file)
+    }
+
+    @After
+    fun deleteFile() {
+        file.delete()
+    }
+
     @Test
     fun testModelRefId() {
-            val modelRefId = ModelRefId()
+        val modelRefId = ModelRefId()
         for (i in 0..100) {
             val x = modelRefId.create()
             modelRefId.verify(x)
@@ -31,22 +49,24 @@ class IdSyncTest {
 
     @Test
     fun testIdSync() {
-        val file = File.createTempFile("idsync-test", "json")
-        file.delete()
+        idSync!!
         val parsedEntities = ArrayList<ParsedEntity>()
         val properties = ArrayList<ParsedProperty>()
         val entity1 = createEntity(properties, "Entity1")
         parsedEntities.add(entity1)
-        val idSync = IdSync(file, parsedEntities)
-        idSync.sync()
-        val model = idSync.justRead(file)
-        assertNotNull(model)
-        assertEquals(1, model!!.entities.size);
-        assertEquals("Entity1", model!!.entities.first().name);
+        idSync!!.sync(parsedEntities)
+
+        val model = idSync!!.justRead()!!
+        assertEquals(1, model.entities.size);
+        val entity = model.entities.first()
+        assertEquals("Entity1", entity.name);
+        assertEquals(1, entity.id);
+        assertTrue(entity.refId > 0);
+        assertEquals(1, model.lastEntityId);
     }
 
     private fun createEntity(properties: ArrayList<ParsedProperty>, name: String): ParsedEntity {
-        val typeDec = AST.newAST(AST.JLS8).newTypeDeclaration();
+        val typeDec = Mockito.mock(TypeDeclaration::class.java)
         return ParsedEntity(
                 name = name,
                 schema = "default",
