@@ -82,9 +82,33 @@ class IdSyncTest {
         idSync!!.sync(listOf<ParsedEntity>(entity1))
 
         val model2 = idSync!!.justRead()!!
+        assertEquals(1, model2.entities.size)
         val entity = model2.entities.first()
         assertEquals(entityRefId, entity.refId)
+        assertEquals(1, entity.properties.size)
         assertEquals(propertyRefId, entity.properties.first().refId)
+    }
+
+    @Test
+    fun testAddEntity() {
+        val model1 = syncBasicModel()
+        val entityRefId = model1.entities.first().refId
+        val properties = listOf<ParsedProperty>(
+                createProperty("foo", null),
+                createProperty("bar", null)
+        )
+        idSync = IdSync(file)
+        val parsedEntities = listOf<ParsedEntity>(
+                createEntity("Entity1A", properties, entityRefId),
+                createEntity("Entity2", properties))
+        idSync!!.sync(parsedEntities)
+
+        val model2 = idSync!!.justRead()!!
+        assertEquals(2, model2.lastEntityId)
+        assertEquals(2, model2.entities.size)
+        val entity = model2.entities.last()
+        assertEquals(2, entity.id)
+        assertTrue(entity.refId > 1)
     }
 
     private fun syncBasicModel(): IdSyncModel {
