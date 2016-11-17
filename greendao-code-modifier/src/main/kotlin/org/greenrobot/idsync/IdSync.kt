@@ -62,7 +62,7 @@ class IdSync(val jsonFile: File) {
         }
         entity.properties.forEach {
             if (it.id > entity.lastPropertyId) {
-                throw IdSyncException("Property ${entity.name}.${it.name} has an ID ${entity.id} above " +
+                throw IdSyncException("Property ${entity.name}.${it.name} has an ID ${it.id} above " +
                         "lastPropertyId ${entity.lastPropertyId} in " + jsonFile.absolutePath)
             }
         }
@@ -74,8 +74,8 @@ class IdSync(val jsonFile: File) {
                 version = 1,
                 metaVersion = 1,
                 lastEntityId = lastEntityId,
-                lastIndexId = 0,
-                lastSequenceId = 0,
+                lastIndexId = lastIndexId,
+                lastSequenceId = lastSequenceId,
                 entities = entitiesModel)
         writeModel(model)
     }
@@ -119,13 +119,21 @@ class IdSync(val jsonFile: File) {
             existingProperty = findProperty(existingEntity, name, propertyRefId)
         }
 
+        var indexId: Int? = null
+        if (parsedProperty.index != null) {
+            indexId = existingProperty?.indexId
+            if (indexId == null) {
+                indexId = ++lastIndexId
+            }
+        }
+
         return Property(
                 name = name,
                 refId = existingProperty?.refId ?: modelRefId.create(),
-                id = existingProperty?.id ?: lastPropertyId + 1
+                id = existingProperty?.id ?: lastPropertyId + 1,
+                indexId = indexId
         )
     }
-
 
     /**
      * Justs reads the model without changing any state of this object. Nice for testing.

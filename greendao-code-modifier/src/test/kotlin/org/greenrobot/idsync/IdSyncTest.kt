@@ -1,13 +1,9 @@
 package org.greenrobot.idsync
 
 import org.eclipse.jdt.core.dom.TypeDeclaration
-import org.greenrobot.greendao.codemodifier.ParsedEntity
-import org.greenrobot.greendao.codemodifier.ParsedProperty
-import org.greenrobot.greendao.codemodifier.Variable
-import org.greenrobot.greendao.codemodifier.VariableType
+import org.greenrobot.greendao.codemodifier.*
 import org.junit.After
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
+import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
 import org.mockito.Mockito
@@ -135,7 +131,7 @@ class IdSyncTest {
         assertEquals(2, model1.entities.first().lastPropertyId)
 
         idSync = IdSync(file)
-        val properties = listOf( createProperty("newOne"), createProperty("newTwo"))
+        val properties = listOf(createProperty("newOne"), createProperty("newTwo"))
         val parsedEntities = listOf(
                 createEntity("Entity1", properties)
         )
@@ -182,6 +178,31 @@ class IdSyncTest {
         idSync!!.sync(parsedEntities)
     }
 
+    @Test
+    fun testAddIndexId() {
+        val model1 = syncBasicModel()
+        assertEquals(2, model1.entities.first().lastPropertyId)
+
+        idSync = IdSync(file)
+        val properties = listOf<ParsedProperty>(
+                createProperty("foo"),
+                createProperty("bar", null, true),
+                createProperty("newAndIndexed", null, true)
+        )
+        val parsedEntities = listOf(
+                createEntity("Entity1", properties)
+        )
+        idSync!!.sync(parsedEntities)
+
+        val model2 = idSync!!.justRead()!!
+        assertEquals(2, model2.lastIndexId)
+        val entity2 = model2.entities.first()
+        assertEquals(3, entity2.properties.size)
+        assertNull(entity2.properties.first().indexId)
+        assertEquals(1, entity2.properties[1].indexId)
+        assertEquals(2, entity2.properties[2].indexId)
+    }
+
     private fun syncBasicModel(): IdSyncModel {
         val entity1 = createEntity("Entity1", basicProperties())
         idSync!!.sync(listOf(entity1))
@@ -192,16 +213,17 @@ class IdSyncTest {
 
     private fun basicProperties(): MutableList<ParsedProperty> {
         val properties = mutableListOf<ParsedProperty>(
-                createProperty("foo", null),
-                createProperty("bar", null)
+                createProperty("foo"),
+                createProperty("bar")
         )
         return properties
     }
 
-    private fun createProperty(name: String, refId: Long? = null): ParsedProperty {
+    private fun createProperty(name: String, refId: Long? = null, indexed: Boolean = false): ParsedProperty {
         return ParsedProperty(
                 variable = Variable(VariableType("java.lang.String", false, "String"), name + "_"),
                 dbName = name,
+                index = if (indexed) PropertyIndex("dummyname", false) else null,
                 refId = refId
         )
     }
