@@ -1,6 +1,6 @@
-package org.greenrobot.entitymodel
+package org.greenrobot.idsync
 
-data class Model(
+data class IdSyncModel(
         val version: Long,
         val metaVersion: Int,
         val lastEntityId: Int,

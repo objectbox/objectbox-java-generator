@@ -1,4 +1,4 @@
-package org.greenrobot.entitymodel
+package org.greenrobot.idsync
 
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.JsonWriter
@@ -11,11 +11,11 @@ import java.io.File
 import java.io.FileNotFoundException
 import java.util.*
 
-class ModelSync(
+class IdSync(
         val jsonFile: File,
         val parsedEntities: List<ParsedEntity>) {
 
-    private val modelJsonAdapter: JsonAdapter<Model>
+    private val modelJsonAdapter: JsonAdapter<IdSyncModel>
 
     private val modelRefId: ModelRefId
 
@@ -23,7 +23,7 @@ class ModelSync(
     private val entitiesReadByRefId = HashMap<Long, Entity>()
     private val entitiesReadByName = HashMap<String, Entity>()
 
-    private var modelRead: Model? = null
+    private var modelRead: IdSyncModel? = null
 
     var lastEntityId: Int = 0
     var lastIndexId: Int = 0
@@ -31,13 +31,13 @@ class ModelSync(
 
     init {
         val moshi = Moshi.Builder().build()
-        modelJsonAdapter = moshi.adapter<Model>(Model::class.java)
+        modelJsonAdapter = moshi.adapter<IdSyncModel>(IdSyncModel::class.java)
         modelRefId = ModelRefId()
         initModel()
     }
 
     fun sync() {
-        val entitiesModel = ArrayList<org.greenrobot.entitymodel.Entity>()
+        val entitiesModel = ArrayList<org.greenrobot.idsync.Entity>()
 
         for (parsedEntity in parsedEntities) {
             val entityName = parsedEntity.name
@@ -59,7 +59,7 @@ class ModelSync(
                 properties.add(property)
             }
 
-            val modelEntity = org.greenrobot.entitymodel.Entity(
+            val modelEntity = org.greenrobot.idsync.Entity(
                     name = entityName,
                     id = ++lastEntityId, refId = entityRefId,
                     properties = properties,
@@ -67,7 +67,7 @@ class ModelSync(
             entitiesModel.add(modelEntity)
         }
 
-        val model = Model(
+        val model = IdSyncModel(
                 version = 1,
                 metaVersion = 1,
                 lastEntityId = lastEntityId,
@@ -125,7 +125,7 @@ class ModelSync(
     }
 
 
-    private fun writeModel(model: Model) {
+    private fun writeModel(model: IdSyncModel) {
         val buffer = Buffer()
         val jsonWriter = JsonWriter.of(buffer)
         jsonWriter.setIndent("  ")

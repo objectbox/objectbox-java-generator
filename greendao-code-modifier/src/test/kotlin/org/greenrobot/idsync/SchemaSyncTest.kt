@@ -1,4 +1,4 @@
-package org.greenrobot.entitymodel
+package org.greenrobot.idsync
 
 import org.junit.Test
 

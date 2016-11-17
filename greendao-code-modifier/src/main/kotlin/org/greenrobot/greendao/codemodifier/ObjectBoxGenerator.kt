@@ -1,7 +1,7 @@
 package org.greenrobot.greendao.codemodifier
 
 import io.objectbox.generator.BoxGenerator
-import org.greenrobot.entitymodel.ModelSync
+import org.greenrobot.idsync.IdSync
 import org.greenrobot.greendao.generator.Entity
 import org.greenrobot.greendao.generator.Schema
 import java.io.File
@@ -71,7 +71,7 @@ class ObjectBoxGenerator(formattingOptions: FormattingOptions? = null,
         val schema = Schema(options.name, options.version, options.daoPackage ?: entities.first().packageName)
         val mapping: Map<ParsedEntity, Entity> = GreendaoModelTranslator.translate(entities, schema, options.daoPackage)
         val jsonFile = File("objectmodel.json")
-        val modelSync = ModelSync(jsonFile, entities)
+        val modelSync = IdSync(jsonFile, entities)
         modelSync.sync()
 
         if (skipTestGeneration.isNotEmpty()) {
