@@ -21,7 +21,7 @@ class IdSync(val jsonFile: File) {
 
     private val entitiesReadByRefId = HashMap<Long, Entity>()
     private val entitiesReadByName = HashMap<String, Entity>()
-    val parsedRefIds = LongHashSet()
+    private val parsedRefIds = LongHashSet()
 
     private var modelRead: IdSyncModel? = null
 
@@ -49,17 +49,13 @@ class IdSync(val jsonFile: File) {
                 }
             }
             lastEntityId = modelRead!!.lastEntityId
+            lastIndexId = modelRead!!.lastIndexId
+            lastSequenceId = modelRead!!.lastSequenceId
         }
     }
 
     fun sync(parsedEntities: List<ParsedEntity>) {
-        val entitiesModel = ArrayList<org.greenrobot.idsync.Entity>()
-
-        for (parsedEntity in parsedEntities) {
-            val modelEntity = syncEntity(parsedEntity)
-            entitiesModel.add(modelEntity)
-        }
-
+        val entitiesModel = parsedEntities.map { syncEntity(it) }
         val model = IdSyncModel(
                 version = 1,
                 metaVersion = 1,
@@ -67,7 +63,6 @@ class IdSync(val jsonFile: File) {
                 lastIndexId = 0,
                 lastSequenceId = 0,
                 entities = entitiesModel)
-
         writeModel(model)
     }
 
