@@ -39,18 +39,32 @@ class IdSync(val jsonFile: File) {
     private fun initModel() {
         modelRead = justRead()
         if (modelRead != null) {
-            modelRead!!.entities?.forEach {
+            lastEntityId = modelRead!!.lastEntityId
+            lastIndexId = modelRead!!.lastIndexId
+            lastSequenceId = modelRead!!.lastSequenceId
+            modelRead!!.entities.forEach {
                 if (!modelRefId.addExistingId(it.refId)) {
                     throw IdSyncException("Duplicate ref ID ${it.refId} in " + jsonFile.absolutePath)
                 }
+                validateLastIds(it)
                 entitiesReadByRefId.put(it.refId, it)
                 if (entitiesReadByName.put(it.name, it) != null) {
                     throw IdSyncException("Duplicate entity name ${it.name} in " + jsonFile.absolutePath)
                 }
             }
-            lastEntityId = modelRead!!.lastEntityId
-            lastIndexId = modelRead!!.lastIndexId
-            lastSequenceId = modelRead!!.lastSequenceId
+        }
+    }
+
+    private fun validateLastIds(entity: Entity) {
+        if (entity.id > lastEntityId) {
+            throw IdSyncException("Entity ${entity.name} has an ID ${entity.id} above lastEntityId ${lastEntityId}" +
+                    " in " + jsonFile.absolutePath)
+        }
+        entity.properties.forEach {
+            if (it.id > entity.lastPropertyId) {
+                throw IdSyncException("Property ${entity.name}.${it.name} has an ID ${entity.id} above " +
+                        "lastPropertyId ${entity.lastPropertyId} in " + jsonFile.absolutePath)
+            }
         }
     }
 

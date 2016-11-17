@@ -129,6 +129,25 @@ class IdSyncTest {
         assertTrue(entity.refId > 1)
     }
 
+    @Test
+    fun testAddProperties() {
+        val model1 = syncBasicModel()
+        assertEquals(2, model1.entities.first().lastPropertyId)
+
+        idSync = IdSync(file)
+        val properties = listOf( createProperty("newOne"), createProperty("newTwo"))
+        val parsedEntities = listOf(
+                createEntity("Entity1", properties)
+        )
+        idSync!!.sync(parsedEntities)
+
+        val model2 = idSync!!.justRead()!!
+        val entity2 = model2.entities.first()
+        assertEquals(4, entity2.lastPropertyId)
+        assertEquals(3, entity2.properties.first().id)
+        assertEquals(4, entity2.properties.last().id)
+    }
+
     @Test(expected = IdSyncException::class)
     fun testAddEntityWithDuplicateRefId() {
         val model1 = syncBasicModel()
@@ -171,7 +190,7 @@ class IdSyncTest {
         return model
     }
 
-    private fun basicProperties(): List<ParsedProperty> {
+    private fun basicProperties(): MutableList<ParsedProperty> {
         val properties = mutableListOf<ParsedProperty>(
                 createProperty("foo", null),
                 createProperty("bar", null)
