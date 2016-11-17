@@ -217,14 +217,14 @@ object GreendaoModelTranslator {
         if (property.index != null) {
             propertyBuilder.indexAsc(property.index.name, property.index.unique)
         }
-        if (property.id != null) {
+        if (property.idParams != null) {
             propertyBuilder.primaryKey()
-            if (property.id.autoincrement) propertyBuilder.autoincrement()
-            if (property.id.assignable) propertyBuilder.idAssignable()
+            if (property.idParams.autoincrement) propertyBuilder.autoincrement()
+            if (property.idParams.assignable) propertyBuilder.idAssignable()
         }
         if (property.dbName != null) {
             propertyBuilder.dbName(property.dbName)
-        } else if (property.id != null && propertyType == PropertyType.Long) {
+        } else if (property.idParams != null && propertyType == PropertyType.Long) {
             propertyBuilder.dbName("_id")
         }
         if (property.customType != null) {

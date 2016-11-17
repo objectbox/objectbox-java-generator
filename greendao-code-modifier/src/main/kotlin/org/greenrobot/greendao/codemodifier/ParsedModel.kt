@@ -16,7 +16,7 @@ data class VariableType(val name: String, val isPrimitive: Boolean, val original
 data class Variable(val type: VariableType, val name: String)
 
 data class ParsedProperty(val variable: Variable,
-                          val id: EntityIdParams? = null,
+                          val idParams: EntityIdParams? = null,
                           val index: PropertyIndex? = null,
                           val isNotNull: Boolean = false,
                           val dbName: String? = null,

@@ -127,8 +127,8 @@ class VisitorTest : VisitorTestBase() {
         }
         """)!!
         val entityField = entity.properties[0]
-        assertNotNull(entityField.id)
-        assertFalse(entityField.id!!.autoincrement)
+        assertNotNull(entityField.idParams)
+        assertFalse(entityField.idParams!!.autoincrement)
     }
 
     @Test
@@ -145,7 +145,7 @@ class VisitorTest : VisitorTestBase() {
             String name;
         }
         """)!!
-        assertTrue(entity.properties[0].id!!.autoincrement)
+        assertTrue(entity.properties[0].idParams!!.autoincrement)
     }
 
     @Test
