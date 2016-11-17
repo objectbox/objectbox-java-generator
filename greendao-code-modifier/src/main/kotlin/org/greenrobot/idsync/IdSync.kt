@@ -79,15 +79,23 @@ class IdSync(
     }
 
 
-    private fun initModel() {
+    /**
+     * Justs reads the model without changing any state of this object. Nice for testing.
+     */
+    fun justRead(file: File): IdSyncModel? {
         var source: Source? = null;
         try {
-            source = Okio.source(jsonFile)
-            modelRead = modelJsonAdapter.fromJson(Okio.buffer(source))
+            source = Okio.source(file)
+            return modelJsonAdapter.fromJson(Okio.buffer(source))
         } catch (e: FileNotFoundException) {
+            return null
         } finally {
             source?.close()
         }
+    }
+
+    private fun initModel() {
+        modelRead = justRead(jsonFile)
         modelRead?.entities?.forEach {
             if (!modelRefId.addExistingId(it.refId)) {
                 throw RuntimeException("Duplicate ref ID ${it.refId} in " + jsonFile.absolutePath)
