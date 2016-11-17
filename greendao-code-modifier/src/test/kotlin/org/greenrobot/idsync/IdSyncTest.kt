@@ -12,7 +12,6 @@ import org.junit.Before
 import org.junit.Test
 import org.mockito.Mockito
 import java.io.File
-import java.util.*
 
 class IdSyncTest {
 
@@ -51,15 +50,7 @@ class IdSyncTest {
 
     @Test
     fun testIdSyncBasics() {
-        val parsedEntities = ArrayList<ParsedEntity>()
-        val properties = ArrayList<ParsedProperty>()
-        properties.add(createProperty("foo"))
-        properties.add(createProperty("bar"))
-        val entity1 = createEntity(properties, "Entity1")
-        parsedEntities.add(entity1)
-        idSync!!.sync(parsedEntities)
-
-        val model = idSync!!.justRead()!!
+        val model = syncBasicModel()
         assertEquals(1, model.lastEntityId)
 
         assertEquals(1, model.entities.size)
@@ -77,14 +68,49 @@ class IdSyncTest {
         assertTrue(entity.properties[1].refId > 1)
     }
 
-    private fun createProperty(name: String): ParsedProperty {
-        return ParsedProperty(Variable(VariableType("java.lang.String", false, "String"), name))
+    @Test
+    fun testKeepRefId() {
+        val model1 = syncBasicModel()
+        val entityRefId = model1.entities.first().refId
+        val propertyRefId = model1.entities.first().properties.first().refId
+
+        val properties = listOf<ParsedProperty>(
+                createProperty(name = "bla", refId = propertyRefId)
+        )
+        val entity1 = createEntity("Entity1A", properties, entityRefId)
+        idSync = IdSync(file)
+        idSync!!.sync(listOf<ParsedEntity>(entity1))
+
+        val model2 = idSync!!.justRead()!!
+        val entity = model2.entities.first()
+        assertEquals(entityRefId, entity.refId)
+        assertEquals(propertyRefId, entity.properties.first().refId)
     }
 
-    private fun createEntity(properties: ArrayList<ParsedProperty>, name: String): ParsedEntity {
+    private fun syncBasicModel(): IdSyncModel {
+        val properties = listOf<ParsedProperty>(
+                createProperty("foo", null),
+                createProperty("bar", null)
+        )
+        val entity1 = createEntity("Entity1", properties)
+        idSync!!.sync(listOf<ParsedEntity>(entity1))
+
+        val model = idSync!!.justRead()!!
+        return model
+    }
+
+    private fun createProperty(name: String, refId: Long? = null): ParsedProperty {
+        return ParsedProperty(
+                variable = Variable(VariableType("java.lang.String", false, "String"), name + "_"),
+                dbName = name,
+                refId = refId
+        )
+    }
+
+    private fun createEntity(name: String, properties: List<ParsedProperty>, refId: Long? = null): ParsedEntity {
         val typeDec = Mockito.mock(TypeDeclaration::class.java)
         return ParsedEntity(
-                name = name,
+                name = name + "_",
                 schema = "default",
                 active = false,
                 properties = properties,
@@ -95,8 +121,8 @@ class IdSyncTest {
                 node = typeDec,
                 imports = emptyList(),
                 packageName = "pac.me",
-                dbName = null,
-                refId = null,
+                dbName = name,
+                refId = refId,
                 oneRelations = emptyList(),
                 manyRelations = emptyList(),
                 sourceFile = File("dummy-src-$name"),

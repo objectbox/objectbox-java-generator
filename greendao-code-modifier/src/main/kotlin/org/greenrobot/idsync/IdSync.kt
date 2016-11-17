@@ -38,7 +38,7 @@ class IdSync(val jsonFile: File) {
         val entitiesModel = ArrayList<org.greenrobot.idsync.Entity>()
 
         for (parsedEntity in parsedEntities) {
-            val entityName = parsedEntity.name
+            val entityName = parsedEntity.dbName ?: parsedEntity.name
             var entityRefId = parsedEntity.refId
             var existingEntity = findEntity(entityName, entityRefId)
             if (entityRefId == null) {
@@ -48,10 +48,13 @@ class IdSync(val jsonFile: File) {
             val properties = ArrayList<Property>()
             for (parsedProperty in parsedEntity.properties) {
                 val name = parsedProperty.dbName ?: parsedProperty.variable.name
+                val refId: Long
                 if (existingEntity != null) {
-                    val existingProperty = findProperty(existingEntity, name, null)
+                    val existingProperty = findProperty(existingEntity, name, parsedProperty.refId)
+                    refId = existingProperty?.refId ?: modelRefId.create()
+                } else {
+                    refId = modelRefId.create()
                 }
-                val refId = modelRefId.create()
                 val property = Property(name = name, id = propertyId, refId = refId)
                 propertyId++
                 properties.add(property)
