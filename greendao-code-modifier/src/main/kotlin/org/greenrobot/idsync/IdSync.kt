@@ -8,6 +8,7 @@ import okio.Okio
 import okio.Source
 import org.greenrobot.essentials.collections.LongHashSet
 import org.greenrobot.greendao.codemodifier.ParsedEntity
+import org.greenrobot.greendao.codemodifier.ParsedProperty
 import java.io.File
 import java.io.FileNotFoundException
 import java.util.*
@@ -17,7 +18,6 @@ class IdSync(val jsonFile: File) {
     private val modelJsonAdapter: JsonAdapter<IdSyncModel>
 
     private val modelRefId: ModelRefId
-
 
     private val entitiesReadByRefId = HashMap<Long, Entity>()
     private val entitiesReadByName = HashMap<String, Entity>()
@@ -40,43 +40,7 @@ class IdSync(val jsonFile: File) {
         val entitiesModel = ArrayList<org.greenrobot.idsync.Entity>()
 
         for (parsedEntity in parsedEntities) {
-            val entityName = parsedEntity.dbName ?: parsedEntity.name
-            var entityRefId = parsedEntity.refId
-            if (entityRefId != null && !parsedRefIds.add(entityRefId)) {
-                throw IdSyncException("Non-unique refId $entityRefId in parsed entity ${parsedEntity.name} in file " +
-                        parsedEntity.sourceFile?.absolutePath)
-            }
-            var existingEntity = findEntity(entityName, entityRefId)
-            if (entityRefId == null) {
-                entityRefId = existingEntity?.refId ?: modelRefId.create()
-            }
-            var propertyId = 1
-            val properties = ArrayList<Property>()
-            for (parsedProperty in parsedEntity.properties) {
-                val name = parsedProperty.dbName ?: parsedProperty.variable.name
-                val refId: Long
-                if (existingEntity != null) {
-                    val propertyRefId = parsedProperty.refId
-                    if (propertyRefId != null && !parsedRefIds.add(propertyRefId)) {
-                        throw IdSyncException("Non-unique refId $propertyRefId in parsed entity ${parsedEntity.name} " +
-                                "and property ${parsedProperty.variable.name} in file " +
-                                parsedEntity.sourceFile?.absolutePath)
-                    }
-                    val existingProperty = findProperty(existingEntity, name, propertyRefId)
-                    refId = propertyRefId ?: modelRefId.create()
-                } else {
-                    refId = modelRefId.create()
-                }
-                val property = Property(name = name, id = propertyId, refId = refId)
-                propertyId++
-                properties.add(property)
-            }
-
-            val modelEntity = org.greenrobot.idsync.Entity(
-                    name = entityName,
-                    id = ++lastEntityId, refId = entityRefId,
-                    properties = properties,
-                    lastPropertyId = propertyId - 1)
+            val modelEntity = syncEntity(parsedEntity)
             entitiesModel.add(modelEntity)
         }
 
@@ -89,6 +53,55 @@ class IdSync(val jsonFile: File) {
                 entities = entitiesModel)
 
         writeModel(model)
+    }
+
+    private fun syncEntity(parsedEntity: ParsedEntity): Entity {
+        val entityName = parsedEntity.dbName ?: parsedEntity.name
+        var entityRefId = parsedEntity.refId
+        if (entityRefId != null && !parsedRefIds.add(entityRefId)) {
+            throw IdSyncException("Non-unique refId $entityRefId in parsed entity ${parsedEntity.name} in file " +
+                    parsedEntity.sourceFile.absolutePath)
+        }
+        var existingEntity = findEntity(entityName, entityRefId)
+        if (entityRefId == null) {
+            entityRefId = existingEntity?.refId ?: modelRefId.create()
+        }
+        var lastPropertyId = existingEntity?.lastPropertyId ?: 0
+        val properties = ArrayList<Property>()
+        for (parsedProperty in parsedEntity.properties) {
+            val property = syncProperty(existingEntity, parsedEntity, parsedProperty, lastPropertyId)
+            lastPropertyId = Math.max(lastPropertyId, property.id)
+            properties.add(property)
+        }
+
+        return Entity(
+                name = entityName,
+                id = ++lastEntityId,
+                refId = entityRefId,
+                properties = properties,
+                lastPropertyId = lastPropertyId
+        )
+    }
+
+    private fun syncProperty(existingEntity: Entity?, parsedEntity: ParsedEntity, parsedProperty: ParsedProperty,
+                             lastPropertyId: Int): Property {
+        val name = parsedProperty.dbName ?: parsedProperty.variable.name
+        var existingProperty: Property? = null
+        if (existingEntity != null) {
+            val propertyRefId = parsedProperty.refId
+            if (propertyRefId != null && !parsedRefIds.add(propertyRefId)) {
+                throw IdSyncException("Non-unique refId $propertyRefId in parsed entity ${parsedEntity.name} " +
+                        "and property ${parsedProperty.variable.name} in file " +
+                        parsedEntity.sourceFile.absolutePath)
+            }
+            existingProperty = findProperty(existingEntity, name, propertyRefId)
+        }
+
+        return Property(
+                name = name,
+                refId = existingProperty?.refId ?: modelRefId.create(),
+                id = existingProperty?.id ?: lastPropertyId + 1
+        )
     }
 
 
