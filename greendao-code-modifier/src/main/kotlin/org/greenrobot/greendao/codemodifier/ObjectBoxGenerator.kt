@@ -67,11 +67,13 @@ class ObjectBoxGenerator(formattingOptions: FormattingOptions? = null,
         val outputDir = options.outputDir
         val testsOutputDir = options.testsOutputDir
 
+        val idSync = IdSync()
+        idSync.sync(entities)
+
         // take explicitly specified package name, or package name of the first entity
         val schema = Schema(options.name, options.version, options.daoPackage ?: entities.first().packageName)
-        val mapping: Map<ParsedEntity, Entity> = GreendaoModelTranslator.translate(entities, schema, options.daoPackage)
-        val modelSync = IdSync()
-        modelSync.sync(entities)
+        val mapping: Map<ParsedEntity, Entity> =
+                GreendaoModelTranslator.translate(entities, schema, options.daoPackage, idSync)
 
         if (skipTestGeneration.isNotEmpty()) {
             schema.entities.forEach { e ->

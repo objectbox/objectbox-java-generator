@@ -1,11 +1,7 @@
 package org.greenrobot.greendao.codemodifier
 
-import org.greenrobot.greendao.generator.DaoUtil
-import org.greenrobot.greendao.generator.Entity
-import org.greenrobot.greendao.generator.Index
-import org.greenrobot.greendao.generator.Property
-import org.greenrobot.greendao.generator.PropertyType
-import org.greenrobot.greendao.generator.Schema
+import org.greenrobot.greendao.generator.*
+import org.greenrobot.idsync.IdSync
 
 object GreendaoModelTranslator {
     // TODO types seems not consistent? (thus listing both here)
@@ -17,8 +13,9 @@ object GreendaoModelTranslator {
      * Modifies provided schema object according to entities list
      * @return mapping EntityClass to Entity
      * */
-    fun translate(entities : Iterable<ParsedEntity>, schema : Schema, daoPackage: String?) : Map<ParsedEntity, Entity> {
-        val mapping = mapEntityClassesToEntities(entities, schema, daoPackage)
+    fun translate(entities: Iterable<ParsedEntity>, schema: Schema, daoPackage: String?, idSync: IdSync)
+            : Map<ParsedEntity, Entity> {
+        val mapping = mapEntityClassesToEntities(entities, schema, daoPackage, idSync)
 
         resolveToOneRelations(mapping, entities, schema)
         resolveToManyRelations(mapping, entities, schema)
@@ -27,7 +24,7 @@ object GreendaoModelTranslator {
     }
 
     private fun mapEntityClassesToEntities(entities: Iterable<ParsedEntity>, schema: Schema,
-                                           daoPackage: String?): Map<ParsedEntity, Entity> {
+                                           daoPackage: String?, idSync: IdSync): Map<ParsedEntity, Entity> {
         return entities.map {
             val entity = schema.addEntity(it.name)
             addBasicProperties(daoPackage, it, entity)
@@ -35,7 +32,9 @@ object GreendaoModelTranslator {
             if (it.active) entity.active = true
             entity.isSkipCreationInDb = !it.createInDb
             entity.javaPackage = it.packageName
-            convertProperties(it, entity)
+            entity.modelRefId = idSync.get(it).refId
+            entity.modelId = idSync.get(it).id
+            convertProperties(it, entity, idSync)
 
             // trigger creation of an additional protobuf dao
             if (it.protobufClassName != null) {
@@ -45,7 +44,7 @@ object GreendaoModelTranslator {
                 protobufEntity.active = false
                 protobufEntity.isSkipCreationInDb = true // table creation/deletion is handled by the original DAO
                 protobufEntity.javaPackage = it.protobufClassName.substringBeforeLast(".")
-                convertProperties(it, protobufEntity)
+                convertProperties(it, protobufEntity, idSync)
             }
 
             it to entity
@@ -59,11 +58,11 @@ object GreendaoModelTranslator {
         entity.isSkipGeneration = true
     }
 
-    private fun convertProperties(parsedEntity: ParsedEntity, entity: Entity) {
+    private fun convertProperties(parsedEntity: ParsedEntity, entity: Entity, idSync: IdSync) {
         val properties = parsedEntity.getPropertiesInConstructorOrder() ?: parsedEntity.properties
         properties.forEach {
             try {
-                convertProperty(entity, it)
+                convertProperty(entity, it, idSync.get(it))
             } catch (e: Exception) {
                 throw RuntimeException("Can't add property '${it.variable}' to entity ${parsedEntity.name} " +
                         "due to: ${e.message}", e)
@@ -198,9 +197,13 @@ object GreendaoModelTranslator {
         }
     }
 
-    private fun convertProperty(entity: Entity, property: ParsedProperty) {
+    private fun convertProperty(entity: Entity, property: ParsedProperty, modelIds: org.greenrobot.idsync.Property) {
         val propertyType = convertPropertyType((property.customType?.columnJavaType ?: property.variable.type).name)
         val propertyBuilder = entity.addProperty(propertyType, property.variable.name)
+        propertyBuilder.modelId(modelIds.id)
+        propertyBuilder.modelRefId(modelIds.refId)
+        modelIds.indexId?.let { propertyBuilder.modelIndexId(it)}
+
         if (property.variable.type.isPrimitive) {
             propertyBuilder.notNull()
         } else if (WRAPPER_TYPES.contains(property.variable.type.name)) {
@@ -246,7 +249,7 @@ object GreendaoModelTranslator {
         else -> throw RuntimeException("Unsupported type ${javaTypeName}")
     }
 
-    private fun Entity.findProperty(name : String): Property {
+    private fun Entity.findProperty(name: String): Property {
         return properties.find {
             it.propertyName == name
         } ?: throw RuntimeException("Can't find $name field in $className")

@@ -33,6 +33,9 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
     private val retiredEntityRefIds = ArrayList<Long>()
     private val retiredPropertyRefIds = ArrayList<Long>()
 
+    private val entitiesByParsedEntity = HashMap<ParsedEntity, Entity>()
+    private val propertiesByParsedProperty = HashMap<ParsedProperty, Property>()
+
     init {
         backupFile = File(jsonFile.absolutePath + ".bak")
         val moshi = Moshi.Builder().build()
@@ -81,6 +84,9 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
     }
 
     fun sync(parsedEntities: List<ParsedEntity>) {
+        if (entitiesByParsedEntity.isNotEmpty() || propertiesByParsedProperty.isNotEmpty()) {
+            throw IllegalStateException("May be called only once")
+        }
         try {
             val entities = parsedEntities.map { syncEntity(it) }
             updateRetiredRefIds(entities)
@@ -115,13 +121,15 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
             properties.add(property)
         }
 
-        return Entity(
+        val entity = Entity(
                 name = entityName,
                 id = existingEntity?.id ?: ++lastEntityId,
                 refId = existingEntity?.refId ?: modelRefId.create(),
                 properties = properties,
                 lastPropertyId = lastPropertyId
         )
+        entitiesByParsedEntity[parsedEntity] = entity
+        return entity
     }
 
     private fun syncProperty(existingEntity: Entity?, parsedEntity: ParsedEntity, parsedProperty: ParsedProperty,
@@ -146,12 +154,14 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
             }
         }
 
-        return Property(
+        val property = Property(
                 name = name,
                 refId = existingProperty?.refId ?: modelRefId.create(),
                 id = existingProperty?.id ?: lastPropertyId + 1,
                 indexId = indexId
         )
+        propertiesByParsedProperty[parsedProperty] = property
+        return property
     }
 
     /**
@@ -229,6 +239,17 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
         } finally {
             sink.close()
         }
+    }
+
+    fun get(parsedEntity: ParsedEntity): Entity {
+        return entitiesByParsedEntity[parsedEntity] ?:
+                throw IllegalStateException("No ID model entity available for parsed entity " + parsedEntity.name)
+    }
+
+    fun get(parsedProperty: ParsedProperty): Property {
+        return propertiesByParsedProperty[parsedProperty] ?:
+                throw IllegalStateException("No ID model property available for parsed property " +
+                        parsedProperty.variable.name)
     }
 
 }
