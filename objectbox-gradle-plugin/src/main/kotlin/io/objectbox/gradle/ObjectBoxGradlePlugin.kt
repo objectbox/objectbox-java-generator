@@ -60,7 +60,7 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
             inputs.property("plugin-version", version)
             inputs.property("source-encoding", encoding)
 
-            val schemaOptions = collectSchemaOptions(options.daoPackage, targetGenDir, options)
+            val schemaOptions = collectSchemaOptions(project, targetGenDir, options)
 
             schemaOptions.forEach { e ->
                 inputs.property("schema-${e.key}", e.value.toString())
@@ -109,14 +109,16 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
         return properties.getProperty("version") ?: "Unknown (bad build)"
     }
 
-    private fun collectSchemaOptions(daoPackage: String?, genSrcDir: File, options: ObjectBoxOptions)
+    private fun collectSchemaOptions(project: Project, genSrcDir: File, options: ObjectBoxOptions)
             : MutableMap<String, SchemaOptions> {
+        val idModelDir = project.mkdir("objectbox-models")
         val defaultOptions = SchemaOptions(
                 name = "default",
                 version = options.schemaVersion,
-                daoPackage = daoPackage,
+                daoPackage = options.daoPackage,
                 outputDir = genSrcDir,
-                testsOutputDir = if (options.generateTests) options.targetGenDirTests else null
+                testsOutputDir = if (options.generateTests) options.targetGenDirTests else null,
+                idModelFile = File(idModelDir, "default.json")
         )
 
         val schemaOptions = mutableMapOf("default" to defaultOptions)
@@ -130,7 +132,8 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
                     outputDir = defaultOptions.outputDir,
                     testsOutputDir = if (options.generateTests) {
                         schemaExt.targetGenDirTests ?: defaultOptions.testsOutputDir
-                    } else null
+                    } else null,
+                    idModelFile = File(idModelDir, "$name.json")
             )
         }.associateTo(schemaOptions, { it.name to it })
         return schemaOptions

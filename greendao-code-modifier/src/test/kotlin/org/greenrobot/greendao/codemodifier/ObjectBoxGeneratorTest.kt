@@ -26,7 +26,8 @@ class ObjectBoxGeneratorTest {
             version = 1,
             daoPackage = null,
             outputDir = File(testDirectory, "main/java"),
-            testsOutputDir = File(testDirectory, "test/java")
+            testsOutputDir = File(testDirectory, "test/java"),
+            idModelFile = File(testDirectory, "test-id-model.json")
     )
 
     @Before

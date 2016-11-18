@@ -5,7 +5,7 @@ import java.io.File
 object GreendaoGeneration {
     @JvmStatic fun main(args: Array<String>) {
         val files = listOf("notes/Note", "orders/Order", "orders/Customer",
-            "orders/Employee", "orders/EmployeeOrder").map {
+                "orders/Employee", "orders/EmployeeOrder").map {
             File("../greendao-example/src/main/java/com/example/greendao/${it}.java")
         }
 
@@ -14,11 +14,12 @@ object GreendaoGeneration {
         }
 
         val schemaOptions = SchemaOptions(
-            name = "default",
-            version = 1,
-            daoPackage = null,
-            outputDir = File("../greendao-example/src/generated/main/java"),
-            testsOutputDir = File("../greendao-example/src/generated/test/java")
+                name = "default",
+                version = 1,
+                daoPackage = null,
+                outputDir = File("../greendao-example/src/generated/main/java"),
+                testsOutputDir = File("../greendao-example/src/generated/test/java"),
+                idModelFile = File("test-GreendaoGeneration.json")
         )
 
 //        val notesSchemaOptions = schemaOptions.copy(
@@ -28,7 +29,7 @@ object GreendaoGeneration {
 //        )
 
         ObjectBoxGenerator(formattingOptions).run(files, mapOf(
-            "default" to schemaOptions
+                "default" to schemaOptions
 //            "notes" to notesSchemaOptions
         ))
     }

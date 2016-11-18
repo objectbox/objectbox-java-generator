@@ -7,5 +7,6 @@ data class SchemaOptions(
     val version: Int,
     val daoPackage: String?,
     val outputDir: File,
-    val testsOutputDir: File?
+    val testsOutputDir: File?,
+    val idModelFile: File
 )

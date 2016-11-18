@@ -67,7 +67,7 @@ class ObjectBoxGenerator(formattingOptions: FormattingOptions? = null,
         val outputDir = options.outputDir
         val testsOutputDir = options.testsOutputDir
 
-        val idSync = IdSync()
+        val idSync = IdSync(options.idModelFile)
         idSync.sync(entities)
 
         // take explicitly specified package name, or package name of the first entity
