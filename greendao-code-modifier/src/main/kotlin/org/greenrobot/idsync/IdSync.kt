@@ -48,7 +48,7 @@ class IdSync(val jsonFile: File) {
                 }
                 validateLastIds(it)
                 entitiesReadByRefId.put(it.refId, it)
-                if (entitiesReadByName.put(it.name, it) != null) {
+                if (entitiesReadByName.put(it.name.toLowerCase(), it) != null) {
                     throw IdSyncException("Duplicate entity name ${it.name} in " + jsonFile.absolutePath)
                 }
             }
@@ -69,14 +69,16 @@ class IdSync(val jsonFile: File) {
     }
 
     fun sync(parsedEntities: List<ParsedEntity>) {
-        val entitiesModel = parsedEntities.map { syncEntity(it) }
+        val entities = parsedEntities.map { syncEntity(it) }
         val model = IdSyncModel(
                 version = 1,
                 metaVersion = 1,
                 lastEntityId = lastEntityId,
                 lastIndexId = lastIndexId,
                 lastSequenceId = lastSequenceId,
-                entities = entitiesModel)
+                entities = entities,
+                deletedEntities = emptyList(),
+                deletedProperties = emptyList())
         writeModel(model)
     }
 
@@ -156,7 +158,7 @@ class IdSync(val jsonFile: File) {
             return entitiesReadByRefId[refId] ?:
                     throw IdSyncException("No entity with refID $refId found in " + jsonFile.absolutePath)
         } else {
-            return entitiesReadByName[name]
+            return entitiesReadByName[name.toLowerCase()]
         }
     }
 
@@ -170,7 +172,8 @@ class IdSync(val jsonFile: File) {
             check(filtered.size == 1)
             return filtered.first()
         } else {
-            val filtered = entity.properties.filter { it.name == name }
+            val nameLowerCase = name.toLowerCase()
+            val filtered = entity.properties.filter { it.name.toLowerCase() == nameLowerCase }
             check(filtered.size <= 1)
             return if (filtered.isNotEmpty()) filtered.first() else null
         }

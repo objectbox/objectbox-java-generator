@@ -87,10 +87,25 @@ class IdSyncTest {
 
     @Test
     fun testKeepIdsForMatchingNames() {
+        val entityParsed = createEntity("Entity1", basicProperties())
+        testKeepIdsForMatchingNames(entityParsed)
+    }
+
+    @Test
+    fun testKeepIdsForMatchingNames_differentCase() {
+        val properties = mutableListOf<ParsedProperty>(
+                createProperty("FOO"),
+                createProperty("bAr")
+        )
+        val entityParsed = createEntity("ENTITY1", properties)
+
+        testKeepIdsForMatchingNames(entityParsed)
+    }
+
+    private fun testKeepIdsForMatchingNames(entityParsed: ParsedEntity) {
         val model1 = syncBasicModel()
         val entity1 = model1.entities.first()
 
-        val entityParsed = createEntity("Entity1", basicProperties())
         idSync = IdSync(file)
         idSync!!.sync(listOf(entityParsed))
 

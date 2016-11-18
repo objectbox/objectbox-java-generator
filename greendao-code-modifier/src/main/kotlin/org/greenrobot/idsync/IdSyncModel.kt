@@ -13,7 +13,10 @@ data class IdSyncModel(
         // TODO use this once we support sequences
         val lastSequenceId: Int,
 
-        val entities: List<Entity>
+        val entities: List<Entity>,
+
+        val deletedEntities: List<Entity>,
+        val deletedProperties: List<Property>
 )
 
 data class Entity(
