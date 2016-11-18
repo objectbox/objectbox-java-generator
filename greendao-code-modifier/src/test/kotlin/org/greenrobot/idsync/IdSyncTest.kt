@@ -11,7 +11,7 @@ import java.io.File
 
 class IdSyncTest {
 
-    val file = File.createTempFile("idsync-test", "json")
+    val file = File.createTempFile("idsync-test", ".json")
     var idSync: IdSync? = null
 
     @Before
@@ -21,8 +21,9 @@ class IdSyncTest {
     }
 
     @After
-    fun deleteFile() {
+    fun deleteFiles() {
         file.delete()
+        idSync?.backupFile?.delete()
     }
 
     @Test
@@ -216,6 +217,26 @@ class IdSyncTest {
         assertNull(entity2.properties.first().indexId)
         assertEquals(1, entity2.properties[1].indexId)
         assertEquals(2, entity2.properties[2].indexId)
+    }
+
+    @Test
+    fun testRemoveEntity() {
+        val model1 = syncBasicModel()
+        val entity1 = model1.entities.first()
+
+        val parsedEntities = listOf(
+                createEntity("Entity2", basicProperties())
+        )
+        idSync = IdSync(file)
+        idSync!!.sync(parsedEntities)
+        val model2 = idSync!!.justRead()!!
+        assertEquals(1, model2.retiredEntityRefIds!!.size)
+        val entityRefIdDeleted = model2.retiredEntityRefIds!!.first()
+        assertEquals(entity1.refId, entityRefIdDeleted)
+
+        assertEquals(2, model2.retiredPropertyRefIds!!.size)
+        assertEquals(entity1.properties[0].refId, model2.retiredPropertyRefIds!![0])
+        assertEquals(entity1.properties[1].refId, model2.retiredPropertyRefIds!![1])
     }
 
     private fun syncBasicModel(): IdSyncModel {

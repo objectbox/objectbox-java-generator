@@ -1,7 +1,7 @@
 package org.greenrobot.idsync
 
 data class IdSyncModel(
-        // "Comments" in the JSON file
+        /** "Comments" in the JSON file */
         val _note1: String = "KEEP THIS FILE! Check it into a version control system (VCS) like git.",
         val _note2: String = "ObjectBox manages crucial IDs for your object model. See docs for details.",
         val _note3: String = "If you have VCS merge conflicts, you must resolve them according to ObjectBox docs.",
@@ -15,8 +15,11 @@ data class IdSyncModel(
 
         val entities: List<Entity>,
 
-        val deletedEntities: List<Entity>,
-        val deletedProperties: List<Property>
+        /** Previously used refIds, which are now deleted. Archived to ensure no collisions. */
+        val retiredEntityRefIds: List<Long>?,
+
+        /** Previously used refIds, which are now deleted. Archived to ensure no collisions. */
+        val retiredPropertyRefIds: List<Long>?
 )
 
 data class Entity(

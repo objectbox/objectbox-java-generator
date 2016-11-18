@@ -17,14 +17,15 @@ class ModelRefId(
         existingRefIds.forEach { verify(it) }
     }
 
-    fun addExistingId(id: Long ): Boolean {
+    fun addExistingId(id: Long ) {
         verify(id)
-        return existingRefIds.add(id)
+        if(!existingRefIds.add(id)) {
+            throw IdSyncException("Duplicate ref ID $id")
+        }
     }
 
     fun addExistingIds(ids: Collection<Long> ) {
-        ids.forEach { verify(it) }
-        existingRefIds.addAll(ids)
+        ids.forEach { addExistingId(it) }
     }
 
     fun create(): Long {
@@ -39,13 +40,13 @@ class ModelRefId(
     }
 
     fun verify(value: Long) {
-        if (value < 0) throw RuntimeException("Illegal ref: " + value)
+        if (value < 0) throw IdSyncException("Illegal ref ID: " + value)
         val randomPart = value and 0x7FFFFFFFFFFFFF00
-        if (randomPart == 0L) throw RuntimeException("Illegal ref: " + value)
+        if (randomPart == 0L) throw IdSyncException("Illegal ref ID: " + value)
         val murmur = Murmur3F()
         murmur.updateLongLE(randomPart)
         if (value < 0 || (value and 0xFF != murmur.value and 0xFF)) {
-            throw RuntimeException("Illegal ref: " + value)
+            throw IdSyncException("Illegal ref ID: " + value)
         }
     }
 

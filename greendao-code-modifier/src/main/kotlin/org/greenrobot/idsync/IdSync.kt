@@ -14,6 +14,7 @@ import java.io.FileNotFoundException
 import java.util.*
 
 class IdSync(val jsonFile: File) {
+    val backupFile: File
 
     private val modelJsonAdapter: JsonAdapter<IdSyncModel>
 
@@ -25,11 +26,15 @@ class IdSync(val jsonFile: File) {
 
     private var modelRead: IdSyncModel? = null
 
-    var lastEntityId: Int = 0
-    var lastIndexId: Int = 0
-    var lastSequenceId: Int = 0
+    private var lastEntityId: Int = 0
+    private var lastIndexId: Int = 0
+    private var lastSequenceId: Int = 0
+
+    private val retiredEntityRefIds = ArrayList<Long>()
+    private val retiredPropertyRefIds = ArrayList<Long>()
 
     init {
+        backupFile = File(jsonFile.absolutePath + ".bak")
         val moshi = Moshi.Builder().build()
         modelJsonAdapter = moshi.adapter<IdSyncModel>(IdSyncModel::class.java)
         modelRefId = ModelRefId()
@@ -37,21 +42,28 @@ class IdSync(val jsonFile: File) {
     }
 
     private fun initModel() {
-        modelRead = justRead()
-        if (modelRead != null) {
-            lastEntityId = modelRead!!.lastEntityId
-            lastIndexId = modelRead!!.lastIndexId
-            lastSequenceId = modelRead!!.lastSequenceId
-            modelRead!!.entities.forEach {
-                if (!modelRefId.addExistingId(it.refId)) {
-                    throw IdSyncException("Duplicate ref ID ${it.refId} in " + jsonFile.absolutePath)
-                }
-                validateLastIds(it)
-                entitiesReadByRefId.put(it.refId, it)
-                if (entitiesReadByName.put(it.name.toLowerCase(), it) != null) {
-                    throw IdSyncException("Duplicate entity name ${it.name} in " + jsonFile.absolutePath)
+        try {
+            modelRead = justRead()
+            if (modelRead != null) {
+                lastEntityId = modelRead!!.lastEntityId
+                lastIndexId = modelRead!!.lastIndexId
+                lastSequenceId = modelRead!!.lastSequenceId
+                retiredEntityRefIds += modelRead!!.retiredEntityRefIds ?: emptyList()
+                retiredPropertyRefIds += modelRead!!.retiredPropertyRefIds ?: emptyList()
+                modelRefId.addExistingIds(retiredEntityRefIds)
+                modelRefId.addExistingIds(retiredPropertyRefIds)
+                modelRead!!.entities.forEach {
+                    modelRefId.addExistingId(it.refId)
+                    it.properties.forEach { modelRefId.addExistingId(it.refId) }
+                    validateLastIds(it)
+                    entitiesReadByRefId.put(it.refId, it)
+                    if (entitiesReadByName.put(it.name.toLowerCase(), it) != null) {
+                        throw IdSyncException("Duplicate entity name ${it.name} in " + jsonFile.absolutePath)
+                    }
                 }
             }
+        } catch (e: Throwable) {
+            throw IdSyncException("Loading object model ID file failed. Please check " + jsonFile.absolutePath, e)
         }
     }
 
@@ -69,17 +81,22 @@ class IdSync(val jsonFile: File) {
     }
 
     fun sync(parsedEntities: List<ParsedEntity>) {
-        val entities = parsedEntities.map { syncEntity(it) }
-        val model = IdSyncModel(
-                version = 1,
-                metaVersion = 1,
-                lastEntityId = lastEntityId,
-                lastIndexId = lastIndexId,
-                lastSequenceId = lastSequenceId,
-                entities = entities,
-                deletedEntities = emptyList(),
-                deletedProperties = emptyList())
-        writeModel(model)
+        try {
+            val entities = parsedEntities.map { syncEntity(it) }
+            updateRetiredRefIds(entities)
+            val model = IdSyncModel(
+                    version = 1,
+                    metaVersion = 1,
+                    lastEntityId = lastEntityId,
+                    lastIndexId = lastIndexId,
+                    lastSequenceId = lastSequenceId,
+                    entities = entities,
+                    retiredEntityRefIds = retiredEntityRefIds,
+                    retiredPropertyRefIds = retiredPropertyRefIds)
+            writeModel(model)
+        } catch (e: Throwable) {
+            throw IdSyncException("Could not sync parsed model with ID model. Please check " + jsonFile.absolutePath, e)
+        }
     }
 
     private fun syncEntity(parsedEntity: ParsedEntity): Entity {
@@ -138,7 +155,7 @@ class IdSync(val jsonFile: File) {
     }
 
     /**
-     * Justs reads the model without changing any state of this object. Nice for testing.
+     * Just reads the model without changing any state of this object. Nice for testing also.
      */
     fun justRead(file: File = jsonFile): IdSyncModel? {
         var source: Source? = null;
@@ -151,7 +168,6 @@ class IdSync(val jsonFile: File) {
             source?.close()
         }
     }
-
 
     private fun findEntity(name: String, refId: Long?): Entity? {
         if (refId != null) {
@@ -179,12 +195,34 @@ class IdSync(val jsonFile: File) {
         }
     }
 
+    private fun updateRetiredRefIds(entities: List<Entity>) {
+        val oldEntityRefIds = entitiesReadByRefId.keys.toMutableList()
+        oldEntityRefIds.removeAll(entities.map { it.refId })
+        retiredEntityRefIds.addAll(oldEntityRefIds)
+
+        val oldPropertyRefIds = collectPropertyRefIds(entitiesReadByRefId.values)
+        val newPropertyRefIds = collectPropertyRefIds(entities)
+        oldPropertyRefIds.removeAll(newPropertyRefIds)
+        retiredPropertyRefIds.addAll(oldPropertyRefIds)
+    }
+
+    private fun collectPropertyRefIds(entities: Collection<Entity>): MutableList<Long> {
+        val propertyRefIds = ArrayList<Long>()
+        entities.forEach {
+            it.properties.forEach { propertyRefIds += it.refId }
+        }
+        return propertyRefIds
+    }
 
     private fun writeModel(model: IdSyncModel) {
         val buffer = Buffer()
         val jsonWriter = JsonWriter.of(buffer)
         jsonWriter.setIndent("  ")
         modelJsonAdapter.toJson(jsonWriter, model)
+        if (jsonFile.exists()) {
+            jsonFile.copyTo(backupFile, true)
+        }
+
         val sink = Okio.sink(jsonFile)
         try {
             buffer.readAll(sink)
