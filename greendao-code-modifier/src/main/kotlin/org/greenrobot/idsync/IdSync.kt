@@ -13,7 +13,7 @@ import java.io.File
 import java.io.FileNotFoundException
 import java.util.*
 
-class IdSync(val jsonFile: File) {
+class IdSync(val jsonFile: File = File("objectmodel.json")) {
     val backupFile: File
 
     private val modelJsonAdapter: JsonAdapter<IdSyncModel>

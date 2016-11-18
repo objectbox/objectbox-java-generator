@@ -70,8 +70,7 @@ class ObjectBoxGenerator(formattingOptions: FormattingOptions? = null,
         // take explicitly specified package name, or package name of the first entity
         val schema = Schema(options.name, options.version, options.daoPackage ?: entities.first().packageName)
         val mapping: Map<ParsedEntity, Entity> = GreendaoModelTranslator.translate(entities, schema, options.daoPackage)
-        val jsonFile = File("objectmodel.json")
-        val modelSync = IdSync(jsonFile)
+        val modelSync = IdSync()
         modelSync.sync(entities)
 
         if (skipTestGeneration.isNotEmpty()) {

@@ -1,8 +1,8 @@
 package org.greenrobot.greendao.codemodifier
 
+import io.objectbox.annotation.*
 import org.eclipse.jdt.core.dom.*
 import org.eclipse.jdt.core.dom.Annotation
-import io.objectbox.annotation.*
 import java.io.File
 import kotlin.reflect.KClass
 
@@ -21,7 +21,7 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
     val imports = mutableListOf<ImportDeclaration>()
     val staticInnerClasses = mutableListOf<String>()
     var packageName: String? = null
-    var entityTableName: String? = null
+    var entityDbName: String? = null
     var typeDeclaration: TypeDeclaration? = null
     val oneRelations = mutableListOf<OneRelation>()
     val manyRelations = mutableListOf<ManyRelation>()
@@ -33,6 +33,7 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
     var protobufClassName: String? = null
     var usedNotNullAnnotation: String? = null
     var lastField: FieldDeclaration? = null
+    var entityRefId: Long? = null
 
     private val methodAnnotations = mutableListOf<Annotation>()
     private val fieldAnnotations = mutableListOf<Annotation>()
@@ -85,13 +86,14 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
                         val entityAnnotation = AnnotationProxy<Entity>(node)
                         // schemaName = "entityAnnotation.schema
                         // active = entityAnnotation.active
-                        entityTableName = entityAnnotation.nameInDb.nullIfBlank()
+                        entityDbName = entityAnnotation.nameInDb.nullIfBlank()
+                        entityRefId = entityAnnotation.refId
                         // createTable = entityAnnotation.createInDb
                         generateConstructors = entityAnnotation.generateConstructors
                         generateGettersSetters = true // TODO trouble with that - getters and setter are gone in tests - entityAnnotation.generateGettersSetters
                         if (node is NormalAnnotation) {
                             // protobufClassName = (node["protobuf"] as? TypeLiteral)?.type?.typeName?.nullIfBlank()
-                            if (protobufClassName != null && entityTableName == null) {
+                            if (protobufClassName != null && entityDbName == null) {
                                 // TODO remove this requirement (the following is just a workaround to fill
                                 // protobufEntity.dbName):
                                 // explicitly require table name so the user is aware where both DAOs store their data
@@ -162,7 +164,9 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
                 annotations.has<ToMany>() -> {
                     manyRelations += variableNames.map { manyRelation(annotations, it, variableType) }
                 }*/
-                false -> { throw RuntimeException("Malfunction in space time drive")}
+                false -> {
+                    throw RuntimeException("Malfunction in space time drive")
+                }
                 else -> properties += variableNames.map { parseProperty(annotations, it, node, variableType) }
             }
         }
@@ -273,17 +277,20 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
 
     private fun parseProperty(fa: MutableList<Annotation>, fieldName: SimpleName,
                               node: FieldDeclaration, variableType: VariableType): ParsedProperty {
-        val columnAnnotation = fa.proxy<Property>()
-        val indexAnnotation = fa.proxy<Index>()
-        val idAnnotation = fa.proxy<Id>()
+        val property = fa.proxy<Property>()
+        val index = fa.proxy<Index>()
+        val id = fa.proxy<Id>()
 
         val customType = findConvert(fieldName, fa)
+
+        val refId = property?.refId
         return ParsedProperty(
                 variable = Variable(variableType, fieldName.toString()),
-                idParams = idAnnotation?.let { EntityIdParams(it.monotonic, it.assignable) },
-                index = indexAnnotation?.let { PropertyIndex(null, false /* TODO indexAnnotation.unique*/) },
+                idParams = id?.let { EntityIdParams(it.monotonic, it.assignable) },
+                index = index?.let { PropertyIndex(null, false /* TODO indexAnnotation.unique*/) },
                 isNotNull = node.type.isPrimitiveType || fa.hasNotNull,
-                dbName = columnAnnotation?.nameInDb?.let { it.nullIfBlank() },
+                dbName = property?.nameInDb?.let { it.nullIfBlank() },
+                refId = if (refId != null && refId != 0L) refId else null,
                 customType = customType
         )
     }
@@ -404,9 +411,8 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
                     node = node,
                     imports = imports,
                     packageName = packageName ?: "",
-                    dbName = entityTableName,
-                    // TODO
-                    refId = null,
+                    dbName = entityDbName,
+                    refId = if (entityRefId != null && entityRefId != 0L) entityRefId else null,
                     oneRelations = oneRelations,
                     manyRelations = manyRelations,
                     sourceFile = javaFile,
