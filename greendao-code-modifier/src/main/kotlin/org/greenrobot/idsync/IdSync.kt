@@ -230,7 +230,17 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
         jsonWriter.setIndent("  ")
         modelJsonAdapter.toJson(jsonWriter, model)
         if (jsonFile.exists()) {
+            val existingContent = jsonFile.readBytes()
+            val content = buffer.snapshot().toByteArray()
+            if (Arrays.equals(existingContent, content)) {
+                println("ID model file unchanged: " + jsonFile.name)
+                return
+            } else {
+                println("ID model file changed: " + jsonFile.name + ", creating backup (.bak)")
+            }
             jsonFile.copyTo(backupFile, true)
+        } else {
+            println("ID model file created: " + jsonFile.name)
         }
 
         val sink = Okio.sink(jsonFile)
