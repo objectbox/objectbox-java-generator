@@ -26,9 +26,14 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
 
     private var modelRead: IdSyncModel? = null
 
-    private var lastEntityId: Int = 0
-    private var lastIndexId: Int = 0
-    private var lastSequenceId: Int = 0
+    var lastEntityId: Int = 0
+        private set
+
+    var lastIndexId: Int = 0
+        private set
+
+    var lastSequenceId: Int = 0
+        private set
 
     private val retiredEntityRefIds = ArrayList<Long>()
     private val retiredPropertyRefIds = ArrayList<Long>()

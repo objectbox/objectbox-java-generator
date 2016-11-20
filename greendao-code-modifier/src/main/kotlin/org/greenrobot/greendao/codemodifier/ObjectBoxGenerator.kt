@@ -72,6 +72,8 @@ class ObjectBoxGenerator(formattingOptions: FormattingOptions? = null,
 
         // take explicitly specified package name, or package name of the first entity
         val schema = Schema(options.name, options.version, options.daoPackage ?: entities.first().packageName)
+        schema.lastEntityId = idSync.lastEntityId
+        schema.lastIndexId = idSync.lastIndexId
         val mapping: Map<ParsedEntity, Entity> =
                 GreendaoModelTranslator.translate(entities, schema, options.daoPackage, idSync)
 
