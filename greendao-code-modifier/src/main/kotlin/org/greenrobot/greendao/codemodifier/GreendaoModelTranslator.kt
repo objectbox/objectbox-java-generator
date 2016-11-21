@@ -202,7 +202,9 @@ object GreendaoModelTranslator {
         val propertyBuilder = entity.addProperty(propertyType, property.variable.name)
         propertyBuilder.modelId(modelIds.id)
         propertyBuilder.modelRefId(modelIds.refId)
-        modelIds.indexId?.let { propertyBuilder.modelIndexId(it)}
+        if(modelIds.indexId != null && modelIds.indexId != 0) {
+            propertyBuilder.modelIndexId(modelIds.indexId);
+        }
 
         if (property.variable.type.isPrimitive) {
             propertyBuilder.notNull()
