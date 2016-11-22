@@ -32,8 +32,12 @@ object GreendaoModelTranslator {
             if (it.active) entity.active = true
             entity.isSkipCreationInDb = !it.createInDb
             entity.javaPackage = it.packageName
-            entity.modelRefId = idSync.get(it).refId
-            entity.modelId = idSync.get(it).id
+
+            val idSyncEntity = idSync.get(it)
+            entity.modelRefId = idSyncEntity.refId
+            entity.modelId = idSyncEntity.id
+            entity.lastPropertyId = idSyncEntity.lastPropertyId
+
             convertProperties(it, entity, idSync)
 
             // trigger creation of an additional protobuf dao
@@ -203,7 +207,7 @@ object GreendaoModelTranslator {
         propertyBuilder.modelId(modelIds.id)
         propertyBuilder.modelRefId(modelIds.refId)
         if(modelIds.indexId != null && modelIds.indexId != 0) {
-            propertyBuilder.modelIndexId(modelIds.indexId);
+            propertyBuilder.modelIndexId(modelIds.indexId)
         }
 
         if (property.variable.type.isPrimitive) {
