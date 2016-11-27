@@ -38,8 +38,11 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
     private val retiredEntityRefIds = ArrayList<Long>()
     private val retiredPropertyRefIds = ArrayList<Long>()
 
-    private val entitiesByParsedEntity = HashMap<ParsedEntity, Entity>()
-    private val propertiesByParsedProperty = HashMap<ParsedProperty, Property>()
+    // Use IdentityHashMap here to avoid collisions (e.g. same name)
+    private val entitiesByParsedEntity = IdentityHashMap<ParsedEntity, Entity>()
+
+    // Use IdentityHashMap here to avoid collisions (e.g. same name)
+    private val propertiesByParsedProperty = IdentityHashMap<ParsedProperty, Property>()
 
     init {
         backupFile = File(jsonFile.absolutePath + ".bak")
@@ -165,7 +168,10 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
                 id = existingProperty?.id ?: lastPropertyId + 1,
                 indexId = indexId
         )
-        propertiesByParsedProperty[parsedProperty] = property
+        val collision = propertiesByParsedProperty.put(parsedProperty, property)
+        if (collision != null) {
+            throw IllegalStateException("Property collision: " + parsedProperty + " vs. " + collision)
+        }
         return property
     }
 

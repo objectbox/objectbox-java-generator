@@ -239,6 +239,22 @@ class IdSyncTest {
         assertEquals(entity1.properties[1].refId, model2.retiredPropertyRefIds!![1])
     }
 
+    @Test
+    fun testPropertiesWithSameNameIn2Entities() {
+        val entity1 = createEntity("Entity1", basicProperties())
+        val entity2 = createEntity("Entity2", basicProperties())
+        val parsedProperty1 = entity1.properties[0]
+        val parsedProperty2 = entity2.properties[0]
+        idSync!!.sync(listOf(entity1, entity2))
+
+        val model = idSync!!.justRead()!!
+        assertNotSame(parsedProperty1, parsedProperty2)
+
+        val property1 = idSync!!.get(parsedProperty1)
+        val property2 = idSync!!.get(parsedProperty2)
+        assertNotSame(property1, property2)
+    }
+
     private fun syncBasicModel(): IdSyncModel {
         val entity1 = createEntity("Entity1", basicProperties())
         idSync!!.sync(listOf(entity1))
