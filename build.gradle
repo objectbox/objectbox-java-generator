@@ -56,6 +56,7 @@ subprojects {
 
     dependencies {
         deployerJars 'org.apache.maven.wagon:wagon-webdav:1.0-beta-2'
+        deployerJars 'org.apache.maven.wagon:wagon-ftp:2.2'
     }
 
     signing {
