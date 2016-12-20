@@ -11,7 +11,7 @@ import java.io.File
 
 class IdSyncTest {
 
-    val file = File.createTempFile("idsync-test", ".json")
+    val file: File = File.createTempFile("idsync-test", ".json")
     var idSync: IdSync? = null
 
     @Before

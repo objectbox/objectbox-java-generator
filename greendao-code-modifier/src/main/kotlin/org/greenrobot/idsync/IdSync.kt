@@ -96,7 +96,7 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
             throw IllegalStateException("May be called only once")
         }
         try {
-            val entities = parsedEntities.map { syncEntity(it) }
+            val entities = parsedEntities.map { syncEntity(it) }.sortedBy { it.id }
             updateRetiredRefIds(entities)
             val model = IdSyncModel(
                     version = 1,
@@ -128,6 +128,7 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
             lastPropertyId = Math.max(lastPropertyId, property.id)
             properties.add(property)
         }
+        properties.sortBy { it.id }
 
         val entity = Entity(
                 name = entityName,
