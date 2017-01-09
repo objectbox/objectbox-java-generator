@@ -8,10 +8,36 @@ import org.eclipse.jdt.core.dom.CompilationUnit
 import java.io.File
 
 class EntityClassParser(val jdtOptions: MutableMap<Any, Any>, val encoding: String) {
+
+    companion object {
+        val AST_PARSER_LEVEL: Int = AST.JLS8
+
+        // ignore errors about broken references to types/names defined outside of the entity class
+        // the number is (problem id & IProblem.IgnoreCategoriesMask) as shown in log output
+        val ignoredProblemIds: IntArray = intArrayOf(
+                IProblem.UndefinedType, // 2
+                IProblem.UndefinedName, // 50, external class refs, like TextUtils
+                IProblem.UndefinedField, // 70
+                IProblem.UnresolvedVariable, // 83
+                IProblem.MissingTypeInMethod, // 120
+                IProblem.MissingTypeInConstructor, // 129
+                IProblem.MissingTypeInLambda, // 271
+                IProblem.ImportNotFound, // 390
+                IProblem.AbstractMethodMustBeImplemented, // 400 Comparable<T>.compareTo(T) can not be checked
+                IProblem.PublicClassMustMatchFileName, // 325 our tests violate this
+                IProblem.UnhandledWarningToken, // 631 SuppressWarnings tokens supported by IntelliJ, but not Eclipse
+                IProblem.MethodMustOverrideOrImplement // 634 Inner defined PropertyConverter overrides
+        )
+
+        fun shouldReportProblem(problemId: Int): Boolean {
+            return !ignoredProblemIds.contains(problemId)
+        }
+    }
+
     fun parse(javaFile: File, classesInPackage: List<String>): ParsedEntity? {
         val source = javaFile.readText(charset(encoding))
 
-        val parser = ASTParser.newParser(AST.JLS8)
+        val parser = ASTParser.newParser(AST_PARSER_LEVEL)
         parser.setCompilerOptions(jdtOptions)
         parser.setKind(ASTParser.K_COMPILATION_UNIT)
 
@@ -28,25 +54,13 @@ class EntityClassParser(val jdtOptions: MutableMap<Any, Any>, val encoding: Stri
         // in a future version we might include the whole classpath so all bindings can be resolved
         val problems = astRoot.problems?.filter {
             val problemId = it.id
-            // ignore errors about broken references to types/names defined outside of the entity class
-            // the number is (problem id & IProblem.IgnoreCategoriesMask) as shown in log output
-            val keep = problemId != IProblem.UndefinedType // 2
-                    && problemId != IProblem.UndefinedName // 50, external class refs, like TextUtils
-                    && problemId != IProblem.UndefinedField // 70
-                    && problemId != IProblem.UnresolvedVariable // 83
-                    && problemId != IProblem.MissingTypeInMethod // 120
-                    && problemId != IProblem.MissingTypeInConstructor // 129
-                    && problemId != IProblem.MissingTypeInLambda // 271
-                    && problemId != IProblem.ImportNotFound // 390
-                    && problemId != IProblem.PublicClassMustMatchFileName // 325 our tests violate this
-                    && problemId != IProblem.UnhandledWarningToken // 631 SuppressWarnings tokens supported by IntelliJ, but not Eclipse
-                    && problemId != IProblem.MethodMustOverrideOrImplement // 634 Inner defined PropertyConverter overrides
+            val keep = shouldReportProblem(problemId)
             if (!keep) {
                 System.out.println("[Verbose] Ignoring parser problem in ${javaFile}:${it.sourceLineNumber}: $it.")
             }
             keep
         }
-        if (problems != null && problems.size > 0) {
+        if (problems != null && problems.isNotEmpty()) {
             System.err.println("Found ${problems.size} problem(s) parsing \"${javaFile}\":")
             problems.forEachIndexed { i, problem ->
                 System.err.println("#${i + 1} @${problem.sourceLineNumber}: $problem" +
@@ -74,4 +88,6 @@ class EntityClassParser(val jdtOptions: MutableMap<Any, Any>, val encoding: Stri
 
         return visitor.createParsedEntity(javaFile, source)
     }
+
+
 }
