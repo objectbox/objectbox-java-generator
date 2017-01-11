@@ -141,21 +141,14 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
             transientFields += variableNames.map {
                 TransientField(Variable(variableType, it.toString()), node, generatorHint)
             }
-        } else {
-            // property field
-            when {
-                /*
-                annotations.has<ToOne>() -> {
-                    oneRelations += variableNames.map { oneRelation(annotations, it, variableType) }
-                }
-                annotations.has<ToMany>() -> {
-                    manyRelations += variableNames.map { manyRelation(annotations, it, variableType) }
-                }*/
-                false -> {
-                    throw RuntimeException("Malfunction in space time drive")
-                }
-                else -> properties += variableNames.map { parseProperty(annotations, it, node, variableType) }
+        } else if (annotations.has<Relation>()) {
+            if (variableType.name.equals("java.util.List")) {
+                manyRelations += variableNames.map { manyRelation(annotations, it, variableType) }
+            } else {
+                oneRelations += variableNames.map { oneRelation(annotations, it, variableType) }
             }
+        } else {
+            properties += variableNames.map { parseProperty(annotations, it, node, variableType) }
         }
 
         // check what type of not-null annotation is used
@@ -213,54 +206,42 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
         return find { it.hasType(T::class) }?.let { AnnotationProxy<T>(it) }
     }
 
-    /*
+
     private fun oneRelation(fa: MutableList<Annotation>, fieldName: SimpleName,
                             variableType: VariableType): OneRelation {
-        val proxy = fa.proxy<ToOne>()!!
+        val proxy = fa.proxy<Relation>()!!
         return OneRelation(
                 Variable(variableType, fieldName.toString()),
-                foreignKeyField = proxy.joinProperty.nullIfBlank(),
+                foreignKeyField = proxy.idProperty.nullIfBlank(),
                 columnName = fa.proxy<Property>()?.nameInDb?.nullIfBlank(),
                 isNotNull = fa.hasNotNull,
-                unique = fa.has<Unique>()
+                unique = false //fa.has<Unique>()
         )
     }
 
     private fun manyRelation(fa: MutableList<Annotation>, fieldName: SimpleName,
                              variableType: VariableType): ManyRelation {
-        val proxy = fa.proxy<ToMany>()!!
-        val joinEntityAnnotation = fa.find {
-            it.hasType(JoinEntity::class)
-        } as? NormalAnnotation
-        val orderByAnnotation = fa.proxy<OrderBy>()
+        val proxy = fa.proxy<Relation>()!!
+//        val orderByAnnotation = fa.proxy<OrderBy>()
         return ManyRelation(
                 Variable(variableType, fieldName.toString()),
-                mappedBy = proxy.referencedJoinProperty.nullIfBlank(),
-                joinOnProperties = proxy.joinProperties.map { JoinOnProperty(it.name, it.referencedName) },
-                joinEntitySpec = joinEntityAnnotation?.let {
-                    val joinProxy = AnnotationProxy<JoinEntity>(it)
-                    JoinEntitySpec(
-                            entityName = (it["entity"] as TypeLiteral).type.typeName,
-                            sourceIdProperty = joinProxy.sourceProperty,
-                            targetIdProperty = joinProxy.targetProperty
-                    )
-                },
-                order = orderByAnnotation?.let {
-                    val spec = it.value
-                    if (spec.isBlank()) {
-                        emptyList()
-                    } else {
-                        try {
-                            parseIndexSpec(spec)
-                        } catch (e: IllegalArgumentException) {
-                            throw RuntimeException("Can't parse @OrderBy.value for " +
-                                    "${typeDeclaration?.name}.${fieldName} because of: ${e.message}.", e)
-                        }
-                    }
-                }
+                mappedBy = proxy.idProperty.nullIfBlank()
+//                ,joinOnProperties = proxy.joinProperties.map { JoinOnProperty(it.name, it.referencedName) },
+//                order = orderByAnnotation?.let {
+//                    val spec = it.value
+//                    if (spec.isBlank()) {
+//                        emptyList()
+//                    } else {
+//                        try {
+//                            parseIndexSpec(spec)
+//                        } catch (e: IllegalArgumentException) {
+//                            throw RuntimeException("Can't parse @OrderBy.value for " +
+//                                    "${typeDeclaration?.name}.${fieldName} because of: ${e.message}.", e)
+//                        }
+//                    }
+//                }
         )
     }
-    */
 
     private fun parseProperty(fa: MutableList<Annotation>, fieldName: SimpleName,
                               node: FieldDeclaration, variableType: VariableType): ParsedProperty {
