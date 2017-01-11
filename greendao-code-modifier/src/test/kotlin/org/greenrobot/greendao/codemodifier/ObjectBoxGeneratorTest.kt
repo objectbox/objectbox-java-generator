@@ -1,6 +1,7 @@
 package org.greenrobot.greendao.codemodifier
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Ignore
 import org.junit.Rule
@@ -46,13 +47,12 @@ class ObjectBoxGeneratorTest {
         generateAndAssertFile(testFilePrefix)
     }
 
+    // NOTE: test may output multiple failed files, make sure to scroll up :)
     @Test
     fun testAllTestFiles() {
-        // NOTE: test may output multiple failed files, make sure to scroll up :)
-
         // get a list of all input test files
         val testFiles = ArrayList<String>()
-        samplesDirectory.listFiles().filter { it.nameWithoutExtension.endsWith("Input") }.forEach {
+        samplesDirectory.listFiles().filter { it.isFile && it.nameWithoutExtension.endsWith("Input") }.forEach {
             val testName = it.nameWithoutExtension.substringBeforeLast("Input", "")
             if (testName.length > 0) {
                 testFiles.add(testName)
@@ -66,7 +66,17 @@ class ObjectBoxGeneratorTest {
         }
     }
 
-    fun generateAndAssertFile(baseFileName : String) {
+    // NOTE: test may output multiple failed files, make sure to scroll up :)
+    @Test
+    @Ignore
+    fun testAllTestDirectories() {
+        samplesDirectory.listFiles().filter { it.isDirectory && it.name.endsWith("-input") }.forEach {
+            ensureEmptyTestDirectory()
+            generateAndAssertDirectory(it)
+        }
+    }
+
+    fun generateAndAssertFile(baseFileName: String) {
         val inputFileName = "${baseFileName}Input.java"
         val actualFileName = "${baseFileName}Actual.java"
         val expectedFileName = "${baseFileName}Expected.java"
@@ -74,26 +84,50 @@ class ObjectBoxGeneratorTest {
         // copy the input file to the test directory
         val inputFile = File(samplesDirectory, inputFileName)
         val inputContent = inputFile.readText()
-        if(inputContent.contains("generateGettersSetters = false")) {
+        if (inputContent.contains("generateGettersSetters = false")) {
             // TODO allow generateGettersSetters again
-            return;
+            println("!!! Disabled $inputFileName")
+            return
         }
-        val targetFile = inputFile.copyTo(File(testDirectory, actualFileName), true)
+        val actualFile = inputFile.copyTo(File(testDirectory, actualFileName), true)
 
         // run the generator over the file
         try {
-            ObjectBoxGenerator(formattingOptions).run(listOf(targetFile), mapOf("default" to schemaOptions))
+            ObjectBoxGenerator(formattingOptions).run(listOf(actualFile), mapOf("default" to schemaOptions))
         } catch (ex: RuntimeException) {
             throw RuntimeException("Could not run generator on " + inputFileName, ex);
         }
 
-        // check if the modified file matches the expected output file
-        val actualSource = targetFile.readText()
-        val expectedSource = File(samplesDirectory, expectedFileName).readText()
+        checkSameFileContent(actualFile, File(samplesDirectory, expectedFileName))
+    }
+
+    private fun checkSameFileContent(actualFile: File, expectedFile: File) {
+        val actualSource = actualFile.readText()
+        val expectedSource = expectedFile.readText()
 
         collector.checkSucceeds({
-            assertEquals("${expectedFileName} does not match with ${actualFileName}", expectedSource, actualSource)
+            assertEquals("${expectedFile.name} does not match with ${actualFile.name}", expectedSource, actualSource)
         })
+    }
+
+    fun generateAndAssertDirectory(dir: File) {
+        val dirExpected = File(dir.absolutePath.substringBeforeLast("-input") + "-expected")
+        assertTrue(dirExpected.name, dirExpected.exists())
+
+        dir.copyRecursively(testDirectory)
+        val files = testDirectory.listFiles().asList()
+
+        // run the generator over the file
+        try {
+            ObjectBoxGenerator(formattingOptions).run(files, mapOf("default" to schemaOptions))
+        } catch (ex: RuntimeException) {
+            throw RuntimeException("Could not run generator on " + dir, ex);
+        }
+
+        dirExpected.listFiles().forEach {
+            val actualFile = File(testDirectory, it.name)
+            checkSameFileContent(actualFile, it)
+        }
     }
 
 }
