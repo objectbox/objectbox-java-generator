@@ -58,7 +58,7 @@ dependencies {
     // Synchronize dependency versions with project version
     def baseVersion = "${project.version}"
     compile "io.objectbox:objectbox-java-api:$baseVersion"
-    compile "io.objectbox:objectbox-generator:$baseVersion"
+    compile project (':objectbox-generator')
 
     compile 'org.greenrobot:essentials:3.0.0-RC1'
     compile 'com.squareup.moshi:moshi:1.3.1'
