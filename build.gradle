@@ -1,5 +1,5 @@
 buildscript {
-    ext.kotlin_version = '1.0.5-3'
+    ext.kotlin_version = '1.0.6'
 
     repositories {
         mavenCentral()
@@ -35,7 +35,7 @@ subprojects {
     apply plugin: 'maven'
     apply plugin: 'signing'
 
-    version = '0.9.5-SNAPSHOT'
+    version = '0.9.6-SNAPSHOT'
 
     repositories {
         jcenter()
