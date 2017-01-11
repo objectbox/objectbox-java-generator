@@ -288,7 +288,6 @@ class IdSyncTest {
                 active = false,
                 properties = properties,
                 transientFields = emptyList(),
-                legacyTransientFields = emptyList(),
                 constructors = emptyList(),
                 methods = emptyList(),
                 node = typeDec,

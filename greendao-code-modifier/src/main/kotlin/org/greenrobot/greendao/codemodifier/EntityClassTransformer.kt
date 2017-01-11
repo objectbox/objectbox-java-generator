@@ -231,22 +231,6 @@ private transient ${type.simpleName} $name;"""
         }
     }
 
-    fun annotateLegacyKeepFields() {
-        if (parsedEntity.legacyTransientFields.isEmpty()) {
-            return // no legacy fields to migrate
-        }
-
-        ensureImport("io.objectbox.annotation.Transient")
-        parsedEntity.legacyTransientFields.forEach {
-            // simplest solution is to just replace the field expression
-            insertField(
-                    """@Transient
-                       private ${it.variable.type.simpleName} ${it.variable.name};"""
-                    , it.node
-            )
-        }
-    }
-
     private fun replaceHashStub(source: String): String {
         val hash = CodeCompare.codeHash(source)
         return source.replace(HASH_STUB, hash.toString())

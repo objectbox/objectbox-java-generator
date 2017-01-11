@@ -9,13 +9,11 @@ import kotlin.reflect.KClass
 /**
  * Visits compilation unit, find if it is an Entity and reads all the required information about it
  */
-class EntityClassASTVisitor(val source: String, val classesInPackage: List<String> = emptyList(),
-                            val keepFieldsStartLineNumber: Int, val keepFieldsEndLineNumber: Int) : LazyVisitor() {
+class EntityClassASTVisitor(val source: String, val classesInPackage: List<String> = emptyList()) : LazyVisitor() {
     var isEntity = false
     var schemaName: String = "default"
     val properties = mutableListOf<ParsedProperty>()
     val transientFields = mutableListOf<TransientField>()
-    val legacyTransientFields = mutableListOf<TransientField>()
     val constructors = mutableListOf<Method>()
     val methods = mutableListOf<Method>()
     val imports = mutableListOf<ImportDeclaration>()
@@ -127,10 +125,6 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
                 .map { it as VariableDeclarationFragment }.map { it.name }
         val variableType = node.type.toVariableType()
 
-        val lineNumber = node.lineNumber
-        val isInLegacyKeepSection = lineNumber != null
-                && lineNumber > keepFieldsStartLineNumber && lineNumber < keepFieldsEndLineNumber
-
         // check how the field(s) should be treated
         val annotations = fieldAnnotations
         if (annotations.any { it.typeName.fullyQualifiedName == "Transient" }
@@ -147,13 +141,6 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
             transientFields += variableNames.map {
                 TransientField(Variable(variableType, it.toString()), node, generatorHint)
             }
-        } else if (isInLegacyKeepSection) {
-            // field in legacy KEEP FIELDS section not yet explicitly marked as transient
-            legacyTransientFields += variableNames.map {
-                TransientField(Variable(variableType, it.toString()), node, null)
-            }
-            System.err.println("Field $variableNames in ${node.codePlace} will be annotated with @Transient, " +
-                    "you can remove the KEEP FIELDS comments.")
         } else {
             // property field
             when {
@@ -405,7 +392,6 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
                     active = active,
                     properties = properties,
                     transientFields = transientFields,
-                    legacyTransientFields = legacyTransientFields,
                     constructors = constructors,
                     methods = methods,
                     node = node,

@@ -58,18 +58,7 @@ class EntityClassParser(val jdtOptions: MutableMap<Any, Any>, val encoding: Stri
                     "Run gradle with --info for more details.")
         }
 
-        // try to find legacy KEEP FIELDS section
-        val commentVisitor = KeepCommentVisitor(astRoot, source.split("\n"))
-        val commentList = astRoot.commentList
-        commentList.forEach {
-            if (it is Comment) {
-                it.accept(commentVisitor)
-            }
-        }
-        commentVisitor.validateLineNumbers()
-
-        val visitor = EntityClassASTVisitor(source, classesInPackage,
-                commentVisitor.keepFieldsStartLineNumber, commentVisitor.keepFieldsEndLineNumber)
+        val visitor = EntityClassASTVisitor(source, classesInPackage)
         astRoot.accept(visitor)
 
         return visitor.createParsedEntity(javaFile, source)

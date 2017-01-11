@@ -130,7 +130,6 @@ class ObjectBoxGenerator(formattingOptions: FormattingOptions? = null,
         val transformer = context.transformer(parsedEntity)
 
         transformer.ensureImport("io.objectbox.annotation.Generated")
-        transformer.annotateLegacyKeepFields()
 
         // add everything (fields, constructors, methods) in reverse as transformer writes in reverse direction
         val daoSessionVarName = "${entity.schema.prefix}DaoSession"
