@@ -63,7 +63,7 @@ object GreendaoModelTranslator {
     }
 
     private fun convertProperties(parsedEntity: ParsedEntity, entity: Entity, idSync: IdSync) {
-        val properties = parsedEntity.getPropertiesInConstructorOrder() ?: parsedEntity.properties
+        val properties: List<ParsedProperty> = parsedEntity.getPropertiesInConstructorOrder() ?: parsedEntity.properties
         properties.forEach {
             try {
                 convertProperty(entity, it, idSync.get(it))

@@ -68,7 +68,6 @@ class ObjectBoxGeneratorTest {
 
     // NOTE: test may output multiple failed files, make sure to scroll up :)
     @Test
-    @Ignore
     fun testAllTestDirectories() {
         samplesDirectory.listFiles().filter { it.isDirectory && it.name.endsWith("-input") }.forEach {
             ensureEmptyTestDirectory()
