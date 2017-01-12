@@ -143,9 +143,9 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
             }
         } else if (annotations.has<Relation>()) {
             if (variableType.name.equals("java.util.List")) {
-                manyRelations += variableNames.map { manyRelation(annotations, it, variableType) }
+                manyRelations += variableNames.map { parseRelationToMany(annotations, it, variableType) }
             } else {
-                oneRelations += variableNames.map { oneRelation(annotations, it, variableType) }
+                oneRelations += variableNames.map { parseRelationToOne(annotations, it, variableType) }
             }
         } else {
             properties += variableNames.map { parseProperty(annotations, it, node, variableType) }
@@ -207,20 +207,21 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
     }
 
 
-    private fun oneRelation(fa: MutableList<Annotation>, fieldName: SimpleName,
-                            variableType: VariableType): OneRelation {
+    private fun parseRelationToOne(fa: MutableList<Annotation>, fieldName: SimpleName,
+                                   variableType: VariableType): OneRelation {
         val proxy = fa.proxy<Relation>()!!
         return OneRelation(
                 Variable(variableType, fieldName.toString()),
-                foreignKeyField = proxy.idProperty.nullIfBlank(),
+                // In ObjectBox, we always use a id property (at least for now), defaults to name + "Id" if absent
+                foreignKeyField = proxy.idProperty.nullIfBlank() ?: fieldName.toString() + "Id",
                 columnName = fa.proxy<Property>()?.nameInDb?.nullIfBlank(),
                 isNotNull = fa.hasNotNull,
                 unique = false //fa.has<Unique>()
         )
     }
 
-    private fun manyRelation(fa: MutableList<Annotation>, fieldName: SimpleName,
-                             variableType: VariableType): ManyRelation {
+    private fun parseRelationToMany(fa: MutableList<Annotation>, fieldName: SimpleName,
+                                    variableType: VariableType): ManyRelation {
         val proxy = fa.proxy<Relation>()!!
 //        val orderByAnnotation = fa.proxy<OrderBy>()
         return ManyRelation(
