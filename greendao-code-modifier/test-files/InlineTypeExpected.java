@@ -26,7 +26,7 @@ public class Note {
     }
 
     public Long getId() {
-        return this.id;
+        return id;
     }
 
     public void setId(Long id) {
@@ -34,7 +34,7 @@ public class Note {
     }
 
     public NoteType getType() {
-        return this.type;
+        return type;
     }
 
     public void setType(NoteType type) {

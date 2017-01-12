@@ -12,7 +12,7 @@ public class Note {
     private String name;
 
     public Long getId() {
-        return this.id;
+        return id;
     }
 
     public void setId(Long id) {

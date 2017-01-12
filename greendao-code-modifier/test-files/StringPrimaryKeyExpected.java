@@ -20,7 +20,7 @@ public class Note {
     }
 
     public String getId() {
-        return this.id;
+        return id;
     }
 
     public void setId(String id) {

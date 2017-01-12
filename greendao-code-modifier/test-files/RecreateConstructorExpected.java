@@ -20,7 +20,7 @@ public class Note {
     }
 
     public Long getId() {
-        return this.id;
+        return id;
     }
 
     public void setId(Long id) {

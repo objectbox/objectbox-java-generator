@@ -38,43 +38,43 @@ public class Note {
     public Note() {
     }
     public Long getId() {
-        return this.id;
+        return id;
     }
     public void setId(Long id) {
         this.id = id;
     }
     public Boolean getBooleanProperty() {
-        return this.booleanProperty;
+        return booleanProperty;
     }
     public void setBooleanProperty(Boolean booleanProperty) {
         this.booleanProperty = booleanProperty;
     }
     public Byte getByteProperty() {
-        return this.byteProperty;
+        return byteProperty;
     }
     public void setByteProperty(Byte byteProperty) {
         this.byteProperty = byteProperty;
     }
     public Integer getIntegerProperty() {
-        return this.integerProperty;
+        return integerProperty;
     }
     public void setIntegerProperty(Integer integerProperty) {
         this.integerProperty = integerProperty;
     }
     public Float getFloatProperty() {
-        return this.floatProperty;
+        return floatProperty;
     }
     public void setFloatProperty(Float floatProperty) {
         this.floatProperty = floatProperty;
     }
     public Double getDoubleProperty() {
-        return this.doubleProperty;
+        return doubleProperty;
     }
     public void setDoubleProperty(Double doubleProperty) {
         this.doubleProperty = doubleProperty;
     }
     public Short getShortProperty() {
-        return this.shortProperty;
+        return shortProperty;
     }
     public void setShortProperty(Short shortProperty) {
         this.shortProperty = shortProperty;

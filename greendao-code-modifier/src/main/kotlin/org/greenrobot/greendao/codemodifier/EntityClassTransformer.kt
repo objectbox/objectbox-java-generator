@@ -21,11 +21,11 @@ import java.nio.charset.Charset
  * TODO make formatting detection lazy
  * TODO don't write AST to string if nothing is changed
  */
-class EntityClassTransformer(val parsedEntity: ParsedEntity, val jdtOptions : MutableMap<Any, Any>,
+class EntityClassTransformer(val parsedEntity: ParsedEntity, val jdtOptions: MutableMap<Any, Any>,
                              formattingOptions: FormattingOptions?, val charset: Charset = Charsets.UTF_8) {
     private val cu = parsedEntity.node.root
     private val formatting = formattingOptions?.toFormatting()
-        ?: Formatting.detect(parsedEntity.source, formattingOptions)
+            ?: Formatting.detect(parsedEntity.source, formattingOptions)
     private val formatter = Formatter(formatting)
     // Get a rewriter for this tree, that allows for transformation of the tree
     private val astRewrite = ASTRewrite.create(cu.ast)
@@ -53,7 +53,7 @@ class EntityClassTransformer(val parsedEntity: ParsedEntity, val jdtOptions : Mu
         }
     }
 
-    fun remove(node : ASTNode) = bodyRewrite.remove(node, null)
+    fun remove(node: ASTNode) = bodyRewrite.remove(node, null)
 
     private fun insertMethod(code: String, replaceOld: ASTNode?, insertAfter: ASTNode?) {
         if (replaceOld != null && CodeCompare.isSameCode(replaceOld, code)) {
@@ -91,7 +91,7 @@ class EntityClassTransformer(val parsedEntity: ParsedEntity, val jdtOptions : Mu
         }
     }
 
-    private val ASTNode.sourceLine : String
+    private val ASTNode.sourceLine: String
         get() = "${parsedEntity.sourceFile.path}:${lineNumber}"
 
     private fun Generatable<*>.checkKeepPresent() {
@@ -104,7 +104,7 @@ class EntityClassTransformer(val parsedEntity: ParsedEntity, val jdtOptions : Mu
         when (hint) {
             GeneratorHint.Keep -> println("Keep $place in ${node.sourceLine}")
             null -> throw RuntimeException(
-                """Can't replace $place in ${node.sourceLine} with generated version.
+                    """Can't replace $place in ${node.sourceLine} with generated version.
                     If you would like to keep it, it should be explicitly marked with @Keep annotation.
                     Otherwise please mark it with @Generated annotation""".trimIndent()
             )
@@ -183,9 +183,9 @@ class EntityClassTransformer(val parsedEntity: ParsedEntity, val jdtOptions : Mu
         if (method == null || method.generated) {
             paramTypes.filter { it.contains('.') }.forEach { ensureImport(it) }
             insertMethod(replaceHashStub(code()), method?.node,
-                parsedEntity.lastMethodDeclaration
-                ?: parsedEntity.lastConstructorDeclaration
-                ?: parsedEntity.lastFieldDeclaration)
+                    parsedEntity.lastMethodDeclaration
+                            ?: parsedEntity.lastConstructorDeclaration
+                            ?: parsedEntity.lastFieldDeclaration)
         } else {
             method.checkKeepPresent()
         }
@@ -211,21 +211,20 @@ class EntityClassTransformer(val parsedEntity: ParsedEntity, val jdtOptions : Mu
      *  - if it has @Generated annotation, then replace it with the new one
      *  - otherwise keep it
      * */
-    fun defField(name : String, type : VariableType, comment : String? = null) {
+    fun defField(name: String, type: VariableType, comment: String? = null) {
         val field = parsedEntity.transientFields.find { it.variable.name == name }
         // replace only generated code
         if (field == null || field.generated) {
             if (!type.isPrimitive && type.name != type.simpleName) {
                 ensureImport(type.name)
             }
-            insertField(
-                    replaceHashStub(
-                            """${if (comment != null) """/** $comment */
-""" else ""}@Generated(hash = $HASH_STUB)
-private transient ${type.simpleName} $name;"""
-                    ),
-                    field?.node
-            )
+            var code = if (comment != null) "/** $comment */\n" else ""
+            code += "@Generated(hash = $HASH_STUB)\n"
+            var genericParams = type.typeArguments?.map { it.simpleName }?.joinToString() ?: ""
+            if (genericParams.isNotBlank()) genericParams = "<$genericParams>"
+            code += "private transient ${type.simpleName}$genericParams $name;"
+            code = replaceHashStub(code)
+            insertField(code, field?.node)
         } else {
             field.checkKeepPresent()
         }

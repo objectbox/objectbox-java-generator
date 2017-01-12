@@ -25,7 +25,7 @@ public class Note {
     }
 
     public Long getId() {
-        return this.id;
+        return id;
     }
 
     public void setId(Long id) {
@@ -33,7 +33,7 @@ public class Note {
     }
 
     public String getString() {
-        return this.string;
+        return string;
     }
 
     public void setString(String string) {
@@ -41,7 +41,7 @@ public class Note {
     }
 
     public int getNewInt() {
-        return this.newInt;
+        return newInt;
     }
 
     public void setNewInt(int newInt) {

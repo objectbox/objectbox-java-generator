@@ -6,7 +6,7 @@ import io.objectbox.annotation.Relation;
 
 import java.util.List;
 import io.objectbox.annotation.Generated;
-import org.greenrobot.greendao.DaoException;
+import io.objectbox.exception.DbException;
 
 @Entity
 public class Customer {
@@ -20,12 +20,12 @@ public class Customer {
     List<Order> orders;
 
     /** Used to resolve relations */
-    @Generated(hash = 2040040024)
-    private transient DaoSession daoSession;
+    @Generated(hash = 506680373)
+    private transient BoxStore __boxStore;
 
     /** Used for active entity operations. */
-    @Generated(hash = 989291056)
-    private transient CustomerCursor myDao;
+    @Generated(hash = 1448445044)
+    private transient Box<Customer> __myBox;
 
     @Generated(hash = 1039711609)
     public Customer(long id, String name) {
@@ -38,7 +38,7 @@ public class Customer {
     }
 
     public long getId() {
-        return this.id;
+        return id;
     }
 
     public void setId(long id) {
@@ -46,7 +46,7 @@ public class Customer {
     }
 
     public String getName() {
-        return this.name;
+        return name;
     }
 
     public void setName(String name) {
@@ -118,9 +118,10 @@ public class Customer {
     }
 
     /** called by internal mechanisms, do not call yourself. */
-    @Generated(hash = 1302515720)
-    public void __setDaoSession(DaoSession daoSession) {
-        this.daoSession = daoSession;
-        myDao = daoSession != null ? daoSession.getCustomerCursor() : null;
+    @Generated(hash = 816544730)
+    @Internal
+    public void __setBoxStore(BoxStore boxStore) {
+        this.__boxStore = boxStore;
+        __myBox = boxStore != null ? boxStore.boxFor(Customer.class) : null;
     }
 }

@@ -132,11 +132,11 @@ class ObjectBoxGenerator(formattingOptions: FormattingOptions? = null,
         transformer.ensureImport("io.objectbox.annotation.Generated")
 
         // add everything (fields, constructors, methods) in reverse as transformer writes in reverse direction
-        val daoSessionVarName = "${entity.schema.prefix}DaoSession"
+        val boxStoreVarName = "${entity.schema.prefix}BoxStore"
         if (entity.active) {
-            transformer.ensureImport("org.greenrobot.greendao.DaoException")
+            transformer.ensureImport("io.objectbox.exception.DbException")
 
-            transformer.defMethod("__setDaoSession", "$daoPackage.$daoSessionVarName") {
+            transformer.defMethod("__setBoxStore", "$daoPackage.$boxStoreVarName") {
                 Templates.entity.daoSessionSetter(entity)
             }
 
@@ -149,9 +149,10 @@ class ObjectBoxGenerator(formattingOptions: FormattingOptions? = null,
         generateConstructors(parsedEntity, transformer)
 
         if (entity.active) {
-            transformer.defField("myDao", VariableType("${entity.javaPackageDao}.${entity.classNameDao}", false, entity.classNameDao),
+            val entityType = VariableType("${entity.javaPackage}.${entity.className}", false, entity.className)
+            transformer.defField("__myBox", VariableType("Box", false, "Box", listOf(entityType)),
                     "Used for active entity operations.")
-            transformer.defField("daoSession", VariableType("$daoPackage.$daoSessionVarName", false, daoSessionVarName),
+            transformer.defField("__boxStore", VariableType("$daoPackage.$boxStoreVarName", false, boxStoreVarName),
                     "Used to resolve relations")
         }
 

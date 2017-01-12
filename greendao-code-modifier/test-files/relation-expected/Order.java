@@ -6,7 +6,7 @@ import io.objectbox.annotation.Id;
 import io.objectbox.annotation.Relation;
 
 import java.util.List;
-import org.greenrobot.greendao.DaoException;
+import io.objectbox.exception.DbException;
 import io.objectbox.annotation.NotNull;
 
 @Entity
@@ -21,12 +21,12 @@ public class Order {
     Customer customer;
 
     /** Used to resolve relations */
-    @Generated(hash = 2040040024)
-    private transient DaoSession daoSession;
+    @Generated(hash = 506680373)
+    private transient BoxStore __boxStore;
 
     /** Used for active entity operations. */
-    @Generated(hash = 609796150)
-    private transient OrderCursor myDao;
+    @Generated(hash = 1538225439)
+    private transient Box<Order> __myBox;
 
     @Generated(hash = 789963847)
     public Order(long id, long customerId) {
@@ -39,7 +39,7 @@ public class Order {
     }
 
     public long getId() {
-        return this.id;
+        return id;
     }
 
     public void setId(long id) {
@@ -47,7 +47,7 @@ public class Order {
     }
 
     public long getCustomerId() {
-        return this.customerId;
+        return customerId;
     }
 
     public void setCustomerId(long customerId) {
@@ -58,11 +58,11 @@ public class Order {
     private transient Long customer__resolvedKey;
 
     /** To-one relationship, resolved on first access. */
-    @Generated(hash = 1170578224)
+    @Generated(hash = 282427793)
     public Customer getCustomer() {
         long __key = this.customerId;
         if (customer__resolvedKey == null || !customer__resolvedKey.equals(__key)) {
-            final BoxStore boxStore = this.boxStore;
+            final BoxStore boxStore = this.__boxStore;
             if (boxStore == null) {
                 throw new DbException("Entity is detached from box");
             }
@@ -126,10 +126,11 @@ public class Order {
     }
 
     /** called by internal mechanisms, do not call yourself. */
-    @Generated(hash = 784962256)
-    public void __setDaoSession(DaoSession daoSession) {
-        this.daoSession = daoSession;
-        myDao = daoSession != null ? daoSession.getOrderCursor() : null;
+    @Generated(hash = 1546418180)
+    @Internal
+    public void __setBoxStore(BoxStore boxStore) {
+        this.__boxStore = boxStore;
+        __myBox = boxStore != null ? boxStore.boxFor(Order.class) : null;
     }
 
 }
