@@ -7,6 +7,7 @@ import io.objectbox.annotation.Relation;
 
 import java.util.List;
 import org.greenrobot.greendao.DaoException;
+import io.objectbox.annotation.NotNull;
 
 @Entity
 public class Order {
@@ -53,35 +54,38 @@ public class Order {
         this.customerId = customerId;
     }
 
-    @Generated(hash = 793698059)
-    private transient boolean customer__refreshed;
+    @Generated(hash = 8592637)
+    private transient Long customer__resolvedKey;
 
     /** To-one relationship, resolved on first access. */
-    @Generated(hash = 1524514745)
+    @Generated(hash = 1170578224)
     public Customer getCustomer() {
-        if (customer != null || !customer__refreshed) {
-            if (daoSession == null) {
-                throw new DaoException("Entity is detached from DAO context");
+        long __key = this.customerId;
+        if (customer__resolvedKey == null || !customer__resolvedKey.equals(__key)) {
+            final BoxStore boxStore = this.boxStore;
+            if (boxStore == null) {
+                throw new DbException("Entity is detached from box");
             }
-            CustomerCursor targetDao = daoSession.getCustomerCursor();
-            targetDao.refresh(customer);
-            customer__refreshed = true;
+            Box<Customer> box = boxStore.boxFor(Customer.class);
+            Customer customerNew = box.get(__key);
+            synchronized (this) {
+                customer = customerNew;
+                customer__resolvedKey = __key;
+            }
         }
         return customer;
     }
 
-    /** To-one relationship, returned entity is not refreshed and may carry only the PK property. */
-    @Generated(hash = 1355201534)
-    public Customer peakCustomer() {
-        return customer;
-    }
-
     /** called by internal mechanisms, do not call yourself. */
-    @Generated(hash = 498110872)
-    public void setCustomer(Customer customer) {
+    @Generated(hash = 625323961)
+    public void setCustomer(@NotNull Customer customer) {
+        if (customer == null) {
+            throw new DaoException("To-one property 'customerId' has not-null constraint; cannot set to-one to null");
+        }
         synchronized (this) {
             this.customer = customer;
-            customer__refreshed = true;
+            customerId = customer.getId();
+            customer__resolvedKey = customerId;
         }
     }
 
