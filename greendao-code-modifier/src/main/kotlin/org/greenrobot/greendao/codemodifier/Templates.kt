@@ -24,7 +24,6 @@ object Templates {
 
     object entity {
         private val constructor = get("entity/constructor.ftl")
-        private val boxStoreSetter = get("entity/dao_session_setter.ftl")
         private val oneRelationSetter = get("entity/one_relation_setter.ftl")
         private val oneRelationGetter = get("entity/one_relation_getter.ftl")
         private val oneRelationPeek = get("entity/one_relation_peek.ftl")
@@ -39,9 +38,6 @@ object Templates {
 
         fun constructor(className: String, properties: List<ParsedProperty>, notNullAnnotation: String) : String =
             constructor(mapOf("className" to className, "properties" to properties, "notNullAnnotation" to notNullAnnotation))
-
-        fun daoSessionSetter(entity : Entity) : String =
-            boxStoreSetter(mapOf("entity" to entity))
 
         fun oneRelationSetter(one: ToOne, notNullAnnotation: String) : String =
             oneRelationSetter(mapOf("toOne" to one, "notNullAnnotation" to notNullAnnotation))

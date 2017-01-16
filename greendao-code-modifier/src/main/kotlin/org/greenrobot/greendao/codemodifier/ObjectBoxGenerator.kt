@@ -136,10 +136,6 @@ class ObjectBoxGenerator(formattingOptions: FormattingOptions? = null,
         if (entity.active) {
             transformer.ensureImport("io.objectbox.exception.DbException")
 
-            transformer.defMethod("__setBoxStore", "$daoPackage.$boxStoreVarName") {
-                Templates.entity.daoSessionSetter(entity)
-            }
-
             generateActiveMethodsAndFields(transformer)
             generateToManyRelations(entity, transformer)
             generateToOneRelations(entity, parsedEntity, transformer)

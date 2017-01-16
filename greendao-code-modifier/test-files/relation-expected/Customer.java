@@ -116,12 +116,4 @@ public class Customer {
         }
         myDao.update(this);
     }
-
-    /** called by internal mechanisms, do not call yourself. */
-    @Generated(hash = 816544730)
-    @Internal
-    public void __setBoxStore(BoxStore boxStore) {
-        this.__boxStore = boxStore;
-        __myBox = boxStore != null ? boxStore.boxFor(Customer.class) : null;
-    }
 }

@@ -125,12 +125,4 @@ public class Order {
         myDao.update(this);
     }
 
-    /** called by internal mechanisms, do not call yourself. */
-    @Generated(hash = 1546418180)
-    @Internal
-    public void __setBoxStore(BoxStore boxStore) {
-        this.__boxStore = boxStore;
-        __myBox = boxStore != null ? boxStore.boxFor(Order.class) : null;
-    }
-
 }
