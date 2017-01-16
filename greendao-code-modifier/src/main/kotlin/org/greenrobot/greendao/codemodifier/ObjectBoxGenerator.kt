@@ -132,8 +132,9 @@ class ObjectBoxGenerator(formattingOptions: FormattingOptions? = null,
         transformer.ensureImport("io.objectbox.annotation.Generated")
 
         // add everything (fields, constructors, methods) in reverse as transformer writes in reverse direction
-        val boxStoreVarName = "${entity.schema.prefix}BoxStore"
         if (entity.active) {
+            transformer.ensureImport("io.objectbox.Box")
+            transformer.ensureImport("io.objectbox.BoxStore")
             transformer.ensureImport("io.objectbox.exception.DbException")
 
             generateActiveMethodsAndFields(transformer)
@@ -146,9 +147,9 @@ class ObjectBoxGenerator(formattingOptions: FormattingOptions? = null,
 
         if (entity.active) {
             val entityType = VariableType("${entity.javaPackage}.${entity.className}", false, entity.className)
-            transformer.defField("__myBox", VariableType("Box", false, "Box", listOf(entityType)),
+            transformer.defField("__myBox", VariableType("io.objectbox.Box", false, "Box", listOf(entityType)),
                     "Used for active entity operations.")
-            transformer.defField("__boxStore", VariableType("$daoPackage.$boxStoreVarName", false, boxStoreVarName),
+            transformer.defField("__boxStore", VariableType("io.objectbox.BoxStore", false, "BoxStore"),
                     "Used to resolve relations")
         }
 
