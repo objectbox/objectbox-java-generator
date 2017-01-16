@@ -10,7 +10,7 @@ ${toOne.fkProperties[0].javaType} __key = this.${toOne.fkProperties[0].propertyN
 --><#else>${toOne.name}__resolvedKey != __key</#if>) {
         final ${entity.schema.prefix}BoxStore boxStore = this.__boxStore;
         if (boxStore == null) {
-            throw new DbException("Entity is detached from box");
+            throw new DbDetachedException();
         }
         Box<${toOne.targetEntity.className}> box = boxStore.boxFor(${toOne.targetEntity.className}.class);
         ${toOne.targetEntity.className} ${toOne.name}New = box.get(__key);

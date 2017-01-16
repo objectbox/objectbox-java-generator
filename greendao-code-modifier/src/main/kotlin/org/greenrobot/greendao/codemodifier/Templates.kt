@@ -24,11 +24,13 @@ object Templates {
 
     object entity {
         private val constructor = get("entity/constructor.ftl")
-        private val oneRelationSetter = get("entity/one_relation_setter.ftl")
-        private val oneRelationGetter = get("entity/one_relation_getter.ftl")
-        private val oneRelationPeek = get("entity/one_relation_peek.ftl")
-        private val manyRelationGetter = get("entity/many_relation_getter.ftl")
-        private val manyRelationReset = get("entity/many_relation_reset.ftl")
+        private val relationToOneSetter = get("entity/relation_to_one_setter.ftl")
+        private val relationToOneGetter = get("entity/relation_to_one_getter.ftl")
+        private val relationToOnePeek = get("entity/relation_to_one_peek.ftl")
+
+        private val relationToManyGetter = get("entity/relation_to_many_getter.ftl")
+        private val relationToManyReset = get("entity/relation_to_many_reset.ftl")
+
         private val fieldGet = get("entity/field_get.ftl")
         private val fieldSet = get("entity/field_set.ftl")
 
@@ -40,19 +42,19 @@ object Templates {
             constructor(mapOf("className" to className, "properties" to properties, "notNullAnnotation" to notNullAnnotation))
 
         fun oneRelationSetter(one: ToOne, notNullAnnotation: String) : String =
-            oneRelationSetter(mapOf("toOne" to one, "notNullAnnotation" to notNullAnnotation))
+            relationToOneSetter(mapOf("toOne" to one, "notNullAnnotation" to notNullAnnotation))
 
         fun oneRelationGetter(one: ToOne, entity: Entity) : String =
-            oneRelationGetter(mapOf("entity" to entity, "toOne" to one))
+            relationToOneGetter(mapOf("entity" to entity, "toOne" to one))
 
         fun oneRelationPeek(one: ToOne) : String =
-            oneRelationPeek(mapOf("toOne" to one))
+            relationToOnePeek(mapOf("toOne" to one))
 
         fun manyRelationGetter(many: ToManyBase, entity: Entity) : String =
-            manyRelationGetter(mapOf("toMany" to many, "entity" to entity))
+            relationToManyGetter(mapOf("toMany" to many, "entity" to entity))
 
         fun manyRelationReset(many: ToManyBase) : String =
-            manyRelationReset(mapOf("toMany" to many))
+            relationToManyReset(mapOf("toMany" to many))
 
         fun fieldGet(variable: Variable) : String =
             fieldGet(mapOf("variable" to variable))
