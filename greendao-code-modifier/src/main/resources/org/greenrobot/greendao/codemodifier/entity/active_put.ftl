@@ -1,11 +1,11 @@
 /**
- * Convenient call for {@link org.greenrobot.greendao.AbstractDao#refresh(Object)}.
+ * Puts the entity in its object box.
  * Entity must attached to an entity context.
  */
 @Generated(hash = GENERATED_HASH_STUB)
-public void refresh() {
+public void put() {
     if (__myBox == null) {
         throw new DbDetachedException();
     }
-    __myBox.refresh(this);
+    myDao.put(this);
 }

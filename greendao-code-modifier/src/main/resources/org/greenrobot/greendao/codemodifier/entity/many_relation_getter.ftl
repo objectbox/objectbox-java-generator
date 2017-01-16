@@ -9,7 +9,7 @@ public List<${toMany.targetEntity.className}> get${toMany.name?cap_first}() {
     if (${toMany.name} == null) {
         final ${entity.schema.prefix}DaoSession daoSession = this.daoSession;
         if (daoSession == null) {
-            throw new DaoException("Entity is detached from DAO context");
+            throw new DbDetachedException();
         }
         ${toMany.targetEntity.classNameDao} targetDao = daoSession.get${toMany.targetEntity.classNameDao?cap_first}();
         List<${toMany.targetEntity.className}> ${toMany.name}New = targetDao._query${toMany.sourceEntity.className?cap_first}_${toMany.name?cap_first}(<#--

@@ -5,7 +5,7 @@
 public void set${toOne.name?cap_first}(<#if toOne.fkProperties[0].notNull>${notNullAnnotation} </#if>${toOne.targetEntity.className} ${toOne.name}) {
 <#if toOne.fkProperties[0].notNull>
     if (${toOne.name} == null) {
-        throw new DaoException("To-one property '${toOne.fkProperties[0].propertyName}' has not-null constraint; cannot set to-one to null");
+        throw new DbException("To-one property '${toOne.fkProperties[0].propertyName}' has not-null constraint; cannot set to-one to null");
     }
 </#if>
     synchronized (this) {

@@ -6,6 +6,9 @@ import io.objectbox.annotation.Id;
 import io.objectbox.annotation.Relation;
 
 import java.util.List;
+import io.objectbox.Box;
+import io.objectbox.BoxStore;
+import io.objectbox.exception.DbDetachedException;
 import io.objectbox.exception.DbException;
 import io.objectbox.annotation.NotNull;
 
@@ -77,10 +80,10 @@ public class Order {
     }
 
     /** called by internal mechanisms, do not call yourself. */
-    @Generated(hash = 625323961)
+    @Generated(hash = 1042193103)
     public void setCustomer(@NotNull Customer customer) {
         if (customer == null) {
-            throw new DaoException("To-one property 'customerId' has not-null constraint; cannot set to-one to null");
+            throw new DbException("To-one property 'customerId' has not-null constraint; cannot set to-one to null");
         }
         synchronized (this) {
             this.customer = customer;
@@ -90,39 +93,26 @@ public class Order {
     }
 
     /**
-     * Convenient call for {@link org.greenrobot.greendao.AbstractDao#delete(Object)}.
-     * Entity must attached to an entity context.
+     * Removes entity from its object box. Entity must attached to an entity context.
      */
-    @Generated(hash = 128553479)
-    public void delete() {
-        if (myDao == null) {
-            throw new DaoException("Entity is detached from DAO context");
+    @Generated(hash = 366573901)
+    public void remove() {
+        if (__myBox == null) {
+            throw new DbDetachedException();
         }
-        myDao.delete(this);
+        __myBox.remove(this);
     }
 
     /**
-     * Convenient call for {@link org.greenrobot.greendao.AbstractDao#refresh(Object)}.
+     * Puts the entity in its object box.
      * Entity must attached to an entity context.
      */
-    @Generated(hash = 1942392019)
-    public void refresh() {
-        if (myDao == null) {
-            throw new DaoException("Entity is detached from DAO context");
+    @Generated(hash = 307407439)
+    public void put() {
+        if (__myBox == null) {
+            throw new DbDetachedException();
         }
-        myDao.refresh(this);
-    }
-
-    /**
-     * Convenient call for {@link org.greenrobot.greendao.AbstractDao#update(Object)}.
-     * Entity must attached to an entity context.
-     */
-    @Generated(hash = 713229351)
-    public void update() {
-        if (myDao == null) {
-            throw new DaoException("Entity is detached from DAO context");
-        }
-        myDao.update(this);
+        myDao.put(this);
     }
 
 }

@@ -135,6 +135,7 @@ class ObjectBoxGenerator(formattingOptions: FormattingOptions? = null,
         if (entity.active) {
             transformer.ensureImport("io.objectbox.Box")
             transformer.ensureImport("io.objectbox.BoxStore")
+            transformer.ensureImport("io.objectbox.exception.DbDetachedException")
             transformer.ensureImport("io.objectbox.exception.DbException")
 
             generateActiveMethodsAndFields(transformer)
@@ -248,16 +249,16 @@ class ObjectBoxGenerator(formattingOptions: FormattingOptions? = null,
 
     private fun generateActiveMethodsAndFields(transformer: EntityClassTransformer) {
         // add everything in reverse as transformer writes in reverse direction
-        transformer.defMethod("update") {
-            Templates.entity.activeUpdate()
+        transformer.defMethod("put") {
+            Templates.entity.activePut()
         }
 
-        transformer.defMethod("refresh") {
-            Templates.entity.activeRefresh()
-        }
+//        transformer.defMethod("refresh") {
+//            Templates.entity.activeRefresh()
+//        }
 
-        transformer.defMethod("delete") {
-            Templates.entity.activeDelete()
+        transformer.defMethod("remove") {
+            Templates.entity.activeRemove()
         }
     }
 }
