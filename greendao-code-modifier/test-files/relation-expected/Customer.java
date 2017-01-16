@@ -99,11 +99,11 @@ public class Customer {
      * Puts the entity in its object box.
      * Entity must attached to an entity context.
      */
-    @Generated(hash = 307407439)
+    @Generated(hash = 1902731265)
     public void put() {
         if (__myBox == null) {
             throw new DbDetachedException();
         }
-        myDao.put(this);
+        __myBox.put(this);
     }
 }

@@ -7,5 +7,5 @@ public void put() {
     if (__myBox == null) {
         throw new DbDetachedException();
     }
-    myDao.put(this);
+    __myBox.put(this);
 }

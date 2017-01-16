@@ -61,13 +61,13 @@ public class Order {
     private transient Long customer__resolvedKey;
 
     /** To-one relationship, resolved on first access. */
-    @Generated(hash = 282427793)
+    @Generated(hash = 2043538556)
     public Customer getCustomer() {
         long __key = this.customerId;
         if (customer__resolvedKey == null || !customer__resolvedKey.equals(__key)) {
             final BoxStore boxStore = this.__boxStore;
             if (boxStore == null) {
-                throw new DbException("Entity is detached from box");
+                throw new DbDetachedException();
             }
             Box<Customer> box = boxStore.boxFor(Customer.class);
             Customer customerNew = box.get(__key);
@@ -107,12 +107,12 @@ public class Order {
      * Puts the entity in its object box.
      * Entity must attached to an entity context.
      */
-    @Generated(hash = 307407439)
+    @Generated(hash = 1902731265)
     public void put() {
         if (__myBox == null) {
             throw new DbDetachedException();
         }
-        myDao.put(this);
+        __myBox.put(this);
     }
 
 }
