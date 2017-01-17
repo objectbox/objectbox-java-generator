@@ -80,14 +80,11 @@ public class Order {
     }
 
     /** called by internal mechanisms, do not call yourself. */
-    @Generated(hash = 1042193103)
-    public void setCustomer(@NotNull Customer customer) {
-        if (customer == null) {
-            throw new DbException("To-one property 'customerId' has not-null constraint; cannot set to-one to null");
-        }
+    @Generated(hash = 445223802)
+    public void setCustomer(Customer customer) {
         synchronized (this) {
             this.customer = customer;
-            customerId = customer.getId();
+            customerId = customer == null ? 0 : customer.getId();
             customer__resolvedKey = customerId;
         }
     }
