@@ -159,11 +159,16 @@ public class SimpleBoxGeneratorTest {
     @Test
     public void testRelation() throws Exception {
         Schema schema = new Schema(1, "io.objectbox.test.relationbox");
+        schema.setLastEntityId(2);
+        schema.setLastIndexId(1);
         Entity customer = schema.addEntity("Customer");
-        customer.addIdProperty().getProperty();
+        customer.setModelId(1).setModelRefId(1001L).setLastPropertyId(1);
+        customer.addIdProperty().modelId(1).modelRefId(1002).getProperty();
         Entity order = schema.addEntity("Order");
-        order.addIdProperty().getProperty();
-        Property customerId = order.addLongProperty("customerId")/*.index()*/.getProperty();
+        order.setModelId(2).setModelRefId(1003L).setLastPropertyId(2);
+        order.addIdProperty().modelId(1).modelRefId(1004).getProperty();
+        Property customerId = order.addLongProperty("customerId").modelId(2).modelRefId(1005)
+                .modelIndexId(1).getProperty();
         order.addToOne(customer, customerId, "customer");
 
         File outputDir = new File("build/test-out");
@@ -184,11 +189,13 @@ public class SimpleBoxGeneratorTest {
         final String cursorContent = FileUtils.readUtf8(cursorFile);
         assertTrue(cursorContent.contains("_customerIdId, entity.getCustomerId()"));
 
-        // Assert Properties file
+        // Assert MyObjectBox file
         assertTrue(myObjectBoxFile.toString(), myObjectBoxFile.exists());
         final String myBoxContent = FileUtils.readUtf8(myObjectBoxFile);
-        assertTrue(myBoxContent.contains("entityBuilder.property(\"customerId\", PropertyType.Relation)\n" +
-                "            .flags(PropertyFlags.INDEXED | PropertyFlags.INDEX_PARTIAL_SKIP_ZERO);"));
+        assertTrue(myBoxContent.contains("entityBuilder.property(\"customerId\", PropertyType.Relation)"));
+        assertTrue(myBoxContent.contains(".flags(PropertyFlags.INDEXED | PropertyFlags.INDEX_PARTIAL_SKIP_ZERO)"));
+        assertTrue(myBoxContent.contains(".indexId(1)"));
+        assertTrue(myBoxContent.contains(".targetEntity(1)"));
     }
 
 }

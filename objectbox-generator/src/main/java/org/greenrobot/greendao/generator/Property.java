@@ -195,6 +195,9 @@ public class Property {
 
     private final Schema schema;
     private final Entity entity;
+
+    /** Only for relation ID properties, see {@link #convertToRelationId(Entity)}. */
+    private Entity targetEntity;
     private PropertyType propertyType;
     private final String propertyName;
 
@@ -256,7 +259,7 @@ public class Property {
         return propertyType;
     }
 
-    public void setPropertyType(PropertyType propertyType) {
+    void setPropertyType(PropertyType propertyType) {
         this.propertyType = propertyType;
     }
 
@@ -383,6 +386,27 @@ public class Property {
 
     public String getDatabaseValueExpressionNotNull() {
         return getDatabaseValueExpression("entity.get" + DaoUtil.capFirst(propertyName) + "()");
+    }
+
+    /**
+     * Makes this property an relation ID - this is done after initial parsing once all entities and relations are
+     * present;
+     */
+    public void convertToRelationId(Entity target) {
+        if (propertyType != PropertyType.Long && propertyType != PropertyType.RelationId) {
+            throw new RuntimeException("@Relation ID property must be of type long: " + this);
+        }
+        setPropertyType(PropertyType.RelationId);
+        targetEntity = target;
+        if (index == null) {
+            index = new Index();
+            index.addProperty(this);
+            entity.addIndex(index);
+        }
+    }
+
+    public Entity getTargetEntity() {
+        return targetEntity;
     }
 
     // Got too messy in template:

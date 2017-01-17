@@ -124,8 +124,9 @@ public class Entity {
         return lastPropertyId;
     }
 
-    public void setLastPropertyId(Integer lastPropertyId) {
+    public Entity setLastPropertyId(Integer lastPropertyId) {
         this.lastPropertyId = lastPropertyId;
+        return this;
     }
 
     public PropertyBuilder addBooleanProperty(String propertyName) {
@@ -237,11 +238,7 @@ public class Entity {
         }
 
         Property[] fkProperties = {fkProperty};
-        PropertyType oldType = fkProperty.getPropertyType();
-        if (oldType != PropertyType.Long && oldType != PropertyType.RelationId) {
-            throw new RuntimeException("@Relation ID property must be of type long: " + fkProperty);
-        }
-        fkProperty.setPropertyType(PropertyType.RelationId);
+        fkProperty.convertToRelationId(target);
         ToOne toOne = new ToOne(schema, this, target, fkProperties, true);
         toOneRelations.add(toOne);
         return toOne;
