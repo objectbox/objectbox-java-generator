@@ -192,10 +192,9 @@ public class SimpleBoxGeneratorTest {
         // Assert MyObjectBox file
         assertTrue(myObjectBoxFile.toString(), myObjectBoxFile.exists());
         final String myBoxContent = FileUtils.readUtf8(myObjectBoxFile);
-        assertTrue(myBoxContent.contains("entityBuilder.property(\"customerId\", PropertyType.Relation)"));
+        assertTrue(myBoxContent.contains(".property(\"customerId\", \"Customer\", PropertyType.Relation)"));
         assertTrue(myBoxContent.contains(".flags(PropertyFlags.INDEXED | PropertyFlags.INDEX_PARTIAL_SKIP_ZERO)"));
         assertTrue(myBoxContent.contains(".indexId(1)"));
-        assertTrue(myBoxContent.contains(".targetEntity(1)"));
     }
 
 }

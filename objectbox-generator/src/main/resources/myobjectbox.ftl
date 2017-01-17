@@ -85,10 +85,10 @@ public class MyObjectBox {
 <#list flags as flag>
     <#if !uniqueFlags?seq_contains(flag)><#assign uniqueFlags = uniqueFlags + [flag]></#if>
 </#list>
-        entityBuilder.property("${property.dbName}", PropertyType.${property.dbType})<#--
+        entityBuilder.property("${property.dbName}", <#--
+        --><#if property.targetEntity??>"${property.targetEntity.dbName}", </#if>PropertyType.${property.dbType})<#--
         --><#if property.modelId??>.id(${property.modelId?c})</#if><#--
         --><#if property.modelRefId??>.refId(${property.modelRefId?c}L)</#if><#--
-        --><#if property.targetEntity?? && property.targetEntity.modelId??>.targetEntity(${property.targetEntity.modelId?c})</#if><#--
         --><#if (uniqueFlags?size > 0)>
 
             .flags(${uniqueFlags?join(" | ")})</#if><#--
