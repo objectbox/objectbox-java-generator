@@ -19,7 +19,7 @@
 package org.greenrobot.greendao.generator;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
@@ -73,19 +73,10 @@ public class Schema {
     }
 
     private void initTypeMappings() {
-        propertyToDbType = new HashMap<>();
-        propertyToDbType.put(PropertyType.Boolean, "INTEGER");
-        propertyToDbType.put(PropertyType.Byte, "INTEGER");
-        propertyToDbType.put(PropertyType.Short, "INTEGER");
-        propertyToDbType.put(PropertyType.Int, "INTEGER");
-        propertyToDbType.put(PropertyType.Long, "INTEGER");
-        propertyToDbType.put(PropertyType.Float, "REAL");
-        propertyToDbType.put(PropertyType.Double, "REAL");
-        propertyToDbType.put(PropertyType.String, "TEXT");
-        propertyToDbType.put(PropertyType.ByteArray, "BLOB");
-        propertyToDbType.put(PropertyType.Date, "INTEGER");
+        propertyToDbType = new EnumMap<>(PropertyType.class);
+        // For ObjectBox, this map will be set using setPropertyToDbType from outside
 
-        propertyToJavaTypeNotNull = new HashMap<>();
+        propertyToJavaTypeNotNull = new EnumMap<>(PropertyType.class);
         propertyToJavaTypeNotNull.put(PropertyType.Boolean, "boolean");
         propertyToJavaTypeNotNull.put(PropertyType.Byte, "byte");
         propertyToJavaTypeNotNull.put(PropertyType.Short, "short");
@@ -96,8 +87,9 @@ public class Schema {
         propertyToJavaTypeNotNull.put(PropertyType.String, "String");
         propertyToJavaTypeNotNull.put(PropertyType.ByteArray, "byte[]");
         propertyToJavaTypeNotNull.put(PropertyType.Date, "java.util.Date");
+        propertyToJavaTypeNotNull.put(PropertyType.RelationId, "long");
 
-        propertyToJavaTypeNullable = new HashMap<>();
+        propertyToJavaTypeNullable = new EnumMap<>(PropertyType.class);
         propertyToJavaTypeNullable.put(PropertyType.Boolean, "Boolean");
         propertyToJavaTypeNullable.put(PropertyType.Byte, "Byte");
         propertyToJavaTypeNullable.put(PropertyType.Short, "Short");
@@ -108,6 +100,7 @@ public class Schema {
         propertyToJavaTypeNullable.put(PropertyType.String, "String");
         propertyToJavaTypeNullable.put(PropertyType.ByteArray, "byte[]");
         propertyToJavaTypeNullable.put(PropertyType.Date, "java.util.Date");
+        propertyToJavaTypeNullable.put(PropertyType.RelationId, "Long");
     }
 
     /**

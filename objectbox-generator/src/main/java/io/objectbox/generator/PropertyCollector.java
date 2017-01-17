@@ -171,8 +171,10 @@ class PropertyCollector {
         // TODO improve null values -> don't pass them
         List<Property> properties = propertiesByType.get(type);
         if (properties == null || properties.isEmpty()) {
-            // No match, check if we have a smaller type instead available
+            // No match, check if we have a another fitting type instead available
             if (type == PropertyType.Long) {
+                return appendProperty(preCall, sb, PropertyType.RelationId, isScalar);
+            } else if (type == PropertyType.RelationId) {
                 return appendProperty(preCall, sb, PropertyType.Date, isScalar);
             } else if (type == PropertyType.Date) {
                 return appendProperty(preCall, sb, PropertyType.Int, isScalar);

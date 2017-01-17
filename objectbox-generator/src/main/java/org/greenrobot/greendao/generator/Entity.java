@@ -28,7 +28,8 @@ import java.util.Set;
 import java.util.TreeSet;
 
 /**
- * Model class for an entity: a Java data object mapped to a data base representation. A new entity is added to a {@link Schema}
+ * Model class for an entity: a Java data object mapped to a data base representation. A new entity is added to a {@link
+ * Schema}
  * by the method {@link Schema#addEntity(String)} (there is no public constructor for {@link Entity} itself). <br>
  * <br> Use the various addXXX methods to add entity properties, indexes, and relations to other entities (addToOne,
  * addToMany).<br> <br> There are further configuration possibilities: <ul> <li>{@link
@@ -236,6 +237,11 @@ public class Entity {
         }
 
         Property[] fkProperties = {fkProperty};
+        PropertyType oldType = fkProperty.getPropertyType();
+        if (oldType != PropertyType.Long && oldType != PropertyType.RelationId) {
+            throw new RuntimeException("@Relation ID property must be of type long: " + fkProperty);
+        }
+        fkProperty.setPropertyType(PropertyType.RelationId);
         ToOne toOne = new ToOne(schema, this, target, fkProperties, true);
         toOneRelations.add(toOne);
         return toOne;

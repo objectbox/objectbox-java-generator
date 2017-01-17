@@ -20,6 +20,7 @@ package io.objectbox.generator;
 
 import org.greenrobot.greendao.generator.DaoUtil;
 import org.greenrobot.greendao.generator.Entity;
+import org.greenrobot.greendao.generator.Property;
 import org.greenrobot.greendao.generator.Schema;
 import org.junit.Assert;
 import org.junit.Test;
@@ -154,4 +155,40 @@ public class SimpleBoxGeneratorTest {
         addressTable.implementsInterface("Dummy");
         addressTable.implementsInterface("Dummy");
     }
+
+    @Test
+    public void testRelation() throws Exception {
+        Schema schema = new Schema(1, "io.objectbox.test.relationbox");
+        Entity customer = schema.addEntity("Customer");
+        customer.addIdProperty().getProperty();
+        Entity order = schema.addEntity("Order");
+        order.addIdProperty().getProperty();
+        Property customerId = order.addLongProperty("customerId")/*.index()*/.getProperty();
+        order.addToOne(customer, customerId, "customer");
+
+        File outputDir = new File("build/test-out");
+        outputDir.mkdirs();
+
+        String baseDir = "io/objectbox/test/relationbox/";
+        File cursorFile = new File(outputDir, baseDir + order.getClassName() + "Cursor.java");
+        cursorFile.delete();
+        assertFalse(cursorFile.exists());
+        File myObjectBoxFile = new File(outputDir, baseDir + "MyObjectBox.java");
+        myObjectBoxFile.delete();
+        assertFalse(myObjectBoxFile.exists());
+
+        new BoxGenerator().generateAll(schema, outputDir.getPath());
+
+        // Assert Cursor file
+        assertTrue(cursorFile.toString(), cursorFile.exists());
+        final String cursorContent = FileUtils.readUtf8(cursorFile);
+        assertTrue(cursorContent.contains("_customerIdId, entity.getCustomerId()"));
+
+        // Assert Properties file
+        assertTrue(myObjectBoxFile.toString(), myObjectBoxFile.exists());
+        final String myBoxContent = FileUtils.readUtf8(myObjectBoxFile);
+        assertTrue(myBoxContent.contains("entityBuilder.property(\"customerId\", PropertyType.Relation)\n" +
+                "            .flags(PropertyFlags.INDEXED | PropertyFlags.INDEX_PARTIAL_SKIP_ZERO);"));
+    }
+
 }

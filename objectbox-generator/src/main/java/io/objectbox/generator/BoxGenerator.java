@@ -28,6 +28,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -183,7 +184,7 @@ public class BoxGenerator {
     }
 
     private Map<PropertyType, String> propertyToDbTypes() {
-        Map<PropertyType, String> map = new HashMap<>();
+        Map<PropertyType, String> map = new EnumMap<>(PropertyType.class);
         map.put(PropertyType.Boolean, "Bool");
         map.put(PropertyType.Byte, "Byte");
         map.put(PropertyType.Short, "Short");
@@ -194,6 +195,7 @@ public class BoxGenerator {
         map.put(PropertyType.String, "String");
         map.put(PropertyType.ByteArray, "ByteVector");
         map.put(PropertyType.Date, "Date");
+        map.put(PropertyType.RelationId, "Relation");
         return map;
     }
 

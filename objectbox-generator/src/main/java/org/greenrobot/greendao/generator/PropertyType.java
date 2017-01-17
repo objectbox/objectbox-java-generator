@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2016 Markus Junginger, greenrobot (http://greenrobot.org)
+ * Copyright (C) 2011-2017 Markus Junginger, greenrobot (http://greenrobot.org)
  *
  * This file is part of greenDAO Generator.
  *
@@ -26,7 +26,9 @@ package org.greenrobot.greendao.generator;
 public enum PropertyType {
 
     Boolean(true), Byte(true), Short(true), Char(true), Int(true), Long(true), Float(true), Double(true),
-    String(false), ByteArray(false), Date(false);
+    String(false), ByteArray(false), Date(false),
+    /** a long representing a ObjectBox to-one relation */
+    RelationId(true);
 
     private final boolean scalar;
 

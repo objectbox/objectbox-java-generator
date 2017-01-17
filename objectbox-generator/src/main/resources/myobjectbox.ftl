@@ -1,6 +1,6 @@
 <#--
 
-Copyright (C) 2016 Markus Junginger, greenrobot (http://greenrobot.org)
+Copyright (C) 2017 Markus Junginger, greenrobot (http://greenrobot.org)
 
 This file is part of ObjectBox Generator.
 
@@ -80,11 +80,13 @@ public class MyObjectBox {
 <#if property.notNull><#assign flags = flags + ["PropertyFlags.NOT_NULL"]></#if>
 <#if property.nonPrimitiveType && property.propertyType.scalar><#assign flags = flags + ["PropertyFlags.NON_PRIMITIVE_TYPE"]></#if>
 <#if property.index??><#assign flags = flags + ["PropertyFlags.INDEXED"]></#if>
+<#if property.propertyType == "RelationId"><#assign flags = flags + ["PropertyFlags.INDEXED", "PropertyFlags.INDEX_PARTIAL_SKIP_ZERO"]></#if>
         entityBuilder.property("${property.dbName}", PropertyType.${property.dbType})<#if
             property.modelId??>.id(${property.modelId?c})</#if><#if property.modelRefId??>.refId(${property.modelRefId?c}L)</#if><#if
-            (flags?size > 0)>
+            (flags?size > 0)><#assign uniqueFlags = []><#list flags as flag><#if
+            !uniqueFlags?seq_contains(flag)><#assign uniqueFlags = uniqueFlags + [flag]></#if></#list>
 
-            .flags(${flags?join(" | ")})</#if><#if property.modelIndexId??>.indexId(${property.modelIndexId?c})</#if>;
+            .flags(${uniqueFlags?join(" | ")})</#if><#if property.modelIndexId??>.indexId(${property.modelIndexId?c})</#if>;
 </#list>
         entityBuilder.entityDone();
 

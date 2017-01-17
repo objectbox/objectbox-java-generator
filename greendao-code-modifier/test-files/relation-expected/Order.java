@@ -61,10 +61,10 @@ public class Order {
     private transient Long customer__resolvedKey;
 
     /** To-one relationship, resolved on first access. */
-    @Generated(hash = 2043538556)
+    @Generated(hash = 910495430)
     public Customer getCustomer() {
         long __key = this.customerId;
-        if (customer__resolvedKey == null || !customer__resolvedKey.equals(__key)) {
+        if (customer__resolvedKey == null || customer__resolvedKey != __key) {
             final BoxStore boxStore = this.__boxStore;
             if (boxStore == null) {
                 throw new DbDetachedException();
