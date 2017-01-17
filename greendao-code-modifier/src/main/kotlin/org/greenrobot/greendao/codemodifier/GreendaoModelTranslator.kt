@@ -15,43 +15,44 @@ object GreendaoModelTranslator {
      * */
     fun translate(entities: Iterable<ParsedEntity>, schema: Schema, daoPackage: String?, idSync: IdSync)
             : Map<ParsedEntity, Entity> {
-        val mapping = mapEntityClassesToEntities(entities, schema, daoPackage, idSync)
+        val mapping = convertEntities(entities, schema, daoPackage, idSync)
 
-        resolveToOneRelations(mapping, entities, schema)
-        resolveToManyRelations(mapping, entities, schema)
+        convertToOneRelations(mapping, entities, schema)
+        convertToManyRelations(mapping, entities, schema)
 
         return mapping
     }
 
-    private fun mapEntityClassesToEntities(entities: Iterable<ParsedEntity>, schema: Schema,
-                                           daoPackage: String?, idSync: IdSync): Map<ParsedEntity, Entity> {
-        return entities.map {
-            val entity = schema.addEntity(it.name)
-            addBasicProperties(daoPackage, it, entity)
-            if (it.dbName != null) entity.dbName = it.dbName
-            if (it.active) entity.active = true
-            entity.isSkipCreationInDb = !it.createInDb
-            entity.javaPackage = it.packageName
+    private fun convertEntities(parsedEntities: Iterable<ParsedEntity>, schema: Schema, daoPackage: String?,
+                                idSync: IdSync)
+            : Map<ParsedEntity, Entity> {
+        return parsedEntities.map { parsedEntity ->
+            val entity = schema.addEntity(parsedEntity.name)
+            addBasicProperties(daoPackage, parsedEntity, entity)
+            if (parsedEntity.dbName != null) entity.dbName = parsedEntity.dbName
+            if (parsedEntity.active) entity.active = true
+            entity.isSkipCreationInDb = !parsedEntity.createInDb
+            entity.javaPackage = parsedEntity.packageName
 
-            val idSyncEntity = idSync.get(it)
+            val idSyncEntity = idSync.get(parsedEntity)
             entity.modelRefId = idSyncEntity.refId
             entity.modelId = idSyncEntity.id
             entity.lastPropertyId = idSyncEntity.lastPropertyId
 
-            convertProperties(it, entity, idSync)
+            convertProperties(parsedEntity, entity, idSync)
 
             // trigger creation of an additional protobuf dao
-            if (it.protobufClassName != null) {
-                val protobufEntity = schema.addProtobufEntity(it.protobufClassName.substringAfterLast("."))
-                addBasicProperties(daoPackage, it, protobufEntity)
+            if (parsedEntity.protobufClassName != null) {
+                val protobufEntity = schema.addProtobufEntity(parsedEntity.protobufClassName.substringAfterLast("."))
+                addBasicProperties(daoPackage, parsedEntity, protobufEntity)
                 protobufEntity.dbName = entity.dbName // table name is required (checked in annotation visitor)
                 protobufEntity.active = false
                 protobufEntity.isSkipCreationInDb = true // table creation/deletion is handled by the original DAO
-                protobufEntity.javaPackage = it.protobufClassName.substringBeforeLast(".")
-                convertProperties(it, protobufEntity, idSync)
+                protobufEntity.javaPackage = parsedEntity.protobufClassName.substringBeforeLast(".")
+                convertProperties(parsedEntity, protobufEntity, idSync)
             }
 
-            it to entity
+            parsedEntity to entity
         }.toMap()
     }
 
@@ -74,36 +75,36 @@ object GreendaoModelTranslator {
         }
     }
 
-    private fun resolveToOneRelations(mapping: Map<ParsedEntity, Entity>, entities: Iterable<ParsedEntity>, schema: Schema) {
+    private fun convertToOneRelations(mapping: Map<ParsedEntity, Entity>, entities: Iterable<ParsedEntity>, schema: Schema) {
         entities.filterNot {
             it.oneRelations.isEmpty()
         }.forEach {
-            entity ->
-            val source = mapping[entity]!!
-            entity.oneRelations.forEach {
-                relation ->
-                val target = schema.entities.find {
+            parsedEntity ->
+            val entity = mapping[parsedEntity]!!
+            parsedEntity.oneRelations.forEach {
+                relation: OneRelation ->
+                val targetEntity: Entity = schema.entities.find {
                     it.className == relation.variable.type.simpleName
                 } ?: throw RuntimeException("Class ${relation.variable.type.name} marked " +
-                        "with @ToOne in class ${entity.name} is not an entity")
+                        "with @Relation in class ${parsedEntity.name} is not an entity")
                 when {
                     relation.foreignKeyField != null -> {
                         // find fkProperty in current entity
-                        val fkProperty = source.properties.find {
+                        val fkProperty: Property = entity.properties.find {
                             it.propertyName == relation.foreignKeyField
-                        } ?: throw RuntimeException("Can't find ${relation.foreignKeyField} in ${entity.name} " +
-                                "for @ToOne relation")
+                        } ?: throw RuntimeException("Can't find ${relation.foreignKeyField} in ${parsedEntity.name} " +
+                                "for @Relation")
                         if (relation.columnName != null || relation.unique) {
                             throw RuntimeException(
-                                    "If @ToOne with foreign property used, @Column and @Unique are ignored. " +
-                                            "See ${entity.name}.${relation.variable.name}")
+                                    "If @Relation with ID property used, @Column and @Unique are ignored. " +
+                                            "See ${parsedEntity.name}.${relation.variable.name}")
                         }
-                        source.addToOne(target, fkProperty, relation.variable.name)
+                        entity.addToOne(targetEntity, fkProperty, relation.variable.name)
                     }
                     else -> {
-                        source.addToOneWithoutProperty(
+                        entity.addToOneWithoutProperty(
                                 relation.variable.name,
-                                target,
+                                targetEntity,
                                 relation.columnName ?: DaoUtil.dbName(relation.variable.name),
                                 relation.isNotNull,
                                 relation.unique
@@ -114,7 +115,7 @@ object GreendaoModelTranslator {
         }
     }
 
-    private fun resolveToManyRelations(mapping: Map<ParsedEntity, Entity>, entities: Iterable<ParsedEntity>, schema: Schema) {
+    private fun convertToManyRelations(mapping: Map<ParsedEntity, Entity>, entities: Iterable<ParsedEntity>, schema: Schema) {
         entities.filterNot {
             it.manyRelations.isEmpty()
         }.forEach {
@@ -206,7 +207,7 @@ object GreendaoModelTranslator {
         val propertyBuilder = entity.addProperty(propertyType, property.variable.name)
         propertyBuilder.modelId(modelIds.id)
         propertyBuilder.modelRefId(modelIds.refId)
-        if(modelIds.indexId != null && modelIds.indexId != 0) {
+        if (modelIds.indexId != null && modelIds.indexId != 0) {
             propertyBuilder.modelIndexId(modelIds.indexId)
         }
 
