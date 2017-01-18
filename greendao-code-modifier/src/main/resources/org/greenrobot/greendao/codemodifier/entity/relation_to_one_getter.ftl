@@ -8,7 +8,7 @@ ${toOne.fkProperties[0].javaType} __key = this.${toOne.fkProperties[0].propertyN
     if (${toOne.name}__resolvedKey == null || <#--
 --><#if toOne.resolvedKeyUseEquals[0]>!${toOne.name}__resolvedKey.equals(__key)<#--
 --><#else>${toOne.name}__resolvedKey != __key</#if>) {
-        final ${entity.schema.prefix}BoxStore boxStore = this.__boxStore;
+        final BoxStore boxStore = this.__boxStore;
         if (boxStore == null) {
             throw new DbDetachedException();
         }
