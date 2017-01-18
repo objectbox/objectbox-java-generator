@@ -7,14 +7,14 @@
 @Generated(hash = GENERATED_HASH_STUB)
 public List<${toMany.targetEntity.className}> get${toMany.name?cap_first}() {
     if (${toMany.name} == null) {
-        final ${entity.schema.prefix}DaoSession daoSession = this.daoSession;
-        if (daoSession == null) {
+        final BoxStore boxStore = this.__boxStore;
+        if (boxStore == null) {
             throw new DbDetachedException();
         }
-        ${toMany.targetEntity.classNameDao} targetDao = daoSession.get${toMany.targetEntity.classNameDao?cap_first}();
-        List<${toMany.targetEntity.className}> ${toMany.name}New = targetDao._query${toMany.sourceEntity.className?cap_first}_${toMany.name?cap_first}(<#--
-                --><#if toMany.sourceProperties??><#list toMany.sourceProperties as property>${property.propertyName}<#if property_has_next>, </#if></#list><#else><#--
-                -->${entity.pkProperty.propertyName}</#if>);
+        Box<${toMany.targetEntity.className}> box = boxStore.boxFor(${toMany.targetEntity.className}.class);
+        int targetEntityId = boxStore.getEntityIdOrThrow(${toMany.targetEntity.className}.class);
+        List<${toMany.targetEntity.className}> ${toMany.name}New = box.getBacklinkEntities(targetEntityId,<#--
+         -->${toMany.targetEntity.className}_.${toMany.targetProperties[0].propertyName}, ${entity.pkProperty.propertyName});
         synchronized (this) {<#-- Check if another thread was faster, we cannot lock while doing the query to prevent deadlocks -->
             if(${toMany.name} == null) {
                 ${toMany.name} = ${toMany.name}New;

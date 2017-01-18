@@ -60,15 +60,16 @@ public class Customer {
      * To-many relationship, resolved on first access (and after reset).
      * Changes to to-many relations are not persisted, make changes to the target entity.
      */
-    @Generated(hash = 516183999)
+    @Generated(hash = 954185799)
     public List<Order> getOrders() {
         if (orders == null) {
-            final DaoSession daoSession = this.daoSession;
-            if (daoSession == null) {
+            final BoxStore boxStore = this.__boxStore;
+            if (boxStore == null) {
                 throw new DbDetachedException();
             }
-            OrderCursor targetDao = daoSession.getOrderCursor();
-            List<Order> ordersNew = targetDao._queryCustomer_Orders(id);
+            Box<Order> box = boxStore.boxFor(Order.class);
+            int targetEntityId = boxStore.getEntityIdOrThrow(Order.class);
+            List<Order> ordersNew = box.getBacklinkEntities(targetEntityId, Order_.customerId, id);
             synchronized (this) {
                 if (orders == null) {
                     orders = ordersNew;

@@ -119,47 +119,50 @@ object GreendaoModelTranslator {
         entities.filterNot {
             it.manyRelations.isEmpty()
         }.forEach {
-            entity ->
-            val source = mapping[entity]!!
+            parsedEntity ->
+            val entity = mapping[parsedEntity]!!
             try {
-                entity.manyRelations.forEach {
+                parsedEntity.manyRelations.forEach {
                     relation ->
                     if (relation.variable.type.name != "java.util.List") {
-                        throw RuntimeException("Can't create 1-M relation for ${entity.name} " +
-                                "on ${relation.variable.type.name} ${relation.variable.name}. " +
-                                "ToMany only supports java.util.List<T>")
+                        throw RuntimeException("Can't create to-many relation for ${parsedEntity.name} " +
+                                "on ${relation.variable.type.name} ${relation.variable.name}: " +
+                                "use java.util.List<T>")
                     }
                     val argument = relation.variable.type.typeArguments?.singleOrNull()
-                            ?: throw RuntimeException("Can't create 1-M relation on ${relation.variable.name}. " +
+                            ?: throw RuntimeException("Can't create to-many relation on ${relation.variable.name}. " +
                             "ToMany type should have specified exactly one type argument")
 
-                    val target = schema.entities.find {
+                    val targetEntity = schema.entities.find {
                         it.className == argument.simpleName
                     } ?: throw RuntimeException("${argument.name} is not an entity, but it is referenced " +
-                            "for @ToMany relation in class (field: ${relation.variable.name})")
+                            "for @Relation relation (field: ${relation.variable.name})")
 
                     val options = if (relation.joinEntitySpec != null) 1 else 0 +
                             if (relation.mappedBy != null) 1 else 0 +
                                     if (relation.joinOnProperties.isNotEmpty()) 1 else 0
                     if (options != 1) {
-                        throw RuntimeException("Can't create 1-M relation on ${relation.variable.name}. " +
+                        throw RuntimeException("Can't create to-many relation on ${relation.variable.name}. " +
                                 "Either referencedJoinProperty, joinProperties or @JoinEntity must be used to describe the relation")
                     }
                     val toMany = when {
+                    // ObjectBox currently only supports "mappedBy"
                         relation.mappedBy != null -> {
-                            val relativeProperty = target.findProperty(relation.mappedBy)
-                            source.addToMany(target, relativeProperty, relation.variable.name)
+                            val backlinkProperty = targetEntity.findProperty(relation.mappedBy)
+                            entity.addToMany(targetEntity, backlinkProperty, relation.variable.name)
                         }
+                    // Currently not supported by ObjectBox
                         relation.joinOnProperties.isNotEmpty() -> {
                             val joinOn = relation.joinOnProperties
-                            source.addToMany(
-                                    joinOn.map { source.findProperty(it.source) }.toTypedArray(),
-                                    target,
-                                    joinOn.map { target.findProperty(it.target) }.toTypedArray()
+                            entity.addToMany(
+                                    joinOn.map { entity.findProperty(it.source) }.toTypedArray(),
+                                    targetEntity,
+                                    joinOn.map { targetEntity.findProperty(it.target) }.toTypedArray()
                             ).apply {
                                 name = relation.variable.name
                             }
                         }
+                    // Currently not supported by ObjectBox
                         else -> {
                             if (relation.joinEntitySpec == null) {
                                 throw RuntimeException("Unknown @ToMany relation type")
@@ -170,8 +173,8 @@ object GreendaoModelTranslator {
                                         || it.qualifiedClassName == spec.entityName
                             }?.let { mapping[it] }
                                     ?: throw RuntimeException("Can't find join entity with name ${spec.entityName}")
-                            source.addToMany(
-                                    target,
+                            entity.addToMany(
+                                    targetEntity,
                                     joinEntity,
                                     joinEntity.findProperty(spec.sourceIdProperty),
                                     joinEntity.findProperty(spec.targetIdProperty)
@@ -184,20 +187,20 @@ object GreendaoModelTranslator {
                         if (relation.order.size > 0) {
                             relation.order.forEach {
                                 when (it.order) {
-                                    Order.ASC -> toMany.orderAsc(target.findProperty(it.name))
-                                    Order.DESC -> toMany.orderDesc(target.findProperty(it.name))
+                                    Order.ASC -> toMany.orderAsc(targetEntity.findProperty(it.name))
+                                    Order.DESC -> toMany.orderDesc(targetEntity.findProperty(it.name))
                                 }
                             }
                         } else {
-                            val pkProperty = target.properties.find { it.isPrimaryKey }
+                            val pkProperty = targetEntity.properties.find { it.isPrimaryKey }
                                     ?: throw RuntimeException("@OrderBy used to order by primary key of " +
-                                    "entity (${target.className}) without primary key")
+                                    "entity (${targetEntity.className}) without primary key")
                             toMany.orderAsc(pkProperty)
                         }
                     }
                 }
             } catch (e: Exception) {
-                throw RuntimeException("Can't process ${entity.name}: ${e.message}", e)
+                throw RuntimeException("Can't process ${parsedEntity.name}: ${e.message}", e)
             }
         }
     }
