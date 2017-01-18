@@ -79,8 +79,8 @@ public class Order {
         return customer;
     }
 
-    /** called by internal mechanisms, do not call yourself. */
-    @Generated(hash = 445223802)
+    /** Set the to-one relation including its ID property. */
+    @Generated(hash = 1322376583)
     public void setCustomer(Customer customer) {
         synchronized (this) {
             this.customer = customer;

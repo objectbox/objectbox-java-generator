@@ -1,6 +1,6 @@
 <#-- @ftlvariable name="toOne" type="org.greenrobot.greendao.generator.ToOne" -->
 <#-- @ftlvariable name="notNullAnnotation" type="java.lang.String" -->
-/** called by internal mechanisms, do not call yourself. */
+/** Set the to-one relation including its ID property. */
 @Generated(hash = GENERATED_HASH_STUB)
 public void set${toOne.name?cap_first}(<#if false && toOne.fkProperties[0].notNull>${notNullAnnotation} </#if>${toOne.targetEntity.className} ${toOne.name}) {
 <#if false && toOne.fkProperties[0].notNull>
