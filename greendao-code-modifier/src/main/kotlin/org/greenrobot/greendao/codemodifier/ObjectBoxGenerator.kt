@@ -17,16 +17,30 @@ class ObjectBoxGenerator(formattingOptions: FormattingOptions? = null,
                          encoding: String = "UTF-8") {
     val context = JdtCodeContext(formattingOptions, encoding)
 
-    fun run(sourceFiles: Iterable<File>,
-            schemaOptions: Map<String, SchemaOptions>) {
+    fun run(sourceFiles: Iterable<File>, schemaOptions: Map<String, SchemaOptions>) {
         require(schemaOptions.size > 0) { "There should be options for at least one schema" }
 
+        val parsedEntities = parseEntityFiles(sourceFiles)
+        if (parsedEntities.isEmpty()) {
+            System.err.println("No entities found among specified files")
+        }
+        parsedEntities.forEach { entry ->
+            val (schemaName, schemaEntities) = entry
+            val options = schemaOptions[schemaName]
+                    ?: throw RuntimeException("Undefined schema \"$schemaName\"" +
+                    " (referenced in entities: " + "${schemaEntities.joinToString()}). " +
+                    "Please, define non-default schemas explicitly inside build.gradle")
+            generateSchema(schemaEntities, options)
+        }
+    }
+
+    private fun parseEntityFiles(sourceFiles: Iterable<File>): Map<String, List<ParsedEntity>> {
+        val start = System.currentTimeMillis()
         val classesByDir = sourceFiles.map { it.parentFile }.distinct().map {
             it to it.getJavaClassNames()
         }.toMap()
 
-        val start = System.currentTimeMillis()
-        val entities = sourceFiles.asSequence()
+        val parsedEntities = sourceFiles.asSequence()
                 .map {
                     val entity = context.parse(it, classesByDir[it.parentFile]!!)
                     if (entity != null && entity.properties.size == 0) {
@@ -40,26 +54,23 @@ class ObjectBoxGenerator(formattingOptions: FormattingOptions? = null,
                 .toList()
 
         val time = System.currentTimeMillis() - start
-        println("Parsed ${entities.size} entities in $time ms among ${sourceFiles.count()} source files: " +
-                "${entities.asSequence().map { it.name }.joinToString()}")
+        println("Parsed ${parsedEntities.size} entities in $time ms among ${sourceFiles.count()} source files: " +
+                "${parsedEntities.asSequence().map { it.name }.joinToString()}")
+        val entitiesBySchema = parsedEntities.groupBy { it.schema }
+        entitiesBySchema.values.forEach { parse2ndPass(it) }
+        return entitiesBySchema
+    }
 
-        if (entities.isNotEmpty()) {
-            entities.groupBy { it.schema }.forEach { entry ->
-                val (schemaName, schemaEntities) = entry
-                val options = schemaOptions[schemaName] ?: run {
-                    val affectedEntities = entities.filter { it.schema == schemaName }.map { it.name }.joinToString()
-                    throw RuntimeException(
-                            """
-                        Undefined schema \"$schemaName\" (referenced in entities: $affectedEntities).
-                        Please, define non-default schemas explicitly inside build.gradle
-                        """.trimIndent()
-                    )
+    // For now, we only add the index so IdSync can assign a index ID
+    private fun parse2ndPass(parsedEntities: List<ParsedEntity>) {
+        val parsedEntitiesByName = parsedEntities.groupBy { it.dbName ?: it.name }
+        parsedEntities.forEach { parsedEntity ->
+            parsedEntity.oneRelations.forEach { toOne ->
+                val parsedProperty: ParsedProperty? = parsedEntity.properties.find { it.variable.name == toOne.foreignKeyField }
+                if (parsedProperty?.index == null) {
+                    parsedProperty!!.index = PropertyIndex(null, false)
                 }
-
-                generateSchema(schemaEntities, options)
             }
-        } else {
-            System.err.println("No entities found among specified files")
         }
     }
 

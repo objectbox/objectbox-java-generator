@@ -17,7 +17,7 @@ data class Variable(val type: VariableType, val name: String)
 
 data class ParsedProperty(val variable: Variable,
                           val idParams: EntityIdParams? = null,
-                          val index: PropertyIndex? = null,
+                          var index: PropertyIndex? = null,
                           val isNotNull: Boolean = false,
                           val dbName: String? = null,
                           var refId: Long? = null,

@@ -225,7 +225,7 @@ object GreendaoModelTranslator {
             propertyBuilder.unique()
         }
         if (property.index != null) {
-            propertyBuilder.indexAsc(property.index.name, property.index.unique)
+            propertyBuilder.indexAsc(property.index!!.name, property.index!!.unique)
         }
         if (property.idParams != null) {
             propertyBuilder.primaryKey()

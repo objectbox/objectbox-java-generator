@@ -69,10 +69,25 @@ class ObjectBoxGeneratorTest {
     // NOTE: test may output multiple failed files, make sure to scroll up :)
     @Test
     fun testAllTestDirectories() {
+        var relationChecks = {
+            var myObjectBoxFile = File(testDirectory, "/main/java/io/objectbox/codemodifier/test/MyObjectBox.java")
+            assertTrue(myObjectBoxFile.exists())
+            val content = myObjectBoxFile.readText()
+            assertTrue(content, content.contains(".indexId("))
+        }
+        val additionalChecks = mapOf("relation-input" to relationChecks)
+        var additionalChecksInvoked = 0;
         samplesDirectory.listFiles().filter { it.isDirectory && it.name.endsWith("-input") }.forEach {
             ensureEmptyTestDirectory()
             generateAndAssertDirectory(it)
+
+            val additionalCheck = additionalChecks[it.name]
+            if (additionalCheck != null) {
+                additionalCheck.invoke()
+                additionalChecksInvoked++
+            }
         }
+        assertEquals("Not all additional checks invoked", additionalChecks.size, additionalChecksInvoked)
     }
 
     fun generateAndAssertFile(baseFileName: String) {
