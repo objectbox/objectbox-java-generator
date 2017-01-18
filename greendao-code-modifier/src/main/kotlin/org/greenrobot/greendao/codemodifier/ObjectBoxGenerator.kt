@@ -1,6 +1,8 @@
 package org.greenrobot.greendao.codemodifier
 
 import io.objectbox.generator.BoxGenerator
+import org.eclipse.jdt.core.JavaCore
+import org.eclipse.jdt.internal.compiler.impl.CompilerOptions
 import org.greenrobot.idsync.IdSync
 import org.greenrobot.greendao.generator.Entity
 import org.greenrobot.greendao.generator.Schema
@@ -8,14 +10,26 @@ import java.io.File
 
 /**
  * Main generator.
+ * - triggers parsing of entities
  * - runs generation of dao classes within {@link org.greenrobot.greendao.generator.DaoGenerator}
  * - runs parsing and transformation of Entity classes using {@link EntityClassTransformer}
  */
-class ObjectBoxGenerator(formattingOptions: FormattingOptions? = null,
+class ObjectBoxGenerator(val formattingOptions: FormattingOptions? = null,
                          val skipTestGeneration: List<String> = emptyList(),
                          val daoCompat: Boolean = false,
                          encoding: String = "UTF-8") {
-    val context = JdtCodeContext(formattingOptions, encoding)
+    val jdtOptions: MutableMap<Any, Any> = JavaCore.getOptions()
+
+    val entityClassParser: EntityClassParser
+
+    init {
+        jdtOptions.put(CompilerOptions.OPTION_Source, CompilerOptions.VERSION_1_7)
+        jdtOptions.put(CompilerOptions.OPTION_Compliance, CompilerOptions.VERSION_1_7)
+        // it could be the encoding is never used by JDT itself for our use case, but just to be sure (and for future)
+        jdtOptions.put(CompilerOptions.OPTION_Encoding, encoding)
+
+        entityClassParser =  EntityClassParser(jdtOptions, encoding)
+    }
 
     fun run(sourceFiles: Iterable<File>, schemaOptions: Map<String, SchemaOptions>) {
         require(schemaOptions.size > 0) { "There should be options for at least one schema" }
@@ -42,7 +56,7 @@ class ObjectBoxGenerator(formattingOptions: FormattingOptions? = null,
 
         val parsedEntities = sourceFiles.asSequence()
                 .map {
-                    val entity = context.parse(it, classesByDir[it.parentFile]!!)
+                    val entity = entityClassParser.parse(it, classesByDir[it.parentFile]!!)
                     if (entity != null && entity.properties.size == 0) {
                         System.err.println("Skipping entity ${entity.name} as it has no properties.")
                         null
@@ -138,7 +152,7 @@ class ObjectBoxGenerator(formattingOptions: FormattingOptions? = null,
     private fun transformClass(parsedEntity: ParsedEntity, mapping: Map<ParsedEntity, Entity>) {
         val entity = mapping[parsedEntity]!!
         val daoPackage = entity.schema.defaultJavaPackage
-        val transformer = context.transformer(parsedEntity)
+        val transformer = EntityClassTransformer(parsedEntity, jdtOptions, formattingOptions)
 
         transformer.ensureImport("io.objectbox.annotation.Generated")
 
