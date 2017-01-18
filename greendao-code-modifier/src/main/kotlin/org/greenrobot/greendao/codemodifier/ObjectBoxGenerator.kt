@@ -238,7 +238,7 @@ class ObjectBoxGenerator(val formattingOptions: FormattingOptions? = null,
             }
 
             if (!toOne.isUseFkProperty) {
-                transformer.defMethod("peak${toOne.name.capitalize()}") {
+                transformer.defMethod("peek${toOne.name.capitalize()}") {
                     Templates.entity.oneRelationPeek(toOne)
                 }
             }
