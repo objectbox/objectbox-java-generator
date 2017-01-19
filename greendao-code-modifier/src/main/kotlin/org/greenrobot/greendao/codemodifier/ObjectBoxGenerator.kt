@@ -229,12 +229,11 @@ class ObjectBoxGenerator(val formattingOptions: FormattingOptions? = null,
     private fun generateToOneRelations(entity: Entity, parsedEntity: ParsedEntity, transformer: EntityClassTransformer) {
         // add everything in reverse as transformer writes in reverse direction
         entity.toOneRelations.reversed().forEach { toOne ->
-            transformer.ensureImport("${toOne.targetEntity.javaPackageDao}.${toOne.targetEntity.classNameDao}")
-
             // define methods
             transformer.defMethod("set${toOne.name.capitalize()}", toOne.targetEntity.className) {
                 if (parsedEntity.notNullAnnotation == null && toOne.fkProperties[0].isNotNull) {
-                    transformer.ensureImport("io.objectbox.annotation.NotNull")
+                    // Not yet supported
+                    //transformer.ensureImport("io.objectbox.annotation.NotNull")
                 }
                 Templates.entity.oneRelationSetter(toOne, parsedEntity.notNullAnnotation ?: "@NotNull")
             }
@@ -262,7 +261,6 @@ class ObjectBoxGenerator(val formattingOptions: FormattingOptions? = null,
     private fun generateToManyRelations(entity: Entity, transformer: EntityClassTransformer) {
         // add everything in reverse as transformer writes in reverse direction
         entity.toManyRelations.reversed().forEach { toMany ->
-            transformer.ensureImport("${toMany.targetEntity.javaPackageDao}.${toMany.targetEntity.classNameDao}")
             transformer.ensureImport("${toMany.targetEntity.javaPackage}.${toMany.targetEntity.className}_")
 
             transformer.defMethod("reset${toMany.name.capitalize()}") {

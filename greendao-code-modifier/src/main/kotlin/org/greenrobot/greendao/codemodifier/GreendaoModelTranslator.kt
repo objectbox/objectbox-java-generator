@@ -138,6 +138,13 @@ object GreendaoModelTranslator {
                     } ?: throw RuntimeException("${argument.name} is not an entity, but it is referenced " +
                             "for @Relation relation (field: ${relation.variable.name})")
 
+                    if (relation.mappedBy == null) {
+                        throw RuntimeException("Can't create to-many relation on ${relation.variable.name}: use " +
+                                "@Relation(idProperty=\"...\") with idProperty being a to-one @Relation in the " +
+                                "target entity (to-many relations are \"backlinks\" of to-one relations)")
+                    }
+
+                    // Currently not support in ObjectBox:
                     val options = if (relation.joinEntitySpec != null) 1 else 0 +
                             if (relation.mappedBy != null) 1 else 0 +
                                     if (relation.joinOnProperties.isNotEmpty()) 1 else 0
