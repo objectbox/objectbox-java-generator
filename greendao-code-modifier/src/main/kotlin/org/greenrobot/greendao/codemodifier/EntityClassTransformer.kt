@@ -40,7 +40,7 @@ class EntityClassTransformer(val parsedEntity: ParsedEntity, val jdtOptions: Mut
         jdtOptions.put("org.eclipse.jdt.core.formatter.tabulation.size", tabulation.size.toString())
     }
 
-    fun ensureImport(name : String) {
+    fun ensureImport(name: String) {
         val packageName = name.substringBeforeLast('.', "")
         // do not create import for inner classes
         val maybeInnerClassName = packageName.substringAfterLast(".", "")
@@ -206,12 +206,11 @@ class EntityClassTransformer(val parsedEntity: ParsedEntity, val jdtOptions: Mut
     }
 
     /**
-     * Defines new field.
      * In case field with provided name already exists:
      *  - if it has @Generated annotation, then replace it with the new one
      *  - otherwise keep it
      * */
-    fun defField(name: String, type: VariableType, comment: String? = null) {
+    fun defineTransientGeneratedField(name: String, type: VariableType, comment: String? = null) {
         val field = parsedEntity.transientFields.find { it.variable.name == name }
         // replace only generated code
         if (field == null || field.generated) {
@@ -228,6 +227,17 @@ class EntityClassTransformer(val parsedEntity: ParsedEntity, val jdtOptions: Mut
         } else {
             field.checkKeepPresent()
         }
+    }
+
+    fun defineProperty(name: String, type: VariableType, comment: String? = null) {
+        if (!type.isPrimitive && type.name != type.simpleName) {
+            ensureImport(type.name)
+        }
+        var code = if (comment != null) "/** $comment */\n" else ""
+        var genericParams = type.typeArguments?.map { it.simpleName }?.joinToString() ?: ""
+        if (genericParams.isNotBlank()) genericParams = "<$genericParams>"
+        code += "${type.simpleName}$genericParams $name;"
+        insertField(code)
     }
 
     private fun replaceHashStub(source: String): String {

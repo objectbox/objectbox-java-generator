@@ -286,7 +286,7 @@ class IdSyncTest {
                 name = name + "_",
                 schema = "default",
                 active = false,
-                properties = properties,
+                properties = properties.toMutableList(),
                 transientFields = emptyList(),
                 constructors = emptyList(),
                 methods = emptyList(),

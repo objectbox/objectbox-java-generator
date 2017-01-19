@@ -68,7 +68,7 @@ data class ManyRelation(val variable: Variable, val mappedBy: String? = null,
 data class ParsedEntity(val name: String,
                         val schema: String,
                         val active: Boolean,
-                        val properties: List<ParsedProperty>,
+                        val properties: MutableList<ParsedProperty>,
                         val transientFields: List<TransientField>,
                         val constructors: List<Method>,
                         val methods: List<Method>,
@@ -87,7 +87,10 @@ data class ParsedEntity(val name: String,
                         val generateGettersSetters: Boolean,
                         val protobufClassName: String?,
                         val notNullAnnotation: String?,
-                        val lastFieldDeclaration: FieldDeclaration?) {
+                        val lastFieldDeclaration: FieldDeclaration?,
+                        /** Added to [properties] without existing yet: need to be generated during transformation */
+                        val propertiesToGenerate: MutableList<ParsedProperty> = mutableListOf<ParsedProperty>()
+) {
 
     val qualifiedClassName: String
         get() = "$packageName.$name"

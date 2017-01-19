@@ -130,7 +130,7 @@ class EntityClassTransformerTest {
             """.trimIndent()
         )
         val result = EntityClassTransformer(entityClass, jdtOptions, formattingOptions).apply {
-            defField("name", StringType, "Name of the Foobar")
+            defineTransientGeneratedField("name", StringType, "Name of the Foobar")
         }.writeToString()
 
         assertNotNull(result)
@@ -183,7 +183,7 @@ class EntityClassTransformerTest {
         val entityClass = parseEntity(javaCode)
 
         val result = EntityClassTransformer(entityClass, jdtOptions, formattingOptions).apply {
-            defField("age", IntType)
+            defineTransientGeneratedField("age", IntType)
         }.writeToString()
 
         //language=java
@@ -373,7 +373,7 @@ class EntityClassTransformerTest {
             """.trimIndent()
         )
         val result = EntityClassTransformer(entityClass, jdtOptions, formattingOptions).apply {
-            defField("name", StringType)
+            defineTransientGeneratedField("name", StringType)
         }.writeToString()
 
         assertEquals(
@@ -422,7 +422,7 @@ class EntityClassTransformerTest {
             """.trimIndent()
         )
         val result = EntityClassTransformer(entityClass, jdtOptions, formattingOptions).apply {
-            defField("name", StringType)
+            defineTransientGeneratedField("name", StringType)
         }.writeToString()
 
         assertEquals(
@@ -517,7 +517,7 @@ class EntityClassTransformerTest {
             """.trimIndent()
         val entityClass = parseEntity(originalCode)
         val result = EntityClassTransformer(entityClass, jdtOptions, formattingOptions).apply {
-            defField("name", StringType)
+            defineTransientGeneratedField("name", StringType)
         }.writeToString()
 
         assertNull(result)
@@ -592,7 +592,7 @@ class EntityClassTransformerTest {
             """.trimIndent()
         val entityClass = parseEntity(originalCode)
         EntityClassTransformer(entityClass, jdtOptions, formattingOptions).apply {
-            defField("name", StringType)
+            defineTransientGeneratedField("name", StringType)
         }
     }
 

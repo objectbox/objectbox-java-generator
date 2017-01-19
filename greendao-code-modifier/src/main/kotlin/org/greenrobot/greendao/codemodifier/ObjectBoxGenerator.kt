@@ -76,19 +76,31 @@ class ObjectBoxGenerator(val formattingOptions: FormattingOptions? = null,
         return entitiesBySchema
     }
 
-    // For now, we only add the index so IdSync can assign a index ID
+    /**
+     * Look at to-one relation ID properties to:
+     * * generate missing properties
+     * * add the index so IdSync can assign a index ID
+     */
     private fun parse2ndPass(parsedEntities: List<ParsedEntity>) {
-        val parsedEntitiesByName = parsedEntities.groupBy { it.dbName ?: it.name }
+        // val parsedEntitiesByName = parsedEntities.groupBy { it.dbName ?: it.name }
         parsedEntities.forEach { parsedEntity ->
             parsedEntity.oneRelations.forEach { toOne ->
-                val parsedProperty: ParsedProperty? = parsedEntity.properties.find { it.variable.name == toOne.foreignKeyField }
+                val idName = toOne.foreignKeyField ?: throw RuntimeException("Unnamed idProperty for to-one " +
+                        "@Relation")
+                var parsedProperty: ParsedProperty? = parsedEntity.properties.find { it.variable.name == idName }
                 if (parsedProperty == null) {
-                    throw RuntimeException("No idProperty available with the name \"${toOne.foreignKeyField}\"" +
-                            " (needed for @Relation)")
-                } else {
-                    if (parsedProperty.index == null) {
-                        parsedProperty!!.index = PropertyIndex(null, false)
+                    if (parsedEntity.keepSource) {
+                        throw RuntimeException("No idProperty available with the name \"${toOne.foreignKeyField}\"" +
+                                " (needed for @Relation)")
+                    } else {
+                        // Property does not exist yet, adding it to parsedEntity.propertiesToGenerate will take care
+                        parsedProperty = ParsedProperty(variable = Variable(VariableType("long", true, "long"), idName))
+                        parsedEntity.properties.add(parsedProperty)
+                        parsedEntity.propertiesToGenerate.add(parsedProperty)
                     }
+                }
+                if (parsedProperty.index == null) {
+                    parsedProperty.index = PropertyIndex(null, false)
                 }
             }
         }
@@ -181,8 +193,12 @@ class ObjectBoxGenerator(val formattingOptions: FormattingOptions? = null,
 //            val entityType = VariableType("${entity.javaPackage}.${entity.className}", false, entity.className)
 //            transformer.defField("__myBox", VariableType("io.objectbox.Box", false, "Box", listOf(entityType)),
 //                    "Used for active entity operations.")
-            transformer.defField("__boxStore", VariableType("io.objectbox.BoxStore", false, "BoxStore"),
+            transformer.defineTransientGeneratedField("__boxStore", VariableType("io.objectbox.BoxStore", false, "BoxStore"),
                     "Used to resolve relations")
+        }
+
+        parsedEntity.propertiesToGenerate.forEach {
+            transformer.defineProperty(it.variable.name, it.variable.type)
         }
 
         transformer.writeToFile()
@@ -255,10 +271,10 @@ class ObjectBoxGenerator(val formattingOptions: FormattingOptions? = null,
 
             // define fields
             if (toOne.isUseFkProperty) {
-                transformer.defField("${toOne.name}__resolvedKey",
+                transformer.defineTransientGeneratedField("${toOne.name}__resolvedKey",
                         VariableType(toOne.resolvedKeyJavaType[0], false, toOne.resolvedKeyJavaType[0]))
             } else {
-                transformer.defField("${toOne.name}__refreshed", VariableType("boolean", true, "boolean"))
+                transformer.defineTransientGeneratedField("${toOne.name}__refreshed", VariableType("boolean", true, "boolean"))
             }
         }
     }
