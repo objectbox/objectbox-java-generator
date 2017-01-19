@@ -3,9 +3,9 @@ package org.greenrobot.greendao.codemodifier
 import io.objectbox.generator.BoxGenerator
 import org.eclipse.jdt.core.JavaCore
 import org.eclipse.jdt.internal.compiler.impl.CompilerOptions
-import org.greenrobot.idsync.IdSync
 import org.greenrobot.greendao.generator.Entity
 import org.greenrobot.greendao.generator.Schema
+import org.greenrobot.idsync.IdSync
 import java.io.File
 
 /**
@@ -82,8 +82,13 @@ class ObjectBoxGenerator(val formattingOptions: FormattingOptions? = null,
         parsedEntities.forEach { parsedEntity ->
             parsedEntity.oneRelations.forEach { toOne ->
                 val parsedProperty: ParsedProperty? = parsedEntity.properties.find { it.variable.name == toOne.foreignKeyField }
-                if (parsedProperty?.index == null) {
-                    parsedProperty!!.index = PropertyIndex(null, false)
+                if (parsedProperty == null) {
+                    throw RuntimeException("No idProperty available with the name \"${toOne.foreignKeyField}\"" +
+                            " (needed for @Relation)")
+                } else {
+                    if (parsedProperty.index == null) {
+                        parsedProperty!!.index = PropertyIndex(null, false)
+                    }
                 }
             }
         }
@@ -152,7 +157,6 @@ class ObjectBoxGenerator(val formattingOptions: FormattingOptions? = null,
 
     private fun transformClass(parsedEntity: ParsedEntity, mapping: Map<ParsedEntity, Entity>) {
         val entity = mapping[parsedEntity]!!
-        val daoPackage = entity.schema.defaultJavaPackage
         val transformer = EntityClassTransformer(parsedEntity, jdtOptions, formattingOptions)
 
         transformer.ensureImport("io.objectbox.annotation.Generated")
@@ -238,11 +242,12 @@ class ObjectBoxGenerator(val formattingOptions: FormattingOptions? = null,
                 Templates.entity.oneRelationSetter(toOne, parsedEntity.notNullAnnotation ?: "@NotNull")
             }
 
-            if (!toOne.isUseFkProperty) {
-                transformer.defMethod("peek${toOne.name.capitalize()}") {
-                    Templates.entity.oneRelationPeek(toOne)
-                }
-            }
+            // Do we need peek at all? User can implement it if required.
+//            if (!toOne.isUseFkProperty) {
+//                transformer.defMethod("peek${toOne.name.capitalize()}") {
+//                    Templates.entity.oneRelationPeek(toOne)
+//                }
+//            }
 
             transformer.defMethod("get${toOne.name.capitalize()}") {
                 Templates.entity.oneRelationGetter(toOne, entity)

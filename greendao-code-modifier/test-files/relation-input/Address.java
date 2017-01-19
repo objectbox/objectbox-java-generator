@@ -8,12 +8,10 @@ import io.objectbox.annotation.Relation;
 import java.util.List;
 
 @Entity
-public class Order {
+public class Address {
 
     @Id
     long id;
-
-    long customerId;
 
     @Relation
     Customer customer;

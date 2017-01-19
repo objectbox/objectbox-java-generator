@@ -19,7 +19,7 @@ public class Order {
 
     long customerId;
 
-    @Relation()
+    @Relation
     Customer customer;
 
     /** Used to resolve relations */
