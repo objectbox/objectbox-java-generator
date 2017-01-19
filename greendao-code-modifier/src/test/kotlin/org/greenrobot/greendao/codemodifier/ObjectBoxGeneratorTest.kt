@@ -22,6 +22,9 @@ class ObjectBoxGeneratorTest {
         this.lineWidth = 120
     }
 
+    /** Convenience to overwrite expected files with actual files */
+    private val UPDATE_EXPECTED_FILES = false
+
     private val schemaOptions: SchemaOptions = SchemaOptions(
             name = "default",
             version = 1,
@@ -115,13 +118,19 @@ class ObjectBoxGeneratorTest {
         checkSameFileContent(actualFile, File(samplesDirectory, expectedFileName))
     }
 
-    private fun checkSameFileContent(actualFile: File, expectedFile: File) {
+    private fun checkSameFileContent(actualFile: File, expectedFile: File): Boolean {
         val actualSource = actualFile.readText()
         val expectedSource = expectedFile.readText()
 
-        collector.checkSucceeds({
+        val sameFileContent = collector.checkSucceeds({
             assertEquals("${expectedFile.name} does not match with ${actualFile.name}", expectedSource, actualSource)
-        })
+            true
+        }) ?: false
+        if (!sameFileContent && UPDATE_EXPECTED_FILES) {
+            actualFile.copyTo(expectedFile, overwrite = true)
+        }
+
+        return sameFileContent
     }
 
     fun generateAndAssertDirectory(dir: File) {

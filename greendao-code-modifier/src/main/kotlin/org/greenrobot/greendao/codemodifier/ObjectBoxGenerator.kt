@@ -175,6 +175,7 @@ class ObjectBoxGenerator(val formattingOptions: FormattingOptions? = null,
 
         // add everything (fields, constructors, methods) in reverse as transformer writes in reverse direction
         if (entity.active) {
+            transformer.ensureImport("io.objectbox.annotation.Internal")
             transformer.ensureImport("io.objectbox.Box")
             transformer.ensureImport("io.objectbox.BoxStore")
             transformer.ensureImport("io.objectbox.exception.DbDetachedException")
@@ -271,8 +272,8 @@ class ObjectBoxGenerator(val formattingOptions: FormattingOptions? = null,
 
             // define fields
             if (toOne.isUseFkProperty) {
-                transformer.defineTransientGeneratedField("${toOne.name}__resolvedKey",
-                        VariableType(toOne.resolvedKeyJavaType[0], false, toOne.resolvedKeyJavaType[0]))
+                val variableType = VariableType(toOne.resolvedKeyJavaType[0], false, toOne.resolvedKeyJavaType[0])
+                transformer.defineTransientGeneratedField("${toOne.name}__resolvedKey", variableType, null, "private")
             } else {
                 transformer.defineTransientGeneratedField("${toOne.name}__refreshed", VariableType("boolean", true, "boolean"))
             }

@@ -263,6 +263,9 @@ class PropertyCollector {
         if (last) {
             if (!entity.isProtobuf()) {
                 all.append(INDENT).append("entity.set").append(nameCapFirst(idProperty)).append("(__assignedId);\n");
+                if (Boolean.TRUE.equals(entity.getActive())) {
+                    all.append(INDENT).append("entity.__boxStore = boxStoreForEntities;\n");
+                }
             }
             all.append(INDENT).append("return __assignedId;");
         }

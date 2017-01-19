@@ -144,8 +144,9 @@ class EntityClassTransformerTest {
             class Foobar {
                 int age;
                 /** Name of the Foobar */
-                @Generated(hash = 802063436)
-                private transient String name;
+                @Internal
+                @Generated(hash = 474271387)
+                transient String name;
 
                 Foobar() {
                 }
@@ -200,8 +201,9 @@ class EntityClassTransformerTest {
                 }
 
                     public    int age=10000;
-                    @Generated(hash = 977232244)
-                    private transient int age;
+                    @Internal
+                    @Generated(hash = 469875918)
+                    transient int age;
 
                         private Foobar(){
                 name = "MyName";
@@ -384,8 +386,9 @@ class EntityClassTransformerTest {
 
             @Entity
             class Foobar {
-                @Generated(hash = 863598746)
-                private transient String name;
+                @Internal
+                @Generated(hash = 999070538)
+                transient String name;
             }
             """.trimIndent(),
             result
@@ -433,8 +436,9 @@ class EntityClassTransformerTest {
 
             @Entity
             class Foobar {
-                @Generated(hash = 863598746)
-                private transient String name;
+                @Internal
+                @Generated(hash = 999070538)
+                transient String name;
             }
             """.trimIndent(),
             result

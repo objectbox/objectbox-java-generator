@@ -67,14 +67,10 @@ import ${entity.javaPackage}.${entity.className}.Builder;
 /**
  * Cursor for DB entity "${entity.dbName}".
  */
-public class ${entity.classNameDao} extends Cursor<${entity.className}> {
+public final class ${entity.classNameDao} extends Cursor<${entity.className}> {
 
     private static Properties PROPERTIES = new ${entity.className}_();
 
-<#if entity.active>
-    // TODO private ${schema.prefix}DaoSession daoSession;
-
-</#if>
 <#list entity.properties as property><#if property.customType?has_content><#--
 -->    private final ${property.converterClassName} ${property.propertyName}Converter = new ${property.converterClassName}();
 </#if></#list>
@@ -120,7 +116,7 @@ ${propertyCollector}
     // TODO @Override
     protected final void attachEntity(${entity.className} entity) {
         // TODO super.attachEntity(entity);
-        // TODO entity.__setDaoSession(daoSession);
+        entity.__boxStore = boxStoreForEntities;
     }
 
 </#if>

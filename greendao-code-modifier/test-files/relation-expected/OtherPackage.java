@@ -8,6 +8,7 @@ import java.util.List;
 
 import io.objectbox.codemodifier.test.Customer;
 import io.objectbox.codemodifier.test.Order;
+import io.objectbox.annotation.Internal;
 import io.objectbox.Box;
 import io.objectbox.BoxStore;
 import io.objectbox.exception.DbDetachedException;
@@ -30,8 +31,9 @@ public class OtherPackage {
     List<Order> orders;
 
     /** Used to resolve relations */
-    @Generated(hash = 506680373)
-    private transient BoxStore __boxStore;
+    @Internal
+    @Generated(hash = 1307364262)
+    transient BoxStore __boxStore;
 
     @Generated(hash = 1440476873)
     public OtherPackage(long id, long customerId) {
@@ -59,7 +61,8 @@ public class OtherPackage {
         this.customerId = customerId;
     }
 
-    @Generated(hash = 8592637)
+    @Internal
+    @Generated(hash = 1698848862)
     private transient Long customer__resolvedKey;
 
     /** To-one relationship, resolved on first access. */

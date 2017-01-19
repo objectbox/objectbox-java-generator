@@ -6,6 +6,7 @@ import io.objectbox.annotation.Relation;
 
 import java.util.List;
 import io.objectbox.annotation.Generated;
+import io.objectbox.annotation.Internal;
 import io.objectbox.Box;
 import io.objectbox.BoxStore;
 import io.objectbox.exception.DbDetachedException;
@@ -23,8 +24,9 @@ public class Customer {
     List<Order> orders;
 
     /** Used to resolve relations */
-    @Generated(hash = 506680373)
-    private transient BoxStore __boxStore;
+    @Internal
+    @Generated(hash = 1307364262)
+    transient BoxStore __boxStore;
 
     @Generated(hash = 1039711609)
     public Customer(long id, String name) {
