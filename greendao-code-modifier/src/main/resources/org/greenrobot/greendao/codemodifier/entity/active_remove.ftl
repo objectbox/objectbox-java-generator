@@ -3,8 +3,8 @@
  */
 @Generated(hash = GENERATED_HASH_STUB)
 public void remove() {
-    if (__myBox == null) {
+    if (__boxStore == null) {
         throw new DbDetachedException();
     }
-    __myBox.remove(this);
+    __boxStore.boxFor(${entity.className}.class).remove(this);
 }

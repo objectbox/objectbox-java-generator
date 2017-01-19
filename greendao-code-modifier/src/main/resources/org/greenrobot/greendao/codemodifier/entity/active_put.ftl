@@ -4,8 +4,8 @@
  */
 @Generated(hash = GENERATED_HASH_STUB)
 public void put() {
-    if (__myBox == null) {
+    if (__boxStore == null) {
         throw new DbDetachedException();
     }
-    __myBox.put(this);
+    __boxStore.boxFor(${entity.className}.class).put(this);
 }

@@ -6,7 +6,7 @@ import org.eclipse.jface.text.Document
 import java.nio.charset.Charset
 
 /**
- * Helper class to perform transformations on Entity class
+ * Helper for [ObjectBoxGenerator] to perform transformations on Entity class
  *
  * Features and responsibilities:
  * - manages imports

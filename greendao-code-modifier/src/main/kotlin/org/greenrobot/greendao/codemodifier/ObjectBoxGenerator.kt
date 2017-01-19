@@ -12,8 +12,9 @@ import java.io.File
  * Main generator.
  * - triggers parsing of entities
  * - runs generation of dao classes within {@link org.greenrobot.greendao.generator.DaoGenerator}
- * - runs parsing and transformation of Entity classes using {@link EntityClassTransformer}
+ * - runs parsing and transformation of Entity classes using [EntityClassTransformer]
  */
+// TODO refactor, e.g. entity transformation could be completely delegated to [EntityClassTransformer]
 class ObjectBoxGenerator(val formattingOptions: FormattingOptions? = null,
                          val skipTestGeneration: List<String> = emptyList(),
                          val daoCompat: Boolean = false,
@@ -28,7 +29,7 @@ class ObjectBoxGenerator(val formattingOptions: FormattingOptions? = null,
         // it could be the encoding is never used by JDT itself for our use case, but just to be sure (and for future)
         jdtOptions.put(CompilerOptions.OPTION_Encoding, encoding)
 
-        entityClassParser =  EntityClassParser(jdtOptions, encoding)
+        entityClassParser = EntityClassParser(jdtOptions, encoding)
     }
 
     fun run(sourceFiles: Iterable<File>, schemaOptions: Map<String, SchemaOptions>) {
@@ -163,7 +164,7 @@ class ObjectBoxGenerator(val formattingOptions: FormattingOptions? = null,
             transformer.ensureImport("io.objectbox.exception.DbDetachedException")
             transformer.ensureImport("io.objectbox.exception.DbException")
 
-            generateActiveMethodsAndFields(transformer)
+            generateActiveMethodsAndFields(entity, transformer)
             generateToManyRelations(entity, transformer)
             generateToOneRelations(entity, parsedEntity, transformer)
         }
@@ -172,9 +173,10 @@ class ObjectBoxGenerator(val formattingOptions: FormattingOptions? = null,
         generateConstructors(parsedEntity, transformer)
 
         if (entity.active) {
-            val entityType = VariableType("${entity.javaPackage}.${entity.className}", false, entity.className)
-            transformer.defField("__myBox", VariableType("io.objectbox.Box", false, "Box", listOf(entityType)),
-                    "Used for active entity operations.")
+            // Currently myBox is not populated in native code
+//            val entityType = VariableType("${entity.javaPackage}.${entity.className}", false, entity.className)
+//            transformer.defField("__myBox", VariableType("io.objectbox.Box", false, "Box", listOf(entityType)),
+//                    "Used for active entity operations.")
             transformer.defField("__boxStore", VariableType("io.objectbox.BoxStore", false, "BoxStore"),
                     "Used to resolve relations")
         }
@@ -261,6 +263,7 @@ class ObjectBoxGenerator(val formattingOptions: FormattingOptions? = null,
         // add everything in reverse as transformer writes in reverse direction
         entity.toManyRelations.reversed().forEach { toMany ->
             transformer.ensureImport("${toMany.targetEntity.javaPackageDao}.${toMany.targetEntity.classNameDao}")
+            transformer.ensureImport("${toMany.targetEntity.javaPackage}.${toMany.targetEntity.className}_")
 
             transformer.defMethod("reset${toMany.name.capitalize()}") {
                 Templates.entity.manyRelationReset(toMany)
@@ -272,18 +275,18 @@ class ObjectBoxGenerator(val formattingOptions: FormattingOptions? = null,
         }
     }
 
-    private fun generateActiveMethodsAndFields(transformer: EntityClassTransformer) {
+    private fun generateActiveMethodsAndFields(entity: Entity, transformer: EntityClassTransformer) {
         // add everything in reverse as transformer writes in reverse direction
         transformer.defMethod("put") {
-            Templates.entity.activePut()
+            Templates.entity.activePut(entity)
         }
 
 //        transformer.defMethod("refresh") {
-//            Templates.entity.activeRefresh()
+//            Templates.entity.activeRefresh(entity)
 //        }
 
         transformer.defMethod("remove") {
-            Templates.entity.activeRemove()
+            Templates.entity.activeRemove(entity)
         }
     }
 }

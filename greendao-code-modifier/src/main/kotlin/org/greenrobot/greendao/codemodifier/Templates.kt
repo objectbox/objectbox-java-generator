@@ -20,7 +20,7 @@ object Templates {
         config.setClassForTemplateLoading(this.javaClass, '/' + this.javaClass.`package`.name.replace('.', '/'));
     }
 
-    private fun get(path : String) = config.getTemplate(path)
+    private fun get(path: String) = config.getTemplate(path)
 
     object entity {
         private val constructor = get("entity/constructor.ftl")
@@ -38,33 +38,35 @@ object Templates {
         val activePut = get("entity/active_put.ftl")
         val activeRefresh = get("entity/active_refresh.ftl")
 
-        fun constructor(className: String, properties: List<ParsedProperty>, notNullAnnotation: String) : String =
-            constructor(mapOf("className" to className, "properties" to properties, "notNullAnnotation" to notNullAnnotation))
+        fun constructor(className: String, properties: List<ParsedProperty>, notNullAnnotation: String): String =
+                constructor(mapOf(
+                        "className" to className,
+                        "properties" to properties,
+                        "notNullAnnotation" to notNullAnnotation))
 
-        fun oneRelationSetter(one: ToOne, notNullAnnotation: String) : String =
-            relationToOneSetter(mapOf("toOne" to one, "notNullAnnotation" to notNullAnnotation))
+        fun oneRelationSetter(one: ToOne, notNullAnnotation: String): String =
+                relationToOneSetter(mapOf("toOne" to one, "notNullAnnotation" to notNullAnnotation))
 
-        fun oneRelationGetter(one: ToOne, entity: Entity) : String =
-            relationToOneGetter(mapOf("entity" to entity, "toOne" to one))
+        fun oneRelationGetter(one: ToOne, entity: Entity): String =
+                relationToOneGetter(mapOf("entity" to entity, "toOne" to one))
 
-        fun oneRelationPeek(one: ToOne) : String =
-            relationToOnePeek(mapOf("toOne" to one))
+        fun oneRelationPeek(one: ToOne): String = relationToOnePeek(mapOf("toOne" to one))
 
-        fun manyRelationGetter(many: ToManyBase, entity: Entity) : String =
-            relationToManyGetter(mapOf("toMany" to many, "entity" to entity))
+        fun manyRelationGetter(many: ToManyBase, entity: Entity): String =
+                relationToManyGetter(mapOf("toMany" to many, "entity" to entity))
 
-        fun manyRelationReset(many: ToManyBase) : String =
-            relationToManyReset(mapOf("toMany" to many))
+        fun manyRelationReset(many: ToManyBase): String = relationToManyReset(mapOf("toMany" to many))
 
-        fun fieldGet(variable: Variable) : String =
-            fieldGet(mapOf("variable" to variable))
+        fun fieldGet(variable: Variable): String = fieldGet(mapOf("variable" to variable))
+        fun fieldSet(variable: Variable): String = fieldSet(mapOf("variable" to variable))
 
-        fun fieldSet(variable: Variable) : String =
-            fieldSet(mapOf("variable" to variable))
+        fun activePut(entity: Entity): String = activePut(mapOf("entity" to entity))
+        fun activeRemove(entity: Entity): String = activeRemove(mapOf("entity" to entity))
+        fun activeRefresh(entity: Entity): String = activeRefresh(mapOf("entity" to entity))
     }
 }
 
-operator fun Template.invoke(bindings : Map<String, Any> = emptyMap()) : String {
+operator fun Template.invoke(bindings: Map<String, Any> = emptyMap()): String {
     val writer = StringWriter()
     this.process(bindings, writer)
     return writer.toString()

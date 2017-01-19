@@ -26,10 +26,6 @@ public class Customer {
     @Generated(hash = 506680373)
     private transient BoxStore __boxStore;
 
-    /** Used for active entity operations. */
-    @Generated(hash = 1448445044)
-    private transient Box<Customer> __myBox;
-
     @Generated(hash = 1039711609)
     public Customer(long id, String name) {
         this.id = id;
@@ -88,23 +84,23 @@ public class Customer {
     /**
      * Removes entity from its object box. Entity must attached to an entity context.
      */
-    @Generated(hash = 366573901)
+    @Generated(hash = 471132471)
     public void remove() {
-        if (__myBox == null) {
+        if (__boxStore == null) {
             throw new DbDetachedException();
         }
-        __myBox.remove(this);
+        __boxStore.boxFor(Customer.class).remove(this);
     }
 
     /**
      * Puts the entity in its object box.
      * Entity must attached to an entity context.
      */
-    @Generated(hash = 1902731265)
+    @Generated(hash = 1952089828)
     public void put() {
-        if (__myBox == null) {
+        if (__boxStore == null) {
             throw new DbDetachedException();
         }
-        __myBox.put(this);
+        __boxStore.boxFor(Customer.class).put(this);
     }
 }

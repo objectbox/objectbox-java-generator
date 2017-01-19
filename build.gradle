@@ -14,6 +14,14 @@ task wrapper(type: Wrapper) {
     gradleVersion = '2.14.1'
 }
 
+if (JavaVersion.current().isJava8Compatible()) {
+    allprojects {
+        tasks.withType(Javadoc) {
+            options.addStringOption('Xdoclint:none', '-quiet')
+        }
+    }
+}
+
 // TODO ut: figure out how to include the custom resolved versions in the built POM, for now
 // adding all JDT deps manually in code-modifier build.gradle and excluding transitive dependencies
 //allprojects {
@@ -35,7 +43,7 @@ subprojects {
     apply plugin: 'maven'
     apply plugin: 'signing'
 
-    version = '0.9.6-SNAPSHOT'
+    version = '0.9.6.6-SNAPSHOT'
 
     repositories {
         jcenter()
