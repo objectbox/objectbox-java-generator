@@ -8,9 +8,9 @@ import java.util.List;
 
 import io.objectbox.codemodifier.test.Customer;
 import io.objectbox.codemodifier.test.Order;
-import io.objectbox.annotation.Internal;
 import io.objectbox.Box;
 import io.objectbox.BoxStore;
+import io.objectbox.annotation.apihint.Internal;
 import io.objectbox.exception.DbDetachedException;
 import io.objectbox.exception.DbException;
 import io.objectbox.codemodifier.test.Order_;
