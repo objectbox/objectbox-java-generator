@@ -8,13 +8,6 @@ public void set${toOne.name?cap_first}(<#if false && toOne.fkProperties[0].notNu
         throw new DbException("To-one property '${toOne.fkProperties[0].propertyName}' has not-null constraint; cannot set to-one to null");
     }
 </#if>
-    synchronized (this) {
-        this.${toOne.name} = ${toOne.name};
-<#if toOne.useFkProperty>
-        ${toOne.fkProperties[0].propertyName} = <#if true || !toOne.fkProperties[0].notNull>${toOne.name} == null ? 0 : </#if>${toOne.name}.get${toOne.targetEntity.pkProperty.propertyName?cap_first}();
-        ${toOne.name}__resolvedKey = ${toOne.fkProperties[0].propertyName};
-<#else>
-        ${toOne.name}__refreshed = true;
-</#if>
-    }
+    get${toOne.name?cap_first}__toOne().setTarget(this.${toOne.name});
+    this.${toOne.name} = ${toOne.name};
 }

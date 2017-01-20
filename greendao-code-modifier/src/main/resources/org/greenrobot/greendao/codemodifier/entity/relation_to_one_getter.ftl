@@ -3,32 +3,6 @@
 /** To-one relationship, resolved on first access. */
 @Generated(hash = GENERATED_HASH_STUB)
 public ${toOne.targetEntity.className} get${toOne.name?cap_first}() {
-<#if toOne.useFkProperty>
-${toOne.fkProperties[0].javaType} __key = this.${toOne.fkProperties[0].propertyName};
-    if (${toOne.name}__resolvedKey == null || <#--
---><#if toOne.resolvedKeyUseEquals[0]>!${toOne.name}__resolvedKey.equals(__key)<#--
---><#else>${toOne.name}__resolvedKey != __key</#if>) {
-        final BoxStore boxStore = this.__boxStore;
-        if (boxStore == null) {
-            throw new DbDetachedException();
-        }
-        Box<${toOne.targetEntity.className}> box = boxStore.boxFor(${toOne.targetEntity.className}.class);
-        ${toOne.targetEntity.className} ${toOne.name}New = box.get(__key);
-        synchronized (this) {
-            ${toOne.name} = ${toOne.name}New;
-            ${toOne.name}__resolvedKey = __key;
-        }
-    }
-<#else>
-    // XXX Unsupported! This case may be deleted in the future
-    if (${toOne.name} != null || !${toOne.name}__refreshed) {
-        if (daoSession == null) {
-            throw new DaoException("Entity is detached from DAO context");
-        }
-        ${toOne.targetEntity.classNameDao} targetDao = daoSession.get${toOne.targetEntity.classNameDao?cap_first}();
-        targetDao.refresh(${toOne.name});
-        ${toOne.name}__refreshed = true;
-    }
-</#if>
+    ${toOne.name} = get${toOne.name?cap_first}__toOne().getTarget(this.${toOne.fkProperties[0].propertyName});
     return ${toOne.name};
 }

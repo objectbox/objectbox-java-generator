@@ -210,7 +210,8 @@ class EntityClassTransformer(val parsedEntity: ParsedEntity, val jdtOptions: Mut
      *  - if it has @Generated annotation, then replace it with the new one
      *  - otherwise keep it
      * */
-    fun defineTransientGeneratedField(name: String, type: VariableType, comment: String? = null, qualifier: String? = null) {
+    fun defineTransientGeneratedField(name: String, type: VariableType, comment: String? = null,
+                                      qualifier: String? = null, assignment: String? = null) {
         val field = parsedEntity.transientFields.find { it.variable.name == name }
         // replace only generated code
         if (field == null || field.generated) {
@@ -225,7 +226,8 @@ class EntityClassTransformer(val parsedEntity: ParsedEntity, val jdtOptions: Mut
             if (qualifier != null) {
                 code += qualifier + " "
             }
-            code += "transient ${type.simpleName}$genericParams $name;"
+            code += "transient ${type.simpleName}$genericParams $name"
+            code += if (assignment != null) " = $assignment;" else ";"
             code = replaceHashStub(code)
             insertField(code, field?.node)
         } else {

@@ -26,7 +26,7 @@ object Templates {
         private val constructor = get("entity/constructor.ftl")
         private val relationToOneSetter = get("entity/relation_to_one_setter.ftl")
         private val relationToOneGetter = get("entity/relation_to_one_getter.ftl")
-        private val relationToOnePeek = get("entity/relation_to_one_peek.ftl")
+        private val relationToOneToOneGetter = get("entity/relation_to_one_ToOneGetter.ftl")
 
         private val relationToManyGetter = get("entity/relation_to_many_getter.ftl")
         private val relationToManyReset = get("entity/relation_to_many_reset.ftl")
@@ -50,7 +50,8 @@ object Templates {
         fun oneRelationGetter(one: ToOne, entity: Entity): String =
                 relationToOneGetter(mapOf("entity" to entity, "toOne" to one))
 
-        fun oneRelationPeek(one: ToOne): String = relationToOnePeek(mapOf("toOne" to one))
+        fun oneRelationToOneGetter(one: ToOne, entity: Entity): String =
+                relationToOneToOneGetter(mapOf("entity" to entity, "toOne" to one))
 
         fun manyRelationGetter(many: ToManyBase, entity: Entity): String =
                 relationToManyGetter(mapOf("toMany" to many, "entity" to entity))

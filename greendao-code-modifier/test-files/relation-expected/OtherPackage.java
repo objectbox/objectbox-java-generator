@@ -14,6 +14,7 @@ import io.objectbox.annotation.apihint.Internal;
 import io.objectbox.exception.DbDetachedException;
 import io.objectbox.exception.DbException;
 import io.objectbox.codemodifier.test.Order_;
+import io.objectbox.relation.ToOne;
 
 @Entity
 public class OtherPackage {
@@ -62,36 +63,30 @@ public class OtherPackage {
     }
 
     @Internal
-    @Generated(hash = 1698848862)
-    private transient Long customer__resolvedKey;
+    @Generated(hash = 1021441002)
+    private transient ToOne<OtherPackage, Customer> customer__toOne;
+
+    /** See {@link io.objectbox.relation.ToOne} for details. */
+    @Generated(hash = 1644448081)
+    public synchronized ToOne<OtherPackage, Customer> getCustomer__toOne() {
+        if (customer__toOne == null) {
+            customer__toOne = new ToOne<>(this, OtherPackage_.customerId, Customer.class);
+        }
+        return customer__toOne;
+    }
 
     /** To-one relationship, resolved on first access. */
-    @Generated(hash = 910495430)
+    @Generated(hash = 424372732)
     public Customer getCustomer() {
-        long __key = this.customerId;
-        if (customer__resolvedKey == null || customer__resolvedKey != __key) {
-            final BoxStore boxStore = this.__boxStore;
-            if (boxStore == null) {
-                throw new DbDetachedException();
-            }
-            Box<Customer> box = boxStore.boxFor(Customer.class);
-            Customer customerNew = box.get(__key);
-            synchronized (this) {
-                customer = customerNew;
-                customer__resolvedKey = __key;
-            }
-        }
+        customer = getCustomer__toOne().getTarget(this.customerId);
         return customer;
     }
 
     /** Set the to-one relation including its ID property. */
-    @Generated(hash = 1322376583)
+    @Generated(hash = 93442442)
     public void setCustomer(Customer customer) {
-        synchronized (this) {
-            this.customer = customer;
-            customerId = customer == null ? 0 : customer.getId();
-            customer__resolvedKey = customerId;
-        }
+        getCustomer__toOne().setTarget(this.customer);
+        this.customer = customer;
     }
 
     /**

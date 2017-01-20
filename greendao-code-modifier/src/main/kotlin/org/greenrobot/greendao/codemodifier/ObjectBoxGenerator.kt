@@ -248,35 +248,39 @@ class ObjectBoxGenerator(val formattingOptions: FormattingOptions? = null,
     }
 
     private fun generateToOneRelations(entity: Entity, parsedEntity: ParsedEntity, transformer: EntityClassTransformer) {
+        if(entity.toOneRelations.isEmpty()) return;
+        transformer.ensureImport("io.objectbox.relation.ToOne")
+
         // add everything in reverse as transformer writes in reverse direction
         entity.toOneRelations.reversed().forEach { toOne ->
             // define methods
+            val relationIdProperty = toOne.fkProperties[0]
             transformer.defMethod("set${toOne.name.capitalize()}", toOne.targetEntity.className) {
-                if (parsedEntity.notNullAnnotation == null && toOne.fkProperties[0].isNotNull) {
+                if (parsedEntity.notNullAnnotation == null && relationIdProperty.isNotNull) {
                     // Not yet supported
                     //transformer.ensureImport("io.objectbox.annotation.NotNull")
                 }
                 Templates.entity.oneRelationSetter(toOne, parsedEntity.notNullAnnotation ?: "@NotNull")
             }
 
-            // Do we need peek at all? User can implement it if required.
-//            if (!toOne.isUseFkProperty) {
-//                transformer.defMethod("peek${toOne.name.capitalize()}") {
-//                    Templates.entity.oneRelationPeek(toOne)
-//                }
-//            }
-
-            transformer.defMethod("get${toOne.name.capitalize()}") {
+            val getterName = "get${toOne.name.capitalize()}"
+            transformer.defMethod(getterName) {
                 Templates.entity.oneRelationGetter(toOne, entity)
             }
 
-            // define fields
-            if (toOne.isUseFkProperty) {
-                val variableType = VariableType(toOne.resolvedKeyJavaType[0], false, toOne.resolvedKeyJavaType[0])
-                transformer.defineTransientGeneratedField("${toOne.name}__resolvedKey", variableType, null, "private")
-            } else {
-                transformer.defineTransientGeneratedField("${toOne.name}__refreshed", VariableType("boolean", true, "boolean"))
+            transformer.defMethod(getterName + "__toOne") {
+                Templates.entity.oneRelationToOneGetter(toOne, entity)
             }
+
+            val toOneTypeArgs = listOf(
+                    VariableType(entity.className, false, entity.javaPackage),
+                    VariableType(toOne.targetEntity.className, false, toOne.targetEntity.javaPackage)
+            )
+            val variableType = VariableType("ToOne", false, "ToOne", toOneTypeArgs)
+            val assignment = null
+            //val assignment = "new ToOne<>(this, ${entity.className}_.${relationIdProperty.propertyName}, " +
+            //        toOne.targetEntity.className + ".class)"
+            transformer.defineTransientGeneratedField("${toOne.name}__toOne", variableType, null, "private", assignment)
         }
     }
 
