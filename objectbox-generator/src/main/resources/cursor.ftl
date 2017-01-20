@@ -1,6 +1,6 @@
 <#--
 
-Copyright (C) 2016 Markus Junginger, greenrobot (http://greenrobot.org)
+Copyright (C) 2017 Markus Junginger, greenrobot (http://greenrobot.org)
                                                                            
 This file is part of ObjectBox Generator.
                                                                            
@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import io.objectbox.Cursor;
 import io.objectbox.Properties;
 import io.objectbox.Transaction;
+import io.objectbox.annotation.apihint.Temporary;
 <#if entity.toOneRelations?has_content>
 </#if>
 <#if entity.incomingToManyRelations?has_content>
@@ -78,23 +79,24 @@ public final class ${entity.classNameDao} extends Cursor<${entity.className}> {
     // TODO private Query<${toMany.targetEntity.className}> ${toMany.sourceEntity.className?uncap_first}_${toMany.name?cap_first}Query;
 </#list>
 
+    // Property IDs get verified in Cursor base class
 <#list entity.properties as property>
 <#if !property.isPrimaryKey()>
-    private final int _${property.propertyName}Id;
+    private final static int __ID_${property.propertyName} = ${entity.className}_.${property.propertyName}.id;
 </#if>
 </#list>
 
     public ${entity.classNameDao}(Transaction tx, long cursor) {
         super(tx, cursor, PROPERTIES);
-<#list entity.properties as property>
-<#if !property.isPrimaryKey()>
-        _${property.propertyName}Id = getPropertyId("${property.propertyName}");
-</#if>
-</#list>
+    }
+
+    @Temporary<#-- TODO Just for Box calling getId(), method should move into a new class(?) -->
+    public ${entity.classNameDao}() {
     }
 
     @Override
     public final long getId(${entity.className} entity) {
+<#-- TODO Check if we can use the field directly -->
         return entity.get${entity.pkProperty.propertyName?cap_first}();
     }
 

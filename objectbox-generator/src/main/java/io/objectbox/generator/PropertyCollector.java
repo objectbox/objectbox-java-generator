@@ -197,8 +197,8 @@ class PropertyCollector {
         } else {
             Property property = properties.remove(0);
             String name = property.getPropertyName();
-            String propertyId = '_' + name + "Id";
-            String propertyIdLocal = "_id" + property.getOrdinal();
+            String propertyId = "__ID_" + name;
+            String propertyIdLocal = "__id" + property.getOrdinal();
             if (entity.isProtobuf()) {
                 // TODO Test
                 preCall.append(INDENT).append("int ").append(propertyIdLocal).append(" = entity.has")
@@ -228,6 +228,7 @@ class PropertyCollector {
     private void appendCollectCall(String collectSignature, StringBuilder all, StringBuilder preCall,
                                    StringBuilder call, boolean first, boolean last) {
         // ID property before preCall for non-primitives
+        // TODO check if we can use fields directly
         if (last && idProperty.isNonPrimitiveType() && !entity.isProtobuf()) {
             all.append(INDENT).append(idProperty.getJavaTypeInEntity()).append(' ')
                     .append(idProperty.getPropertyName()).append(" = ").append(getter(idProperty)).append(";\n");
