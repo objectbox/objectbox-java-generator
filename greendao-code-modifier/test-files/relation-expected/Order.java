@@ -76,9 +76,9 @@ public class Order {
     }
 
     /** Set the to-one relation including its ID property. */
-    @Generated(hash = 93442442)
+    @Generated(hash = 410684144)
     public void setCustomer(Customer customer) {
-        getCustomer__toOne().setTarget(this.customer);
+        getCustomer__toOne().setTarget(customer);
         this.customer = customer;
     }
 

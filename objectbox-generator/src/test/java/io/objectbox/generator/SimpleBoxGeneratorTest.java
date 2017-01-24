@@ -129,13 +129,13 @@ public class SimpleBoxGeneratorTest {
         assertTrue(cursorFile.toString(), cursorFile.exists());
         final String cursorContent = FileUtils.readUtf8(cursorFile);
         assertTrue(cursorContent.contains("collect400000(cursor, 0, PUT_FLAG_FIRST,\n" +
-                "                _id1, string1, _id2, string2,\n" +
-                "                _id3, string3, _id4, string4);\n"
+                "                __id1, string1, __id2, string2,\n" +
+                "                __id3, string3, __id4, string4);\n"
         ));
 
         assertTrue(cursorContent.contains("        long __assignedId = " +
                 "collect004000(cursor, entity.getId(), PUT_FLAG_COMPLETE,\n" +
-                "                _primitiveId, entity.getPrimitive(), 0, 0,\n"
+                "                __ID_primitive, entity.getPrimitive(), 0, 0,\n"
         ));
     }
 
@@ -187,7 +187,7 @@ public class SimpleBoxGeneratorTest {
         // Assert Cursor file
         assertTrue(cursorFile.toString(), cursorFile.exists());
         final String cursorContent = FileUtils.readUtf8(cursorFile);
-        assertTrue(cursorContent.contains("_customerIdId, entity.getCustomerId()"));
+        assertTrue(cursorContent.contains("__ID_customerId, entity.getCustomerId()"));
 
         // Assert MyObjectBox file
         assertTrue(myObjectBoxFile.toString(), myObjectBoxFile.exists());

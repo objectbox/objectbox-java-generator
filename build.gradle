@@ -43,7 +43,7 @@ subprojects {
     apply plugin: 'maven'
     apply plugin: 'signing'
 
-    version = '0.9.6.11-SNAPSHOT'
+    version = '0.9.6'
 
     repositories {
         jcenter()
