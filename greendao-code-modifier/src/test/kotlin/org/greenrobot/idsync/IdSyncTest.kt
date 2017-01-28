@@ -54,15 +54,15 @@ class IdSyncTest {
         val entity = model.entities.first()
         assertEquals("Entity1", entity.name)
         assertEquals(1, entity.id)
-        assertTrue(entity.refId > 1)
+        assertTrue(entity.uid > 1)
 
         assertEquals(2, entity.properties.size)
         assertEquals("foo", entity.properties[0].name)
         assertEquals(1, entity.properties[0].id)
-        assertTrue(entity.properties[0].refId > 1)
+        assertTrue(entity.properties[0].uid > 1)
         assertEquals(2, entity.properties[1].id)
         assertEquals("bar", entity.properties[1].name)
-        assertTrue(entity.properties[1].refId > 1)
+        assertTrue(entity.properties[1].uid > 1)
     }
 
     @Test
@@ -126,7 +126,7 @@ class IdSyncTest {
     @Test
     fun testAddEntity() {
         val model1 = syncBasicModel()
-        val entityRefId = model1.entities.first().refId
+        val entityRefId = model1.entities.first().uid
         idSync = IdSync(file)
         val parsedEntities = listOf(
                 createEntity("Entity1A", basicProperties(), entityRefId),
@@ -138,7 +138,7 @@ class IdSyncTest {
         assertEquals(2, model2.entities.size)
         val entity = model2.entities.last()
         assertEquals(2, entity.id)
-        assertTrue(entity.refId > 1)
+        assertTrue(entity.uid > 1)
     }
 
     @Test
@@ -163,7 +163,7 @@ class IdSyncTest {
     @Test(expected = IdSyncException::class)
     fun testAddEntityWithDuplicateRefId() {
         val model1 = syncBasicModel()
-        val entityRefId = model1.entities.first().refId
+        val entityRefId = model1.entities.first().uid
         val parsedEntities = listOf(
                 createEntity("Entity1A", basicProperties(), entityRefId),
                 createEntity("Entity2", basicProperties(), entityRefId))
@@ -174,10 +174,10 @@ class IdSyncTest {
     @Test(expected = IdSyncException::class)
     fun testAddEntityPropertyWithDuplicateRefId() {
         val model1 = syncBasicModel()
-        val propertyRefId = model1.entities.first().properties.first().refId
-        val entityRefId = model1.entities.first().refId
+        val propertyRefId = model1.entities.first().properties.first().uid
+        val entityRefId = model1.entities.first().uid
         val properties = basicProperties()
-        properties.forEach { it.refId = propertyRefId }
+        properties.forEach { it.uid = propertyRefId }
         val parsedEntities = listOf(createEntity("Entity1", properties, entityRefId))
         idSync = IdSync(file)
         idSync!!.sync(parsedEntities)
@@ -186,9 +186,9 @@ class IdSyncTest {
     @Test(expected = IdSyncException::class)
     fun testEntityPropertyRefIdCollision() {
         val model1 = syncBasicModel()
-        val entityRefId = model1.entities.first().refId
+        val entityRefId = model1.entities.first().uid
         val properties = basicProperties()
-        properties.last().refId = entityRefId
+        properties.last().uid = entityRefId
         val parsedEntities = listOf(createEntity("Entity1", properties, entityRefId))
         idSync = IdSync(file)
         idSync!!.sync(parsedEntities)
@@ -232,11 +232,11 @@ class IdSyncTest {
         val model2 = idSync!!.justRead()!!
         assertEquals(1, model2.retiredEntityRefIds!!.size)
         val entityRefIdDeleted = model2.retiredEntityRefIds!!.first()
-        assertEquals(entity1.refId, entityRefIdDeleted)
+        assertEquals(entity1.uid, entityRefIdDeleted)
 
         assertEquals(2, model2.retiredPropertyRefIds!!.size)
-        assertEquals(entity1.properties[0].refId, model2.retiredPropertyRefIds!![0])
-        assertEquals(entity1.properties[1].refId, model2.retiredPropertyRefIds!![1])
+        assertEquals(entity1.properties[0].uid, model2.retiredPropertyRefIds!![0])
+        assertEquals(entity1.properties[1].uid, model2.retiredPropertyRefIds!![1])
     }
 
     @Test
@@ -276,7 +276,7 @@ class IdSyncTest {
                 variable = Variable(VariableType("java.lang.String", false, "String"), name + "_"),
                 dbName = name,
                 index = if (indexed) PropertyIndex("dummyname", false) else null,
-                refId = refId
+                uid = refId
         )
     }
 
@@ -294,7 +294,7 @@ class IdSyncTest {
                 imports = emptyList(),
                 packageName = "pac.me",
                 dbName = name,
-                refId = refId,
+                uid = refId,
                 oneRelations = emptyList(),
                 manyRelations = emptyList(),
                 sourceFile = File("dummy-src-$name"),

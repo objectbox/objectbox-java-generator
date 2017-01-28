@@ -35,7 +35,7 @@ object GreendaoModelTranslator {
             entity.javaPackage = parsedEntity.packageName
 
             val idSyncEntity = idSync.get(parsedEntity)
-            entity.modelRefId = idSyncEntity.refId
+            entity.modelRefId = idSyncEntity.uid
             entity.modelId = idSyncEntity.id
             entity.lastPropertyId = idSyncEntity.lastPropertyId
 
@@ -216,7 +216,7 @@ object GreendaoModelTranslator {
         val propertyType = convertPropertyType((property.customType?.columnJavaType ?: property.variable.type).name)
         val propertyBuilder = entity.addProperty(propertyType, property.variable.name)
         propertyBuilder.modelId(modelIds.id)
-        propertyBuilder.modelRefId(modelIds.refId)
+        propertyBuilder.modelRefId(modelIds.uid)
         if (modelIds.indexId != null && modelIds.indexId != 0) {
             propertyBuilder.modelIndexId(modelIds.indexId)
         }

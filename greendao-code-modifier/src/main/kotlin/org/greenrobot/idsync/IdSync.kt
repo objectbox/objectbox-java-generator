@@ -64,10 +64,10 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
                 modelRefId.addExistingIds(retiredEntityRefIds)
                 modelRefId.addExistingIds(retiredPropertyRefIds)
                 modelRead!!.entities.forEach {
-                    modelRefId.addExistingId(it.refId)
-                    it.properties.forEach { modelRefId.addExistingId(it.refId) }
+                    modelRefId.addExistingId(it.uid)
+                    it.properties.forEach { modelRefId.addExistingId(it.uid) }
                     validateLastIds(it)
-                    entitiesReadByRefId.put(it.refId, it)
+                    entitiesReadByRefId.put(it.uid, it)
                     if (entitiesReadByName.put(it.name.toLowerCase(), it) != null) {
                         throw IdSyncException("Duplicate entity name ${it.name} in " + jsonFile.absolutePath)
                     }
@@ -115,7 +115,7 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
 
     private fun syncEntity(parsedEntity: ParsedEntity): Entity {
         val entityName = parsedEntity.dbName ?: parsedEntity.name
-        var entityRefId = parsedEntity.refId
+        var entityRefId = parsedEntity.uid
         if (entityRefId != null && !parsedRefIds.add(entityRefId)) {
             throw IdSyncException("Non-unique refId $entityRefId in parsed entity ${parsedEntity.name} in file " +
                     parsedEntity.sourceFile.absolutePath)
@@ -133,7 +133,7 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
         val entity = Entity(
                 name = entityName,
                 id = existingEntity?.id ?: ++lastEntityId,
-                refId = existingEntity?.refId ?: modelRefId.create(),
+                uid = existingEntity?.uid ?: modelRefId.create(),
                 properties = properties,
                 lastPropertyId = lastPropertyId
         )
@@ -146,7 +146,7 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
         val name = parsedProperty.dbName ?: parsedProperty.variable.name
         var existingProperty: Property? = null
         if (existingEntity != null) {
-            val propertyRefId = parsedProperty.refId
+            val propertyRefId = parsedProperty.uid
             if (propertyRefId != null && !parsedRefIds.add(propertyRefId)) {
                 throw IdSyncException("Non-unique refId $propertyRefId in parsed entity ${parsedEntity.name} " +
                         "and property ${parsedProperty.variable.name} in file " +
@@ -165,7 +165,7 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
 
         val property = Property(
                 name = name,
-                refId = existingProperty?.refId ?: modelRefId.create(),
+                uid = existingProperty?.uid ?: modelRefId.create(),
                 id = existingProperty?.id ?: lastPropertyId + 1,
                 indexId = indexId
         )
@@ -183,7 +183,13 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
         var source: Source? = null;
         try {
             source = Okio.source(file)
-            return modelJsonAdapter.fromJson(Okio.buffer(source))
+            val syncModel = modelJsonAdapter.fromJson(Okio.buffer(source))
+            syncModel.entities.forEach {
+                if (it.uid == 0L && it.refId != null) {
+                    it.uid = it.refId
+                }
+            }
+            return syncModel
         } catch (e: FileNotFoundException) {
             return null
         } finally {
@@ -202,7 +208,7 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
 
     private fun findProperty(entity: Entity, name: String, refId: Long?): Property? {
         if (refId != null) {
-            val filtered = entity.properties.filter { it.refId == refId }
+            val filtered = entity.properties.filter { it.uid == refId }
             if (filtered.isEmpty()) {
                 throw IdSyncException("In entity ${entity.name}, no property with refID $refId found in " +
                         jsonFile.absolutePath)
@@ -219,7 +225,7 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
 
     private fun updateRetiredRefIds(entities: List<Entity>) {
         val oldEntityRefIds = entitiesReadByRefId.keys.toMutableList()
-        oldEntityRefIds.removeAll(entities.map { it.refId })
+        oldEntityRefIds.removeAll(entities.map { it.uid })
         retiredEntityRefIds.addAll(oldEntityRefIds)
 
         val oldPropertyRefIds = collectPropertyRefIds(entitiesReadByRefId.values)
@@ -231,7 +237,7 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
     private fun collectPropertyRefIds(entities: Collection<Entity>): MutableList<Long> {
         val propertyRefIds = ArrayList<Long>()
         entities.forEach {
-            it.properties.forEach { propertyRefIds += it.refId }
+            it.properties.forEach { propertyRefIds += it.uid }
         }
         return propertyRefIds
     }

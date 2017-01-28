@@ -31,7 +31,7 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
     var protobufClassName: String? = null
     var usedNotNullAnnotation: String? = null
     var lastField: FieldDeclaration? = null
-    var entityRefId: Long? = null
+    var entityUid: Long? = null
 
     private val methodAnnotations = mutableListOf<Annotation>()
     private val fieldAnnotations = mutableListOf<Annotation>()
@@ -85,7 +85,7 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
                         // schemaName = "entityAnnotation.schema
                         // active = entityAnnotation.active
                         entityDbName = entityAnnotation.nameInDb.nullIfBlank()
-                        entityRefId = entityAnnotation.refId
+                        entityUid = entityAnnotation.uid
                         // createTable = entityAnnotation.createInDb
                         generateConstructors = entityAnnotation.generateConstructors
                         generateGettersSetters = true // TODO trouble with that - getters and setter are gone in tests - entityAnnotation.generateGettersSetters
@@ -252,14 +252,14 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
 
         val customType = findConvert(fieldName, fa)
 
-        val refId = property?.refId
+        val uid = property?.uid
         return ParsedProperty(
                 variable = Variable(variableType, fieldName.toString()),
                 idParams = id?.let { EntityIdParams(it.monotonic, it.assignable) },
                 index = index?.let { PropertyIndex(null, false /* TODO indexAnnotation.unique*/) },
                 isNotNull = node.type.isPrimitiveType || fa.hasNotNull,
                 dbName = property?.nameInDb?.let { it.nullIfBlank() },
-                refId = if (refId != null && refId != 0L) refId else null,
+                uid = if (uid != null && uid != 0L) uid else null,
                 customType = customType
         )
     }
@@ -380,7 +380,7 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
                     imports = imports,
                     packageName = packageName ?: "",
                     dbName = entityDbName,
-                    refId = if (entityRefId != null && entityRefId != 0L) entityRefId else null,
+                    uid = if (entityUid != null && entityUid != 0L) entityUid else null,
                     oneRelations = oneRelations,
                     manyRelations = manyRelations,
                     sourceFile = javaFile,

@@ -25,7 +25,9 @@ data class IdSyncModel(
 data class Entity(
         val name: String,
         val id: Int,
-        val refId: Long,
+        @Deprecated("To read in old refIds from JSON", ReplaceWith("uid"))
+        val refId: Long? = null,
+        var uid: Long,
         val lastPropertyId: Int,
 
         val properties: List<Property>
@@ -34,7 +36,9 @@ data class Entity(
 data class Property(
         val name: String,
         val id: Int,
-        val refId: Long,
+        @Deprecated("To read in old refIds from JSON", ReplaceWith("uid"))
+        val refId: Long? = null,
+        var uid: Long,
         val indexId: Int?
 )
 
