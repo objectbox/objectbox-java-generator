@@ -27,18 +27,21 @@ class IdSyncTest {
     }
 
     @Test
-    fun testModelRefId() {
-        val modelRefId = ModelRefId()
+    fun testModelUid() {
+        val modelUid = ModelUid()
+        val unique = mutableSetOf<Long>()
         for (i in 0..100) {
-            val x = modelRefId.create()
-            modelRefId.verify(x)
+            val x = modelUid.create()
+            modelUid.verify(x)
+            assertTrue(unique.add(x))
             try {
-                modelRefId.verify(x xor 1)
+                val shifted = 1L.shl(i)
+                modelUid.verify(x xor shifted)
             } catch (e: RuntimeException) {
                 // Expected
             }
             try {
-                modelRefId.verify(x xor (1 shl 60))
+                modelUid.verify(x xor (1 shl 60))
             } catch (e: RuntimeException) {
                 // Expected
             }

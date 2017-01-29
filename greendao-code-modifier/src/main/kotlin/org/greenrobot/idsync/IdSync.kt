@@ -18,7 +18,7 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
 
     private val modelJsonAdapter: JsonAdapter<IdSyncModel>
 
-    private val modelRefId: ModelRefId
+    private val modelUid: ModelUid
 
     private val entitiesReadByRefId = HashMap<Long, Entity>()
     private val entitiesReadByName = HashMap<String, Entity>()
@@ -48,7 +48,7 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
         backupFile = File(jsonFile.absolutePath + ".bak")
         val moshi = Moshi.Builder().build()
         modelJsonAdapter = moshi.adapter<IdSyncModel>(IdSyncModel::class.java)
-        modelRefId = ModelRefId()
+        modelUid = ModelUid()
         initModel()
     }
 
@@ -61,11 +61,11 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
                 lastSequenceId = modelRead!!.lastSequenceId
                 retiredEntityRefIds += modelRead!!.retiredEntityRefIds ?: emptyList()
                 retiredPropertyRefIds += modelRead!!.retiredPropertyRefIds ?: emptyList()
-                modelRefId.addExistingIds(retiredEntityRefIds)
-                modelRefId.addExistingIds(retiredPropertyRefIds)
+                modelUid.addExistingIds(retiredEntityRefIds)
+                modelUid.addExistingIds(retiredPropertyRefIds)
                 modelRead!!.entities.forEach {
-                    modelRefId.addExistingId(it.uid)
-                    it.properties.forEach { modelRefId.addExistingId(it.uid) }
+                    modelUid.addExistingId(it.uid)
+                    it.properties.forEach { modelUid.addExistingId(it.uid) }
                     validateLastIds(it)
                     entitiesReadByRefId.put(it.uid, it)
                     if (entitiesReadByName.put(it.name.toLowerCase(), it) != null) {
@@ -133,7 +133,7 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
         val entity = Entity(
                 name = entityName,
                 id = existingEntity?.id ?: ++lastEntityId,
-                uid = existingEntity?.uid ?: modelRefId.create(),
+                uid = existingEntity?.uid ?: modelUid.create(),
                 properties = properties,
                 lastPropertyId = lastPropertyId
         )
@@ -165,7 +165,7 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
 
         val property = Property(
                 name = name,
-                uid = existingProperty?.uid ?: modelRefId.create(),
+                uid = existingProperty?.uid ?: modelUid.create(),
                 id = existingProperty?.id ?: lastPropertyId + 1,
                 indexId = indexId
         )

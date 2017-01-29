@@ -1,6 +1,7 @@
 package org.greenrobot.idsync
 
 import org.greenrobot.essentials.hash.Murmur3F
+import java.security.SecureRandom
 import java.util.*
 
 /**
@@ -8,18 +9,18 @@ import java.util.*
  * This is preferred in referencing, because they are unique and thus detect illegal copy&paste.
  */
 // Note: make it independent from the (real) ID, it will be necessary to change ID after git conflicts.
-class ModelRefId(
-        val existingRefIds: MutableSet<Long> = HashSet()
+class ModelUid(
+        val existingUids: MutableSet<Long> = HashSet()
 ) {
-    val random = Random();
+    val random = SecureRandom();
 
     init {
-        existingRefIds.forEach { verify(it) }
+        existingUids.forEach { verify(it) }
     }
 
     fun addExistingId(id: Long ) {
         verify(id)
-        if(!existingRefIds.add(id)) {
+        if(!existingUids.add(id)) {
             throw IdSyncException("Duplicate ref ID $id")
         }
     }
@@ -35,7 +36,7 @@ class ModelRefId(
             val murmur = Murmur3F()
             murmur.updateLongLE(randomPart)
             newId = randomPart or (murmur.value and 0xFF)
-        } while (!existingRefIds.add(newId))
+        } while (!existingUids.add(newId))
         return newId
     }
 
@@ -49,7 +50,6 @@ class ModelRefId(
             throw IdSyncException("Illegal ref ID: " + value)
         }
     }
-
 
 }
 
