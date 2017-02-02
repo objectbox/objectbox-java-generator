@@ -45,7 +45,7 @@ public class Entity {
     private final Schema schema;
     private final String className;
     private Integer modelId;
-    private Long modelRefId;
+    private Long modelUid;
     private Integer lastPropertyId;
     private final List<Property> properties;
     private List<Property> propertiesColumns;
@@ -111,13 +111,13 @@ public class Entity {
         return modelId;
     }
 
-    public Entity setModelRefId(Long modelRefId) {
-        this.modelRefId = modelRefId;
+    public Entity setModelUid(Long modelUid) {
+        this.modelUid = modelUid;
         return this;
     }
 
-    public Long getModelRefId() {
-        return modelRefId;
+    public Long getModelUid() {
+        return modelUid;
     }
 
     public Integer getLastPropertyId() {

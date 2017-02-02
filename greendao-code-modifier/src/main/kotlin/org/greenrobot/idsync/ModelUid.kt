@@ -12,6 +12,7 @@ import java.util.*
 class ModelUid(
         val existingUids: MutableSet<Long> = HashSet()
 ) {
+    // Use SecureRandom to better avoid conflicts when IDs are assigned in diverging git branches
     val random = SecureRandom();
 
     init {

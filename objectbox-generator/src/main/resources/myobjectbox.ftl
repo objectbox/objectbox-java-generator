@@ -70,7 +70,7 @@ public class MyObjectBox {
 <#list schema.entities as entity>
         entityBuilder = modelBuilder.entity("${entity.dbName}");
 <#if entity.modelId??>
-        entityBuilder.id(${entity.modelId?c})<#if entity.modelRefId??>.refId(${entity.modelRefId?c}L)</#if><#if
+        entityBuilder.id(${entity.modelId?c})<#if entity.modelUid??>.uid(${entity.modelUid?c}L)</#if><#if
             entity.lastPropertyId??>.lastPropertyId(${entity.lastPropertyId?c})</#if>;
 </#if>
 <#list entity.propertiesColumns as property>
@@ -88,7 +88,7 @@ public class MyObjectBox {
         entityBuilder.property("${property.dbName}", <#--
         --><#if property.targetEntity??>"${property.targetEntity.dbName}", </#if>PropertyType.${property.dbType})<#--
         --><#if property.modelId??>.id(${property.modelId?c})</#if><#--
-        --><#if property.modelRefId??>.refId(${property.modelRefId?c}L)</#if><#--
+        --><#if property.modelUid??>.uid(${property.modelUid?c}L)</#if><#--
         --><#if (uniqueFlags?size > 0)>
 
             .flags(${uniqueFlags?join(" | ")})</#if><#--

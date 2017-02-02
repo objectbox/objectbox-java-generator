@@ -29,9 +29,6 @@ import java.io.File;
 
 import org.greenrobot.essentials.io.FileUtils;
 
-import io.objectbox.generator.BoxGenerator;
-
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -162,10 +159,10 @@ public class SimpleBoxGeneratorTest {
         schema.setLastEntityId(2);
         schema.setLastIndexId(1);
         Entity customer = schema.addEntity("Customer");
-        customer.setModelId(1).setModelRefId(1001L).setLastPropertyId(1);
+        customer.setModelId(1).setModelUid(1001L).setLastPropertyId(1);
         customer.addIdProperty().modelId(1).modelRefId(1002).getProperty();
         Entity order = schema.addEntity("Order");
-        order.setModelId(2).setModelRefId(1003L).setLastPropertyId(2);
+        order.setModelId(2).setModelUid(1003L).setLastPropertyId(2);
         order.addIdProperty().modelId(1).modelRefId(1004).getProperty();
         Property customerId = order.addLongProperty("customerId").modelId(2).modelRefId(1005)
                 .modelIndexId(1).getProperty();

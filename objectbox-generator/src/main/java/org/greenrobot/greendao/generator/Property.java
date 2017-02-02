@@ -51,7 +51,7 @@ public class Property {
         }
 
         public PropertyBuilder modelRefId(long modelRefId) {
-            property.modelRefId = modelRefId;
+            property.modelUid = modelRefId;
             return this;
         }
 
@@ -203,7 +203,7 @@ public class Property {
 
     private Integer modelId;
     private Integer modelIndexId;
-    private Long modelRefId;
+    private Long modelUid;
 
     private String dbName;
     private String dbType;
@@ -263,8 +263,8 @@ public class Property {
         this.propertyType = propertyType;
     }
 
-    public Long getModelRefId() {
-        return modelRefId;
+    public Long getModelUid() {
+        return modelUid;
     }
 
     public Integer getModelId() {

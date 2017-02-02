@@ -35,7 +35,7 @@ object GreendaoModelTranslator {
             entity.javaPackage = parsedEntity.packageName
 
             val idSyncEntity = idSync.get(parsedEntity)
-            entity.modelRefId = idSyncEntity.uid
+            entity.modelUid = idSyncEntity.uid
             entity.modelId = idSyncEntity.id
             entity.lastPropertyId = idSyncEntity.lastPropertyId
 
