@@ -42,13 +42,13 @@ class ModelUid(
     }
 
     fun verify(value: Long) {
-        if (value < 0) throw IdSyncException("Illegal ref ID: " + value)
+        if (value < 0) throw IdSyncException("Illegal UID: " + value)
         val randomPart = value and 0x7FFFFFFFFFFFFF00
-        if (randomPart == 0L) throw IdSyncException("Illegal ref ID: " + value)
+        if (randomPart == 0L) throw IdSyncException("Illegal UID: " + value)
         val murmur = Murmur3F()
         murmur.updateLongLE(randomPart)
         if (value < 0 || (value and 0xFF != murmur.value and 0xFF)) {
-            throw IdSyncException("Illegal ref ID: " + value)
+            throw IdSyncException("Illegal UID: " + value)
         }
     }
 

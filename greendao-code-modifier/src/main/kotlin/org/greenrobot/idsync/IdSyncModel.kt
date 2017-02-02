@@ -16,29 +16,69 @@ data class IdSyncModel(
         val entities: List<Entity>,
 
         /** Previously used refIds, which are now deleted. Archived to ensure no collisions. */
-        val retiredEntityRefIds: List<Long>?,
+        val retiredEntityUids: List<Long>?,
 
         /** Previously used refIds, which are now deleted. Archived to ensure no collisions. */
-        val retiredPropertyRefIds: List<Long>?
+        val retiredPropertyUids: List<Long>?
 )
+
+/** This class also helps with Moshi: Moshi needs a field (not just a getter) and has custom serializers for types. */
+class IdUid(var id: Int = 0, var uid: Long = 0) {
+
+    constructor(value: String) : this() {
+        fromString(value)
+    }
+
+    override fun toString() = "$id:$uid"
+
+    fun fromString(value: String) {
+        val splitted = value.split(':')
+        if (splitted.size != 2) throw IllegalAccessException("Illegal ID: $value")
+        id = splitted[0].toInt()
+        uid = splitted[1].toLong()
+    }
+
+    override fun equals(other: Any?): Boolean {
+        return other is IdUid && id == other.id && uid == other.uid
+    }
+
+    override fun hashCode(): Int {
+        return id.xor(uid.hashCode())
+    }
+}
+
+interface HasIdUid {
+    val id: IdUid
+
+    var uid: Long
+        get() = id.uid
+        set(value) {
+            id.uid = value
+        }
+
+    var modelId: Int
+        get() = id.id
+        set(value) {
+            id.id = value
+        }
+}
 
 data class Entity(
         val name: String,
-        val id: Int,
+        override val id: IdUid = IdUid(),
         @Deprecated("To read in old refIds from JSON", ReplaceWith("uid"))
         val refId: Long? = null,
-        var uid: Long,
         val lastPropertyId: Int,
 
         val properties: List<Property>
-)
+) : HasIdUid
+
 
 data class Property(
+        override val id: IdUid = IdUid(),
         val name: String,
-        val id: Int,
         @Deprecated("To read in old refIds from JSON", ReplaceWith("uid"))
         val refId: Long? = null,
-        var uid: Long,
         val indexId: Int?
-)
+) : HasIdUid
 

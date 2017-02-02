@@ -12,6 +12,8 @@ import org.greenrobot.greendao.codemodifier.ParsedProperty
 import java.io.File
 import java.io.FileNotFoundException
 import java.util.*
+import com.squareup.moshi.FromJson
+import com.squareup.moshi.ToJson
 
 class IdSync(val jsonFile: File = File("objectmodel.json")) {
     val backupFile: File
@@ -44,9 +46,15 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
     // Use IdentityHashMap here to avoid collisions (e.g. same name)
     private val propertiesByParsedProperty = IdentityHashMap<ParsedProperty, Property>()
 
+    class ModelIdAdapter {
+        @ToJson fun toJson(modelId: IdUid) = modelId.toString()
+
+        @FromJson fun fromJson(id: String) = IdUid(id)
+    }
+
     init {
         backupFile = File(jsonFile.absolutePath + ".bak")
-        val moshi = Moshi.Builder().build()
+        val moshi = Moshi.Builder().add(ModelIdAdapter()).build()
         modelJsonAdapter = moshi.adapter<IdSyncModel>(IdSyncModel::class.java)
         modelUid = ModelUid()
         initModel()
@@ -59,8 +67,8 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
                 lastEntityId = modelRead!!.lastEntityId
                 lastIndexId = modelRead!!.lastIndexId
                 lastSequenceId = modelRead!!.lastSequenceId
-                retiredEntityRefIds += modelRead!!.retiredEntityRefIds ?: emptyList()
-                retiredPropertyRefIds += modelRead!!.retiredPropertyRefIds ?: emptyList()
+                retiredEntityRefIds += modelRead!!.retiredEntityUids ?: emptyList()
+                retiredPropertyRefIds += modelRead!!.retiredPropertyUids ?: emptyList()
                 modelUid.addExistingIds(retiredEntityRefIds)
                 modelUid.addExistingIds(retiredPropertyRefIds)
                 modelRead!!.entities.forEach {
@@ -79,12 +87,12 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
     }
 
     private fun validateLastIds(entity: Entity) {
-        if (entity.id > lastEntityId) {
+        if (entity.modelId > lastEntityId) {
             throw IdSyncException("Entity ${entity.name} has an ID ${entity.id} above lastEntityId ${lastEntityId}" +
                     " in " + jsonFile.absolutePath)
         }
         entity.properties.forEach {
-            if (it.id > entity.lastPropertyId) {
+            if (it.modelId > entity.lastPropertyId) {
                 throw IdSyncException("Property ${entity.name}.${it.name} has an ID ${it.id} above " +
                         "lastPropertyId ${entity.lastPropertyId} in " + jsonFile.absolutePath)
             }
@@ -96,7 +104,7 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
             throw IllegalStateException("May be called only once")
         }
         try {
-            val entities = parsedEntities.map { syncEntity(it) }.sortedBy { it.id }
+            val entities = parsedEntities.map { syncEntity(it) }.sortedBy { it.id.id }
             updateRetiredRefIds(entities)
             val model = IdSyncModel(
                     version = 1,
@@ -105,8 +113,8 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
                     lastIndexId = lastIndexId,
                     lastSequenceId = lastSequenceId,
                     entities = entities,
-                    retiredEntityRefIds = retiredEntityRefIds,
-                    retiredPropertyRefIds = retiredPropertyRefIds)
+                    retiredEntityUids = retiredEntityRefIds,
+                    retiredPropertyUids = retiredPropertyRefIds)
             writeModel(model)
         } catch (e: Throwable) {
             throw IdSyncException("Could not sync parsed model with ID model. Please check " + jsonFile.absolutePath, e)
@@ -125,15 +133,16 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
         val properties = ArrayList<Property>()
         for (parsedProperty in parsedEntity.properties) {
             val property = syncProperty(existingEntity, parsedEntity, parsedProperty, lastPropertyId)
-            lastPropertyId = Math.max(lastPropertyId, property.id)
+            lastPropertyId = Math.max(lastPropertyId, property.modelId)
             properties.add(property)
         }
-        properties.sortBy { it.id }
+        properties.sortBy { it.id.id }
 
+        val modelId = existingEntity?.modelId ?: ++lastEntityId
+        val uid = existingEntity?.uid ?: modelUid.create()
         val entity = Entity(
                 name = entityName,
-                id = existingEntity?.id ?: ++lastEntityId,
-                uid = existingEntity?.uid ?: modelUid.create(),
+                id = IdUid(modelId, uid),
                 properties = properties,
                 lastPropertyId = lastPropertyId
         )
@@ -163,10 +172,11 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
             }
         }
 
+        val uid = existingProperty?.uid ?: modelUid.create()
+        val modelId = existingProperty?.modelId ?: lastPropertyId + 1
         val property = Property(
                 name = name,
-                uid = existingProperty?.uid ?: modelUid.create(),
-                id = existingProperty?.id ?: lastPropertyId + 1,
+                id = IdUid(modelId, uid),
                 indexId = indexId
         )
         val collision = propertiesByParsedProperty.put(parsedProperty, property)

@@ -36,7 +36,7 @@ object GreendaoModelTranslator {
 
             val idSyncEntity = idSync.get(parsedEntity)
             entity.modelUid = idSyncEntity.uid
-            entity.modelId = idSyncEntity.id
+            entity.modelId = idSyncEntity.modelId
             entity.lastPropertyId = idSyncEntity.lastPropertyId
 
             convertProperties(parsedEntity, entity, idSync)
@@ -215,7 +215,7 @@ object GreendaoModelTranslator {
     private fun convertProperty(entity: Entity, property: ParsedProperty, modelIds: org.greenrobot.idsync.Property) {
         val propertyType = convertPropertyType((property.customType?.columnJavaType ?: property.variable.type).name)
         val propertyBuilder = entity.addProperty(propertyType, property.variable.name)
-        propertyBuilder.modelId(modelIds.id)
+        propertyBuilder.modelId(modelIds.modelId)
         propertyBuilder.modelRefId(modelIds.uid)
         if (modelIds.indexId != null && modelIds.indexId != 0) {
             propertyBuilder.modelIndexId(modelIds.indexId)

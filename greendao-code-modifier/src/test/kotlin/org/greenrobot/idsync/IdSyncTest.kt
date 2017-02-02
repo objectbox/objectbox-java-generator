@@ -56,14 +56,14 @@ class IdSyncTest {
         assertEquals(1, model.entities.size)
         val entity = model.entities.first()
         assertEquals("Entity1", entity.name)
-        assertEquals(1, entity.id)
+        assertEquals(1, entity.modelId)
         assertTrue(entity.uid > 1)
 
         assertEquals(2, entity.properties.size)
         assertEquals("foo", entity.properties[0].name)
-        assertEquals(1, entity.properties[0].id)
+        assertEquals(1, entity.properties[0].modelId)
         assertTrue(entity.properties[0].uid > 1)
-        assertEquals(2, entity.properties[1].id)
+        assertEquals(2, entity.properties[1].modelId)
         assertEquals("bar", entity.properties[1].name)
         assertTrue(entity.properties[1].uid > 1)
     }
@@ -140,7 +140,7 @@ class IdSyncTest {
         assertEquals(2, model2.lastEntityId)
         assertEquals(2, model2.entities.size)
         val entity = model2.entities.last()
-        assertEquals(2, entity.id)
+        assertEquals(2, entity.modelId)
         assertTrue(entity.uid > 1)
     }
 
@@ -159,8 +159,8 @@ class IdSyncTest {
         val model2 = idSync!!.justRead()!!
         val entity2 = model2.entities.first()
         assertEquals(4, entity2.lastPropertyId)
-        assertEquals(3, entity2.properties.first().id)
-        assertEquals(4, entity2.properties.last().id)
+        assertEquals(3, entity2.properties.first().modelId)
+        assertEquals(4, entity2.properties.last().modelId)
     }
 
     @Test(expected = IdSyncException::class)
@@ -233,13 +233,13 @@ class IdSyncTest {
         idSync = IdSync(file)
         idSync!!.sync(parsedEntities)
         val model2 = idSync!!.justRead()!!
-        assertEquals(1, model2.retiredEntityRefIds!!.size)
-        val entityRefIdDeleted = model2.retiredEntityRefIds!!.first()
+        assertEquals(1, model2.retiredEntityUids!!.size)
+        val entityRefIdDeleted = model2.retiredEntityUids!!.first()
         assertEquals(entity1.uid, entityRefIdDeleted)
 
-        assertEquals(2, model2.retiredPropertyRefIds!!.size)
-        assertEquals(entity1.properties[0].uid, model2.retiredPropertyRefIds!![0])
-        assertEquals(entity1.properties[1].uid, model2.retiredPropertyRefIds!![1])
+        assertEquals(2, model2.retiredPropertyUids!!.size)
+        assertEquals(entity1.properties[0].uid, model2.retiredPropertyUids!![0])
+        assertEquals(entity1.properties[1].uid, model2.retiredPropertyUids!![1])
     }
 
     @Test
