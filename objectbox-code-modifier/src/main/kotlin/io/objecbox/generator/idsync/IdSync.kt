@@ -68,6 +68,11 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
         try {
             val idSyncModel = justRead()
             if (idSyncModel != null) {
+                if (idSyncModel.modelVersion != 2) {
+                    throw IdSyncException("This version requires model version 2, but found " +
+                            idSyncModel.modelVersion +
+                            ". If you just updated from 0.9.6 that is expected. $noteSeeDocs")
+                }
                 validateIds(idSyncModel)
                 modelRead = idSyncModel
                 lastEntityId = idSyncModel.lastEntityId
@@ -139,7 +144,7 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
             updateRetiredRefIds(entities)
             val model = IdSyncModel(
                     version = 1,
-                    metaVersion = 1,
+                    modelVersion = 2,
                     lastEntityId = lastEntityId,
                     lastIndexId = lastIndexId,
                     lastSequenceId = lastSequenceId,
@@ -148,7 +153,7 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
                     retiredPropertyUids = retiredPropertyUids,
                     retiredIndexUids = retiredIndexUids)
             writeModel(model)
-            // Paranoia check, that synced model is OK:
+            // Paranoia check, that synced model is OK (do this after writing because that's what the user sees)
             validateIds(model)
         } catch (e: Throwable) {
             // Repeat e.message so it shows up in gradle right away

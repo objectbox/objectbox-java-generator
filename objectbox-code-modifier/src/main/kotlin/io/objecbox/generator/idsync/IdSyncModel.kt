@@ -9,7 +9,7 @@ data class IdSyncModel(
         val _note3: String = "If you have VCS merge conflicts, you must resolve them according to ObjectBox docs.",
 
         val version: Long,
-        val metaVersion: Int,
+        val modelVersion: Int = 2,
         val lastEntityId: IdUid,
         val lastIndexId: IdUid,
         // TODO use this once we support sequences

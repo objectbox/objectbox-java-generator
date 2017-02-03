@@ -22,7 +22,7 @@ class UidHelper(
     fun addExistingId(id: Long ) {
         verify(id)
         if(!existingUids.add(id)) {
-            throw IdSyncException("Duplicate ref ID $id")
+            throw IdSyncException("Duplicate UID $id")
         }
     }
 

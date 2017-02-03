@@ -13,11 +13,11 @@
     },
     {
       "id": "2:4858050548069557694",
-      "lastPropertyId": "1:34985734029573294857",
+      "lastPropertyId": "1:34985734573294857",
       "name": "Note",
       "properties": [
         {
-          "id": "1:34985734029573294857",
+          "id": "1:34985734573294857",
           "name": "id"
         }
       ]
@@ -26,7 +26,7 @@
   "lastEntityId": "2:4858050548069557694",
   "lastIndexId": "0:0",
   "lastSequenceId": "0:0",
-  "metaVersion": 1,
+  "modelVersion": 2,
   "retiredEntityUids": [],
   "retiredIndexUids": [],
   "retiredPropertyUids": [],

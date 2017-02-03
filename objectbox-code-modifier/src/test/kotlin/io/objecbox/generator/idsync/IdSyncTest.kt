@@ -75,9 +75,9 @@ class IdSyncTest {
         val propertyRefId = model1.entities.first().properties.first().refId
 
         val properties = listOf(
-                createProperty(name = "bla", refId = propertyRefId)
+                createParsedProperty(name = "bla", refId = propertyRefId)
         )
-        val entity1 = createEntity("Entity1A", properties, entityRefId)
+        val entity1 = createParsedEntity("Entity1A", properties, entityRefId)
         idSync = IdSync(file)
         idSync!!.sync(listOf(entity1))
 
@@ -91,17 +91,17 @@ class IdSyncTest {
 
     @Test
     fun testKeepIdsForMatchingNames() {
-        val entityParsed = createEntity("Entity1", basicProperties())
+        val entityParsed = createParsedEntity("Entity1", basicProperties())
         testKeepIdsForMatchingNames(entityParsed)
     }
 
     @Test
     fun testKeepIdsForMatchingNames_differentCase() {
         val properties = mutableListOf<ParsedProperty>(
-                createProperty("FOO"),
-                createProperty("bAr")
+                createParsedProperty("FOO"),
+                createParsedProperty("bAr")
         )
-        val entityParsed = createEntity("ENTITY1", properties)
+        val entityParsed = createParsedEntity("ENTITY1", properties)
 
         testKeepIdsForMatchingNames(entityParsed)
     }
@@ -132,8 +132,8 @@ class IdSyncTest {
         val entityRefId = model1.entities.first().uid
         idSync = IdSync(file)
         val parsedEntities = listOf(
-                createEntity("Entity1A", basicProperties(), entityRefId),
-                createEntity("Entity2", basicProperties()))
+                createParsedEntity("Entity1A", basicProperties(), entityRefId),
+                createParsedEntity("Entity2", basicProperties()))
         idSync!!.sync(parsedEntities)
 
         val model2 = idSync!!.justRead()!!
@@ -150,9 +150,9 @@ class IdSyncTest {
         assertEquals(2, model1.entities.first().lastPropertyId.id)
 
         idSync = IdSync(file)
-        val properties = listOf(createProperty("newOne"), createProperty("newTwo"))
+        val properties = listOf(createParsedProperty("newOne"), createParsedProperty("newTwo"))
         val parsedEntities = listOf(
-                createEntity("Entity1", properties)
+                createParsedEntity("Entity1", properties)
         )
         idSync!!.sync(parsedEntities)
 
@@ -168,8 +168,8 @@ class IdSyncTest {
         val model1 = syncBasicModel()
         val entityRefId = model1.entities.first().uid
         val parsedEntities = listOf(
-                createEntity("Entity1A", basicProperties(), entityRefId),
-                createEntity("Entity2", basicProperties(), entityRefId))
+                createParsedEntity("Entity1A", basicProperties(), entityRefId),
+                createParsedEntity("Entity2", basicProperties(), entityRefId))
         idSync = IdSync(file)
         idSync!!.sync(parsedEntities)
     }
@@ -181,7 +181,7 @@ class IdSyncTest {
         val entityRefId = model1.entities.first().uid
         val properties = basicProperties()
         properties.forEach { it.uid = propertyRefId }
-        val parsedEntities = listOf(createEntity("Entity1", properties, entityRefId))
+        val parsedEntities = listOf(createParsedEntity("Entity1", properties, entityRefId))
         idSync = IdSync(file)
         idSync!!.sync(parsedEntities)
     }
@@ -192,7 +192,7 @@ class IdSyncTest {
         val entityRefId = model1.entities.first().uid
         val properties = basicProperties()
         properties.last().uid = entityRefId
-        val parsedEntities = listOf(createEntity("Entity1", properties, entityRefId))
+        val parsedEntities = listOf(createParsedEntity("Entity1", properties, entityRefId))
         idSync = IdSync(file)
         idSync!!.sync(parsedEntities)
     }
@@ -204,12 +204,12 @@ class IdSyncTest {
 
         idSync = IdSync(file)
         val properties = listOf<ParsedProperty>(
-                createProperty("foo"),
-                createProperty("bar", null, true),
-                createProperty("newAndIndexed", null, true)
+                createParsedProperty("foo"),
+                createParsedProperty("bar", null, true),
+                createParsedProperty("newAndIndexed", null, true)
         )
         val parsedEntities = listOf(
-                createEntity("Entity1", properties)
+                createParsedEntity("Entity1", properties)
         )
         idSync!!.sync(parsedEntities)
 
@@ -228,7 +228,7 @@ class IdSyncTest {
         val entity1 = model1.entities.first()
 
         val parsedEntities = listOf(
-                createEntity("Entity2", basicProperties())
+                createParsedEntity("Entity2", basicProperties())
         )
         idSync = IdSync(file)
         idSync!!.sync(parsedEntities)
@@ -244,8 +244,8 @@ class IdSyncTest {
 
     @Test
     fun testPropertiesWithSameNameIn2Entities() {
-        val entity1 = createEntity("Entity1", basicProperties())
-        val entity2 = createEntity("Entity2", basicProperties())
+        val entity1 = createParsedEntity("Entity1", basicProperties())
+        val entity2 = createParsedEntity("Entity2", basicProperties())
         val parsedProperty1 = entity1.properties[0]
         val parsedProperty2 = entity2.properties[0]
         idSync!!.sync(listOf(entity1, entity2))
@@ -259,7 +259,7 @@ class IdSyncTest {
     }
 
     private fun syncBasicModel(): IdSyncModel {
-        val entity1 = createEntity("Entity1", basicProperties())
+        val entity1 = createParsedEntity("Entity1", basicProperties())
         idSync!!.sync(listOf(entity1))
 
         val model = idSync!!.justRead()!!
@@ -268,13 +268,13 @@ class IdSyncTest {
 
     private fun basicProperties(): MutableList<ParsedProperty> {
         val properties = mutableListOf<ParsedProperty>(
-                createProperty("foo"),
-                createProperty("bar")
+                createParsedProperty("foo"),
+                createParsedProperty("bar")
         )
         return properties
     }
 
-    private fun createProperty(name: String, refId: Long? = null, indexed: Boolean = false): ParsedProperty {
+    private fun createParsedProperty(name: String, refId: Long? = null, indexed: Boolean = false): ParsedProperty {
         return ParsedProperty(
                 variable = Variable(VariableType("java.lang.String", false, "String"), name + "_"),
                 dbName = name,
@@ -283,7 +283,7 @@ class IdSyncTest {
         )
     }
 
-    private fun createEntity(name: String, properties: List<ParsedProperty>, refId: Long? = null): ParsedEntity {
+    private fun createParsedEntity(name: String, properties: List<ParsedProperty>, refId: Long? = null): ParsedEntity {
         val typeDec = Mockito.mock(TypeDeclaration::class.java)
         return ParsedEntity(
                 name = name + "_",
