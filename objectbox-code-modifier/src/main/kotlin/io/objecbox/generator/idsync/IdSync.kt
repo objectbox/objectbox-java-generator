@@ -17,13 +17,14 @@ import com.squareup.moshi.ToJson
 import io.objectbox.generator.IdUid
 
 class IdSync(val jsonFile: File = File("objectmodel.json")) {
-    val noteSeeDocs = "Please read the docs how to resolve this."
+    private val noteSeeDocs = "Please read the docs how to resolve this."
 
-    val backupFile: File
+    // public for tests to delete
+    val backupFile = File(jsonFile.absolutePath + ".bak")
 
     private val modelJsonAdapter: JsonAdapter<IdSyncModel>
 
-    private val uidHelper: UidHelper
+    private val uidHelper = UidHelper()
 
     private val entitiesReadByRefId = HashMap<Long, Entity>()
     private val entitiesReadByName = HashMap<String, Entity>()
@@ -58,10 +59,8 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
     }
 
     init {
-        backupFile = File(jsonFile.absolutePath + ".bak")
         val moshi = Moshi.Builder().add(ModelIdAdapter()).build()
         modelJsonAdapter = moshi.adapter<IdSyncModel>(IdSyncModel::class.java)
-        uidHelper = UidHelper()
         initModel()
     }
 
@@ -104,7 +103,12 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
             if (!entityIds.add(entity.id.id)) {
                 throw IdSyncException("Duplicate ID ${entity.id.id} for entity ${entity.name}. $noteSeeDocs")
             }
-            if (entity.modelId > model.lastEntityId.id) {
+            if (entity.modelId == model.lastEntityId.id) {
+                if (entity.uid != model.lastEntityId.uid) {
+                    throw IdSyncException("Entity ${entity.name} ID ${entity.id} does not match UID of lastEntityId " +
+                            "${model.lastEntityId}. $noteSeeDocs")
+                }
+            } else if (entity.modelId > model.lastEntityId.id) {
                 throw IdSyncException("Entity ${entity.name} has an ID ${entity.id} above lastEntityId " +
                         "${model.lastEntityId}. $noteSeeDocs")
             }
@@ -115,7 +119,9 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
                     throw IdSyncException("Duplicate ID ${property.id.id} for property " +
                             "${entity.name}.${property.name}. $noteSeeDocs")
                 }
-                if (property.modelId > entity.lastPropertyId.id) {
+                if (property.modelId == entity.lastPropertyId.id) {
+                    // TODO
+                } else if (property.modelId > entity.lastPropertyId.id) {
                     throw IdSyncException("Property ${entity.name}.${property.name} has an ID ${property.id} above " +
                             "lastPropertyId ${entity.lastPropertyId}. $noteSeeDocs")
                 }
@@ -233,7 +239,7 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
         }
     }
 
-    private fun findEntity(name: String, uid: Long?): Entity? {
+    fun findEntity(name: String, uid: Long?): Entity? {
         if (uid != null) {
             return entitiesReadByRefId[uid] ?:
                     throw IdSyncException("No entity with UID $uid found")
@@ -242,7 +248,7 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
         }
     }
 
-    private fun findProperty(entity: Entity, name: String, uid: Long?): Property? {
+    fun findProperty(entity: Entity, name: String, uid: Long?): Property? {
         if (uid != null) {
             val filtered = entity.properties.filter { it.uid == uid }
             if (filtered.isEmpty()) {
