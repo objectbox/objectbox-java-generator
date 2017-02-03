@@ -1,4 +1,4 @@
-package org.greenrobot.idsync
+package io.objecbox.generator.idsync
 
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.JsonWriter

@@ -1,11 +1,11 @@
 package io.objectbox.codemodifier
 
+import io.objecbox.generator.idsync.IdSync
 import io.objectbox.generator.BoxGenerator
 import org.eclipse.jdt.core.JavaCore
 import org.eclipse.jdt.internal.compiler.impl.CompilerOptions
 import io.objectbox.generator.model.Entity
 import io.objectbox.generator.model.Schema
-import org.greenrobot.idsync.IdSync
 import java.io.File
 
 /**

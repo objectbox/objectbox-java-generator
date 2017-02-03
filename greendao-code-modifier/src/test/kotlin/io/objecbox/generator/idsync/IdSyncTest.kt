@@ -1,4 +1,4 @@
-package org.greenrobot.idsync
+package io.objecbox.generator.idsync
 
 import io.objectbox.codemodifier.*
 import org.eclipse.jdt.core.dom.TypeDeclaration

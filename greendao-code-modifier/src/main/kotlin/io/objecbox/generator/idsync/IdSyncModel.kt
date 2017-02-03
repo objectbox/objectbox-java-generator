@@ -1,4 +1,4 @@
-package org.greenrobot.idsync
+package io.objecbox.generator.idsync
 
 import io.objectbox.generator.IdUid
 
