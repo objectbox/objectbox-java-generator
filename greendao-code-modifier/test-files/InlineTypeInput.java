@@ -1,4 +1,4 @@
-package org.greenrobot.greendao.example;
+package io.objectbox.codemodifier.test;
 
 import io.objectbox.annotation.Convert;
 import io.objectbox.annotation.Entity;
