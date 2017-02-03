@@ -18,13 +18,6 @@
 
 package io.objectbox.generator;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-
 /** Internal API */
 public class DaoUtil {
     private final static boolean OBJECTBOX = true;
@@ -66,49 +59,6 @@ public class DaoUtil {
         } else {
             return null;
         }
-    }
-
-    public static byte[] readAllBytes(InputStream in) throws IOException {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        copyAllBytes(in, out);
-        return out.toByteArray();
-    }
-
-    public static byte[] readAllBytes(File file) throws IOException {
-        FileInputStream is = new FileInputStream(file);
-        try {
-            return DaoUtil.readAllBytes(is);
-        } finally {
-            is.close();
-        }
-    }
-
-    public static byte[] readAllBytes(String filename) throws IOException {
-        FileInputStream is = new FileInputStream(filename);
-        try {
-            return DaoUtil.readAllBytes(is);
-        } finally {
-            is.close();
-        }
-    }
-
-    /**
-     * Copies all available data from in to out without closing any stream.
-     *
-     * @return number of bytes copied
-     */
-    public static int copyAllBytes(InputStream in, OutputStream out) throws IOException {
-        int byteCount = 0;
-        byte[] buffer = new byte[4096];
-        while (true) {
-            int read = in.read(buffer);
-            if (read == -1) {
-                break;
-            }
-            out.write(buffer, 0, read);
-            byteCount += read;
-        }
-        return byteCount;
     }
 
     public static String checkConvertToJavaDoc(String javaDoc, String indent) {

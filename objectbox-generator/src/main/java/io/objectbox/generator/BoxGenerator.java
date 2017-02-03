@@ -18,6 +18,8 @@
 
 package io.objectbox.generator;
 
+import org.greenrobot.essentials.io.FileUtils;
+
 import io.objectbox.generator.model.Entity;
 import io.objectbox.generator.model.InternalAccess;
 import io.objectbox.generator.model.PropertyType;
@@ -255,10 +257,8 @@ public class BoxGenerator {
     private void checkKeepSections(File file, Map<String, Object> root) {
         if (file.exists()) {
             try {
-                String contents = new String(DaoUtil.readAllBytes(file));
-
+                String contents = FileUtils.readUtf8(file);
                 Matcher matcher;
-
                 matcher = patternKeepIncludes.matcher(contents);
                 if (matcher.matches()) {
                     root.put("keepIncludes", matcher.group(1));
