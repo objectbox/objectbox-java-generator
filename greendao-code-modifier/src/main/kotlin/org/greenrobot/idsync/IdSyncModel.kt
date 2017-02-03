@@ -1,5 +1,7 @@
 package org.greenrobot.idsync
 
+import io.objectbox.generator.IdUid
+
 data class IdSyncModel(
         /** "Comments" in the JSON file */
         val _note1: String = "KEEP THIS FILE! Check it into a version control system (VCS) like git.",
@@ -8,44 +10,22 @@ data class IdSyncModel(
 
         val version: Long,
         val metaVersion: Int,
-        val lastEntityId: Int,
-        val lastIndexId: Int,
+        val lastEntityId: IdUid,
+        val lastIndexId: IdUid,
         // TODO use this once we support sequences
-        val lastSequenceId: Int,
+        val lastSequenceId: IdUid,
 
         val entities: List<Entity>,
 
-        /** Previously used refIds, which are now deleted. Archived to ensure no collisions. */
+        /** Previously used UIDs, which are now deleted. Archived to ensure no collisions. */
         val retiredEntityUids: List<Long>?,
 
-        /** Previously used refIds, which are now deleted. Archived to ensure no collisions. */
-        val retiredPropertyUids: List<Long>?
+        /** Previously used UIDs, which are now deleted. Archived to ensure no collisions. */
+        val retiredPropertyUids: List<Long>?,
+
+        /** Previously used UIDs, which are now deleted. Archived to ensure no collisions. */
+        val retiredIndexUids: List<Long>?
 )
-
-/** This class also helps with Moshi: Moshi needs a field (not just a getter) and has custom serializers for types. */
-class IdUid(var id: Int = 0, var uid: Long = 0) {
-
-    constructor(value: String) : this() {
-        fromString(value)
-    }
-
-    override fun toString() = "$id:$uid"
-
-    fun fromString(value: String) {
-        val splitted = value.split(':')
-        if (splitted.size != 2) throw IllegalAccessException("Illegal ID: $value")
-        id = splitted[0].toInt()
-        uid = splitted[1].toLong()
-    }
-
-    override fun equals(other: Any?): Boolean {
-        return other is IdUid && id == other.id && uid == other.uid
-    }
-
-    override fun hashCode(): Int {
-        return id.xor(uid.hashCode())
-    }
-}
 
 interface HasIdUid {
     val id: IdUid
@@ -66,19 +46,20 @@ interface HasIdUid {
 data class Entity(
         val name: String,
         override val id: IdUid = IdUid(),
-        @Deprecated("To read in old refIds from JSON", ReplaceWith("uid"))
-        val refId: Long? = null,
-        val lastPropertyId: Int,
+        val lastPropertyId: IdUid,
+        val properties: List<Property>,
 
-        val properties: List<Property>
+        @Deprecated("To read in old refIds from JSON", ReplaceWith("uid"))
+        val refId: Long? = null
 ) : HasIdUid
 
 
 data class Property(
         override val id: IdUid = IdUid(),
         val name: String,
+        val indexId: IdUid?,
+
         @Deprecated("To read in old refIds from JSON", ReplaceWith("uid"))
-        val refId: Long? = null,
-        val indexId: Int?
+        val refId: Long? = null
 ) : HasIdUid
 

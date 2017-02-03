@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import io.objectbox.generator.IdUid;
+
 /**
  * Model class for an entity: a Java data object mapped to a data base representation. A new entity is added to a {@link
  * Schema}
@@ -46,7 +48,7 @@ public class Entity {
     private final String className;
     private Integer modelId;
     private Long modelUid;
-    private Integer lastPropertyId;
+    private IdUid lastPropertyId;
     private final List<Property> properties;
     private List<Property> propertiesColumns;
     private final List<Property> propertiesPk;
@@ -120,11 +122,11 @@ public class Entity {
         return modelUid;
     }
 
-    public Integer getLastPropertyId() {
+    public IdUid getLastPropertyId() {
         return lastPropertyId;
     }
 
-    public Entity setLastPropertyId(Integer lastPropertyId) {
+    public Entity setLastPropertyId(IdUid lastPropertyId) {
         this.lastPropertyId = lastPropertyId;
         return this;
     }

@@ -71,7 +71,7 @@ public class MyObjectBox {
         entityBuilder = modelBuilder.entity("${entity.dbName}");
 <#if entity.modelId??>
         entityBuilder.id(${entity.modelId?c})<#if entity.modelUid??>.uid(${entity.modelUid?c}L)</#if><#if
-            entity.lastPropertyId??>.lastPropertyId(${entity.lastPropertyId?c})</#if>;
+            entity.lastPropertyId??>.lastPropertyId(${entity.lastPropertyId.id?c})</#if>;
 </#if>
 <#list entity.propertiesColumns as property>
 <#assign flags = []>

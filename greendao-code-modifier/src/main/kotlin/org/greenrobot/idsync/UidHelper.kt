@@ -9,7 +9,7 @@ import java.util.*
  * This is preferred in referencing, because they are unique and thus detect illegal copy&paste.
  */
 // Note: make it independent from the (real) ID, it will be necessary to change ID after git conflicts.
-class ModelUid(
+class UidHelper(
         val existingUids: MutableSet<Long> = HashSet()
 ) {
     // Use SecureRandom to better avoid conflicts when IDs are assigned in diverging git branches

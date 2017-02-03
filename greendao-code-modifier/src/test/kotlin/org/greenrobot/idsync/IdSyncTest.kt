@@ -28,7 +28,7 @@ class IdSyncTest {
 
     @Test
     fun testModelUid() {
-        val modelUid = ModelUid()
+        val modelUid = UidHelper()
         val unique = mutableSetOf<Long>()
         for (i in 0..100) {
             val x = modelUid.create()
@@ -51,7 +51,7 @@ class IdSyncTest {
     @Test
     fun testIdSyncBasics() {
         val model = syncBasicModel()
-        assertEquals(1, model.lastEntityId)
+        assertEquals(1, model.lastEntityId.id)
 
         assertEquals(1, model.entities.size)
         val entity = model.entities.first()
@@ -137,7 +137,7 @@ class IdSyncTest {
         idSync!!.sync(parsedEntities)
 
         val model2 = idSync!!.justRead()!!
-        assertEquals(2, model2.lastEntityId)
+        assertEquals(2, model2.lastEntityId.id)
         assertEquals(2, model2.entities.size)
         val entity = model2.entities.last()
         assertEquals(2, entity.modelId)
@@ -147,7 +147,7 @@ class IdSyncTest {
     @Test
     fun testAddProperties() {
         val model1 = syncBasicModel()
-        assertEquals(2, model1.entities.first().lastPropertyId)
+        assertEquals(2, model1.entities.first().lastPropertyId.id)
 
         idSync = IdSync(file)
         val properties = listOf(createProperty("newOne"), createProperty("newTwo"))
@@ -158,7 +158,7 @@ class IdSyncTest {
 
         val model2 = idSync!!.justRead()!!
         val entity2 = model2.entities.first()
-        assertEquals(4, entity2.lastPropertyId)
+        assertEquals(4, entity2.lastPropertyId.id)
         assertEquals(3, entity2.properties.first().modelId)
         assertEquals(4, entity2.properties.last().modelId)
     }
@@ -200,7 +200,7 @@ class IdSyncTest {
     @Test
     fun testAddIndexId() {
         val model1 = syncBasicModel()
-        assertEquals(2, model1.entities.first().lastPropertyId)
+        assertEquals(2, model1.entities.first().lastPropertyId.id)
 
         idSync = IdSync(file)
         val properties = listOf<ParsedProperty>(
@@ -214,12 +214,12 @@ class IdSyncTest {
         idSync!!.sync(parsedEntities)
 
         val model2 = idSync!!.justRead()!!
-        assertEquals(2, model2.lastIndexId)
+        assertEquals(2, model2.lastIndexId.id)
         val entity2 = model2.entities.first()
         assertEquals(3, entity2.properties.size)
         assertNull(entity2.properties.first().indexId)
-        assertEquals(1, entity2.properties[1].indexId)
-        assertEquals(2, entity2.properties[2].indexId)
+        assertEquals(1, entity2.properties[1].indexId!!.id)
+        assertEquals(2, entity2.properties[2].indexId!!.id)
     }
 
     @Test
