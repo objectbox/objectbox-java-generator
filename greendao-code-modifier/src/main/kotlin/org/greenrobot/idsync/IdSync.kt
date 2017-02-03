@@ -7,8 +7,8 @@ import okio.Buffer
 import okio.Okio
 import okio.Source
 import org.greenrobot.essentials.collections.LongHashSet
-import org.greenrobot.greendao.codemodifier.ParsedEntity
-import org.greenrobot.greendao.codemodifier.ParsedProperty
+import io.objectbox.codemodifier.ParsedEntity
+import io.objectbox.codemodifier.ParsedProperty
 import java.io.File
 import java.io.FileNotFoundException
 import java.util.*

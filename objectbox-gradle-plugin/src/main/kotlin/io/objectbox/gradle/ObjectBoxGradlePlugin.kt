@@ -5,8 +5,8 @@ import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.logging.LogLevel
 import org.gradle.api.tasks.util.PatternFilterable
-import org.greenrobot.greendao.codemodifier.ObjectBoxGenerator
-import org.greenrobot.greendao.codemodifier.SchemaOptions
+import io.objectbox.codemodifier.ObjectBoxGenerator
+import io.objectbox.codemodifier.SchemaOptions
 import java.io.File
 import java.io.IOException
 import java.util.Properties

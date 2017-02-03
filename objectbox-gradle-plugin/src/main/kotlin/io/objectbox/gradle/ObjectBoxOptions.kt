@@ -3,8 +3,8 @@ package io.objectbox.gradle
 import groovy.lang.Closure
 import groovy.lang.GroovyObjectSupport
 import org.gradle.api.Project
-import org.greenrobot.greendao.codemodifier.FormattingOptions
-import org.greenrobot.greendao.codemodifier.Tabulation
+import io.objectbox.codemodifier.FormattingOptions
+import io.objectbox.codemodifier.Tabulation
 import java.io.File
 
 /**
