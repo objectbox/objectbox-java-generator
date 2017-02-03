@@ -201,7 +201,7 @@ class PropertyCollector {
             if (entity.isProtobuf()) {
                 // TODO Test
                 preCall.append(INDENT).append("int ").append(propertyIdLocal).append(" = entity.has")
-                        .append(DaoUtil.capFirst(name)).append("() ? ").append(propertyId).append(" : 0;\n");
+                        .append(TextUtil.capFirst(name)).append("() ? ").append(propertyId).append(" : 0;\n");
                 sb.append(propertyIdLocal).append(", ");
                 sb.append(propertyIdLocal).append(" != 0 ? ").append(property.getDatabaseValueExpressionNotNull())
                         .append(isScalar ? " : 0" : " : null");
@@ -276,6 +276,6 @@ class PropertyCollector {
     }
 
     private String nameCapFirst(Property property) {
-        return DaoUtil.capFirst(property.getPropertyName());
+        return TextUtil.capFirst(property.getPropertyName());
     }
 }

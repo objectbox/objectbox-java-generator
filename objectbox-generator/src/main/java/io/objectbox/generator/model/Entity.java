@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import io.objectbox.generator.DaoUtil;
+import io.objectbox.generator.TextUtil;
 import io.objectbox.generator.IdUid;
 
 /**
@@ -508,7 +508,7 @@ public class Entity {
     }
 
     public void setJavaDoc(String javaDoc) {
-        this.javaDoc = DaoUtil.checkConvertToJavaDoc(javaDoc, "");
+        this.javaDoc = TextUtil.checkConvertToJavaDoc(javaDoc, "");
     }
 
     public String getCodeBeforeClass() {
@@ -590,7 +590,7 @@ public class Entity {
 
     protected void init2ndPassNamesWithDefaults() {
         if (dbName == null) {
-            dbName = DaoUtil.dbName(className);
+            dbName = TextUtil.dbName(className);
             nonDefaultDbName = false;
         }
 
@@ -701,7 +701,7 @@ public class Entity {
         for (Property property : properties) {
             String customType = property.getCustomType();
             if (customType != null) {
-                String pack = DaoUtil.getPackageFromFullyQualified(customType);
+                String pack = TextUtil.getPackageFromFullyQualified(customType);
                 if (pack != null && !pack.equals(javaPackage)) {
                     additionalImportsEntity.add(customType);
                 }
@@ -712,7 +712,7 @@ public class Entity {
 
             String converter = property.getConverter();
             if (converter != null) {
-                String pack = DaoUtil.getPackageFromFullyQualified(converter);
+                String pack = TextUtil.getPackageFromFullyQualified(converter);
                 if (pack != null && !pack.equals(javaPackageDao)) {
                     additionalImportsDao.add(converter);
                 }

@@ -137,11 +137,11 @@ public class SimpleBoxGeneratorTest {
 
     @Test
     public void testDbName() {
-        Assert.assertEquals("normal", DaoUtil.dbName("normal"));
-        assertEquals("Normal", DaoUtil.dbName("Normal"));
-        assertEquals("CamelCase", DaoUtil.dbName("CamelCase"));
-        assertEquals("CamelCaseThree", DaoUtil.dbName("CamelCaseThree"));
-        assertEquals("CamelCaseXXXX", DaoUtil.dbName("CamelCaseXXXX"));
+        Assert.assertEquals("normal", TextUtil.dbName("normal"));
+        assertEquals("Normal", TextUtil.dbName("Normal"));
+        assertEquals("CamelCase", TextUtil.dbName("CamelCase"));
+        assertEquals("CamelCaseThree", TextUtil.dbName("CamelCaseThree"));
+        assertEquals("CamelCaseXXXX", TextUtil.dbName("CamelCaseXXXX"));
     }
 
     @Test(expected = RuntimeException.class)

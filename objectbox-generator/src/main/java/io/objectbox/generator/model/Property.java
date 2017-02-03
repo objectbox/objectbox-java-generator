@@ -18,7 +18,7 @@
 
 package io.objectbox.generator.model;
 
-import io.objectbox.generator.DaoUtil;
+import io.objectbox.generator.TextUtil;
 
 /** Model class for an entity's property: a Java property mapped to a data base representation. */
 @SuppressWarnings("unused")
@@ -137,9 +137,9 @@ public class Property {
 
         public PropertyBuilder customType(String customType, String converter) {
             property.customType = customType;
-            property.customTypeClassName = DaoUtil.getClassnameFromFullyQualified(customType);
+            property.customTypeClassName = TextUtil.getClassnameFromFullyQualified(customType);
             property.converter = converter;
-            property.converterClassName = DaoUtil.getClassnameFromFullyQualified(converter);
+            property.converterClassName = TextUtil.getClassnameFromFullyQualified(converter);
             return this;
         }
 
@@ -170,7 +170,7 @@ public class Property {
         }
 
         private String checkConvertToJavaDoc(String javaDoc) {
-            return DaoUtil.checkConvertToJavaDoc(javaDoc, "    ");
+            return TextUtil.checkConvertToJavaDoc(javaDoc, "    ");
         }
 
         public PropertyBuilder javaDocGetter(String javaDoc) {
@@ -387,7 +387,7 @@ public class Property {
     }
 
     public String getDatabaseValueExpressionNotNull() {
-        return getDatabaseValueExpression("entity.get" + DaoUtil.capFirst(propertyName) + "()");
+        return getDatabaseValueExpression("entity.get" + TextUtil.capFirst(propertyName) + "()");
     }
 
     /**
@@ -480,7 +480,7 @@ public class Property {
             dbType = schema.mapToDbType(propertyType);
         }
         if (dbName == null) {
-            dbName = DaoUtil.dbName(propertyName);
+            dbName = TextUtil.dbName(propertyName);
             nonDefaultDbName = false;
         } else if (primaryKey && propertyType == PropertyType.Long && dbName.equals("_id")) {
             nonDefaultDbName = false;

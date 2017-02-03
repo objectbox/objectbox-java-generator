@@ -19,7 +19,7 @@
 package io.objectbox.generator;
 
 /** Internal API */
-public class DaoUtil {
+public class TextUtil {
     private final static boolean OBJECTBOX = true;
 
     // TODO make this flexible (e.g. DbNameProvider class);

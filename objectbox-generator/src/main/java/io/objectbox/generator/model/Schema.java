@@ -23,7 +23,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
-import io.objectbox.generator.DaoUtil;
+import io.objectbox.generator.TextUtil;
 
 /**
  * The "root" model class to which you can add entities to.
@@ -51,7 +51,7 @@ public class Schema {
 
     public Schema(String name, int version, String defaultJavaPackage) {
         this.name = name;
-        this.prefix = name.equals(DEFAULT_NAME) ? "" : DaoUtil.capFirst(name);
+        this.prefix = name.equals(DEFAULT_NAME) ? "" : TextUtil.capFirst(name);
         this.version = version;
         this.defaultJavaPackage = defaultJavaPackage;
         this.entities = new ArrayList<>();

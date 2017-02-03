@@ -1,7 +1,7 @@
 package io.objectbox.codemodifier
 
 import io.objecbox.generator.idsync.IdSync
-import io.objectbox.generator.DaoUtil
+import io.objectbox.generator.TextUtil
 import io.objectbox.generator.model.Entity
 import io.objectbox.generator.model.Property
 import io.objectbox.generator.model.PropertyType
@@ -109,7 +109,7 @@ object GreendaoModelTranslator {
                         entity.addToOneWithoutProperty(
                                 relation.variable.name,
                                 targetEntity,
-                                relation.columnName ?: DaoUtil.dbName(relation.variable.name),
+                                relation.columnName ?: TextUtil.dbName(relation.variable.name),
                                 relation.isNotNull,
                                 relation.unique
                         )
