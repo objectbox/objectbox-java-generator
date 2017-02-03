@@ -17,8 +17,8 @@ You should have received a copy of the GNU General Public License
 along with ObjectBox Generator.  If not, see <http://www.gnu.org/licenses/>.
 
 -->
-<#-- @ftlvariable name="entity" type="org.greenrobot.greendao.generator.Entity" -->
-<#-- @ftlvariable name="schema" type="org.greenrobot.greendao.generator.Schema" -->
+<#-- @ftlvariable name="entity" type="io.objectbox.generator.model.Entity" -->
+<#-- @ftlvariable name="schema" type="io.objectbox.generator.model.Schema" -->
 <#-- @ftlvariable name="propertyCollector" type="java.lang.String" -->
 
 <#assign toBindType = {"Boolean":"Long", "Byte":"Long", "Short":"Long", "Int":"Long", "Long":"Long", "Float":"Double", "Double":"Double", "String":"String", "ByteArray":"Blob", "Date": "Long" } />

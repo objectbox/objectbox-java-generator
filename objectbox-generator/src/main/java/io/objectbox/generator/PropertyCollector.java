@@ -19,10 +19,9 @@
 package io.objectbox.generator;
 
 import org.greenrobot.essentials.collections.Multimap;
-import org.greenrobot.greendao.generator.DaoUtil;
-import org.greenrobot.greendao.generator.Entity;
-import org.greenrobot.greendao.generator.Property;
-import org.greenrobot.greendao.generator.PropertyType;
+import io.objectbox.generator.model.Entity;
+import io.objectbox.generator.model.Property;
+import io.objectbox.generator.model.PropertyType;
 
 import java.util.List;
 

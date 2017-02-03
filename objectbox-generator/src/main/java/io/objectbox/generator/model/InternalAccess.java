@@ -1,4 +1,4 @@
-package org.greenrobot.greendao.generator;
+package io.objectbox.generator.model;
 
 import java.util.Map;
 

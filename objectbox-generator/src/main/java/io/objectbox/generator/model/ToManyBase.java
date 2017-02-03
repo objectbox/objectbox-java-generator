@@ -16,7 +16,7 @@
  * along with greenDAO Generator.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.greenrobot.greendao.generator;
+package io.objectbox.generator.model;
 
 /** Base class for to-many relationship from source entities to target entities. */
 @SuppressWarnings("unused")

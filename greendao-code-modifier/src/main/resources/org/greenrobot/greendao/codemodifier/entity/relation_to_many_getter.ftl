@@ -1,5 +1,5 @@
-<#-- @ftlvariable name="toMany" type="org.greenrobot.greendao.generator.ToManyBase" -->
-<#-- @ftlvariable name="entity" type="org.greenrobot.greendao.generator.Entity" -->
+<#-- @ftlvariable name="toMany" type="io.objectbox.generator.model.ToManyBase" -->
+<#-- @ftlvariable name="entity" type="io.objectbox.generator.model.Entity" -->
 /**
  * To-many relationship, resolved on first access (and after reset).
  * Changes to to-many relations are not persisted, make changes to the target entity.

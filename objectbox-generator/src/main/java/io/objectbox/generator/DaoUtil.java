@@ -16,7 +16,7 @@
  * along with greenDAO Generator.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.greenrobot.greendao.generator;
+package io.objectbox.generator;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;

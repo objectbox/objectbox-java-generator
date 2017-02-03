@@ -1,4 +1,4 @@
-<#-- @ftlvariable name="toMany" type="org.greenrobot.greendao.generator.ToManyBase" -->
+<#-- @ftlvariable name="toMany" type="io.objectbox.generator.model.ToManyBase" -->
 /** Resets a to-many relationship, making the next get call to query for a fresh result. */
 @Generated(hash = GENERATED_HASH_STUB)
 public synchronized void reset${toMany.name?cap_first}() {

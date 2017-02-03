@@ -16,12 +16,14 @@
  * along with greenDAO Generator.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.greenrobot.greendao.generator;
+package io.objectbox.generator.model;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+
+import io.objectbox.generator.DaoUtil;
 
 /**
  * The "root" model class to which you can add entities to.

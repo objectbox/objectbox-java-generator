@@ -17,7 +17,7 @@ You should have received a copy of the GNU General Public License
 along with ObjectBox Generator.  If not, see <http://www.gnu.org/licenses/>.
 
 -->
-<#-- @ftlvariable name="schema" type="org.greenrobot.greendao.generator.Schema" -->
+<#-- @ftlvariable name="schema" type="io.objectbox.generator.model.Schema" -->
 package ${schema.defaultJavaPackageDao};
 
 import io.objectbox.BoxStore;

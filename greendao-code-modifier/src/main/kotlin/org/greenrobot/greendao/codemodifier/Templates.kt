@@ -1,8 +1,8 @@
 package org.greenrobot.greendao.codemodifier
 
-import org.greenrobot.greendao.generator.Entity
-import org.greenrobot.greendao.generator.ToManyBase
-import org.greenrobot.greendao.generator.ToOne
+import io.objectbox.generator.model.Entity
+import io.objectbox.generator.model.ToManyBase
+import io.objectbox.generator.model.ToOne
 import freemarker.template.Configuration
 import freemarker.template.Template
 import java.io.StringWriter

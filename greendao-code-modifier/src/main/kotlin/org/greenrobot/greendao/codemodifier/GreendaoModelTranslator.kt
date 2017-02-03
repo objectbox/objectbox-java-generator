@@ -1,6 +1,10 @@
 package org.greenrobot.greendao.codemodifier
 
-import org.greenrobot.greendao.generator.*
+import io.objectbox.generator.DaoUtil
+import io.objectbox.generator.model.Entity
+import io.objectbox.generator.model.Property
+import io.objectbox.generator.model.PropertyType
+import io.objectbox.generator.model.Schema
 import org.greenrobot.idsync.IdSync
 
 object GreendaoModelTranslator {

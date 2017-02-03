@@ -18,11 +18,10 @@
 
 package io.objectbox.generator;
 
-import org.greenrobot.greendao.generator.DaoUtil;
-import org.greenrobot.greendao.generator.Entity;
-import org.greenrobot.greendao.generator.InternalAccess;
-import org.greenrobot.greendao.generator.PropertyType;
-import org.greenrobot.greendao.generator.Schema;
+import io.objectbox.generator.model.Entity;
+import io.objectbox.generator.model.InternalAccess;
+import io.objectbox.generator.model.PropertyType;
+import io.objectbox.generator.model.Schema;
 
 import java.io.File;
 import java.io.FileWriter;

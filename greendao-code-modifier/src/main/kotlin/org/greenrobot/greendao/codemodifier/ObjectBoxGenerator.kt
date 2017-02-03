@@ -3,8 +3,8 @@ package org.greenrobot.greendao.codemodifier
 import io.objectbox.generator.BoxGenerator
 import org.eclipse.jdt.core.JavaCore
 import org.eclipse.jdt.internal.compiler.impl.CompilerOptions
-import org.greenrobot.greendao.generator.Entity
-import org.greenrobot.greendao.generator.Schema
+import io.objectbox.generator.model.Entity
+import io.objectbox.generator.model.Schema
 import org.greenrobot.idsync.IdSync
 import java.io.File
 
