@@ -83,7 +83,6 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
                 idSyncModel.entities.forEach {
                     uidHelper.addExistingId(it.uid)
                     it.properties.forEach { uidHelper.addExistingId(it.uid) }
-                    validateLastIds(it)
                     entitiesReadByRefId.put(it.uid, it)
                     if (entitiesReadByName.put(it.name.toLowerCase(), it) != null) {
                         throw IdSyncException("Duplicate entity name ${it.name}")
@@ -97,32 +96,29 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
         }
     }
 
-    private fun validateIds(idSyncModel: IdSyncModel) {
+    // TODO test
+    private fun validateIds(model: IdSyncModel) {
         // TODO validate lastIDs with IDs
-        // TODO integrate validateLastIds?
         val entityIds = mutableSetOf<Int>()
-        idSyncModel.entities.forEach { entity ->
+        model.entities.forEach { entity ->
             if (!entityIds.add(entity.id.id)) {
                 throw IdSyncException("Duplicate ID ${entity.id.id} for entity ${entity.name}. $noteSeeDocs")
             }
+            if (entity.modelId > model.lastEntityId.id) {
+                throw IdSyncException("Entity ${entity.name} has an ID ${entity.id} above lastEntityId " +
+                        "${model.lastEntityId}. $noteSeeDocs")
+            }
+
+            val propertyIds = mutableSetOf<Int>()
             entity.properties.forEach { property ->
-                val propertyIds = mutableSetOf<Int>()
                 if (!propertyIds.add(property.id.id)) {
                     throw IdSyncException("Duplicate ID ${property.id.id} for property " +
                             "${entity.name}.${property.name}. $noteSeeDocs")
                 }
-            }
-        }
-    }
-
-    private fun validateLastIds(entity: Entity) {
-        if (entity.modelId > lastEntityId.id) {
-            throw IdSyncException("Entity ${entity.name} has an ID ${entity.id} above lastEntityId ${lastEntityId}")
-        }
-        entity.properties.forEach {
-            if (it.modelId > entity.lastPropertyId.id) {
-                throw IdSyncException("Property ${entity.name}.${it.name} has an ID ${it.id} above " +
-                        "lastPropertyId ${entity.lastPropertyId}")
+                if (property.modelId > entity.lastPropertyId.id) {
+                    throw IdSyncException("Property ${entity.name}.${property.name} has an ID ${property.id} above " +
+                            "lastPropertyId ${entity.lastPropertyId}. $noteSeeDocs")
+                }
             }
         }
     }
