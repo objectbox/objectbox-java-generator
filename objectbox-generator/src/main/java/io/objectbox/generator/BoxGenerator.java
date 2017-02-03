@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Markus Junginger, greenrobot (http://greenrobot.org)
+ * Copyright (C) 2017 Markus Junginger, greenrobot (http://greenrobot.org)
  *
  * This file is part of ObjectBox Generator.
  *
@@ -20,11 +20,6 @@ package io.objectbox.generator;
 
 import org.greenrobot.essentials.io.FileUtils;
 
-import io.objectbox.generator.model.Entity;
-import io.objectbox.generator.model.InternalAccess;
-import io.objectbox.generator.model.PropertyType;
-import io.objectbox.generator.model.Schema;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -40,6 +35,11 @@ import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateNotFoundException;
 
+import io.objectbox.generator.model.Entity;
+import io.objectbox.generator.model.InternalAccess;
+import io.objectbox.generator.model.PropertyType;
+import io.objectbox.generator.model.Schema;
+
 /**
  * Once you have your model created, use this class to generate box cursors as required by ObjectBox.
  *
@@ -48,6 +48,7 @@ import freemarker.template.TemplateNotFoundException;
 public class BoxGenerator {
 
     public static final String MYOBJECTBOX_FTL = "myobjectbox.ftl";
+    public static final String BASE_PACKAGE_PATH = "/io/objectbox/generator/";
 
     private final Pattern patternKeepIncludes;
     private final Pattern patternKeepFields;
@@ -69,7 +70,7 @@ public class BoxGenerator {
 
     public BoxGenerator(boolean daoCompat) throws IOException {
         System.out.println("ObjectBox Generator");
-        System.out.println("Copyright 2016 Markus Junginger, greenrobot.org. Licensed under GPL V3.");
+        System.out.println("Copyright 2017 Markus Junginger, greenrobot.org / objectbox.io. Licensed under GPL V3.");
         System.out.println("This program comes with ABSOLUTELY NO WARRANTY");
 
         this.daoCompat = daoCompat;
@@ -89,20 +90,19 @@ public class BoxGenerator {
     }
 
     private Configuration getConfiguration(String probingTemplate) throws IOException {
-        Configuration config = new Configuration(Configuration.VERSION_2_3_23);
-        config.setClassForTemplateLoading(getClass(), "/");
+        Configuration config = new Configuration(Configuration.VERSION_2_3_25);
+        config.setClassForTemplateLoading(getClass(), BASE_PACKAGE_PATH);
 
-        Template templateMyObjectBoxLocal;
         try {
-            templateMyObjectBoxLocal = config.getTemplate(probingTemplate);
+            config.getTemplate(probingTemplate);
         } catch (TemplateNotFoundException e) {
             // When running from an IDE like IntelliJ, class loading resources may fail for some reason (Gradle is OK)
 
             // Working dir is module dir
-            File dir = new File("../../objectbox-generator/src/main/resources/");
+            File dir = new File("../../objectbox-generator/src/main/resources/" + BASE_PACKAGE_PATH);
             if (!dir.exists()) {
                 // Working dir is base module dir
-                dir = new File("objectbox-generator/src/main/resources/");
+                dir = new File("objectbox-generator/src/main/resources/" + BASE_PACKAGE_PATH);
             }
             if (dir.exists() && new File(dir, probingTemplate).exists()) {
                 config.setDirectoryForTemplateLoading(dir);
