@@ -95,9 +95,7 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
         }
     }
 
-    // TODO test
     private fun validateIds(model: IdSyncModel) {
-        // TODO validate lastIDs with IDs
         val entityIds = mutableSetOf<Int>()
         model.entities.forEach { entity ->
             if (!entityIds.add(entity.id.id)) {
@@ -120,7 +118,10 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
                             "${entity.name}.${property.name}. $noteSeeDocs")
                 }
                 if (property.modelId == entity.lastPropertyId.id) {
-                    // TODO
+                    if (property.uid != entity.lastPropertyId.uid) {
+                        throw IdSyncException("Property ${entity.name}.${property.name} ID ${property.id}" +
+                                " does not match UID of lastPropertyId ${entity.lastPropertyId}. $noteSeeDocs")
+                    }
                 } else if (property.modelId > entity.lastPropertyId.id) {
                     throw IdSyncException("Property ${entity.name}.${property.name} has an ID ${property.id} above " +
                             "lastPropertyId ${entity.lastPropertyId}. $noteSeeDocs")

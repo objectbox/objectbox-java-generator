@@ -1,12 +1,8 @@
 package io.objecbox.generator.idsync
 
-import io.objectbox.codemodifier.*
-import org.eclipse.jdt.core.dom.TypeDeclaration
-import org.junit.After
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
-import org.mockito.Mockito
 import java.io.File
 
 class IdSyncFileTest {
@@ -33,5 +29,20 @@ class IdSyncFileTest {
         assertEquals("Note", entity.name)
         assertEquals("1:4858050548069557694", entity.id.toString())
         assertEquals("7:1224882392647796759", entity.lastPropertyId.toString())
+    }
+
+    @Test
+    fun testBadFiles() {
+        val badFiles = dir.listFiles().filter { it.name != "all-ok.json" }
+        assertTrue(badFiles.size > 0)
+        for (file in badFiles) {
+            assertTrue(file.exists())
+            try {
+                var idSync = IdSync(file)
+                fail("Should have failed: " + file.absoluteFile)
+            } catch (e: IdSyncException) {
+                // OK
+            }
+        }
     }
 }
