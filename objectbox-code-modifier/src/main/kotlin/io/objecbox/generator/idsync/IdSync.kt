@@ -170,7 +170,7 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
                     parsedEntity.sourceFile.absolutePath)
         }
         val existingEntity: Entity? = findEntity(entityName, entityRefId)
-        val lastPropertyId = IdUid(existingEntity?.lastPropertyId?.id ?: 0)
+        val lastPropertyId = existingEntity?.lastPropertyId?.clone() ?: IdUid()
         val properties = ArrayList<Property>()
         for (parsedProperty in parsedEntity.properties) {
             val property = syncProperty(existingEntity, parsedEntity, parsedProperty, lastPropertyId)
