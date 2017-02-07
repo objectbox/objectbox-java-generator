@@ -155,16 +155,16 @@ public class SimpleBoxGeneratorTest {
     @Test
     public void testRelation() throws Exception {
         Schema schema = new Schema(1, "io.objectbox.test.relationbox");
-        schema.setLastEntityId(2);
-        schema.setLastIndexId(1);
+        schema.setLastEntityId(new IdUid(2,1003L));
+        schema.setLastIndexId(new IdUid(1, 1100));
         Entity customer = schema.addEntity("Customer");
         customer.setModelId(1).setModelUid(1001L).setLastPropertyId(new IdUid(1,501));
-        customer.addIdProperty().modelId(1).modelRefId(1002).getProperty();
+        customer.addIdProperty().modelId(new IdUid(1,1002)).getProperty();
         Entity order = schema.addEntity("Order");
         order.setModelId(2).setModelUid(1003L).setLastPropertyId(new IdUid(2,502));
-        order.addIdProperty().modelId(1).modelRefId(1004).getProperty();
-        Property customerId = order.addLongProperty("customerId").modelId(2).modelRefId(1005)
-                .modelIndexId(1).getProperty();
+        order.addIdProperty().modelId(new IdUid(1, 1004)).getProperty();
+        Property customerId = order.addLongProperty("customerId").modelId(new IdUid(2, 1005))
+                .modelIndexId(new IdUid(1, 1100)).getProperty();
         order.addToOne(customer, customerId, "customer");
 
         File outputDir = new File("build/test-out");
@@ -190,7 +190,7 @@ public class SimpleBoxGeneratorTest {
         final String myBoxContent = FileUtils.readUtf8(myObjectBoxFile);
         assertTrue(myBoxContent.contains(".property(\"customerId\", \"Customer\", PropertyType.Relation)"));
         assertTrue(myBoxContent.contains(".flags(PropertyFlags.INDEXED | PropertyFlags.INDEX_PARTIAL_SKIP_ZERO)"));
-        assertTrue(myBoxContent.contains(".indexId(1)"));
+        assertTrue(myBoxContent.contains(".indexId(1, 1100)"));
     }
 
 }

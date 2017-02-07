@@ -11,7 +11,7 @@ class IdUid(var id: Int = 0, var uid: Long = 0) : Cloneable {
 
     fun fromString(value: String) {
         val splitted = value.split(':')
-        if (splitted.size != 2) throw IllegalAccessException("Illegal ID: $value")
+        if (splitted.size != 2) throw IllegalArgumentException("Illegal ID: $value (expected format \"id:uid\")")
         id = splitted[0].toInt()
         uid = splitted[1].toLong()
     }

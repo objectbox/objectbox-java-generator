@@ -18,6 +18,7 @@
 
 package io.objectbox.generator.model;
 
+import io.objectbox.generator.IdUid;
 import io.objectbox.generator.TextUtil;
 
 /** Model class for an entity's property: a Java property mapped to a data base representation. */
@@ -42,18 +43,13 @@ public class Property {
             return this;
         }
 
-        public PropertyBuilder modelId(int modelId) {
+        public PropertyBuilder modelId(IdUid modelId) {
             property.modelId = modelId;
             return this;
         }
 
-        public PropertyBuilder modelIndexId(int indexId) {
+        public PropertyBuilder modelIndexId(IdUid indexId) {
             property.modelIndexId = indexId;
-            return this;
-        }
-
-        public PropertyBuilder modelRefId(long modelRefId) {
-            property.modelUid = modelRefId;
             return this;
         }
 
@@ -203,9 +199,8 @@ public class Property {
     private PropertyType propertyType;
     private final String propertyName;
 
-    private Integer modelId;
-    private Integer modelIndexId;
-    private Long modelUid;
+    private IdUid modelId;
+    private IdUid modelIndexId;
 
     private String dbName;
     private String dbType;
@@ -265,15 +260,11 @@ public class Property {
         this.propertyType = propertyType;
     }
 
-    public Long getModelUid() {
-        return modelUid;
-    }
-
-    public Integer getModelId() {
+    public IdUid getModelId() {
         return modelId;
     }
 
-    public Integer getModelIndexId() {
+    public IdUid getModelIndexId() {
         return modelIndexId;
     }
 

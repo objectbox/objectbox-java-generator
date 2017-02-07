@@ -59,10 +59,10 @@ public class MyObjectBox {
     private static byte[] getModel() {
         ModelBuilder modelBuilder = new ModelBuilder();
 <#if schema.lastEntityId??>
-        modelBuilder.lastEntityId(${schema.lastEntityId?c});
+        modelBuilder.lastEntityId(${schema.lastEntityId.id?c}, ${schema.lastEntityId.uid?c}L);
 </#if>
 <#if schema.lastIndexId??>
-        modelBuilder.lastIndexId(${schema.lastIndexId?c});
+        modelBuilder.lastIndexId(${schema.lastIndexId.id?c}, ${schema.lastIndexId.uid?c}L);
 </#if>
 
         EntityBuilder entityBuilder;
@@ -70,8 +70,8 @@ public class MyObjectBox {
 <#list schema.entities as entity>
         entityBuilder = modelBuilder.entity("${entity.dbName}");
 <#if entity.modelId??>
-        entityBuilder.id(${entity.modelId?c})<#if entity.modelUid??>.uid(${entity.modelUid?c}L)</#if><#if
-            entity.lastPropertyId??>.lastPropertyId(${entity.lastPropertyId.id?c})</#if>;
+        entityBuilder.id(${entity.modelId?c}, ${entity.modelUid?c}L)<#if
+            entity.lastPropertyId??>.lastPropertyId(${entity.lastPropertyId.id?c}, ${entity.lastPropertyId.uid?c}L)</#if>;
 </#if>
 <#list entity.propertiesColumns as property>
 <#assign flags = []>
@@ -87,12 +87,11 @@ public class MyObjectBox {
 </#list>
         entityBuilder.property("${property.dbName}", <#--
         --><#if property.targetEntity??>"${property.targetEntity.dbName}", </#if>PropertyType.${property.dbType})<#--
-        --><#if property.modelId??>.id(${property.modelId?c})</#if><#--
-        --><#if property.modelUid??>.uid(${property.modelUid?c}L)</#if><#--
+        --><#if property.modelId??>.id(${property.modelId.id?c}, ${property.modelId.uid?c}L)</#if><#--
         --><#if (uniqueFlags?size > 0)>
 
             .flags(${uniqueFlags?join(" | ")})</#if><#--
-        --><#if property.modelIndexId??>.indexId(${property.modelIndexId?c})</#if>;
+        --><#if property.modelIndexId??>.indexId(${property.modelIndexId.id?c}, ${property.modelIndexId.uid?c}L)</#if>;
 </#list>
         entityBuilder.entityDone();
 

@@ -23,6 +23,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
+import io.objectbox.generator.IdUid;
 import io.objectbox.generator.TextUtil;
 
 /**
@@ -46,8 +47,8 @@ public class Schema {
     private boolean useActiveEntitiesByDefault;
     private final String name;
     private final String prefix;
-    private Integer lastEntityId;
-    private Integer lastIndexId;
+    private IdUid lastEntityId;
+    private IdUid lastIndexId;
 
     public Schema(String name, int version, String defaultJavaPackage) {
         this.name = name;
@@ -189,19 +190,19 @@ public class Schema {
         return prefix;
     }
 
-    public Integer getLastEntityId() {
+    public IdUid getLastEntityId() {
         return lastEntityId;
     }
 
-    public void setLastEntityId(Integer lastEntityId) {
+    public void setLastEntityId(IdUid lastEntityId) {
         this.lastEntityId = lastEntityId;
     }
 
-    public Integer getLastIndexId() {
+    public IdUid getLastIndexId() {
         return lastIndexId;
     }
 
-    public void setLastIndexId(Integer lastIndexId) {
+    public void setLastIndexId(IdUid lastIndexId) {
         this.lastIndexId = lastIndexId;
     }
 

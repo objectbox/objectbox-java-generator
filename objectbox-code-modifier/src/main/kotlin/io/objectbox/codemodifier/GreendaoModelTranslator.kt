@@ -219,11 +219,9 @@ object GreendaoModelTranslator {
     private fun convertProperty(entity: Entity, property: ParsedProperty, modelIds: io.objecbox.generator.idsync.Property) {
         val propertyType = convertPropertyType((property.customType?.columnJavaType ?: property.variable.type).name)
         val propertyBuilder = entity.addProperty(propertyType, property.variable.name)
-        propertyBuilder.modelId(modelIds.modelId)
-        propertyBuilder.modelRefId(modelIds.uid)
-        // TODO use full IdUid
-        if (modelIds.indexId != null && modelIds.indexId.id != 0) {
-            propertyBuilder.modelIndexId(modelIds.indexId.id)
+        propertyBuilder.modelId(modelIds.id)
+        if (modelIds.indexId != null) {
+            propertyBuilder.modelIndexId(modelIds.indexId)
         }
 
         if (property.variable.type.isPrimitive) {
