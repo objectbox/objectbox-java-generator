@@ -260,7 +260,8 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
                 isNotNull = node.type.isPrimitiveType || fa.hasNotNull,
                 dbName = property?.nameInDb?.let { it.nullIfBlank() },
                 uid = if (uid != null && uid != 0L) uid else null,
-                customType = customType
+                customType = customType,
+                fieldAccessible = !Modifier.isPrivate(node.modifiers)
         )
     }
 

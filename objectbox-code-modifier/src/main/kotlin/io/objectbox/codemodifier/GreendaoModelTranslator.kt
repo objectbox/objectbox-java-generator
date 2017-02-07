@@ -253,6 +253,9 @@ object GreendaoModelTranslator {
         if (property.customType != null) {
             propertyBuilder.customType(property.variable.type.name, property.customType.converterClassName)
         }
+        if(property.fieldAccessible) {
+            propertyBuilder.fieldAccessible()
+        }
     }
 
     private fun convertPropertyType(javaTypeName: String): PropertyType = when (javaTypeName) {

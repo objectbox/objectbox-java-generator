@@ -94,6 +94,11 @@ public class Property {
             return this;
         }
 
+        public PropertyBuilder fieldAccessible() {
+            property.fieldAccessible = true;
+            return this;
+        }
+
         public PropertyBuilder nonPrimitiveType() {
             if (!property.propertyType.isScalar()) {
                 throw new RuntimeException("Type is already non-primitive");
@@ -227,6 +232,7 @@ public class Property {
     private boolean notNull;
     private boolean nonPrimitiveType;
     private boolean idAssignable;
+    private boolean fieldAccessible;
 
     private int ordinal;
 
@@ -373,12 +379,17 @@ public class Property {
         return javaDocSetter;
     }
 
+    public boolean isFieldAccessible() {
+        return fieldAccessible;
+    }
+
     public String getDatabaseValueExpression() {
         return getDatabaseValueExpression(propertyName);
     }
 
     public String getDatabaseValueExpressionNotNull() {
-        return getDatabaseValueExpression("entity.get" + TextUtil.capFirst(propertyName) + "()");
+        String value = "entity." + (fieldAccessible ?  propertyName : "get" + TextUtil.capFirst(propertyName) + "()");
+        return getDatabaseValueExpression(value);
     }
 
     /**

@@ -22,7 +22,8 @@ data class ParsedProperty(val variable: Variable,
                           val dbName: String? = null,
                           var uid: Long? = null,
                           val customType: CustomType? = null,
-                          val unique: Boolean = false)
+                          val unique: Boolean = false,
+                          val fieldAccessible:Boolean = false)
 
 data class TransientField(val variable: Variable,
                           override val node: FieldDeclaration,

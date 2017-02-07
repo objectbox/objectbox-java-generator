@@ -12,6 +12,8 @@ import org.junit.Assert.*
 import org.junit.Ignore
 import org.junit.Test
 
+val myType = VariableType("com.example.myapp.MyType", isPrimitive = false, originalName = "MyType")
+
 /**
  * Tests if fields, constructors and methods are properly recognized.
  */
@@ -27,12 +29,12 @@ class VisitorTest : VisitorTestBase() {
         @Entity
         class Foobar {
             String name;
-            int age;
+            private int age;
         }
         """)!!
         assertThat(entity.properties, equalTo(
                 listOf(
-                        ParsedProperty(Variable(StringType, "name")),
+                        ParsedProperty(Variable(StringType, "name"), fieldAccessible = true),
                         ParsedProperty(Variable(IntType, "age"), isNotNull = true)
                 )
         ))
@@ -222,11 +224,9 @@ class VisitorTest : VisitorTestBase() {
         """, listOf("MyType"))!!
         val field = entity.properties[0]
         assertEquals(
-                ParsedProperty(
-                        Variable(VariableType("com.example.myapp.MyType", isPrimitive = false, originalName = "MyType"), "name"),
-                        customType = CustomType(
-                                "com.example.myapp.Converter", StringType
-                        )
+                ParsedProperty(Variable(myType, "name"),
+                        customType = CustomType("com.example.myapp.Converter", StringType),
+                        fieldAccessible = true
                 ),
                 field
         )
@@ -262,11 +262,9 @@ class VisitorTest : VisitorTestBase() {
         """, listOf("MyType"))!!
         val field = entity.properties[0]
         assertEquals(
-                ParsedProperty(
-                        Variable(VariableType("com.example.myapp.MyType", isPrimitive = false, originalName = "MyType"), "name"),
-                        customType = CustomType(
-                                "com.example.myapp.Foobar.InnerConverter", StringType
-                        )
+                ParsedProperty(Variable(myType, "name"),
+                        customType = CustomType("com.example.myapp.Foobar.InnerConverter", StringType),
+                        fieldAccessible = true
                 ),
                 field
         )

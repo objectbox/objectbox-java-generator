@@ -19,6 +19,7 @@
 package io.objectbox.generator;
 
 import org.greenrobot.essentials.collections.Multimap;
+
 import io.objectbox.generator.model.Entity;
 import io.objectbox.generator.model.Property;
 import io.objectbox.generator.model.PropertyType;
@@ -207,7 +208,7 @@ class PropertyCollector {
                         .append(isScalar ? " : 0" : " : null");
             } else if (property.isNonPrimitiveType()) {
                 preCall.append(INDENT).append(property.getJavaTypeInEntity()).append(' ').append(name)
-                        .append(" = ").append(getter(property)).append(";\n");
+                        .append(" = ").append(getValue(property)).append(";\n");
                 preCall.append(INDENT).append("int ").append(propertyIdLocal).append(" = ").append(name)
                         .append(" != null ? ").append(propertyId).append(" : 0;\n");
                 sb.append(propertyIdLocal).append(", ");
@@ -230,7 +231,7 @@ class PropertyCollector {
         // TODO check if we can use fields directly
         if (last && idProperty.isNonPrimitiveType() && !entity.isProtobuf()) {
             all.append(INDENT).append(idProperty.getJavaTypeInEntity()).append(' ')
-                    .append(idProperty.getPropertyName()).append(" = ").append(getter(idProperty)).append(";\n");
+                    .append(idProperty.getPropertyName()).append(" = ").append(getValue(idProperty)).append(";\n");
         }
         if (preCall.length() > 0) {
             all.append(preCall).append('\n');
@@ -242,13 +243,13 @@ class PropertyCollector {
         all.append("collect").append(collectSignature).append("(cursor, ");
         if (last) {
             if (entity.isProtobuf()) {
-                all.append("entity.has").append(nameCapFirst(idProperty)).append("()? ").append(getter(idProperty))
+                all.append("entity.has").append(nameCapFirst(idProperty)).append("()? ").append(getValue(idProperty))
                         .append(": 0");
             } else if (idProperty.isNonPrimitiveType()) {
                 all.append(idProperty.getPropertyName()).append(" != null ? ").append(idProperty.getPropertyName())
                         .append(": 0");
             } else {
-                all.append(getter(idProperty));
+                all.append(getValue(idProperty));
             }
             all.append(", ");
         } else {
@@ -271,8 +272,9 @@ class PropertyCollector {
         }
     }
 
-    private String getter(Property property) {
-        return "entity.get" + nameCapFirst(property) + "()";
+    private String getValue(Property property) {
+        return "entity." + (property.isFieldAccessible() ? property.getPropertyName()
+                : "get" + nameCapFirst(property) + "()");
     }
 
     private String nameCapFirst(Property property) {

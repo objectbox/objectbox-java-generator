@@ -94,7 +94,10 @@ class ObjectBoxGenerator(val formattingOptions: FormattingOptions? = null,
                                 " (needed for @Relation)")
                     } else {
                         // Property does not exist yet, adding it to parsedEntity.propertiesToGenerate will take care
-                        parsedProperty = ParsedProperty(variable = Variable(VariableType("long", true, "long"), idName))
+                        parsedProperty = ParsedProperty(
+                                variable = Variable(VariableType("long", true, "long"), idName),
+                                fieldAccessible = true
+                        )
                         parsedEntity.properties.add(parsedProperty)
                         parsedEntity.propertiesToGenerate.add(parsedProperty)
                     }
@@ -248,7 +251,7 @@ class ObjectBoxGenerator(val formattingOptions: FormattingOptions? = null,
     }
 
     private fun generateToOneRelations(entity: Entity, parsedEntity: ParsedEntity, transformer: EntityClassTransformer) {
-        if(entity.toOneRelations.isEmpty()) return;
+        if (entity.toOneRelations.isEmpty()) return;
         transformer.ensureImport("io.objectbox.relation.ToOne")
 
         // add everything in reverse as transformer writes in reverse direction
