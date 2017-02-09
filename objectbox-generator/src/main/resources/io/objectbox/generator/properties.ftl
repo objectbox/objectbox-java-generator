@@ -42,7 +42,8 @@ public class ${entity.className}_ implements Properties {
     public static final String __NAME_IN_DB = "${entity.dbName}";
 
 <#list entity.propertiesColumns as property>
-    public final static Property ${property.propertyName} = new Property(${property_index}, ${property.modelId.id!0?c}, ${property.javaType}.class, "${property.propertyName}"<#if
+    public final static Property ${property.propertyName} = new Property(${property_index}, <#if
+    property.modelId??>${property.modelId.id?c}<#else>0</#if>, ${property.javaType}.class, "${property.propertyName}"<#if
     property.primaryKey || (property.dbName?? && property.dbName != property.propertyName) || property.converter??>, ${property.primaryKey?string}, "${property.dbName}"<#if
 property.converter??>, ${property.converterClassName}.class, ${property.customTypeClassName}.class</#if></#if>);
 </#list>

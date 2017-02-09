@@ -190,7 +190,7 @@ public class SimpleBoxGeneratorTest {
         final String myBoxContent = FileUtils.readUtf8(myObjectBoxFile);
         assertTrue(myBoxContent.contains(".property(\"customerId\", \"Customer\", PropertyType.Relation)"));
         assertTrue(myBoxContent.contains(".flags(PropertyFlags.INDEXED | PropertyFlags.INDEX_PARTIAL_SKIP_ZERO)"));
-        assertTrue(myBoxContent.contains(".indexId(1, 1100)"));
+        assertTrue(myBoxContent.contains(".indexId(1, 1100L)"));
     }
 
 }
