@@ -23,7 +23,7 @@ data class ParsedProperty(val variable: Variable,
                           var uid: Long? = null,
                           val customType: CustomType? = null,
                           val unique: Boolean = false,
-                          val fieldAccessible:Boolean = false)
+                          val fieldAccessible: Boolean = false)
 
 data class TransientField(val variable: Variable,
                           override val node: FieldDeclaration,
@@ -106,8 +106,10 @@ data class ParsedEntity(val name: String,
      *          otherwise null */
     fun getPropertiesInConstructorOrder(): List<ParsedProperty>? {
         val fieldVarsSet = properties.map { it.variable }.toSet()
-        return constructors.find { it.parameters.toSet() == fieldVarsSet }
-                ?.let { constructor -> properties.sortedBy { constructor.parameters.indexOf(it.variable) } }
+        val matchingConstructor = constructors.find { it.parameters.toSet() == fieldVarsSet }
+        if (matchingConstructor != null) {
+            return properties.sortedBy { matchingConstructor.parameters.indexOf(it.variable) }
+        } else return null
     }
 
 }
