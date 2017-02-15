@@ -102,16 +102,6 @@ data class ParsedEntity(val name: String,
     val lastConstructorDeclaration: MethodDeclaration?
         get() = constructors.lastOrNull()?.node
 
-    /** @return entity fields in order of constructor parameters, if all-fields constructor exist,
-     *          otherwise null */
-    fun getPropertiesInConstructorOrder(): List<ParsedProperty>? {
-        val fieldVarsSet = properties.map { it.variable }.toSet()
-        val matchingConstructor = constructors.find { it.parameters.toSet() == fieldVarsSet }
-        if (matchingConstructor != null) {
-            return properties.sortedBy { matchingConstructor.parameters.indexOf(it.variable) }
-        } else return null
-    }
-
 }
 
 sealed class GeneratorHint {

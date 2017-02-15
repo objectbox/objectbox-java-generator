@@ -156,17 +156,13 @@ class ObjectBoxGenerator(val formattingOptions: FormattingOptions? = null,
     }
 
     private fun checkClass(parsedEntity: ParsedEntity) {
-        val propertiesInConstructorOrder = parsedEntity.getPropertiesInConstructorOrder()
-        val noConstructor = propertiesInConstructorOrder == null && run {
-            val fieldVars = parsedEntity.properties.map { it.variable }
-            parsedEntity.constructors.none {
-                it.hasFullSignature(parsedEntity.name, fieldVars)
-            }
-        }
-        if (noConstructor) {
+        val fieldVars = parsedEntity.properties.map { it.variable }
+        if (parsedEntity.constructors.none() {
+            it.hasFullSignature(parsedEntity.name, fieldVars)
+        }) {
             throw RuntimeException(
                     "Can't find constructor for entity ${parsedEntity.name} with all persistent fields. " +
-                            "Note parameter names of such constructor should be equal to field names"
+                    "Note parameter names of such constructor should be equal to field names"
             )
         }
     }
@@ -212,7 +208,7 @@ class ObjectBoxGenerator(val formattingOptions: FormattingOptions? = null,
     private fun generateConstructors(parsedEntity: ParsedEntity, transformer: EntityClassTransformer) {
         if (parsedEntity.generateConstructors) {
             // check there is need to generate default constructor to do not hide implicit one
-            val properties = parsedEntity.getPropertiesInConstructorOrder() ?: parsedEntity.properties
+            val properties = parsedEntity.properties
             if (properties.isNotEmpty()
                     && parsedEntity.constructors.none { it.parameters.isEmpty() && !it.generated }) {
                 transformer.defConstructor(emptyList()) {
