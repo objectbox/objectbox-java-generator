@@ -9,7 +9,7 @@ import io.objectbox.generator.model.Schema
 import java.io.File
 
 /**
- * Main generator.
+ * Main generator triggered by plugin.
  * - triggers parsing of entities
  * - runs generation of dao classes within {@link org.greenrobot.greendao.generator.DaoGenerator}
  * - runs parsing and transformation of Entity classes using [EntityClassTransformer]
@@ -32,6 +32,7 @@ class ObjectBoxGenerator(val formattingOptions: FormattingOptions? = null,
         entityClassParser = EntityClassParser(jdtOptions, encoding)
     }
 
+    /** Triggered by plugin. */
     fun run(sourceFiles: Iterable<File>, schemaOptions: Map<String, SchemaOptions>) {
         require(schemaOptions.size > 0) { "There should be options for at least one schema" }
 

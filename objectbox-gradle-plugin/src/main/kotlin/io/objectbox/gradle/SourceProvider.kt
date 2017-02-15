@@ -13,6 +13,7 @@ import org.gradle.api.plugins.JavaPluginConvention
 import org.gradle.api.tasks.compile.JavaCompile
 import java.io.File
 
+/** Interface to have some abstraction over Android vs. Java plugins. */
 interface SourceProvider {
     fun sourceFiles(): Sequence<FileTree>
     fun sourceTree(): FileTree = sourceFiles().reduce { a, b -> a + b }

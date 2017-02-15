@@ -65,23 +65,39 @@ class ObjectBoxGeneratorTest {
             }
         }
 
+        val additionalChecks = mapOf("IdAfterProperty" to { checkIdAfterProperty() })
+        var additionalChecksInvoked = 0;
+
         // run the generator on each and check output
         testFiles.forEach {
             ensureEmptyTestDirectory()
             generateAndAssertFile(it)
+
+            val additionalCheck = additionalChecks[it]
+            if (additionalCheck != null) {
+                additionalCheck.invoke()
+                additionalChecksInvoked++
+            }
         }
+        assertEquals("Not all additional checks invoked", additionalChecks.size, additionalChecksInvoked)
+    }
+
+    fun checkIdAfterProperty() {
+        val propertiesFile = File(testDirectory, "/main/java/io/objectbox/codemodifier/test/Note_.java")
+        assertTrue(propertiesFile.exists())
+        var content = propertiesFile.readText()
+        assertTrue(content, content.contains("Property __ID_PROPERTY = id;"))
+
+        val cursorFile = File(testDirectory, "/main/java/io/objectbox/codemodifier/test/NoteCursor.java")
+        assertTrue(cursorFile.exists())
+        content = cursorFile.readText()
+        assertTrue(content, content.contains("entity.setId(__assignedId);"))
     }
 
     // NOTE: test may output multiple failed files, make sure to scroll up :)
     @Test
     fun testAllTestDirectories() {
-        var relationChecks = {
-            var myObjectBoxFile = File(testDirectory, "/main/java/io/objectbox/codemodifier/test/MyObjectBox.java")
-            assertTrue(myObjectBoxFile.exists())
-            val content = myObjectBoxFile.readText()
-            assertTrue(content, content.contains(".indexId("))
-        }
-        val additionalChecks = mapOf("relation-input" to relationChecks)
+        val additionalChecks = mapOf("relation-input" to { checkRelations() })
         var additionalChecksInvoked = 0;
         samplesDirectory.listFiles().filter { it.isDirectory && it.name.endsWith("-input") }.forEach {
             ensureEmptyTestDirectory()
@@ -94,6 +110,13 @@ class ObjectBoxGeneratorTest {
             }
         }
         assertEquals("Not all additional checks invoked", additionalChecks.size, additionalChecksInvoked)
+    }
+
+    fun checkRelations() {
+        val myObjectBoxFile = File(testDirectory, "/main/java/io/objectbox/codemodifier/test/MyObjectBox.java")
+        assertTrue(myObjectBoxFile.exists())
+        val content = myObjectBoxFile.readText()
+        assertTrue(content, content.contains(".indexId("))
     }
 
     fun generateAndAssertFile(baseFileName: String) {
