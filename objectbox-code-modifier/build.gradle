@@ -57,7 +57,7 @@ dependencies {
 
     // Synchronize dependency versions with project version
     def baseVersion = "${project.version}"
-//    baseVersion = "0.9.7-SNAPSHOT"
+    baseVersion = "0.9.8-PREVIEW"
     compile "io.objectbox:objectbox-java-api:$baseVersion"
     compile project (':objectbox-generator')
 
