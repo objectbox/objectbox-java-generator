@@ -69,10 +69,10 @@ class IdSyncTest {
     }
 
     @Test
-    fun testKeepParsedRefId() {
+    fun testKeepParsedUid() {
         val model1 = syncBasicModel()
-        val entityRefId = model1.entities.first().refId
-        val propertyRefId = model1.entities.first().properties.first().refId
+        val entityRefId = model1.entities.first().uid
+        val propertyRefId = model1.entities.first().properties.first().uid
 
         val properties = listOf(
                 createParsedProperty(name = "bla", refId = propertyRefId)
@@ -84,9 +84,9 @@ class IdSyncTest {
         val model2 = idSync!!.justRead()!!
         assertEquals(1, model2.entities.size)
         val entity = model2.entities.first()
-        assertEquals(entityRefId, entity.refId)
+        assertEquals(entityRefId, entity.uid)
         assertEquals(1, entity.properties.size)
-        assertEquals(propertyRefId, entity.properties.first().refId)
+        assertEquals(propertyRefId, entity.properties.first().uid)
     }
 
     @Test
@@ -117,13 +117,13 @@ class IdSyncTest {
         assertEquals(1, model2.entities.size)
         val entity2 = model2.entities.first()
         assertEquals(entity1.id, entity2.id)
-        assertEquals(entity1.refId, entity2.refId)
+        assertEquals(entity1.uid, entity2.uid)
 
         assertEquals(2, entity2.properties.size)
         assertEquals(entity1.properties.first().id, entity2.properties.first().id)
-        assertEquals(entity1.properties.first().refId, entity2.properties.first().refId)
+        assertEquals(entity1.properties.first().uid, entity2.properties.first().uid)
         assertEquals(entity1.properties.last().id, entity2.properties.last().id)
-        assertEquals(entity1.properties.last().refId, entity2.properties.last().refId)
+        assertEquals(entity1.properties.last().uid, entity2.properties.last().uid)
     }
 
     @Test

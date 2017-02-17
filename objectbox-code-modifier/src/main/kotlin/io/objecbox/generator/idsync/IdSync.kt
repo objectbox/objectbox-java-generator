@@ -232,11 +232,6 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
         try {
             source = Okio.source(file)
             val syncModel = modelJsonAdapter.fromJson(Okio.buffer(source))
-            syncModel.entities.forEach {
-                if (it.uid == 0L && it.refId != null) {
-                    it.uid = it.refId
-                }
-            }
             return syncModel
         } catch (e: FileNotFoundException) {
             return null

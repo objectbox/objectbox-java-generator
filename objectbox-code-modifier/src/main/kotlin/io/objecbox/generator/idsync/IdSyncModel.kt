@@ -47,19 +47,13 @@ data class Entity(
         val name: String,
         override val id: IdUid = IdUid(),
         val lastPropertyId: IdUid,
-        val properties: List<Property>,
-
-        @Deprecated("To read in old refIds from JSON", ReplaceWith("uid"))
-        val refId: Long? = null
+        val properties: List<Property>
 ) : HasIdUid
 
 
 data class Property(
         override val id: IdUid = IdUid(),
         val name: String,
-        val indexId: IdUid?,
-
-        @Deprecated("To read in old refIds from JSON", ReplaceWith("uid"))
-        val refId: Long? = null
+        val indexId: IdUid?
 ) : HasIdUid
 
