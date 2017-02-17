@@ -12,8 +12,8 @@ public List<${toMany.targetEntity.className}> get${toMany.name?cap_first}() {
             throw new DbDetachedException();
         }
         Box<${toMany.targetEntity.className}> box = boxStore.boxFor(${toMany.targetEntity.className}.class);
-        int targetEntityId = boxStore.getEntityIdOrThrow(${toMany.targetEntity.className}.class);
-        List<${toMany.targetEntity.className}> ${toMany.name}New = box.getBacklinkEntities(targetEntityId,<#--
+        int targetTypeId = boxStore.getEntityTypeIdOrThrow(${toMany.targetEntity.className}.class);
+        List<${toMany.targetEntity.className}> ${toMany.name}New = box.getBacklinkEntities(targetTypeId,<#--
          -->${toMany.targetEntity.className}_.${toMany.targetProperties[0].propertyName}, ${entity.pkProperty.propertyName});
         synchronized (this) {<#-- Check if another thread was faster, we cannot lock while doing the query to prevent deadlocks -->
             if(${toMany.name} == null) {

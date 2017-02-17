@@ -93,7 +93,7 @@ public class OtherPackage {
      * To-many relationship, resolved on first access (and after reset).
      * Changes to to-many relations are not persisted, make changes to the target entity.
      */
-    @Generated(hash = 954185799)
+    @Generated(hash = 1958088637)
     public List<Order> getOrders() {
         if (orders == null) {
             final BoxStore boxStore = this.__boxStore;
@@ -101,8 +101,8 @@ public class OtherPackage {
                 throw new DbDetachedException();
             }
             Box<Order> box = boxStore.boxFor(Order.class);
-            int targetEntityId = boxStore.getEntityIdOrThrow(Order.class);
-            List<Order> ordersNew = box.getBacklinkEntities(targetEntityId, Order_.customerId, id);
+            int targetTypeId = boxStore.getEntityTypeIdOrThrow(Order.class);
+            List<Order> ordersNew = box.getBacklinkEntities(targetTypeId, Order_.customerId, id);
             synchronized (this) {
                 if (orders == null) {
                     orders = ordersNew;
