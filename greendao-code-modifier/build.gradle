@@ -1,3 +1,7 @@
+plugins {
+    id 'com.github.johnrengelman.shadow' version '1.2.4'
+}
+
 apply plugin: 'kotlin'
 apply plugin: 'maven'
 
@@ -63,6 +67,12 @@ dependencies {
     testCompile 'com.natpryce:hamkrest:1.1.0.0'
 }
 
+shadowJar {
+    relocate 'org.eclipse.jdt', 'greendao.org.eclipse.jdt'
+    classifier = null
+    version = null
+}
+
 task javadocJar(type: Jar) {
     classifier = 'javadoc'
     from 'README'
@@ -74,7 +84,7 @@ task sourcesJar(type: Jar) {
 }
 
 artifacts {
-    archives jar
+    archives shadowJar
     archives javadocJar
     archives sourcesJar
 }
