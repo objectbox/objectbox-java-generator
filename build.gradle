@@ -8,6 +8,8 @@ buildscript {
 
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        // TODO ut: remove ASM dependency once shadow plugin has updated ASM to 5.1+
+        // override ASM version as pre 5.1 has VerifyError bug, but shadow plugin ships older version
         classpath 'org.ow2.asm:asm:5.1'
         classpath 'org.ow2.asm:asm-commons:5.1'
         classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.4'
