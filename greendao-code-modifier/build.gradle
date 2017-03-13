@@ -50,7 +50,6 @@ dependencies {
     compile('org.eclipse.scout.sdk.deps:org.eclipse.text:3.5.400.v20150505-1044') {
         transitive = false
     }
-    // This is the latest version known to work with Gradle 2.14.1 and the Android Gradle Plugin 2.2.0
     compile("org.eclipse.scout.sdk.deps:org.eclipse.jdt.core:3.11.0.v20150602-1242") {
         transitive = false
     }
@@ -65,7 +64,34 @@ dependencies {
 }
 
 shadowJar {
-    relocate 'org.eclipse.jdt', 'greendao.org.eclipse.jdt'
+    // exclude non-relocated dependencies from jar
+    dependencies {
+        exclude(dependency('org.jetbrains.kotlin:kotlin-stdlib'))
+        exclude(dependency('org.jetbrains.kotlin:kotlin-reflect'))
+        exclude(dependency('org.jetbrains.kotlin:kotlin-runtime'))
+        exclude(dependency('org.greenrobot:greendao-api'))
+        exclude(dependency('org.greenrobot:greendao-generator'))
+        exclude(dependency('org.freemarker:freemarker'))
+        exclude(dependency('org.greenrobot:essentials'))
+    }
+    // exclude any remaining unused files from jar
+    exclude 'about_files/**'
+    exclude 'ant_tasks/**'
+    exclude '*.profile'
+    exclude '*.properties'
+    exclude '.api_description'
+    exclude '.options'
+    exclude 'about.html'
+    exclude 'jdtCompilerAdapter.jar'
+    exclude 'plugin.xml'
+    exclude 'profile.list'
+
+    // relocate JDT and all its dependencies, may conflict as they are available in many artifacts
+    // main reason: Android plugin includes org.eclipse.jdt.core.compiler:ecj which has conflicting JDT core packaged
+    relocate 'org.eclipse', 'org.greenrobot.greendao.jdt'
+    relocate 'org.apache', 'org.greenrobot.greendao.apache'
+    relocate 'org.osgi', 'org.greenrobot.greendao.osgi'
+    
     classifier = null
     version = null
 }
