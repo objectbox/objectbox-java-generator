@@ -83,9 +83,9 @@ shadowJar {
 
     // relocate JDT and all its dependencies, may conflict as they are available in many artifacts
     // main reason: Android plugin includes org.eclipse.jdt.core.compiler:ecj which has conflicting JDT core packaged
-    relocate 'org.eclipse', 'org.greenrobot.greendao.jdt'
-    relocate 'org.apache', 'org.greenrobot.greendao.apache'
-    relocate 'org.osgi', 'org.greenrobot.greendao.osgi'
+    relocate 'org.eclipse', "${project.group}.jdt"
+    relocate 'org.apache', "${project.group}.apache"
+    relocate 'org.osgi', "${project.group}.osgi"
     
     classifier = null // would default to "all"
 }
