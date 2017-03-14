@@ -1,4 +1,4 @@
-package io.objecbox.generator.idsync
+package io.objectbox.generator.idsync
 
 import io.objectbox.codemodifier.*
 import org.eclipse.jdt.core.dom.TypeDeclaration

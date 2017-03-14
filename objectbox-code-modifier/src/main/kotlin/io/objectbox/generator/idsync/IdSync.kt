@@ -1,4 +1,4 @@
-package io.objecbox.generator.idsync
+package io.objectbox.generator.idsync
 
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.JsonWriter

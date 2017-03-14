@@ -1,4 +1,4 @@
-package io.objecbox.generator.idsync
+package io.objectbox.generator.idsync
 
 import org.greenrobot.essentials.hash.Murmur3F
 import java.security.SecureRandom

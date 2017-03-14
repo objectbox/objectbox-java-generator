@@ -1,6 +1,6 @@
 package io.objectbox.codemodifier
 
-import io.objecbox.generator.idsync.IdSync
+import io.objectbox.generator.idsync.IdSync
 import io.objectbox.generator.BoxGenerator
 import org.eclipse.jdt.core.JavaCore
 import org.eclipse.jdt.internal.compiler.impl.CompilerOptions

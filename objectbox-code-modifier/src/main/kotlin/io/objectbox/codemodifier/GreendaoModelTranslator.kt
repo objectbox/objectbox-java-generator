@@ -1,6 +1,6 @@
 package io.objectbox.codemodifier
 
-import io.objecbox.generator.idsync.IdSync
+import io.objectbox.generator.idsync.IdSync
 import io.objectbox.generator.TextUtil
 import io.objectbox.generator.model.Entity
 import io.objectbox.generator.model.Property
@@ -215,7 +215,7 @@ object GreendaoModelTranslator {
         }
     }
 
-    private fun convertProperty(entity: Entity, property: ParsedProperty, modelIds: io.objecbox.generator.idsync.Property) {
+    private fun convertProperty(entity: Entity, property: ParsedProperty, modelIds: io.objectbox.generator.idsync.Property) {
         val propertyType = convertPropertyType((property.customType?.columnJavaType ?: property.variable.type).name)
         val propertyBuilder = entity.addProperty(propertyType, property.variable.name)
         propertyBuilder.modelId(modelIds.id)
