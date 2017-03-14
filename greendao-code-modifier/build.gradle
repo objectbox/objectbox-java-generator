@@ -1,5 +1,6 @@
 apply plugin: 'kotlin'
 apply plugin: 'maven'
+apply plugin: 'com.github.johnrengelman.shadow'
 
 group = 'org.greenrobot'
 
@@ -7,8 +8,12 @@ sourceCompatibility = '1.7'
 targetCompatibility = '1.7'
 
 dependencies {
-    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    compile "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
+    // shadow configuration dependencies are excluded from shadow jar, but included in compile tasks (see below)
+    shadow "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    shadow "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
+    shadow 'org.greenrobot:greendao-api:3.2.0'
+    shadow 'org.greenrobot:greendao-generator:3.2.0'
+    shadow 'org.greenrobot:essentials:3.0.0-RC1'
 
     // use JDT Core packaged by the Eclipse Scout project, has the latest versions
     // as a custom version resolution resolution strategy seems to not work on projects using the plugin
@@ -49,18 +54,40 @@ dependencies {
     compile('org.eclipse.scout.sdk.deps:org.eclipse.text:3.5.400.v20150505-1044') {
         transitive = false
     }
-    // This is the latest version known to work with Gradle 2.14.1 and the Android Gradle Plugin 2.2.0
     compile("org.eclipse.scout.sdk.deps:org.eclipse.jdt.core:3.11.0.v20150602-1242") {
         transitive = false
     }
 
-    compile 'org.greenrobot:greendao-api:3.2.0'
-    compile 'org.greenrobot:greendao-generator:3.2.0'
-    compile 'org.greenrobot:essentials:3.0.0-RC1'
-
     testCompile 'junit:junit:4.12'
     testCompile 'org.mockito:mockito-all:1.10.19'
     testCompile 'com.natpryce:hamkrest:1.1.0.0'
+}
+
+// include dependencies from shadow configuration in compile tasks
+tasks.withType(AbstractCompile) {
+    classpath += configurations.shadow
+}
+
+shadowJar {
+    // exclude any remaining unused files from jar
+    exclude 'about_files/**'
+    exclude 'ant_tasks/**'
+    exclude '*.profile'
+    exclude '*.properties'
+    exclude '.api_description'
+    exclude '.options'
+    exclude 'about.html'
+    exclude 'jdtCompilerAdapter.jar'
+    exclude 'plugin.xml'
+    exclude 'profile.list'
+
+    // relocate JDT and all its dependencies, may conflict as they are available in many artifacts
+    // main reason: Android plugin includes org.eclipse.jdt.core.compiler:ecj which has conflicting JDT core packaged
+    relocate 'org.eclipse', 'org.greenrobot.greendao.jdt'
+    relocate 'org.apache', 'org.greenrobot.greendao.apache'
+    relocate 'org.osgi', 'org.greenrobot.greendao.osgi'
+    
+    classifier = null // would default to "all"
 }
 
 task javadocJar(type: Jar) {
@@ -73,19 +100,73 @@ task sourcesJar(type: Jar) {
     from 'README'
 }
 
+// TODO ut: uploadShadow ignores this config, only publishes shadowJar
 artifacts {
-    archives jar
     archives javadocJar
     archives sourcesJar
 }
 
-uploadArchives {
+// shadow plugin configures uploadShadow task to exclude shadowed dependencies
+uploadShadow {
     repositories {
         mavenDeployer {
-            // Basic definitions are defined in root project
+            if (project.hasProperty('preferedRepo') && preferedRepo == 'local') {
+                repository url: repositories.mavenLocal().url
+            } else if (project.hasProperty('preferedRepo') && project.hasProperty('preferedUsername')
+                    && project.hasProperty('preferedPassword')) {
+                configuration = configurations.deployerJars
+                repository(url: preferedRepo) {
+                    authentication(userName: preferedUsername, password: preferedPassword)
+                }
+            } else if (project.hasProperty('sonatypeUsername') && project.hasProperty('sonatypePassword')) {
+                beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+                def isSnapshot = version.endsWith('-SNAPSHOT')
+                def sonatypeRepositoryUrl = isSnapshot ?
+                        "https://oss.sonatype.org/content/repositories/snapshots/"
+                        : "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+                repository(url: sonatypeRepositoryUrl) {
+                    authentication(userName: sonatypeUsername, password: sonatypePassword)
+                }
+            } else {
+                println "Settings sonatypeUsername/sonatypePassword missing/incomplete for ${project.name}"
+            }
+
             pom.project {
+                packaging 'jar'
                 name 'greenDAO Code Modifier'
                 description 'Code modifier for greenDAO, the light and fast ORM for Android'
+                url 'http://greenrobot.org/greendao'
+
+                scm {
+                    url 'https://github.com/greenrobot/greenDAO'
+                    connection 'scm:git@github.com:greenrobot/greenDAO.git'
+                    developerConnection 'scm:git@github.com:greenrobot/greenDAO.git'
+                }
+
+                licenses {
+                    license {
+                        name 'GNU General Public License, Version 3'
+                        url 'http://www.gnu.org/licenses/gpl.txt'
+                        distribution 'repo'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id 'greenrobot'
+                        name 'greenrobot'
+                    }
+                }
+
+                issueManagement {
+                    system 'GitHub Issues'
+                    url 'https://github.com/greenrobot/greenDAO/issues'
+                }
+
+                organization {
+                    name 'greenrobot'
+                    url 'http://greenrobot.org'
+                }
             }
         }
     }
