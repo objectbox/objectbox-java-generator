@@ -21,7 +21,7 @@ sourceSets {
 
 dependencies {
     compile gradleApi()
-    compile project(':greendao-code-modifier')
+    compile project(path: ':greendao-code-modifier', configuration: 'shadow')
     compileOnly 'com.android.tools.build:gradle:2.2.0'
 
     testCompile 'junit:junit:4.12'
@@ -64,25 +64,26 @@ artifacts {
 uploadArchives {
     repositories {
         mavenDeployer {
-            repository url: repositories.mavenLocal().url
-//            def isSnapshot = version.endsWith('-SNAPSHOT')
-//            def sonatypeRepositoryUrl = isSnapshot ?
-//                    "https://oss.sonatype.org/content/repositories/snapshots/"
-//                    : "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
-//            if (project.hasProperty('preferedRepo') && project.hasProperty('preferedUsername')
-//                    && project.hasProperty('preferedPassword')) {
-//                configuration = configurations.deployerJars
-//                repository(url: preferedRepo) {
-//                    authentication(userName: preferedUsername, password: preferedPassword)
-//                }
-//            } else if (project.hasProperty('sonatypeUsername') && project.hasProperty('sonatypePassword')) {
-//                beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
-//                repository(url: sonatypeRepositoryUrl) {
-//                    authentication(userName: sonatypeUsername, password: sonatypePassword)
-//                }
-//            } else {
-//                println "Settings sonatypeUsername/sonatypePassword missing/incomplete for ${project.name}"
-//            }
+            if (project.hasProperty('preferedRepo') && preferedRepo == 'local') {
+                repository url: repositories.mavenLocal().url
+            } else if (project.hasProperty('preferedRepo') && project.hasProperty('preferedUsername')
+                    && project.hasProperty('preferedPassword')) {
+                configuration = configurations.deployerJars
+                repository(url: preferedRepo) {
+                    authentication(userName: preferedUsername, password: preferedPassword)
+                }
+            } else if (project.hasProperty('sonatypeUsername') && project.hasProperty('sonatypePassword')) {
+                beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+                def isSnapshot = version.endsWith('-SNAPSHOT')
+                def sonatypeRepositoryUrl = isSnapshot ?
+                        "https://oss.sonatype.org/content/repositories/snapshots/"
+                        : "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+                repository(url: sonatypeRepositoryUrl) {
+                    authentication(userName: sonatypeUsername, password: sonatypePassword)
+                }
+            } else {
+                println "Settings sonatypeUsername/sonatypePassword missing/incomplete for ${project.name}"
+            }
 
             pom.project {
                 packaging 'jar'
