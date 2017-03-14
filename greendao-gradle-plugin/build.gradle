@@ -64,10 +64,62 @@ artifacts {
 uploadArchives {
     repositories {
         mavenDeployer {
-            // Basic definitions are defined in root project
+            repository url: repositories.mavenLocal().url
+//            def isSnapshot = version.endsWith('-SNAPSHOT')
+//            def sonatypeRepositoryUrl = isSnapshot ?
+//                    "https://oss.sonatype.org/content/repositories/snapshots/"
+//                    : "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+//            if (project.hasProperty('preferedRepo') && project.hasProperty('preferedUsername')
+//                    && project.hasProperty('preferedPassword')) {
+//                configuration = configurations.deployerJars
+//                repository(url: preferedRepo) {
+//                    authentication(userName: preferedUsername, password: preferedPassword)
+//                }
+//            } else if (project.hasProperty('sonatypeUsername') && project.hasProperty('sonatypePassword')) {
+//                beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+//                repository(url: sonatypeRepositoryUrl) {
+//                    authentication(userName: sonatypeUsername, password: sonatypePassword)
+//                }
+//            } else {
+//                println "Settings sonatypeUsername/sonatypePassword missing/incomplete for ${project.name}"
+//            }
+
             pom.project {
+                packaging 'jar'
                 name 'greenDAO Gradle Plugin'
                 description 'Gradle Plugin for greenDAO, the light and fast ORM for Android'
+                url 'http://greenrobot.org/greendao'
+
+                scm {
+                    url 'https://github.com/greenrobot/greenDAO'
+                    connection 'scm:git@github.com:greenrobot/greenDAO.git'
+                    developerConnection 'scm:git@github.com:greenrobot/greenDAO.git'
+                }
+
+                licenses {
+                    license {
+                        name 'GNU General Public License, Version 3'
+                        url 'http://www.gnu.org/licenses/gpl.txt'
+                        distribution 'repo'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id 'greenrobot'
+                        name 'greenrobot'
+                    }
+                }
+
+                issueManagement {
+                    system 'GitHub Issues'
+                    url 'https://github.com/greenrobot/greenDAO/issues'
+                }
+
+                organization {
+                    name 'greenrobot'
+                    url 'http://greenrobot.org'
+                }
             }
         }
     }
