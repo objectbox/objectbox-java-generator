@@ -1,6 +1,8 @@
 package io.obectbox.codemodifier
 
 import io.objectbox.codemodifier.EntityClassASTVisitor
+import io.objectbox.codemodifier.EntityClassParser
+import io.objectbox.codemodifier.ObjectBoxGenerator
 import io.objectbox.codemodifier.ParsedEntity
 import io.objectbox.codemodifier.VariableType
 import org.eclipse.jdt.core.JavaCore
@@ -16,8 +18,8 @@ import java.io.File
  */
 fun parseCompilationUnit(javaCode: String): CompilationUnit {
     val jdtOptions = JavaCore.getOptions()
-    jdtOptions.put(CompilerOptions.OPTION_Source, JdtCodeContext.JAVA_LEVEL)
-    jdtOptions.put(CompilerOptions.OPTION_Compliance, JdtCodeContext.JAVA_LEVEL)
+    jdtOptions.put(CompilerOptions.OPTION_Source, ObjectBoxGenerator.JAVA_LEVEL)
+    jdtOptions.put(CompilerOptions.OPTION_Compliance, ObjectBoxGenerator.JAVA_LEVEL)
     jdtOptions.put(CompilerOptions.OPTION_Encoding, "UTF-8")
 
     val parser = ASTParser.newParser(EntityClassParser.AST_PARSER_LEVEL)

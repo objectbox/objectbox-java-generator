@@ -19,13 +19,18 @@ class ObjectBoxGenerator(val formattingOptions: FormattingOptions? = null,
                          val skipTestGeneration: List<String> = emptyList(),
                          val daoCompat: Boolean = false,
                          encoding: String = "UTF-8") {
+
+    companion object {
+        val JAVA_LEVEL: String = CompilerOptions.VERSION_1_7
+    }
+
     val jdtOptions: MutableMap<Any, Any> = JavaCore.getOptions()
 
     val entityClassParser: EntityClassParser
 
     init {
-        jdtOptions.put(CompilerOptions.OPTION_Source, CompilerOptions.VERSION_1_7)
-        jdtOptions.put(CompilerOptions.OPTION_Compliance, CompilerOptions.VERSION_1_7)
+        jdtOptions.put(CompilerOptions.OPTION_Source, JAVA_LEVEL)
+        jdtOptions.put(CompilerOptions.OPTION_Compliance, JAVA_LEVEL)
         // it could be the encoding is never used by JDT itself for our use case, but just to be sure (and for future)
         jdtOptions.put(CompilerOptions.OPTION_Encoding, encoding)
 
