@@ -17,7 +17,7 @@ buildscript {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '2.14.1'
+    gradleVersion = '3.3'
 }
 
 // TODO ut: figure out how to include the custom resolved versions in the built POM, for now
