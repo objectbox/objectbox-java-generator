@@ -11,8 +11,8 @@ dependencies {
     // shadow configuration dependencies are excluded from shadow jar, but included in compile tasks (see below)
     shadow "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     shadow "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
-    shadow 'org.greenrobot:greendao-api:3.2.0'
-    shadow 'org.greenrobot:greendao-generator:3.2.0'
+    shadow 'org.greenrobot:greendao-api:3.2.2'
+    shadow 'org.greenrobot:greendao-generator:3.2.2'
     shadow 'org.greenrobot:essentials:3.0.0-RC1'
 
     // use JDT Core packaged by the Eclipse Scout project, has the latest versions
