@@ -11,7 +11,7 @@ dependencies {
     compile "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
     compile 'org.greenrobot:greendao-api:3.2.2'
     compile 'org.greenrobot:greendao-generator:3.2.2'
-    compile 'org.greenrobot:greendao-jdt:3.11.0-SNAPSHOT'
+    compile 'org.greenrobot:greenrobot-jdt:3.11.0-SNAPSHOT'
     compile 'org.greenrobot:essentials:3.0.0-RC1'
 
     testCompile 'junit:junit:4.12'

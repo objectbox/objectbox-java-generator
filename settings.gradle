@@ -1,4 +1,4 @@
 include 'greendao-code-modifier'
 include 'greendao-gradle-plugin'
-include 'greendao-jdt'
+include 'greenrobot-jdt'
 
