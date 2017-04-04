@@ -68,6 +68,14 @@ uploadArchives {
             pom.project {
                 name 'greenDAO Gradle Plugin'
                 description 'Gradle Plugin for greenDAO, the light and fast ORM for Android'
+
+                licenses {
+                    license {
+                        name 'GNU General Public License, Version 3'
+                        url 'http://www.gnu.org/licenses/gpl.txt'
+                        distribution 'repo'
+                    }
+                }
             }
         }
     }

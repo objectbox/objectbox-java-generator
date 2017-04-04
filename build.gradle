@@ -92,14 +92,6 @@ subprojects {
                             developerConnection 'scm:git@github.com:greenrobot/greenDAO.git'
                         }
 
-                        licenses {
-                            license {
-                                name 'GNU General Public License, Version 3'
-                                url 'http://www.gnu.org/licenses/gpl.txt'
-                                distribution 'repo'
-                            }
-                        }
-
                         developers {
                             developer {
                                 id 'greenrobot'

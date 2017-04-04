@@ -43,6 +43,15 @@ uploadArchives {
             pom.project {
                 name 'greenDAO Code Modifier'
                 description 'Code modifier for greenDAO, the light and fast ORM for Android'
+
+                licenses {
+                    license {
+                        name 'GNU General Public License, Version 3'
+                        url 'http://www.gnu.org/licenses/gpl.txt'
+                        distribution 'repo'
+                    }
+                }
+
             }
         }
     }

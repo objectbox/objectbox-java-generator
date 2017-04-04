@@ -75,6 +75,33 @@ uploadArchives {
             pom.project {
                 name 'greenrobot JDT'
                 description 'Eclipse JDT repackaged for use in greenrobot projects'
+
+                licenses {
+                    license {
+                        name 'Eclipse Public License - v 1.0'
+                        url 'http://www.eclipse.org/legal/epl-v10.html'
+                        distribution 'repo'
+                    }
+                }
+
+                // Currently ignored (info from base is used):
+                developers {
+                    developer {
+                        id 'greenrobot'
+                        name 'greenrobot'
+                    }
+                    developer {
+                        id 'eclipse'
+                        name 'Eclipse JDT Contributors'
+                        url 'https://projects.eclipse.org/projects/eclipse.jdt/who'
+                    }
+                }
+
+                // Currently ignored (info from base is used):
+                issueManagement {
+                    system 'GitHub Issues'
+                    url 'https://github.com/greenrobot/greenDAO/issues'
+                }
             }
         }
     }
