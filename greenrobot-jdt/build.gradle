@@ -73,8 +73,8 @@ uploadArchives {
             pom.scopeMappings.addMapping(MavenPlugin.RUNTIME_PRIORITY, project.configurations.shadow, Conf2ScopeMappingContainer.RUNTIME)
 
             pom.project {
-                name 'greenDAO JDT repackaged'
-                description 'JDT repackaged for greenDAO, the light and fast ORM for Android'
+                name 'greenrobot JDT'
+                description 'Eclipse JDT repackaged for use in greenrobot projects'
             }
         }
     }
