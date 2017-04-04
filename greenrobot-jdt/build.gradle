@@ -36,7 +36,7 @@ shadowJar {
 
     // relocate JDT and all its dependencies, may conflict as they are available in many artifacts
     // main reason: Android plugin includes org.eclipse.jdt.core.compiler:ecj which has conflicting JDT core packaged
-    relocate 'org.eclipse', "${project.group}.jdt"
+    relocate 'org.eclipse', "${project.group}.eclipse"
     relocate 'org.apache', "${project.group}.apache"
     relocate 'org.osgi', "${project.group}.osgi"
 
