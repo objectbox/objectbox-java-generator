@@ -100,73 +100,28 @@ task sourcesJar(type: Jar) {
     from 'README'
 }
 
-// TODO ut: uploadShadow ignores this config, only publishes shadowJar
 artifacts {
+    archives shadowJar
     archives javadocJar
     archives sourcesJar
 }
 
-// shadow plugin configures uploadShadow task to exclude shadowed dependencies
-uploadShadow {
+// modify uploadArchives task to reflect how shadow plugin configures its uploadShadow task
+uploadArchives {
     repositories {
         mavenDeployer {
-            if (project.hasProperty('preferedRepo') && preferedRepo == 'local') {
-                repository url: repositories.mavenLocal().url
-            } else if (project.hasProperty('preferedRepo') && project.hasProperty('preferedUsername')
-                    && project.hasProperty('preferedPassword')) {
-                configuration = configurations.deployerJars
-                repository(url: preferedRepo) {
-                    authentication(userName: preferedUsername, password: preferedPassword)
-                }
-            } else if (project.hasProperty('sonatypeUsername') && project.hasProperty('sonatypePassword')) {
-                beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
-                def isSnapshot = version.endsWith('-SNAPSHOT')
-                def sonatypeRepositoryUrl = isSnapshot ?
-                        "https://oss.sonatype.org/content/repositories/snapshots/"
-                        : "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
-                repository(url: sonatypeRepositoryUrl) {
-                    authentication(userName: sonatypeUsername, password: sonatypePassword)
-                }
-            } else {
-                println "Settings sonatypeUsername/sonatypePassword missing/incomplete for ${project.name}"
-            }
+            // Basic definitions are defined in root project
+
+            // use shadow configuration
+            configuration = project.configurations.shadow
+            // only include non-shadowed dependencies
+            pom.scopeMappings.mappings.remove(project.configurations.compile)
+            pom.scopeMappings.mappings.remove(project.configurations.runtime)
+            pom.scopeMappings.addMapping(MavenPlugin.RUNTIME_PRIORITY, project.configurations.shadow, Conf2ScopeMappingContainer.RUNTIME)
 
             pom.project {
-                packaging 'jar'
                 name 'greenDAO Code Modifier'
                 description 'Code modifier for greenDAO, the light and fast ORM for Android'
-                url 'http://greenrobot.org/greendao'
-
-                scm {
-                    url 'https://github.com/greenrobot/greenDAO'
-                    connection 'scm:git@github.com:greenrobot/greenDAO.git'
-                    developerConnection 'scm:git@github.com:greenrobot/greenDAO.git'
-                }
-
-                licenses {
-                    license {
-                        name 'GNU General Public License, Version 3'
-                        url 'http://www.gnu.org/licenses/gpl.txt'
-                        distribution 'repo'
-                    }
-                }
-
-                developers {
-                    developer {
-                        id 'greenrobot'
-                        name 'greenrobot'
-                    }
-                }
-
-                issueManagement {
-                    system 'GitHub Issues'
-                    url 'https://github.com/greenrobot/greenDAO/issues'
-                }
-
-                organization {
-                    name 'greenrobot'
-                    url 'http://greenrobot.org'
-                }
             }
         }
     }
