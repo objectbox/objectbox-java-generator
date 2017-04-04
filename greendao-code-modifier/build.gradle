@@ -100,16 +100,23 @@ task sourcesJar(type: Jar) {
     from 'README'
 }
 
-// TODO ut: uploadShadow ignores this config, only publishes shadowJar
 artifacts {
+    archives shadowJar
     archives javadocJar
     archives sourcesJar
 }
 
-// shadow plugin configures uploadShadow task to exclude shadowed dependencies
-uploadShadow {
+// modify uploadArchives task to reflect how shadow plugin configures its uploadShadow task
+uploadArchives {
     repositories {
         mavenDeployer {
+            // use shadow configuration
+            configuration = project.configurations.shadow
+            // only include non-shadowed dependencies
+            pom.scopeMappings.mappings.remove(project.configurations.compile)
+            pom.scopeMappings.mappings.remove(project.configurations.runtime)
+            pom.scopeMappings.addMapping(MavenPlugin.RUNTIME_PRIORITY, project.configurations.shadow, Conf2ScopeMappingContainer.RUNTIME)
+
             if (project.hasProperty('preferedRepo') && preferedRepo == 'local') {
                 repository url: repositories.mavenLocal().url
             } else if (project.hasProperty('preferedRepo') && project.hasProperty('preferedUsername')
