@@ -1,6 +1,6 @@
 package org.greenrobot.greendao.codemodifier
 
-import org.greenrobot.jdt.jdt.core.dom.*
+import org.greenrobot.eclipse.jdt.core.dom.*
 import java.io.File
 
 /**

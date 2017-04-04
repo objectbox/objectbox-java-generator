@@ -1,7 +1,7 @@
 package org.greenrobot.greendao.codemodifier
 
-import org.greenrobot.jdt.jdt.core.dom.CompilationUnit
-import org.greenrobot.jdt.jdt.core.dom.LineComment
+import org.greenrobot.eclipse.jdt.core.dom.CompilationUnit
+import org.greenrobot.eclipse.jdt.core.dom.LineComment
 
 /**
  * Visitor to run for each comment in a compilation units comments list. It records the legacy keep fields positions.

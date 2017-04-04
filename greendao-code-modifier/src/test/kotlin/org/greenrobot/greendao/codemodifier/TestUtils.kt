@@ -1,9 +1,9 @@
 package org.greenrobot.greendao.codemodifier
 
-import org.greenrobot.jdt.jdt.core.JavaCore
-import org.greenrobot.jdt.jdt.core.dom.ASTParser
-import org.greenrobot.jdt.jdt.core.dom.CompilationUnit
-import org.greenrobot.jdt.jdt.internal.compiler.impl.CompilerOptions
+import org.greenrobot.eclipse.jdt.core.JavaCore
+import org.greenrobot.eclipse.jdt.core.dom.ASTParser
+import org.greenrobot.eclipse.jdt.core.dom.CompilationUnit
+import org.greenrobot.eclipse.jdt.internal.compiler.impl.CompilerOptions
 import org.junit.Assert
 import org.mockito.Mockito
 import java.io.File

@@ -1,8 +1,9 @@
 package org.greenrobot.greendao.codemodifier
 
-import org.greenrobot.jdt.jdt.core.JavaCore
-import org.greenrobot.jdt.jdt.internal.compiler.impl.CompilerOptions
+import org.greenrobot.eclipse.jdt.core.JavaCore
+import org.greenrobot.eclipse.jdt.internal.compiler.impl.CompilerOptions
 import java.io.File
+import java.util.Hashtable
 
 /**
  * Context for parsing and transformation
@@ -13,7 +14,7 @@ class JdtCodeContext(val formattingOptions: FormattingOptions? = null, encoding:
         val JAVA_LEVEL: String = CompilerOptions.VERSION_1_7
     }
 
-    private val jdtOptions: MutableMap<Any, Any>
+    private val jdtOptions: Hashtable<String, String>
     private val classParser: EntityClassParser
 
     init {

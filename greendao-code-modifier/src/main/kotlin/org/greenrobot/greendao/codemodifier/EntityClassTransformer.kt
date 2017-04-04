@@ -1,9 +1,10 @@
 package org.greenrobot.greendao.codemodifier
 
-import org.greenrobot.jdt.jdt.core.dom.*
-import org.greenrobot.jdt.jdt.core.dom.rewrite.ASTRewrite
-import org.greenrobot.jdt.jface.text.Document
+import org.greenrobot.eclipse.jdt.core.dom.*
+import org.greenrobot.eclipse.jdt.core.dom.rewrite.ASTRewrite
+import org.greenrobot.eclipse.jface.text.Document
 import java.nio.charset.Charset
+import java.util.Hashtable
 
 /**
  * Helper class to perform transformations on Entity class
@@ -21,7 +22,7 @@ import java.nio.charset.Charset
  * TODO make formatting detection lazy
  * TODO don't write AST to string if nothing is changed
  */
-class EntityClassTransformer(val parsedEntity: ParsedEntity, val jdtOptions : MutableMap<Any, Any>,
+class EntityClassTransformer(val parsedEntity: ParsedEntity, val jdtOptions : Hashtable<String, String>,
                              formattingOptions: FormattingOptions?, val charset: Charset = Charsets.UTF_8) {
     private val cu = parsedEntity.node.root
     private val formatting = formattingOptions?.toFormatting()
@@ -36,8 +37,8 @@ class EntityClassTransformer(val parsedEntity: ParsedEntity, val jdtOptions : Mu
 
     init {
         val tabulation = formatting.tabulation
-        jdtOptions.put("org.greenrobot.jdt.jdt.core.formatter.tabulation.char", if (tabulation.tabChar == ' ') "space" else "tab")
-        jdtOptions.put("org.greenrobot.jdt.jdt.core.formatter.tabulation.size", tabulation.size.toString())
+        jdtOptions.put("org.greenrobot.eclipse.jdt.core.formatter.tabulation.char", if (tabulation.tabChar == ' ') "space" else "tab")
+        jdtOptions.put("org.greenrobot.eclipse.jdt.core.formatter.tabulation.size", tabulation.size.toString())
     }
 
     fun ensureImport(name : String) {

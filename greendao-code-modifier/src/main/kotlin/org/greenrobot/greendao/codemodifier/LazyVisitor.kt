@@ -1,6 +1,6 @@
 package org.greenrobot.greendao.codemodifier
 
-import org.greenrobot.jdt.jdt.core.dom.*
+import org.greenrobot.eclipse.jdt.core.dom.*
 
 /** ASTVisitor that visits nothing by default */
 open class LazyVisitor : ASTVisitor() {

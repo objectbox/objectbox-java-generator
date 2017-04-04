@@ -1,13 +1,14 @@
 package org.greenrobot.greendao.codemodifier
 
-import org.greenrobot.jdt.jdt.core.compiler.IProblem
-import org.greenrobot.jdt.jdt.core.dom.AST
-import org.greenrobot.jdt.jdt.core.dom.ASTParser
-import org.greenrobot.jdt.jdt.core.dom.Comment
-import org.greenrobot.jdt.jdt.core.dom.CompilationUnit
+import org.greenrobot.eclipse.jdt.core.compiler.IProblem
+import org.greenrobot.eclipse.jdt.core.dom.AST
+import org.greenrobot.eclipse.jdt.core.dom.ASTParser
+import org.greenrobot.eclipse.jdt.core.dom.Comment
+import org.greenrobot.eclipse.jdt.core.dom.CompilationUnit
 import java.io.File
+import java.util.Hashtable
 
-class EntityClassParser(val jdtOptions: MutableMap<Any, Any>, val encoding: String) {
+class EntityClassParser(val jdtOptions: Hashtable<String, String>, val encoding: String) {
 
     companion object {
         val AST_PARSER_LEVEL: Int = AST.JLS8
