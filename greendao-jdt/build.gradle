@@ -3,6 +3,9 @@ apply plugin: 'maven'
 apply plugin: 'com.github.johnrengelman.shadow'
 
 group = 'org.greenrobot'
+// this artifact only needs to update every time we update the JDT version
+// so version it after the contained JDT release
+version = '3.11.0-SNAPSHOT'
 
 sourceCompatibility = 1.7
 
