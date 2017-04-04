@@ -1,6 +1,6 @@
 package org.greenrobot.greendao.codemodifier
 
-import org.eclipse.jdt.core.dom.*
+import org.greenrobot.jdt.jdt.core.dom.*
 import kotlin.reflect.KClass
 
 /** Tries to find exact import or import on demand (e.g. import java.lang.*) for the qualifiedName */

@@ -1,11 +1,10 @@
 package org.greenrobot.greendao.codemodifier
 
-import org.eclipse.jdt.core.formatter.CodeFormatter
-import org.eclipse.jdt.core.formatter.DefaultCodeFormatterConstants
-import org.eclipse.jdt.internal.formatter.DefaultCodeFormatter
-import org.eclipse.jdt.internal.formatter.DefaultCodeFormatterOptions
-import org.eclipse.jface.text.Document
-import org.eclipse.text.edits.TextEdit
+import org.greenrobot.jdt.jdt.core.formatter.CodeFormatter
+import org.greenrobot.jdt.jdt.internal.formatter.DefaultCodeFormatter
+import org.greenrobot.jdt.jdt.internal.formatter.DefaultCodeFormatterOptions
+import org.greenrobot.jdt.jface.text.Document
+import org.greenrobot.jdt.text.edits.TextEdit
 
 /** formats the code with JDT according specified formatting */
 class Formatter(var formatting: Formatting) {

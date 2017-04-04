@@ -1,7 +1,7 @@
 package org.greenrobot.greendao.codemodifier
 
-import org.eclipse.jdt.core.JavaCore
-import org.eclipse.jdt.internal.compiler.impl.CompilerOptions
+import org.greenrobot.jdt.jdt.core.JavaCore
+import org.greenrobot.jdt.jdt.internal.compiler.impl.CompilerOptions
 import org.junit.Assert.*
 import org.junit.Test
 

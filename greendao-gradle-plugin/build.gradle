@@ -21,7 +21,7 @@ sourceSets {
 
 dependencies {
     compile gradleApi()
-    compile project(path: ':greendao-code-modifier', configuration: 'shadow')
+    compile project(':greendao-code-modifier')
     compileOnly 'com.android.tools.build:gradle:2.3.0'
 
     testCompile 'junit:junit:4.12'

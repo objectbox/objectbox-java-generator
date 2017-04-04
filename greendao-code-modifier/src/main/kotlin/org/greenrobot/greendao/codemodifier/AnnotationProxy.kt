@@ -1,13 +1,13 @@
 package org.greenrobot.greendao.codemodifier
 
-import org.eclipse.jdt.core.dom.*
-import org.eclipse.jdt.core.dom.Annotation
+import org.greenrobot.jdt.jdt.core.dom.*
+import org.greenrobot.jdt.jdt.core.dom.Annotation
 import java.lang.reflect.InvocationHandler
 import java.lang.reflect.Method
 import java.lang.reflect.Proxy
 
 /**
- * Proxies JDT's {@link org.eclipse.jdt.core.dom.Annotation} to the actual annotation object,
+ * Proxies JDT's {@link org.greenrobot.jdt.jdt.core.dom.Annotation} to the actual annotation object,
  * allows to read annotation's data in the regular java's reflection way
  *
  * <p>

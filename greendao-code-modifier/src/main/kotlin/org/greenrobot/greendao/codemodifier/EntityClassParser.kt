@@ -1,10 +1,10 @@
 package org.greenrobot.greendao.codemodifier
 
-import org.eclipse.jdt.core.compiler.IProblem
-import org.eclipse.jdt.core.dom.AST
-import org.eclipse.jdt.core.dom.ASTParser
-import org.eclipse.jdt.core.dom.Comment
-import org.eclipse.jdt.core.dom.CompilationUnit
+import org.greenrobot.jdt.jdt.core.compiler.IProblem
+import org.greenrobot.jdt.jdt.core.dom.AST
+import org.greenrobot.jdt.jdt.core.dom.ASTParser
+import org.greenrobot.jdt.jdt.core.dom.Comment
+import org.greenrobot.jdt.jdt.core.dom.CompilationUnit
 import java.io.File
 
 class EntityClassParser(val jdtOptions: MutableMap<Any, Any>, val encoding: String) {

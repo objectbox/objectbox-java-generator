@@ -1,7 +1,7 @@
 package org.greenrobot.greendao.codemodifier
 
 import org.greenrobot.essentials.hash.Murmur3F
-import org.eclipse.jdt.core.dom.ASTNode
+import org.greenrobot.jdt.jdt.core.dom.ASTNode
 
 object CodeCompare {
     private val regexTooManySpaces = Regex("[ \\n\\t\\r]+")

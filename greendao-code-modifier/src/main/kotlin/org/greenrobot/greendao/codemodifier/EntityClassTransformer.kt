@@ -1,8 +1,8 @@
 package org.greenrobot.greendao.codemodifier
 
-import org.eclipse.jdt.core.dom.*
-import org.eclipse.jdt.core.dom.rewrite.ASTRewrite
-import org.eclipse.jface.text.Document
+import org.greenrobot.jdt.jdt.core.dom.*
+import org.greenrobot.jdt.jdt.core.dom.rewrite.ASTRewrite
+import org.greenrobot.jdt.jface.text.Document
 import java.nio.charset.Charset
 
 /**
@@ -36,8 +36,8 @@ class EntityClassTransformer(val parsedEntity: ParsedEntity, val jdtOptions : Mu
 
     init {
         val tabulation = formatting.tabulation
-        jdtOptions.put("org.eclipse.jdt.core.formatter.tabulation.char", if (tabulation.tabChar == ' ') "space" else "tab")
-        jdtOptions.put("org.eclipse.jdt.core.formatter.tabulation.size", tabulation.size.toString())
+        jdtOptions.put("org.greenrobot.jdt.jdt.core.formatter.tabulation.char", if (tabulation.tabChar == ' ') "space" else "tab")
+        jdtOptions.put("org.greenrobot.jdt.jdt.core.formatter.tabulation.size", tabulation.size.toString())
     }
 
     fun ensureImport(name : String) {
