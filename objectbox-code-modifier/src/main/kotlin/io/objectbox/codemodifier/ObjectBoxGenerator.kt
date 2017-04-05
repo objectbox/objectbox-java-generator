@@ -2,11 +2,12 @@ package io.objectbox.codemodifier
 
 import io.objectbox.generator.idsync.IdSync
 import io.objectbox.generator.BoxGenerator
-import org.eclipse.jdt.core.JavaCore
-import org.eclipse.jdt.internal.compiler.impl.CompilerOptions
+import org.greenrobot.eclipse.jdt.core.JavaCore
+import org.greenrobot.eclipse.jdt.internal.compiler.impl.CompilerOptions
 import io.objectbox.generator.model.Entity
 import io.objectbox.generator.model.Schema
 import java.io.File
+import java.util.Hashtable
 
 /**
  * Main generator triggered by plugin.
@@ -24,7 +25,7 @@ class ObjectBoxGenerator(val formattingOptions: FormattingOptions? = null,
         val JAVA_LEVEL: String = CompilerOptions.VERSION_1_7
     }
 
-    val jdtOptions: MutableMap<Any, Any> = JavaCore.getOptions()
+    val jdtOptions: Hashtable<String, String> = JavaCore.getOptions()
 
     val entityClassParser: EntityClassParser
 
