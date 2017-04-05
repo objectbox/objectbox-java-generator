@@ -1,5 +1,5 @@
 buildscript {
-    ext.kotlin_version = '1.0.6'
+    ext.kotlin_version = '1.1.1'
 
     repositories {
         jcenter()
@@ -17,7 +17,7 @@ buildscript {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '2.14.1'
+    gradleVersion = '3.3'
 }
 
 if (JavaVersion.current().isJava8Compatible()) {
@@ -27,23 +27,6 @@ if (JavaVersion.current().isJava8Compatible()) {
         }
     }
 }
-
-// TODO ut: figure out how to include the custom resolved versions in the built POM, for now
-// adding all JDT deps manually in code-modifier build.gradle and excluding transitive dependencies
-//allprojects {
-//    configurations.all {
-//        resolutionStrategy.eachDependency { DependencyResolveDetails details ->
-//            if (details.requested.group == 'org.eclipse.scout.sdk.deps') {
-//                // Eclipse Scout JDT core POM dependencies have version format like '[3.11.0,3.11.1)'
-//                // fix resolution to actual version numbers used, like 3.11.0.v20160516-2131, by using 3.11.0+
-//                if (details.requested.name != 'org.eclipse.jdt.core') {
-//                    def requestedVersion = details.requested.version
-//                    details.useVersion requestedVersion.substring(1, requestedVersion.indexOf(",")) + "+"
-//                }
-//            }
-//        }
-//    }
-//}
 
 subprojects {
     apply plugin: 'maven'
@@ -82,4 +65,61 @@ subprojects {
         }
     }
 
+    // Use afterEvaluate or all dependencies will be lost in the generated POM
+    afterEvaluate {
+        uploadArchives {
+            repositories {
+                mavenDeployer {
+                    if (project.hasProperty('preferedRepo') && preferedRepo == 'local') {
+                        repository url: repositories.mavenLocal().url
+                    } else if (project.hasProperty('preferedRepo') && project.hasProperty('preferedUsername')
+                            && project.hasProperty('preferedPassword')) {
+                        configuration = configurations.deployerJars
+                        repository(url: preferedRepo) {
+                            authentication(userName: preferedUsername, password: preferedPassword)
+                        }
+                    } else if (project.hasProperty('sonatypeUsername') && project.hasProperty('sonatypePassword')) {
+                        beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+                        def isSnapshot = version.endsWith('-SNAPSHOT')
+                        def sonatypeRepositoryUrl = isSnapshot ?
+                                "https://oss.sonatype.org/content/repositories/snapshots/"
+                                : "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+                        repository(url: sonatypeRepositoryUrl) {
+                            authentication(userName: sonatypeUsername, password: sonatypePassword)
+                        }
+                    } else {
+                        println "Settings sonatypeUsername/sonatypePassword missing/incomplete for ${project.name}"
+                    }
+
+                    pom.project {
+                        packaging 'jar'
+                        url 'http://greenrobot.org/greendao'
+
+                        scm {
+                            url 'https://github.com/greenrobot/greenDAO'
+                            connection 'scm:git@github.com:greenrobot/greenDAO.git'
+                            developerConnection 'scm:git@github.com:greenrobot/greenDAO.git'
+                        }
+
+                        developers {
+                            developer {
+                                id 'greenrobot'
+                                name 'greenrobot'
+                            }
+                        }
+
+                        issueManagement {
+                            system 'GitHub Issues'
+                            url 'https://github.com/greenrobot/greenDAO/issues'
+                        }
+
+                        organization {
+                            name 'greenrobot'
+                            url 'http://greenrobot.org'
+                        }
+                    }
+                }
+            }
+        }
+    }
 }

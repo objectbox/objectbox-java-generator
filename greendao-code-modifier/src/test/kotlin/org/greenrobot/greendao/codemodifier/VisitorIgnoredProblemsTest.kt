@@ -76,6 +76,33 @@ class VisitorIgnoredProblemsTest : VisitorTestBase() {
     }
 
     @Test
+    fun undefinedMethod() {
+        visit(
+                //language=java
+                """
+        import org.greenrobot.greendao.annotation.Entity;
+        import android.text.TextUtils;
+
+        // the imagined super class
+        //class SuperFoobar {
+        //    public void doSomethingSuper(String string) {
+        //    }
+        //}
+
+        @Entity
+        class Foobar extends SuperFoobar {
+
+            public void doSomething() {
+                // unresolvable super class reference
+                doSomethingSuper("");
+            }
+
+        }
+        """
+        )
+    }
+
+    @Test
     fun unsupportedSuppressWarnings() {
         visit(
                 //language=java

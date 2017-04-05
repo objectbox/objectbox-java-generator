@@ -1,8 +1,8 @@
 package io.obectbox.codemodifier
 
 import io.objectbox.codemodifier.AnnotationProxy
-import org.eclipse.jdt.core.dom.*
-import org.eclipse.jdt.core.dom.Annotation
+import org.greenrobot.eclipse.jdt.core.dom.*
+import org.greenrobot.eclipse.jdt.core.dom.Annotation
 import org.junit.Assert
 import org.junit.Assert.*
 import org.junit.Test

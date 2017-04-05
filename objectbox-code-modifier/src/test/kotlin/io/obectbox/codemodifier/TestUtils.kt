@@ -5,10 +5,10 @@ import io.objectbox.codemodifier.EntityClassParser
 import io.objectbox.codemodifier.ObjectBoxGenerator
 import io.objectbox.codemodifier.ParsedEntity
 import io.objectbox.codemodifier.VariableType
-import org.eclipse.jdt.core.JavaCore
-import org.eclipse.jdt.core.dom.ASTParser
-import org.eclipse.jdt.core.dom.CompilationUnit
-import org.eclipse.jdt.internal.compiler.impl.CompilerOptions
+import org.greenrobot.eclipse.jdt.core.JavaCore
+import org.greenrobot.eclipse.jdt.core.dom.ASTParser
+import org.greenrobot.eclipse.jdt.core.dom.CompilationUnit
+import org.greenrobot.eclipse.jdt.internal.compiler.impl.CompilerOptions
 import org.junit.Assert
 import org.mockito.Mockito
 import java.io.File

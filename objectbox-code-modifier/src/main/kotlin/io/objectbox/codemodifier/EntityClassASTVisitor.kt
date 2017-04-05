@@ -1,8 +1,8 @@
 package io.objectbox.codemodifier
 
 import io.objectbox.annotation.*
-import org.eclipse.jdt.core.dom.*
-import org.eclipse.jdt.core.dom.Annotation
+import org.greenrobot.eclipse.jdt.core.dom.*
+import org.greenrobot.eclipse.jdt.core.dom.Annotation
 import java.io.File
 import kotlin.reflect.KClass
 

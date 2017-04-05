@@ -4,8 +4,8 @@ import io.objectbox.codemodifier.CodeCompare
 import io.objectbox.codemodifier.EntityClassTransformer
 import io.objectbox.codemodifier.FormattingOptions
 import io.objectbox.codemodifier.Tabulation
-import org.eclipse.jdt.core.JavaCore
-import org.eclipse.jdt.internal.compiler.impl.CompilerOptions
+import org.greenrobot.eclipse.jdt.core.JavaCore
+import org.greenrobot.eclipse.jdt.internal.compiler.impl.CompilerOptions
 import org.junit.Assert.*
 import org.junit.Test
 

@@ -1,13 +1,14 @@
 package io.objectbox.codemodifier
 
-import org.eclipse.jdt.core.compiler.IProblem
-import org.eclipse.jdt.core.dom.AST
-import org.eclipse.jdt.core.dom.ASTParser
-import org.eclipse.jdt.core.dom.Comment
-import org.eclipse.jdt.core.dom.CompilationUnit
+import org.greenrobot.eclipse.jdt.core.compiler.IProblem
+import org.greenrobot.eclipse.jdt.core.dom.AST
+import org.greenrobot.eclipse.jdt.core.dom.ASTParser
+import org.greenrobot.eclipse.jdt.core.dom.Comment
+import org.greenrobot.eclipse.jdt.core.dom.CompilationUnit
 import java.io.File
+import java.util.Hashtable
 
-class EntityClassParser(val jdtOptions: MutableMap<Any, Any>, val encoding: String) {
+class EntityClassParser(val jdtOptions: Hashtable<String, String>, val encoding: String) {
 
     companion object {
         val AST_PARSER_LEVEL: Int = AST.JLS8
@@ -19,6 +20,7 @@ class EntityClassParser(val jdtOptions: MutableMap<Any, Any>, val encoding: Stri
                 IProblem.UndefinedName, // 50, external class refs, like TextUtils
                 IProblem.UndefinedField, // 70
                 IProblem.UnresolvedVariable, // 83
+                IProblem.UndefinedMethod, // 100 entities with super class
                 IProblem.MissingTypeInMethod, // 120
                 IProblem.MissingTypeInConstructor, // 129
                 IProblem.MissingTypeInLambda, // 271
