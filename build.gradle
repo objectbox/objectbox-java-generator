@@ -32,7 +32,7 @@ subprojects {
     apply plugin: 'maven'
     apply plugin: 'signing'
 
-    version = '0.9.9-SNAPSHOT'
+    version = '0.9.10-SNAPSHOT'
 
     repositories {
         jcenter()
@@ -75,6 +75,10 @@ subprojects {
                     } else if (project.hasProperty('preferedRepo') && project.hasProperty('preferedUsername')
                             && project.hasProperty('preferedPassword')) {
                         configuration = configurations.deployerJars
+                        // Replace for bintray's dynamic URL
+                        preferedRepo = preferedRepo.replace('__groupId__', project.group)
+                        preferedRepo = preferedRepo.replace('__artifactId__', project.archivesBaseName)
+                        // println preferedRepo
                         repository(url: preferedRepo) {
                             authentication(userName: preferedUsername, password: preferedPassword)
                         }
