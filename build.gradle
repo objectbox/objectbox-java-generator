@@ -93,12 +93,12 @@ subprojects {
 
                     pom.project {
                         packaging 'jar'
-                        url 'http://greenrobot.org/greendao'
+                        url 'http://greenrobot.org/objectbox'
 
                         scm {
-                            url 'https://github.com/greenrobot/greenDAO'
-                            connection 'scm:git@github.com:greenrobot/greenDAO.git'
-                            developerConnection 'scm:git@github.com:greenrobot/greenDAO.git'
+                            url 'https://github.com/greenrobot/ObjectBox'
+                            connection 'scm:git@github.com:greenrobot/ObjectBox.git'
+                            developerConnection 'scm:git@github.com:greenrobot/ObjectBox.git'
                         }
 
                         developers {
@@ -110,7 +110,7 @@ subprojects {
 
                         issueManagement {
                             system 'GitHub Issues'
-                            url 'https://github.com/greenrobot/greenDAO/issues'
+                            url 'https://github.com/greenrobot/ObjectBox/issues'
                         }
 
                         organization {
