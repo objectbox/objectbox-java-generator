@@ -22,7 +22,7 @@ sourceSets {
 dependencies {
     compile gradleApi()
     compile project(':objectbox-code-modifier')
-    compileOnly 'com.android.tools.build:gradle:2.2.3'
+    compileOnly 'com.android.tools.build:gradle:2.3.1'
 
     testCompile 'junit:junit:4.12'
     testCompile 'org.mockito:mockito-all:1.10.19'
@@ -68,6 +68,14 @@ uploadArchives {
             pom.project {
                 name 'ObjectBox Gradle Plugin'
                 description 'Gradle Plugin for ObjectBox (NoSQL for Objects)'
+
+                licenses {
+                    license {
+                        name 'GNU General Public License, Version 3'
+                        url 'http://www.gnu.org/licenses/gpl.txt'
+                        distribution 'repo'
+                    }
+                }
             }
         }
     }

@@ -1,6 +1,6 @@
 package io.objectbox.codemodifier
 
-import org.eclipse.jdt.core.dom.*
+import org.greenrobot.eclipse.jdt.core.dom.*
 import java.io.File
 
 /**

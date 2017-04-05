@@ -1,4 +1,4 @@
-package io.objecbox.generator.idsync
+package io.objectbox.generator.idsync
 
 import io.objectbox.generator.IdUid
 

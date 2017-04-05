@@ -1,7 +1,7 @@
-package io.objecbox.generator.idsync
+package io.objectbox.generator.idsync
 
 import io.objectbox.codemodifier.*
-import org.eclipse.jdt.core.dom.TypeDeclaration
+import org.greenrobot.eclipse.jdt.core.dom.TypeDeclaration
 import org.junit.After
 import org.junit.Assert.*
 import org.junit.Before

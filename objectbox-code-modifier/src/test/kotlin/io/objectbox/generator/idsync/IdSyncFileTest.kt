@@ -1,4 +1,4 @@
-package io.objecbox.generator.idsync
+package io.objectbox.generator.idsync
 
 import org.junit.Assert.*
 import org.junit.Before

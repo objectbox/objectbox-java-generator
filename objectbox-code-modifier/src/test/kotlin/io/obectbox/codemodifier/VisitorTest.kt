@@ -71,8 +71,8 @@ class VisitorTest : VisitorTestBase() {
             transient int age;
         }
         """)!!
-        assertThat(entity.properties, hasSize(equalTo(1)))
-        assertThat(entity.transientFields, hasSize(equalTo(1)))
+        assertThat(entity.properties.size, equalTo(1))
+        assertThat(entity.transientFields.size, equalTo(1))
         assertThat(entity.properties[0].variable.name, equalTo("name"))
         assertThat(entity.transientFields[0].variable.name, equalTo("age"))
     }
@@ -90,8 +90,8 @@ class VisitorTest : VisitorTestBase() {
             @Transient int age;
         }
         """)!!
-        assertThat(entity.properties, hasSize(equalTo(1)))
-        assertThat(entity.transientFields, hasSize(equalTo(1)))
+        assertThat(entity.properties.size, equalTo(1))
+        assertThat(entity.transientFields.size, equalTo(1))
         assertThat(entity.properties[0].variable.name, equalTo("name"))
         assertThat(entity.transientFields[0].variable.name, equalTo("age"))
     }
@@ -111,10 +111,10 @@ class VisitorTest : VisitorTestBase() {
         }
         """)!!
 
-        assertThat(entity.properties, hasSize(equalTo(1)))
+        assertThat(entity.properties.size, equalTo(1))
         assertThat(entity.properties[0].variable.name, equalTo("name"))
 
-        assertThat(entity.transientFields, hasSize(equalTo(2)))
+        assertThat(entity.transientFields.size, equalTo(2))
         assertThat(entity.transientFields[0].variable.name, equalTo("staticField"))
         assertThat(entity.transientFields[1].variable.name, equalTo("CONSTANT_FIELD"))
     }
@@ -342,7 +342,7 @@ class VisitorTest : VisitorTestBase() {
             }
         }
         """)!!
-        assertThat(entity.constructors, hasSize(equalTo(2)))
+        assertThat(entity.constructors.size, equalTo(2))
         assertThat(entity.constructors[0].parameters, equalTo(
                 listOf(Variable(StringType, "name"), Variable(IntType, "age"))
         ))
