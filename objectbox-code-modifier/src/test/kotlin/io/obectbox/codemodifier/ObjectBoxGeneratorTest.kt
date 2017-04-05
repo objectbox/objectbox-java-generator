@@ -60,13 +60,16 @@ class ObjectBoxGeneratorTest {
         val testFiles = ArrayList<String>()
         samplesDirectory.listFiles().filter { it.isFile && it.nameWithoutExtension.endsWith("Input") }.forEach {
             val testName = it.nameWithoutExtension.substringBeforeLast("Input", "")
-            if (testName.length > 0) {
+            if (testName.isNotEmpty()) {
                 testFiles.add(testName)
             }
         }
 
-        val additionalChecks = mapOf("IdAfterProperty" to { checkIdAfterProperty() })
-        var additionalChecksInvoked = 0;
+        val additionalChecks = mapOf(
+                "IdAfterProperty" to { checkIdAfterProperty() },
+                "IdOnly" to { checkIdOnlyCursor() }
+        )
+        var additionalChecksInvoked = 0
 
         // run the generator on each and check output
         testFiles.forEach {
@@ -94,11 +97,18 @@ class ObjectBoxGeneratorTest {
         assertTrue(content, content.contains("entity.setId(__assignedId);"))
     }
 
+    fun checkIdOnlyCursor() {
+        val cursorFile = File(testDirectory, "/main/java/io/objectbox/codemodifier/test/IdOnlyCursor.java")
+        assertTrue(cursorFile.exists())
+        val content = cursorFile.readText()
+        assertTrue(content, content.contains("entity.setId(__assignedId);"))
+    }
+
     // NOTE: test may output multiple failed files, make sure to scroll up :)
     @Test
     fun testAllTestDirectories() {
         val additionalChecks = mapOf("relation-input" to { checkRelations() })
-        var additionalChecksInvoked = 0;
+        var additionalChecksInvoked = 0
         samplesDirectory.listFiles().filter { it.isDirectory && it.name.endsWith("-input") }.forEach {
             ensureEmptyTestDirectory()
             generateAndAssertDirectory(it)
@@ -138,7 +148,7 @@ class ObjectBoxGeneratorTest {
         try {
             ObjectBoxGenerator(formattingOptions).run(listOf(actualFile), mapOf("default" to schemaOptions))
         } catch (ex: RuntimeException) {
-            throw RuntimeException("Could not run generator on " + inputFileName, ex);
+            throw RuntimeException("Could not run generator on " + inputFileName, ex)
         }
 
         checkSameFileContent(actualFile, File(samplesDirectory, expectedFileName))
@@ -170,7 +180,7 @@ class ObjectBoxGeneratorTest {
         try {
             ObjectBoxGenerator(formattingOptions).run(files, mapOf("default" to schemaOptions))
         } catch (ex: RuntimeException) {
-            throw RuntimeException("Could not run generator on " + dir, ex);
+            throw RuntimeException("Could not run generator on " + dir, ex)
         }
 
         dirExpected.listFiles().forEach {

@@ -61,7 +61,7 @@ class PropertyCollector {
         boolean first = true;
         int previousPropertyCount = propertiesByType.countElements();
         boolean last = previousPropertyCount == 0;
-        while (!last) {
+        while (first || !last) {
             String collectSignature;
             int countByteArrays = propertiesByType.countElements(PropertyType.ByteArray);
             int countScalarsNonFP = countScalarsNonFP();
@@ -89,7 +89,7 @@ class PropertyCollector {
                 }
             }
             int propertyCount = propertiesByType.countElements();
-            if (propertyCount == previousPropertyCount) {
+            if (!first && propertyCount == previousPropertyCount) {
                 throw new RuntimeException("Could not collect properties: " + propertiesByType.valuesElements());
             }
             last = propertyCount == 0;
