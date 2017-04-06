@@ -90,7 +90,7 @@ public class ToOne {
 
         Property targetPkProperty = targetEntity.getPkProperty();
         if (fkProperties.length != 1 || targetPkProperty == null) {
-            throw new RuntimeException("Currently only single FK columns are supported: " + this);
+            throw new RuntimeException("Currently only single FK properties are supported: " + this);
         }
 
         Property property = fkProperties[0];
