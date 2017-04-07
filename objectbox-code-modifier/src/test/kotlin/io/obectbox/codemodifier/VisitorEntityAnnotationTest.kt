@@ -3,6 +3,7 @@ package io.obectbox.codemodifier
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.isBlank
 import org.junit.Assert
+import org.junit.Assert.*
 import org.junit.Ignore
 import org.junit.Test
 
@@ -202,6 +203,28 @@ class VisitorEntityAnnotationTest : VisitorTestBase() {
         class Foobar {}
         """)!!
         Assert.assertTrue(entity.keepSource)
+    }
+
+    @Test
+    fun uid() {
+        val entity = visit(
+                //language=java
+                """
+        import io.objectbox.annotation.*;
+
+        @Entity
+        @Uid(1234567890L)
+        class Foobar {
+            String noUid;
+
+            @Uid(9876543210L)
+            String name;
+        }
+        """)!!
+        assertEquals(1234567890L, entity.uid)
+        assertNull(entity.properties[0].uid)
+        assertEquals("name", entity.properties[1].variable.name)
+        assertEquals(9876543210L, entity.properties[1].uid)
     }
 
 }

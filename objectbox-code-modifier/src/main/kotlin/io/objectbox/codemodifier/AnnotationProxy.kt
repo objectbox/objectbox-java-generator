@@ -82,6 +82,7 @@ object AnnotationProxy {
                 }
                 return result as T
             }
+
             expected == Boolean::class.javaPrimitiveType -> if (this is BooleanLiteral) {
                 return booleanValue() as T
             } else if (this is Expression) {
@@ -90,11 +91,20 @@ object AnnotationProxy {
                     return constantValue as T
                 }
             }
+
             expected == Int::class.javaPrimitiveType -> when(this) {
                 is NumberLiteral, is PrefixExpression ->
                     // does not handle binary numbers
                     return Integer.decode(toString()) as T
             }
+
+            expected == Long::class.javaPrimitiveType -> when(this) {
+                is NumberLiteral, is PrefixExpression -> {
+                    val withoutL = toString().dropLastWhile { it == 'l' || it == 'L' }
+                    return java.lang.Long.decode(withoutL) as T
+                }
+            }
+
             expected == String::class.java -> if (this is StringLiteral) {
                 return literalValue as T
             } else if (this is Expression) {
@@ -103,6 +113,7 @@ object AnnotationProxy {
                     return constantValue as T
                 }
             }
+
             expected.isAnnotation -> if (this is Annotation) {
                 return AnnotationProxy(this, expected) as T
             }

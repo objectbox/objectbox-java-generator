@@ -85,7 +85,6 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
                         // schemaName = "entityAnnotation.schema
                         // active = entityAnnotation.active
                         entityDbName = entityAnnotation.nameInDb.nullIfBlank()
-                        entityUid = entityAnnotation.uid
                         // createTable = entityAnnotation.createInDb
                         generateConstructors = entityAnnotation.generateConstructors
                         generateGettersSetters = true // TODO trouble with that - getters and setter are gone in tests - entityAnnotation.generateGettersSetters
@@ -99,6 +98,9 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
                                         "An explicit table name is required when specifying a protobuf class.")
                             }
                         }
+                    }
+                    node.hasType(Uid::class) -> {
+                        entityUid = AnnotationProxy<Uid>(node).value
                     }
                     node.hasType(Keep::class) -> {
                         keepSource = true
@@ -142,7 +144,7 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
                 TransientField(Variable(variableType, it.toString()), node, generatorHint)
             }
         } else if (annotations.has<Relation>()) {
-            if (variableType.name.equals("java.util.List")) {
+            if (variableType.name == "java.util.List") {
                 manyRelations += variableNames.map { parseRelationToMany(annotations, it, variableType) }
             } else {
                 oneRelations += variableNames.map { parseRelationToOne(annotations, it, variableType) }
@@ -249,18 +251,16 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
         val property = fa.proxy<Property>()
         val index = fa.proxy<Index>()
         val id = fa.proxy<Id>()
+        val uid = fa.proxy<Uid>()
 
-        val customType = findConvert(fieldName, fa)
-
-        val uid = property?.uid
         return ParsedProperty(
                 variable = Variable(variableType, fieldName.toString()),
-                idParams = id?.let { EntityIdParams(it.monotonic, it.assignable) },
+                idParams = id?.let { EntityIdParams(false /*it.monotonic*/, it.assignable) },
                 index = index?.let { PropertyIndex(null, false /* TODO indexAnnotation.unique*/) },
                 isNotNull = node.type.isPrimitiveType || fa.hasNotNull,
                 dbName = property?.nameInDb?.let { it.nullIfBlank() },
-                uid = if (uid != null && uid != 0L) uid else null,
-                customType = customType,
+                uid = if (uid?.value != 0L) uid?.value else null,
+                customType = findConvert(fieldName, fa),
                 fieldAccessible = !Modifier.isPrivate(node.modifiers)
         )
     }
@@ -350,7 +350,7 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
         }
         // get <OuterClass> from a.b.c.<OuterClass>.<InnerClass>
         val qualifiedNames = split.takeLast(2)
-        if (outerClassName.equals(qualifiedNames[0])) {
+        if (outerClassName == qualifiedNames[0]) {
             // check if inner class is static, otherwise warn
             if (!staticInnerClasses.contains(qualifiedNames[1])) {
                 throw IllegalArgumentException("Inner class $typeClassName in $outerClassName has to be static. " +
