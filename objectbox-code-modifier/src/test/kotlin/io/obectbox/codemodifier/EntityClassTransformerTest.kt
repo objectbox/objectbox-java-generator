@@ -412,14 +412,23 @@ class EntityClassTransformerTest {
             @Entity
             class Foobar {
                 @Uid
-                private String name;
+                private String insert;
+
+                @Uid(21L)
+                private String doNotInsert;
+
+                private String control;
             }
             """.trimIndent())
 
-        val annotatedProperty = entityClass.properties[0]
+        val annotatedPropertyInsert = entityClass.properties[0]
+        val annotatedPropertyKeep = entityClass.properties[1]
+        val annotatedPropertyControl = entityClass.properties[2]
 
         val result = EntityClassTransformer(entityClass, jdtOptions, formattingOptions).apply {
-            insertUidAnnotationValue(annotatedProperty.astNode!!, 42)
+            insertUidAnnotationValue(annotatedPropertyInsert.astNode!!, 42)
+            insertUidAnnotationValue(annotatedPropertyKeep.astNode!!, 42)
+            insertUidAnnotationValue(annotatedPropertyControl.astNode!!, 42)
         }.writeToString()
 
         assertEquals(
@@ -431,7 +440,12 @@ class EntityClassTransformerTest {
             @Entity
             class Foobar {
                 @Uid(42L)
-                private String name;
+                private String insert;
+
+                @Uid(21L)
+                private String doNotInsert;
+
+                private String control;
             }
             """.trimIndent(), result)
     }
