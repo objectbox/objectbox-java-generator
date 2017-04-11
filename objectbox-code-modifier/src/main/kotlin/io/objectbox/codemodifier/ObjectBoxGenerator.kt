@@ -1,11 +1,11 @@
 package io.objectbox.codemodifier
 
-import io.objectbox.generator.idsync.IdSync
 import io.objectbox.generator.BoxGenerator
-import org.greenrobot.eclipse.jdt.core.JavaCore
-import org.greenrobot.eclipse.jdt.internal.compiler.impl.CompilerOptions
+import io.objectbox.generator.idsync.IdSync
 import io.objectbox.generator.model.Entity
 import io.objectbox.generator.model.Schema
+import org.greenrobot.eclipse.jdt.core.JavaCore
+import org.greenrobot.eclipse.jdt.internal.compiler.impl.CompilerOptions
 import java.io.File
 import java.util.Hashtable
 
@@ -149,7 +149,7 @@ class ObjectBoxGenerator(val formattingOptions: FormattingOptions? = null,
                 checkClass(entityClass)
                 println("Keep source for ${entityClass.name}")
             } else {
-                transformClass(entityClass, mapping)
+                transformClass(idSync, entityClass, mapping)
             }
         }
 
@@ -173,7 +173,7 @@ class ObjectBoxGenerator(val formattingOptions: FormattingOptions? = null,
         }
     }
 
-    private fun transformClass(parsedEntity: ParsedEntity, mapping: Map<ParsedEntity, Entity>) {
+    private fun transformClass(idSync: IdSync, parsedEntity: ParsedEntity, mapping: Map<ParsedEntity, Entity>) {
         val entity = mapping[parsedEntity]!!
         val transformer = EntityClassTransformer(parsedEntity, jdtOptions, formattingOptions)
 
@@ -206,6 +206,14 @@ class ObjectBoxGenerator(val formattingOptions: FormattingOptions? = null,
 
         parsedEntity.propertiesToGenerate.forEach {
             transformer.defineProperty(it.variable.name, it.variable.type)
+        }
+
+        // add UID values to any uid property annotations that are missing them: @Uid -> @Uid(42L)
+        parsedEntity.properties.forEach { property ->
+            if (property.astNode != null) {
+                val idSyncProperty = idSync.get(property)
+                transformer.insertUidAnnotationValue(property.astNode, idSyncProperty.uid)
+            }
         }
 
         transformer.writeToFile()
