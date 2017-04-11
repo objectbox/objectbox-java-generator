@@ -19,7 +19,7 @@ class ObjectBoxGeneratorTest {
 
     private val samplesDirectory: File = File("test-files/")
 
-    private val testDirectory: File = File("build/tmp/greendaoTest/")
+    private val testDirectory: File = File("build/tmp/objectboxTest/")
 
     private val formattingOptions: FormattingOptions = FormattingOptions().apply {
         this.lineWidth = 120
@@ -49,7 +49,8 @@ class ObjectBoxGeneratorTest {
     @Test
     @Ignore
     fun testSingleTestFile() {
-        val testFilePrefix = "LegacyKeepFields"
+        val testFilePrefix = "AnnotationConstant"
+        ensureEmptyTestDirectory()
         generateAndAssertFile(testFilePrefix)
     }
 
