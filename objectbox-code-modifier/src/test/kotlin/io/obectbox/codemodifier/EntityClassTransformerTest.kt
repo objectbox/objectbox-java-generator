@@ -6,7 +6,9 @@ import io.objectbox.codemodifier.FormattingOptions
 import io.objectbox.codemodifier.Tabulation
 import org.greenrobot.eclipse.jdt.core.JavaCore
 import org.greenrobot.eclipse.jdt.internal.compiler.impl.CompilerOptions
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Test
 
 class EntityClassTransformerTest {
@@ -397,6 +399,41 @@ class EntityClassTransformerTest {
             """.trimIndent(),
             result
         )
+    }
+
+    @Test
+    fun insertMissingFieldUid() {
+        val entityClass = parseEntity(
+                //language=java
+                """
+            import io.objectbox.annotation.Entity;
+            import io.objectbox.annotation.Uid;
+
+            @Entity
+            class Foobar {
+                @Uid
+                private String name;
+            }
+            """.trimIndent())
+
+        val annotatedProperty = entityClass.properties[0]
+
+        val result = EntityClassTransformer(entityClass, jdtOptions, formattingOptions).apply {
+            insertUidAnnotationValue(annotatedProperty.astNode!!, 42)
+        }.writeToString()
+
+        assertEquals(
+                //language=java
+                """
+            import io.objectbox.annotation.Entity;
+            import io.objectbox.annotation.Uid;
+
+            @Entity
+            class Foobar {
+                @Uid(42L)
+                private String name;
+            }
+            """.trimIndent(), result)
     }
 
     @Test

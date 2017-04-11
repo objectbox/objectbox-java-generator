@@ -1,6 +1,10 @@
 package io.objectbox.codemodifier
 
-import org.greenrobot.eclipse.jdt.core.dom.*
+import org.greenrobot.eclipse.jdt.core.dom.BodyDeclaration
+import org.greenrobot.eclipse.jdt.core.dom.FieldDeclaration
+import org.greenrobot.eclipse.jdt.core.dom.ImportDeclaration
+import org.greenrobot.eclipse.jdt.core.dom.MethodDeclaration
+import org.greenrobot.eclipse.jdt.core.dom.TypeDeclaration
 import java.io.File
 
 /**
@@ -16,6 +20,7 @@ data class VariableType(val name: String, val isPrimitive: Boolean, val original
 data class Variable(val type: VariableType, val name: String)
 
 data class ParsedProperty(val variable: Variable,
+                          val astNode: FieldDeclaration? = null,
                           val idParams: EntityIdParams? = null,
                           var index: PropertyIndex? = null,
                           val isNotNull: Boolean = false,
