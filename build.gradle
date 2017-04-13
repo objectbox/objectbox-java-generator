@@ -17,7 +17,8 @@ buildscript {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '3.3'
+    gradleVersion = '3.5'
+    distributionType = org.gradle.api.tasks.wrapper.Wrapper.DistributionType.ALL
 }
 
 if (JavaVersion.current().isJava8Compatible()) {
