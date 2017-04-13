@@ -54,6 +54,17 @@ class ObjectBoxGeneratorTest {
         generateAndAssertFile(testFilePrefix)
     }
 
+    @Test
+    fun testFileInsertUid() {
+        ensureEmptyTestDirectory()
+
+        // to always insert the same UID we use a pre-defined model file
+        // copy model file over test model file
+        File(samplesDirectory, "insert-uid/insert-uid-model.json").copyTo(schemaOptions.idModelFile, true)
+
+        generateAndAssertFile("insert-uid/InsertUid")
+    }
+
     // NOTE: test may output multiple failed files, make sure to scroll up :)
     @Test
     fun testAllTestFiles() {

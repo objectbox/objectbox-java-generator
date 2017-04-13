@@ -247,7 +247,7 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
     }
 
     private fun parseProperty(fa: MutableList<Annotation>, fieldName: SimpleName,
-                              node: FieldDeclaration, variableType: VariableType): ParsedProperty {
+                              astNode: FieldDeclaration, variableType: VariableType): ParsedProperty {
         val property = fa.proxy<Property>()
         val index = fa.proxy<Index>()
         val id = fa.proxy<Id>()
@@ -255,13 +255,14 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
 
         return ParsedProperty(
                 variable = Variable(variableType, fieldName.toString()),
+                astNode = astNode,
                 idParams = id?.let { EntityIdParams(false /*it.monotonic*/, it.assignable) },
                 index = index?.let { PropertyIndex(null, false /* TODO indexAnnotation.unique*/) },
-                isNotNull = node.type.isPrimitiveType || fa.hasNotNull,
-                dbName = property?.nameInDb?.let { it.nullIfBlank() },
+                isNotNull = astNode.type.isPrimitiveType || fa.hasNotNull,
+                dbName = property?.nameInDb?.nullIfBlank(),
                 uid = if (uid?.value != 0L) uid?.value else null,
                 customType = findConvert(fieldName, fa),
-                fieldAccessible = !Modifier.isPrivate(node.modifiers)
+                fieldAccessible = !Modifier.isPrivate(astNode.modifiers)
         )
     }
 

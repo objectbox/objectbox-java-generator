@@ -1,5 +1,6 @@
 package io.objectbox.codemodifier
 
+import io.objectbox.annotation.Uid
 import org.greenrobot.eclipse.jdt.core.dom.*
 import org.greenrobot.eclipse.jdt.core.dom.rewrite.ASTRewrite
 import org.greenrobot.eclipse.jface.text.Document
@@ -74,6 +75,28 @@ class EntityClassTransformer(val parsedEntity: ParsedEntity, val jdtOptions: Has
             val newField = astRewrite.createStringPlaceholder(formatted, TypeDeclaration.FIELD_DECLARATION)
             replaceNode(newField, replaceOld, parsedEntity.lastFieldDeclaration)
         }
+    }
+
+    /**
+     * If it exists, replaces a Uid marker annotation node with a single member annotation that has the given UID as
+     * value, like '@Uid' is replaced with '@Uid(42L)'.
+     */
+    fun insertUidAnnotationValue(node: FieldDeclaration, uid: Long) {
+        // find the @Uid marker annotation node
+        val uidAnnotation = node.modifiers().find { it is MarkerAnnotation
+                && it.typeName.fullyQualifiedName == Uid::class.simpleName } as MarkerAnnotation?
+        if (uidAnnotation == null) {
+            return // field has no @Uid marker annotation
+        }
+
+        // create a new single member annotation such as '@Uid(42L)'
+        val newUidAnnotation = cu.ast.newSingleMemberAnnotation()
+        newUidAnnotation.typeName = cu.ast.newName(Uid::class.simpleName)
+        newUidAnnotation.value = cu.ast.newNumberLiteral("${uid}L")
+
+        // replace the annotation
+        val listRewrite = astRewrite.getListRewrite(node, FieldDeclaration.MODIFIERS2_PROPERTY)
+        listRewrite.replace(uidAnnotation, newUidAnnotation, null)
     }
 
     /**
