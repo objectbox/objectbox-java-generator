@@ -6,6 +6,7 @@ import io.objectbox.annotation.Id;
 import io.objectbox.annotation.Property;
 
 @Entity
+@Uid
 public class Note {
 
     @Id

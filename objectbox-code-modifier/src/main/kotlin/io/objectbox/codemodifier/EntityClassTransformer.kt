@@ -81,10 +81,12 @@ class EntityClassTransformer(val parsedEntity: ParsedEntity, val jdtOptions: Has
      * If it exists, replaces a Uid marker annotation node with a single member annotation that has the given UID as
      * value, like '@Uid' is replaced with '@Uid(42L)'.
      */
-    fun insertUidAnnotationValue(node: FieldDeclaration, uid: Long) {
+    fun checkInsertUidAnnotationValue(node: BodyDeclaration, uid: Long) {
         // find the @Uid marker annotation node
-        val uidAnnotation = node.modifiers().find { it is MarkerAnnotation
-                && it.typeName.fullyQualifiedName == Uid::class.simpleName } as MarkerAnnotation?
+        val uidAnnotation = node.modifiers().find {
+            // A MarkerAnnotation has no value, thus @Uid with values are skipped here
+            it is MarkerAnnotation && it.typeName.fullyQualifiedName == Uid::class.simpleName
+        } as MarkerAnnotation?
         if (uidAnnotation == null) {
             return // field has no @Uid marker annotation
         }
@@ -95,7 +97,10 @@ class EntityClassTransformer(val parsedEntity: ParsedEntity, val jdtOptions: Has
         newUidAnnotation.value = cu.ast.newNumberLiteral("${uid}L")
 
         // replace the annotation
-        val listRewrite = astRewrite.getListRewrite(node, FieldDeclaration.MODIFIERS2_PROPERTY)
+        val property =
+                if (node is FieldDeclaration) FieldDeclaration.MODIFIERS2_PROPERTY
+                else TypeDeclaration.MODIFIERS2_PROPERTY
+        val listRewrite = astRewrite.getListRewrite(node, property)
         listRewrite.replace(uidAnnotation, newUidAnnotation, null)
     }
 

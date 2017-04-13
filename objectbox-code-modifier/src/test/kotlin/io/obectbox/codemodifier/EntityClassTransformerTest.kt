@@ -426,9 +426,9 @@ class EntityClassTransformerTest {
         val annotatedPropertyControl = entityClass.properties[2]
 
         val result = EntityClassTransformer(entityClass, jdtOptions, formattingOptions).apply {
-            insertUidAnnotationValue(annotatedPropertyInsert.astNode!!, 42)
-            insertUidAnnotationValue(annotatedPropertyKeep.astNode!!, 42)
-            insertUidAnnotationValue(annotatedPropertyControl.astNode!!, 42)
+            checkInsertUidAnnotationValue(annotatedPropertyInsert.astNode!!, 42)
+            checkInsertUidAnnotationValue(annotatedPropertyKeep.astNode!!, 42)
+            checkInsertUidAnnotationValue(annotatedPropertyControl.astNode!!, 42)
         }.writeToString()
 
         assertEquals(

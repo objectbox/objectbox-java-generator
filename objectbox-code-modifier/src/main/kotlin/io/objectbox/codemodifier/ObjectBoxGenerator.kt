@@ -208,11 +208,13 @@ class ObjectBoxGenerator(val formattingOptions: FormattingOptions? = null,
             transformer.defineProperty(it.variable.name, it.variable.type)
         }
 
-        // add UID values to any uid property annotations that are missing them: @Uid -> @Uid(42L)
+        // add UID values to any UID entity/property annotations that are missing them: @Uid -> @Uid(42L)
+        val idSyncEntity = idSync.get(parsedEntity)
+        transformer.checkInsertUidAnnotationValue(parsedEntity.node, idSyncEntity.uid)
         parsedEntity.properties.forEach { property ->
             if (property.astNode != null) {
                 val idSyncProperty = idSync.get(property)
-                transformer.insertUidAnnotationValue(property.astNode, idSyncProperty.uid)
+                transformer.checkInsertUidAnnotationValue(property.astNode, idSyncProperty.uid)
             }
         }
 
