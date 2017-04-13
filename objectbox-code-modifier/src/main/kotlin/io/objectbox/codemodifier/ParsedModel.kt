@@ -20,6 +20,10 @@ data class VariableType(val name: String, val isPrimitive: Boolean, val original
 data class Variable(val type: VariableType, val name: String)
 
 data class ParsedProperty(val variable: Variable,
+                          /**
+                           * Currently used for @Uid manipulation - ok for now.
+                           * When we start thinking about model unification, we should get rid of JDT deps here.
+                           */
                           val astNode: FieldDeclaration? = null,
                           val idParams: EntityIdParams? = null,
                           var index: PropertyIndex? = null,

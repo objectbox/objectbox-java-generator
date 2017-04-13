@@ -32,12 +32,11 @@ class VisitorTest : VisitorTestBase() {
             private int age;
         }
         """)!!
-        assertThat(entity.properties, equalTo(
-                listOf(
-                        ParsedProperty(Variable(StringType, "name"), fieldAccessible = true),
-                        ParsedProperty(Variable(IntType, "age"), isNotNull = true)
-                )
-        ))
+        assertEquals(Variable(StringType, "name"), entity.properties[0].variable)
+        assertTrue(entity.properties[0].fieldAccessible)
+
+        assertEquals(Variable(IntType, "age"), entity.properties[1].variable)
+        assertTrue(entity.properties[1].isNotNull)
     }
 
     @Test
@@ -223,13 +222,9 @@ class VisitorTest : VisitorTestBase() {
         }
         """, listOf("MyType"))!!
         val field = entity.properties[0]
-        assertEquals(
-                ParsedProperty(Variable(myType, "name"),
-                        customType = CustomType("com.example.myapp.Converter", StringType),
-                        fieldAccessible = true
-                ),
-                field
-        )
+        assertEquals(Variable(myType, "name"), field.variable)
+        assertEquals(CustomType("com.example.myapp.Converter", StringType), field.customType)
+        assertTrue(field.fieldAccessible)
     }
 
     @Test
@@ -261,13 +256,9 @@ class VisitorTest : VisitorTestBase() {
         }
         """, listOf("MyType"))!!
         val field = entity.properties[0]
-        assertEquals(
-                ParsedProperty(Variable(myType, "name"),
-                        customType = CustomType("com.example.myapp.Foobar.InnerConverter", StringType),
-                        fieldAccessible = true
-                ),
-                field
-        )
+        assertEquals(Variable(myType, "name"), field.variable)
+        assertEquals(CustomType("com.example.myapp.Foobar.InnerConverter", StringType), field.customType)
+        assertTrue(field.fieldAccessible)
     }
 
     @Test(expected = IllegalArgumentException::class)
