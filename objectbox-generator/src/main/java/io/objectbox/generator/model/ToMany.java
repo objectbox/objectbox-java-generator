@@ -27,7 +27,7 @@ public class ToMany extends ToManyBase {
     private final Property[] targetProperties;
 
     public ToMany(Schema schema, Entity sourceEntity, Property[] sourceProperties, Entity targetEntity,
-            Property[] targetProperties) {
+                  Property[] targetProperties) {
         super(schema, sourceEntity, targetEntity);
         this.sourceProperties = sourceProperties;
         this.targetProperties = targetProperties;
@@ -69,8 +69,9 @@ public class ToMany extends ToManyBase {
             if (sourceType == null || targetType == null) {
                 throw new RuntimeException("Property type uninitialized");
             }
-            if (sourceType != targetType) {
-                System.err.println("Warning to-one property type does not match target key type: " + this);
+            if (!sourceType.supportsRelationToTarget(targetType)) {
+                throw new RuntimeException("To-many property types incompatible: " + this + " (" + sourceType +
+                        " vs. " + targetType + ")");
             }
         }
     }

@@ -101,8 +101,9 @@ public class ToOne {
             // Property is not a regular property with primitive getters/setters, so let it catch up
             property.init2ndPass();
             property.init3ndPass();
-        } else if (propertyType != targetPkProperty.getPropertyType()) {
-            System.err.println("Warning to-one property type does not match target key type: " + this);
+        } else if (!propertyType.supportsRelationToTarget(targetPkProperty.getPropertyType())) {
+            throw new RuntimeException("To-one property types incompatible: " + this +
+                    " (" + propertyType + " vs. " + targetPkProperty.getPropertyType() + ")");
         }
         resolvedKeyJavaType[0] = schema.mapToJavaTypeNullable(propertyType);
         resolvedKeyUseEquals[0] = checkUseEquals(propertyType);
@@ -111,17 +112,17 @@ public class ToOne {
     protected boolean checkUseEquals(PropertyType propertyType) {
         boolean useEquals;
         switch (propertyType) {
-        case Byte:
-        case Short:
-        case Int:
-        case Long:
-        case Boolean:
-        case Float:
-            useEquals = true;
-            break;
-        default:
-            useEquals = false;
-            break;
+            case Byte:
+            case Short:
+            case Int:
+            case Long:
+            case Boolean:
+            case Float:
+                useEquals = true;
+                break;
+            default:
+                useEquals = false;
+                break;
         }
         return useEquals;
     }

@@ -40,4 +40,8 @@ public enum PropertyType {
     public boolean isScalar() {
         return scalar;
     }
+
+    public boolean supportsRelationToTarget(PropertyType targetType) {
+        return (this == RelationId || this == Long) && (targetType == RelationId || targetType == Long);
+    }
 }
