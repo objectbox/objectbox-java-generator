@@ -122,6 +122,7 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
     override fun visit(node: FieldDeclaration): Boolean = isEntity
 
     override fun endVisit(node: FieldDeclaration) {
+        // TODO why a list here? We have one type, how can we have more than one name??
         val variableNames = node.fragments()
                 .filter { it is VariableDeclarationFragment }
                 .map { it as VariableDeclarationFragment }.map { it.name }
@@ -213,7 +214,7 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
                                    variableType: VariableType): OneRelation {
         val proxy = fa.proxy<Relation>()!!
         return OneRelation(
-                Variable(variableType, fieldName.toString()),
+                variable = Variable(variableType, fieldName.toString()),
                 // In ObjectBox, we always use a id property (at least for now), defaults to name + "Id" if absent
                 foreignKeyField = proxy.idProperty.nullIfBlank() ?: fieldName.toString() + "Id",
                 columnName = fa.proxy<Property>()?.nameInDb?.nullIfBlank(),
@@ -227,7 +228,7 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
         val proxy = fa.proxy<Relation>()!!
 //        val orderByAnnotation = fa.proxy<OrderBy>()
         return ManyRelation(
-                Variable(variableType, fieldName.toString()),
+                variable = Variable(variableType, fieldName.toString()),
                 mappedBy = proxy.idProperty.nullIfBlank()
 //                ,joinOnProperties = proxy.joinProperties.map { JoinOnProperty(it.name, it.referencedName) },
 //                order = orderByAnnotation?.let {

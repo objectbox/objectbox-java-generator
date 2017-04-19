@@ -44,7 +44,7 @@ class ObjectBoxGenerator(val formattingOptions: FormattingOptions? = null,
 
         val parsedEntities = parseEntityFiles(sourceFiles)
         if (parsedEntities.isEmpty()) {
-            System.err.println("No entities found among specified files")
+            System.err.println("No entities found")
         }
         parsedEntities.forEach { entry ->
             val (schemaName, schemaEntities) = entry
@@ -147,7 +147,7 @@ class ObjectBoxGenerator(val formattingOptions: FormattingOptions? = null,
         entities.forEach { entityClass ->
             if (entityClass.keepSource) {
                 checkClass(entityClass)
-                println("Keep source for ${entityClass.name}")
+                println("Keeping source for ${entityClass.name}")
             } else {
                 transformClass(idSync, entityClass, mapping)
             }
@@ -168,7 +168,7 @@ class ObjectBoxGenerator(val formattingOptions: FormattingOptions? = null,
         }) {
             throw RuntimeException(
                     "Can't find constructor for entity ${parsedEntity.name} with all persistent fields. " +
-                    "Note parameter names of such constructor should be equal to field names"
+                            "Note parameter names of such constructor should be equal to field names"
             )
         }
     }
@@ -200,8 +200,8 @@ class ObjectBoxGenerator(val formattingOptions: FormattingOptions? = null,
 //            val entityType = VariableType("${entity.javaPackage}.${entity.className}", false, entity.className)
 //            transformer.defField("__myBox", VariableType("io.objectbox.Box", false, "Box", listOf(entityType)),
 //                    "Used for active entity operations.")
-            transformer.defineTransientGeneratedField("__boxStore", VariableType("io.objectbox.BoxStore", false, "BoxStore"),
-                    "Used to resolve relations")
+            val type = VariableType("io.objectbox.BoxStore", false, "BoxStore")
+            transformer.defineTransientGeneratedField("__boxStore", type, "Used to resolve relations")
         }
 
         parsedEntity.propertiesToGenerate.forEach {
