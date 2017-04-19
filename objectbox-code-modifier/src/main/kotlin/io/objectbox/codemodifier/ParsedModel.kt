@@ -119,11 +119,7 @@ sealed class GeneratorHint {
     class Generated(val hash: Int) : GeneratorHint() {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
-            if (other !is Generated) return false
-
-            if (hash != other.hash) return false
-
-            return true
+            return (other is Generated) && hash == other.hash
         }
 
         override fun hashCode(): Int {
