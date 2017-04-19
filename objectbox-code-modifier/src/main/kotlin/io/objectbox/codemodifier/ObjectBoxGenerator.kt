@@ -187,7 +187,6 @@ class ObjectBoxGenerator(val formattingOptions: FormattingOptions? = null,
             transformer.ensureImport("io.objectbox.exception.DbDetachedException")
             transformer.ensureImport("io.objectbox.exception.DbException")
 
-            generateActiveMethodsAndFields(entity, transformer)
             generateToManyRelations(entity, transformer)
             generateToOneRelations(entity, parsedEntity, transformer)
         }
@@ -315,18 +314,4 @@ class ObjectBoxGenerator(val formattingOptions: FormattingOptions? = null,
         }
     }
 
-    private fun generateActiveMethodsAndFields(entity: Entity, transformer: EntityClassTransformer) {
-        // add everything in reverse as transformer writes in reverse direction
-        transformer.defMethod("put") {
-            Templates.entity.activePut(entity)
-        }
-
-//        transformer.defMethod("refresh") {
-//            Templates.entity.activeRefresh(entity)
-//        }
-
-        transformer.defMethod("remove") {
-            Templates.entity.activeRemove(entity)
-        }
-    }
 }

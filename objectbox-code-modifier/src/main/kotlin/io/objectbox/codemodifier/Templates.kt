@@ -34,10 +34,6 @@ object Templates {
         private val fieldGet = get("entity/field_get.ftl")
         private val fieldSet = get("entity/field_set.ftl")
 
-        val activeRemove = get("entity/active_remove.ftl")
-        val activePut = get("entity/active_put.ftl")
-        val activeRefresh = get("entity/active_refresh.ftl")
-
         fun constructor(className: String, properties: List<ParsedProperty>, notNullAnnotation: String): String =
                 constructor(mapOf(
                         "className" to className,
@@ -60,10 +56,6 @@ object Templates {
 
         fun fieldGet(variable: Variable): String = fieldGet(mapOf("variable" to variable))
         fun fieldSet(variable: Variable): String = fieldSet(mapOf("variable" to variable))
-
-        fun activePut(entity: Entity): String = activePut(mapOf("entity" to entity))
-        fun activeRemove(entity: Entity): String = activeRemove(mapOf("entity" to entity))
-        fun activeRefresh(entity: Entity): String = activeRefresh(mapOf("entity" to entity))
     }
 }
 

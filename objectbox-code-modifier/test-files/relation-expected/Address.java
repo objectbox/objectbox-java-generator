@@ -82,27 +82,4 @@ public class Address {
         this.customer = customer;
     }
 
-    /**
-     * Removes entity from its object box. Entity must attached to an entity context.
-     */
-    @Generated(hash = 1389894795)
-    public void remove() {
-        if (__boxStore == null) {
-            throw new DbDetachedException();
-        }
-        __boxStore.boxFor(Address.class).remove(this);
-    }
-
-    /**
-     * Puts the entity in its object box.
-     * Entity must attached to an entity context.
-     */
-    @Generated(hash = 490623117)
-    public void put() {
-        if (__boxStore == null) {
-            throw new DbDetachedException();
-        }
-        __boxStore.boxFor(Address.class).put(this);
-    }
-
 }
