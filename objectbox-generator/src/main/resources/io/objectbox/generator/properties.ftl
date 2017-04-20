@@ -1,6 +1,6 @@
 <#--
 
-Copyright (C) 2016 Markus Junginger, greenrobot (http://greenrobot.org)
+Copyright (C) 2017 Markus Junginger, greenrobot (http://greenrobot.org)
                                                                            
 This file is part of ObjectBox Generator.
                                                                            
@@ -24,6 +24,9 @@ package ${entity.javaPackageDao};
 
 import io.objectbox.Properties;
 import io.objectbox.Property;
+import io.objectbox.annotation.apihint.Internal;
+import io.objectbox.internal.IdGetter;
+
 <#-- For custom types only here. TODO: do not import relation stuff -->
 <#if entity.additionalImportsDao?has_content>
 
@@ -39,7 +42,12 @@ import ${additionalImport};
  */
 public class ${entity.className}_ implements Properties {
 
-    public static final String __NAME_IN_DB = "${entity.dbName}";
+    // Leading underscores for static constants to avoid naming conflicts with property names
+
+    public static final String __DB_NAME = "${entity.dbName}";
+
+    @Internal
+    static final IdGetter<${entity.className}> __ID_GETTER = new ${entity.className}IdGetter();
 
 <#list entity.propertiesColumns as property>
     public final static Property ${property.propertyName} = new Property(${property_index}, <#if
@@ -54,11 +62,7 @@ property.converter??>, ${property.converterClassName}.class, ${property.customTy
 </#list>
     };
 
-<#list entity.propertiesColumns as property>
-<#if property.isPrimaryKey()>
-    public final static Property __ID_PROPERTY = ${property.propertyName};
-</#if>
-</#list>
+    public final static Property __ID_PROPERTY = ${entity.pkProperty.propertyName};
 
     @Override
     public Property[] getAllProperties() {
@@ -72,7 +76,18 @@ property.converter??>, ${property.converterClassName}.class, ${property.customTy
 
     @Override
     public String getDbName() {
-        return __NAME_IN_DB;
+        return __DB_NAME;
     }
 
+    @Override
+    public IdGetter<${entity.className}> getIdGetter() {
+        return __ID_GETTER;
+    }
+
+    @Internal
+    static class ${entity.className}IdGetter implements IdGetter<${entity.className}> {
+        public long getId(${entity.className} object) {
+            return object.${entity.pkProperty.valueExpression};
+        }
+    }
 }
