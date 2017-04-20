@@ -199,8 +199,9 @@ class ObjectBoxGenerator(val formattingOptions: FormattingOptions? = null,
 //            val entityType = VariableType("${entity.javaPackage}.${entity.className}", false, entity.className)
 //            transformer.defField("__myBox", VariableType("io.objectbox.Box", false, "Box", listOf(entityType)),
 //                    "Used for active entity operations.")
+
             val type = VariableType("io.objectbox.BoxStore", false, "BoxStore")
-            transformer.defineTransientGeneratedField("__boxStore", type, "Used to resolve relations")
+            transformer.defineTransientGeneratedField("__boxStore", type, "@Depreacted Used to resolve relations")
         }
 
         parsedEntity.propertiesToGenerate.forEach {
@@ -288,7 +289,6 @@ class ObjectBoxGenerator(val formattingOptions: FormattingOptions? = null,
             }
 
             val toOneTypeArgs = listOf(
-                    VariableType(entity.className, false, entity.javaPackage),
                     VariableType(toOne.targetEntity.className, false, toOne.targetEntity.javaPackage)
             )
             val variableType = VariableType("ToOne", false, "ToOne", toOneTypeArgs)
