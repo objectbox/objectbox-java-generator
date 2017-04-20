@@ -204,7 +204,8 @@ class PropertyCollector {
                 preCall.append(INDENT).append("int ").append(propertyIdLocal).append(" = entity.has")
                         .append(TextUtil.capFirst(name)).append("() ? ").append(propertyId).append(" : 0;\n");
                 sb.append(propertyIdLocal).append(", ");
-                sb.append(propertyIdLocal).append(" != 0 ? ").append(property.getDatabaseValueExpressionNotNull())
+                sb.append(propertyIdLocal).append(" != 0 ? ")
+                        .append("entity.").append(property.getDatabaseValueExpression())
                         .append(isScalar ? " : 0" : " : null");
             } else if (property.isNonPrimitiveType()) {
                 preCall.append(INDENT).append(property.getJavaTypeInEntity()).append(' ').append(name)
@@ -213,13 +214,13 @@ class PropertyCollector {
                         .append(" != null ? ").append(propertyId).append(" : 0;\n");
                 sb.append(propertyIdLocal).append(", ");
                 if (isScalar || property.getCustomType() != null) {
-                    sb.append(propertyIdLocal).append(" != 0 ? ").append(property.getDatabaseValueExpression())
+                    sb.append(propertyIdLocal).append(" != 0 ? ").append(property.getDatabaseValueExpression(name))
                             .append(isScalar ? " : 0" : " : null");
                 } else {
-                    sb.append(property.getDatabaseValueExpression());
+                    sb.append(property.getDatabaseValueExpression(name));
                 }
             } else {
-                sb.append(propertyId).append(", ").append(property.getDatabaseValueExpressionNotNull());
+                sb.append(propertyId).append(", ").append("entity.").append(property.getDatabaseValueExpression());
             }
         }
         return sb;

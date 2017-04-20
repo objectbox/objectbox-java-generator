@@ -21,6 +21,7 @@ package io.objectbox.generator;
 import io.objectbox.generator.model.Entity;
 import io.objectbox.generator.model.Property;
 import io.objectbox.generator.model.Schema;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -28,9 +29,7 @@ import java.io.File;
 
 import org.greenrobot.essentials.io.FileUtils;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class SimpleBoxGeneratorTest {
 
@@ -60,9 +59,9 @@ public class SimpleBoxGeneratorTest {
         // Assert Cursor file
         assertTrue(cursorFile.toString(), cursorFile.exists());
         final String cursorContent = FileUtils.readUtf8(cursorFile);
-        assertTrue(cursorContent.contains(miniEntity.getClassName() + "Cursor"));
-        assertTrue(cursorContent.contains("long put(" + miniEntity.getClassName() + " entity)"));
-        assertTrue(cursorContent.contains("PUT_FLAG_FIRST | PUT_FLAG_COMPLETE"));
+        assertContains(cursorContent, miniEntity.getClassName() + "Cursor");
+        assertContains(cursorContent, "long put(" + miniEntity.getClassName() + " entity)");
+        assertContains(cursorContent, "PUT_FLAG_FIRST | PUT_FLAG_COMPLETE");
         final String cursorContentLower = cursorContent.toLowerCase();
         //assertEquals(-1, cursorContentLower.indexOf("greendao"));
         assertEquals(-1, cursorContentLower.indexOf("table"));
@@ -71,9 +70,9 @@ public class SimpleBoxGeneratorTest {
         // Assert Properties file
         assertTrue(propertiesFile.toString(), propertiesFile.exists());
         final String propertiesContent = FileUtils.readUtf8(propertiesFile);
-        assertTrue(propertiesContent.contains("class " + miniEntity.getClassName() + "_"));
-        assertTrue(propertiesContent.contains("__ALL_PROPERTIES"));
-        assertTrue(propertiesContent.contains("getAllProperties()"));
+        assertContains(propertiesContent, "class " + miniEntity.getClassName() + "_");
+        assertContains(propertiesContent, "__ALL_PROPERTIES");
+        assertContains(propertiesContent, "getAllProperties()");
     }
 
     @Test
@@ -98,8 +97,8 @@ public class SimpleBoxGeneratorTest {
 
         assertTrue(cursorFile.toString(), cursorFile.exists());
         final String cursorContent = FileUtils.readUtf8(cursorFile);
-        assertTrue(cursorContent.contains("        collect002033(cursor, 0, PUT_FLAG_FIRST,\n"));
-        assertTrue(cursorContent.contains("        long __assignedId = collect002033(cursor, entity.getId(), PUT_FLAG_COMPLETE,\n"));
+        assertContains(cursorContent, "        collect002033(cursor, 0, PUT_FLAG_FIRST,\n");
+        assertContains(cursorContent, "        long __assignedId = collect002033(cursor, entity.getId(), PUT_FLAG_COMPLETE,\n");
     }
 
     @Test
@@ -124,15 +123,30 @@ public class SimpleBoxGeneratorTest {
 
         assertTrue(cursorFile.toString(), cursorFile.exists());
         final String cursorContent = FileUtils.readUtf8(cursorFile);
-        assertTrue(cursorContent.contains("collect400000(cursor, 0, PUT_FLAG_FIRST,\n" +
+        assertContains(cursorContent, "collect400000(cursor, 0, PUT_FLAG_FIRST,\n" +
                 "                __id1, string1, __id2, string2,\n" +
-                "                __id3, string3, __id4, string4);\n"
-        ));
+                "                __id3, string3, __id4, string4);\n");
 
-        assertTrue(cursorContent.contains("        long __assignedId = " +
+        assertContains(cursorContent, "        long __assignedId = " +
                 "collect004000(cursor, entity.getId(), PUT_FLAG_COMPLETE,\n" +
-                "                __ID_primitive, entity.getPrimitive(), 0, 0,\n"
-        ));
+                "                __ID_primitive, entity.getPrimitive(), 0, 0,\n");
+    }
+
+    private void assertContains(String full, String expectedPart) {
+        if (!full.contains(expectedPart)) {
+            String subPart = expectedPart;
+            while (subPart.length() > 0) {
+                subPart = subPart.substring(0, subPart.length() - 1);
+                int idx = full.indexOf(subPart);
+                if (idx >= 0) {
+                    int endIndex = Math.min(idx + subPart.length() + 20, full.length());
+                    String withFirstDiffs = full.substring(idx, endIndex);
+                    assertEquals("String does not contain chars, showing with first diffs: ", expectedPart, withFirstDiffs);
+                }
+            }
+            fail("Does not contain any starting chars of expected string");
+        }
+        assertTrue(full.contains(expectedPart));
     }
 
     @Test
@@ -155,13 +169,13 @@ public class SimpleBoxGeneratorTest {
     @Test
     public void testRelation() throws Exception {
         Schema schema = new Schema(1, "io.objectbox.test.relationbox");
-        schema.setLastEntityId(new IdUid(2,1003L));
+        schema.setLastEntityId(new IdUid(2, 1003L));
         schema.setLastIndexId(new IdUid(1, 1100));
         Entity customer = schema.addEntity("Customer");
-        customer.setModelId(1).setModelUid(1001L).setLastPropertyId(new IdUid(1,501));
-        customer.addIdProperty().modelId(new IdUid(1,1002)).getProperty();
+        customer.setModelId(1).setModelUid(1001L).setLastPropertyId(new IdUid(1, 501));
+        customer.addIdProperty().modelId(new IdUid(1, 1002)).getProperty();
         Entity order = schema.addEntity("Order");
-        order.setModelId(2).setModelUid(1003L).setLastPropertyId(new IdUid(2,502));
+        order.setModelId(2).setModelUid(1003L).setLastPropertyId(new IdUid(2, 502));
         order.addIdProperty().modelId(new IdUid(1, 1004)).getProperty();
         Property customerId = order.addLongProperty("customerId").modelId(new IdUid(2, 1005))
                 .modelIndexId(new IdUid(1, 1100)).getProperty();
@@ -183,14 +197,14 @@ public class SimpleBoxGeneratorTest {
         // Assert Cursor file
         assertTrue(cursorFile.toString(), cursorFile.exists());
         final String cursorContent = FileUtils.readUtf8(cursorFile);
-        assertTrue(cursorContent.contains("__ID_customerId, entity.getCustomerId()"));
+        assertContains(cursorContent, "__ID_customerId, entity.getCustomerId()");
 
         // Assert MyObjectBox file
         assertTrue(myObjectBoxFile.toString(), myObjectBoxFile.exists());
         final String myBoxContent = FileUtils.readUtf8(myObjectBoxFile);
-        assertTrue(myBoxContent.contains(".property(\"customerId\", \"Customer\", PropertyType.Relation)"));
-        assertTrue(myBoxContent.contains(".flags(PropertyFlags.INDEXED | PropertyFlags.INDEX_PARTIAL_SKIP_ZERO)"));
-        assertTrue(myBoxContent.contains(".indexId(1, 1100L)"));
+        assertContains(myBoxContent, ".property(\"customerId\", \"Customer\", PropertyType.Relation)");
+        assertContains(myBoxContent, ".flags(PropertyFlags.INDEXED | PropertyFlags.INDEX_PARTIAL_SKIP_ZERO)");
+        assertContains(myBoxContent, ".indexId(1, 1100L)");
     }
 
 }

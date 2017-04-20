@@ -96,8 +96,7 @@ public final class ${entity.classNameDao} extends Cursor<${entity.className}> {
 
     @Override
     public final long getId(${entity.className} entity) {
-<#-- TODO Check if we can use the field directly -->
-        return entity.get${entity.pkProperty.propertyName?cap_first}();
+        return entity.${entity.pkProperty.valueExpression};
     }
 
     /**

@@ -383,15 +383,6 @@ public class Property {
         return fieldAccessible;
     }
 
-    public String getDatabaseValueExpression() {
-        return getDatabaseValueExpression(propertyName);
-    }
-
-    public String getDatabaseValueExpressionNotNull() {
-        String value = "entity." + (fieldAccessible ?  propertyName : "get" + TextUtil.capFirst(propertyName) + "()");
-        return getDatabaseValueExpression(value);
-    }
-
     /**
      * Makes this property an relation ID - this is done after initial parsing once all entities and relations are
      * present;
@@ -411,6 +402,14 @@ public class Property {
 
     public Entity getTargetEntity() {
         return targetEntity;
+    }
+
+    public String getValueExpression() {
+        return fieldAccessible ?  propertyName : "get" + TextUtil.capFirst(propertyName) + "()";
+    }
+
+    public String getDatabaseValueExpression() {
+        return getDatabaseValueExpression(getValueExpression());
     }
 
     // Got too messy in template:
