@@ -90,10 +90,6 @@ public final class ${entity.classNameDao} extends Cursor<${entity.className}> {
         super(tx, cursor, PROPERTIES);
     }
 
-    @Temporary<#-- TODO Just for Box calling getId(), method should move into a new class(?) -->
-    public ${entity.classNameDao}() {
-    }
-
     @Override
     public final long getId(${entity.className} entity) {
         return entity.${entity.pkProperty.valueExpression};
@@ -110,6 +106,9 @@ public final class ${entity.classNameDao} extends Cursor<${entity.className}> {
      */
     @Override
     public final long put(${entity.className} entity) {
+<#list entity.toOneRelations as toOne>
+        entity.get${toOne.name?cap_first}__toOne().internalPrepareForPut(boxStoreForEntities);
+</#list>
 ${propertyCollector}
     }
 
@@ -117,7 +116,7 @@ ${propertyCollector}
     // TODO @Override
     protected final void attachEntity(${entity.className} entity) {
         // TODO super.attachEntity(entity);
-        entity.__boxStore = boxStoreForEntities;
+        //entity.__boxStore = boxStoreForEntities;
     }
 
 </#if>
