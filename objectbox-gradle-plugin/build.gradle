@@ -26,6 +26,7 @@ dependencies {
 
     testCompile 'junit:junit:4.12'
     testCompile 'org.mockito:mockito-all:1.10.19'
+    testCompile gradleTestKit()
 }
 
 // puts artifact version to properties file inside resources
@@ -80,3 +81,24 @@ uploadArchives {
         }
     }
 }
+
+// Write the plugin's classpath to a file to share with the tests
+task createClasspathManifest {
+    def outputDir = file("$buildDir/$name")
+
+    inputs.files sourceSets.main.runtimeClasspath
+    outputs.dir outputDir
+
+    doLast {
+        outputDir.mkdirs()
+        file("$outputDir/plugin-classpath.txt").text = sourceSets.main.runtimeClasspath.join("\n")
+    }
+}
+
+// Works with gradle build, but not in IntelliJ -> run manually
+tasks['test'].dependsOn createClasspathManifest
+
+//
+//dependencies {
+//    testRuntime files(createClasspathManifest)
+//}
