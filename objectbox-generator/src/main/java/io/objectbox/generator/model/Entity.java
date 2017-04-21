@@ -434,6 +434,10 @@ public class Entity {
         this.skipGenerationTest = skipGenerationTest;
     }
 
+    public boolean hasRelations() {
+        return !toOneRelations.isEmpty() || !toManyRelations.isEmpty();
+    }
+
     public List<ToOne> getToOneRelations() {
         return toOneRelations;
     }

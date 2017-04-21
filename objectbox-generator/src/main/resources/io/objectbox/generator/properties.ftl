@@ -26,6 +26,9 @@ import io.objectbox.Properties;
 import io.objectbox.Property;
 import io.objectbox.annotation.apihint.Internal;
 import io.objectbox.internal.IdGetter;
+<#if entity.hasRelations() >
+import io.objectbox.relation.RelationInfo;
+</#if>
 
 <#-- For custom types only here. TODO: do not import relation stuff -->
 <#if entity.additionalImportsDao?has_content>
@@ -95,4 +98,24 @@ property.converter??>, ${property.converterClassName}.class, ${property.customTy
 </#if>
         }
     }
+
+<#if entity.hasRelations() >
+    @Internal
+    static final class _Relations {
+    <#list entity.toOneRelations as toOne>
+        static final RelationInfo<${toOne.targetEntity.className}> ${toOne.name} =
+            new RelationInfo<>(${toOne.sourceEntity.className}.class,<#--
+        --> ${toOne.fkProperties[0].propertyName}, ${toOne.targetEntity.className}.class,<#--
+        --> ${toOne.targetEntity.className}_.__ID_GETTER);
+
+    </#list>
+    <#list entity.toManyRelations as toMany>
+        static final RelationInfo<${toMany.targetEntity.className}> ${toMany.name} =
+            new RelationInfo<>(${toMany.sourceEntity.className}.class,<#--
+         --> null, ${toMany.targetEntity.className}.class,<#--
+         --> ${toMany.targetEntity.className}_.__ID_GETTER);
+
+    </#list>
+    }
+</#if>
 }
