@@ -8,7 +8,20 @@ sourceCompatibility = '1.7'
 
 objectbox {
     schemaVersion 1000
-    generateTests true
+}
+
+dependencies {
+    compile 'io.objectbox:objectbox-android:0.9.11-SNAPSHOT'
+}
+
+repositories {
+    // Adding maven repo with custom credentials does not seem to work (user properties could not be read)
+
+    // Ensure to have the correct ObjectBox version deployed here
+    mavenLocal()
+
+    // For essentials
+    mavenCentral()
 }
 
 uploadArchives.enabled = false

@@ -18,16 +18,14 @@ import java.io.FileInputStream
  */
 class PluginTest {
     @Test
-    @Ignore("Fix me later")
     fun buildTestProject() {
-        var dir = File ("test-project-files/")
-        if(!dir.exists()) {
-            dir = File ("objectbox-gradle-plugin/test-project-files/")
+        var dir = File("test-project-files/")
+        if (!dir.exists()) {
+            dir = File("objectbox-gradle-plugin/test-project-files/")
         }
         assertTrue(dir.absolutePath, dir.exists())
-//        val classpath = listOf(File("build/classes/main"),File("build/resources/main"))
 
-        var classpathFileIn= javaClass.classLoader.getResourceAsStream("plugin-classpath.txt")
+        var classpathFileIn = javaClass.classLoader.getResourceAsStream("plugin-classpath.txt")
         if (classpathFileIn == null) {
             classpathFileIn = FileInputStream("build/createClasspathManifest/plugin-classpath.txt")
         }
@@ -36,19 +34,25 @@ class PluginTest {
         val classpath = StringUtils.splitLines(classpathContent, true).map(::File)
         classpath.forEach { assertTrue(it.absolutePath, it.exists()) }
 
-        val result = GradleRunner.create().withProjectDir(dir)
+        val result = GradleRunner.create()
+                .withProjectDir(dir)
+                // to do: Make this work some time
 //                .withPluginClasspath()
                 .withPluginClasspath(classpath)
-                .withArguments("--stacktrace").withArguments("--info")
-                .withArguments("objectboxPrepare")
-                //.withArguments("objectbox") // TODO make this work
+                // Note: args must be passed all at once, or they will overwrite each other
+                .withArguments("--stacktrace", "clean", "objectbox", "build")
                 .forwardOutput()
                 .withDebug(true)
                 .build()
 
         assertNotNull(result)
-//        assertTrue(result.getOutput().contains("Hello world!"))
-//        assertNotNull(result.task("objectbox"))
-//        assertEquals(result.task("objectbox").getOutcome(), SUCCESS)
+
+        val genSourceDir = File(dir, "build/generated/source/objectbox/")
+        assertTrue(genSourceDir.exists())
+
+        val packageDir = File(genSourceDir, "io/objectbox/test/entityannotation")
+        assertTrue(packageDir.exists())
+
+        assertEquals(9, packageDir.list().filter { it.endsWith(".java") }.size)
     }
 }
