@@ -1,9 +1,10 @@
-package org.greenrobot.greendao.test.entityannotation;
+package io.objectbox.test.entityannotation;
 
 import io.objectbox.annotation.Convert;
 import io.objectbox.annotation.Entity;
 import io.objectbox.annotation.Generated;
 import io.objectbox.annotation.Id;
+import io.objectbox.annotation.Transient;
 import io.objectbox.converter.PropertyConverter;
 
 @Entity
@@ -33,8 +34,10 @@ public class TypesInInnerClass {
     @Id
     Long id;
 
-    @Convert(converter = MyInnerTypeConverter.class, columnType = Long.class)
+    @Convert(converter = MyInnerTypeConverter.class, dbType = Long.class)
     TypesInInnerClass.MyInnerType type;
+
+    String dummy;
 
     public MyInnerType getType() {
         return this.type;
@@ -52,10 +55,19 @@ public class TypesInInnerClass {
         this.id = id;
     }
 
-    @Generated(hash = 582873426)
-    public TypesInInnerClass(Long id, TypesInInnerClass.MyInnerType type) {
+    public String getDummy() {
+        return this.dummy;
+    }
+
+    public void setDummy(String dummy) {
+        this.dummy = dummy;
+    }
+
+    @Generated(hash = 1578029265)
+    public TypesInInnerClass(Long id, TypesInInnerClass.MyInnerType type, String dummy) {
         this.id = id;
         this.type = type;
+        this.dummy = dummy;
     }
 
     @Generated(hash = 1754325029)

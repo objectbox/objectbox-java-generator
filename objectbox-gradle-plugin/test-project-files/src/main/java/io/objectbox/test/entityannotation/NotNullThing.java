@@ -1,9 +1,8 @@
-package org.greenrobot.greendao.test.entityannotation;
+package io.objectbox.test.entityannotation;
 
 import io.objectbox.annotation.Entity;
 import io.objectbox.annotation.Generated;
 import io.objectbox.annotation.Id;
-import io.objectbox.annotation.NotNull;
 
 @Entity
 public class NotNullThing {
@@ -16,21 +15,16 @@ public class NotNullThing {
     Boolean nullableWrappedBoolean;
     Integer nullableWrappedInteger;
 
-    @NotNull
     boolean notNullBoolean;
-    @NotNull
     int notNullInteger;
-    @NotNull
     Boolean notNullWrappedBoolean;
-    @NotNull
     Integer notNullWrappedInteger;
 
-    @Generated(hash = 1109392169)
+    @Generated(hash = 1888217008)
     public NotNullThing(Long id, boolean nullableBoolean, int nullableInteger,
-                        Boolean nullableWrappedBoolean, Integer nullableWrappedInteger,
-                        boolean notNullBoolean, int notNullInteger,
-                        @NotNull Boolean notNullWrappedBoolean,
-                        @NotNull Integer notNullWrappedInteger) {
+            Boolean nullableWrappedBoolean, Integer nullableWrappedInteger,
+            boolean notNullBoolean, int notNullInteger, Boolean notNullWrappedBoolean,
+            Integer notNullWrappedInteger) {
         this.id = id;
         this.nullableBoolean = nullableBoolean;
         this.nullableInteger = nullableInteger;
