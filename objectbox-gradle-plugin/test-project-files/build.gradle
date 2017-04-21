@@ -12,6 +12,7 @@ objectbox {
 
 dependencies {
     compile 'io.objectbox:objectbox-android:0.9.11-SNAPSHOT'
+    testCompile 'junit:junit:4.12'
 }
 
 repositories {
