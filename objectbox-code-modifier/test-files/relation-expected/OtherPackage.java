@@ -31,9 +31,9 @@ public class OtherPackage {
     @Relation(idProperty="customerId")
     List<Order> orders;
 
-    /** Used to resolve relations */
+    /** @Depreacted Used to resolve relations */
     @Internal
-    @Generated(hash = 1307364262)
+    @Generated(hash = 975972993)
     transient BoxStore __boxStore;
 
     @Generated(hash = 1440476873)
@@ -63,12 +63,12 @@ public class OtherPackage {
     }
 
     @Internal
-    @Generated(hash = 1021441002)
-    private transient ToOne<OtherPackage, Customer> customer__toOne;
+    @Generated(hash = 35245611)
+    private transient ToOne<Customer> customer__toOne;
 
     /** See {@link io.objectbox.relation.ToOne} for details. */
-    @Generated(hash = 1644448081)
-    public synchronized ToOne<OtherPackage, Customer> getCustomer__toOne() {
+    @Generated(hash = 1398841471)
+    public synchronized ToOne<Customer> getCustomer__toOne() {
         if (customer__toOne == null) {
             customer__toOne = new ToOne<>(this, OtherPackage_.customerId, Customer.class);
         }

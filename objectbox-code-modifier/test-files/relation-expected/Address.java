@@ -24,9 +24,9 @@ public class Address {
 
     long customerId;
 
-    /** Used to resolve relations */
+    /** @Depreacted Used to resolve relations */
     @Internal
-    @Generated(hash = 1307364262)
+    @Generated(hash = 975972993)
     transient BoxStore __boxStore;
 
     @Generated(hash = 1157172385)
@@ -56,12 +56,12 @@ public class Address {
     }
 
     @Internal
-    @Generated(hash = 255983826)
-    private transient ToOne<Address, Customer> customer__toOne;
+    @Generated(hash = 35245611)
+    private transient ToOne<Customer> customer__toOne;
 
     /** See {@link io.objectbox.relation.ToOne} for details. */
-    @Generated(hash = 1338197451)
-    public synchronized ToOne<Address, Customer> getCustomer__toOne() {
+    @Generated(hash = 1394863534)
+    public synchronized ToOne<Customer> getCustomer__toOne() {
         if (customer__toOne == null) {
             customer__toOne = new ToOne<>(this, Address_.customerId, Customer.class);
         }

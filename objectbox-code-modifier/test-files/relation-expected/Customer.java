@@ -23,9 +23,9 @@ public class Customer {
     @Relation(idProperty = "customerId")
     List<Order> orders;
 
-    /** Used to resolve relations */
+    /** @Depreacted Used to resolve relations */
     @Internal
-    @Generated(hash = 1307364262)
+    @Generated(hash = 975972993)
     transient BoxStore __boxStore;
 
     @Generated(hash = 1039711609)
