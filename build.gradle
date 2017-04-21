@@ -1,41 +1,39 @@
 buildscript {
-    ext.kotlin_version = '1.0.4'
+    ext.kotlin_version = '1.1.1'
 
     repositories {
+        jcenter()
         mavenCentral()
     }
 
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        // TODO ut: remove ASM dependency once shadow plugin has updated ASM to 5.1+
+        // override ASM version as pre 5.1 has VerifyError bug, but shadow plugin ships older version
+        classpath 'org.ow2.asm:asm:5.1'
+        classpath 'org.ow2.asm:asm-commons:5.1'
+        classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.4'
     }
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '2.14.1'
+    gradleVersion = '3.5'
+    distributionType = org.gradle.api.tasks.wrapper.Wrapper.DistributionType.ALL
 }
 
-// TODO ut: figure out how to include the custom resolved versions in the built POM, for now
-// adding all JDT deps manually in code-modifier build.gradle and excluding transitive dependencies
-//allprojects {
-//    configurations.all {
-//        resolutionStrategy.eachDependency { DependencyResolveDetails details ->
-//            if (details.requested.group == 'org.eclipse.scout.sdk.deps') {
-//                // Eclipse Scout JDT core POM dependencies have version format like '[3.11.0,3.11.1)'
-//                // fix resolution to actual version numbers used, like 3.11.0.v20160516-2131, by using 3.11.0+
-//                if (details.requested.name != 'org.eclipse.jdt.core') {
-//                    def requestedVersion = details.requested.version
-//                    details.useVersion requestedVersion.substring(1, requestedVersion.indexOf(",")) + "+"
-//                }
-//            }
-//        }
-//    }
-//}
+if (JavaVersion.current().isJava8Compatible()) {
+    allprojects {
+        tasks.withType(Javadoc) {
+            options.addStringOption('Xdoclint:none', '-quiet')
+        }
+    }
+}
 
 subprojects {
     apply plugin: 'maven'
     apply plugin: 'signing'
 
-    version = '0.8.0-SNAPSHOT'
+    version = '0.9.11-SNAPSHOT'
 
     repositories {
         jcenter()
@@ -56,6 +54,7 @@ subprojects {
 
     dependencies {
         deployerJars 'org.apache.maven.wagon:wagon-webdav:1.0-beta-2'
+        deployerJars 'org.apache.maven.wagon:wagon-ftp:2.2'
     }
 
     signing {
@@ -72,18 +71,24 @@ subprojects {
         uploadArchives {
             repositories {
                 mavenDeployer {
-                    def isSnapshot = version.endsWith('-SNAPSHOT')
-                    def sonatypeRepositoryUrl = isSnapshot ?
-                            "https://oss.sonatype.org/content/repositories/snapshots/"
-                            : "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
-                    if (project.hasProperty('preferedRepo') && project.hasProperty('preferedUsername')
+                    if (project.hasProperty('preferedRepo') && preferedRepo == 'local') {
+                        repository url: repositories.mavenLocal().url
+                    } else if (project.hasProperty('preferedRepo') && project.hasProperty('preferedUsername')
                             && project.hasProperty('preferedPassword')) {
                         configuration = configurations.deployerJars
+                        // Replace for bintray's dynamic URL
+                        preferedRepo = preferedRepo.replace('__groupId__', project.group)
+                        preferedRepo = preferedRepo.replace('__artifactId__', project.archivesBaseName)
+                        // println preferedRepo
                         repository(url: preferedRepo) {
                             authentication(userName: preferedUsername, password: preferedPassword)
                         }
                     } else if (project.hasProperty('sonatypeUsername') && project.hasProperty('sonatypePassword')) {
                         beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+                        def isSnapshot = version.endsWith('-SNAPSHOT')
+                        def sonatypeRepositoryUrl = isSnapshot ?
+                                "https://oss.sonatype.org/content/repositories/snapshots/"
+                                : "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
                         repository(url: sonatypeRepositoryUrl) {
                             authentication(userName: sonatypeUsername, password: sonatypePassword)
                         }
@@ -93,20 +98,12 @@ subprojects {
 
                     pom.project {
                         packaging 'jar'
-                        url 'http://greenrobot.org/greendao'
+                        url 'http://greenrobot.org/objectbox'
 
                         scm {
-                            url 'https://github.com/greenrobot/greenDAO'
-                            connection 'scm:git@github.com:greenrobot/greenDAO.git'
-                            developerConnection 'scm:git@github.com:greenrobot/greenDAO.git'
-                        }
-
-                        licenses {
-                            license {
-                                name 'GNU General Public License, Version 3'
-                                url 'http://www.gnu.org/licenses/gpl.txt'
-                                distribution 'repo'
-                            }
+                            url 'https://github.com/greenrobot/ObjectBox'
+                            connection 'scm:git@github.com:greenrobot/ObjectBox.git'
+                            developerConnection 'scm:git@github.com:greenrobot/ObjectBox.git'
                         }
 
                         developers {
@@ -118,7 +115,7 @@ subprojects {
 
                         issueManagement {
                             system 'GitHub Issues'
-                            url 'https://github.com/greenrobot/greenDAO/issues'
+                            url 'https://github.com/greenrobot/ObjectBox/issues'
                         }
 
                         organization {

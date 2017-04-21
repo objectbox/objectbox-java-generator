@@ -1,0 +1,79 @@
+apply plugin: 'java'
+apply plugin: 'kotlin'
+apply plugin: 'maven'
+apply plugin: 'signing'
+
+group = 'io.objectbox'
+archivesBaseName = 'objectbox-generator'
+//version= rootProject.version
+sourceCompatibility = 1.7
+
+dependencies {
+    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    compile "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
+
+    compile 'org.freemarker:freemarker:2.3.26-incubating'
+    compile 'org.greenrobot:essentials:3.0.0-RC1'
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+
+    testCompile 'junit:junit:4.12'
+}
+
+test {
+    doFirst {
+        mkdir 'test-out'
+    }
+    doLast {
+        delete 'test-out'
+    }
+}
+
+javadoc {
+    failOnError = false
+    title = "ObjectBox Generator ${version} API"
+    // Unfinished APIs:
+    excludes = ['org/greenrobot/daogenerator/Query*']
+    options.bottom = 'Available under the GPLv3 - <i>Copyright &#169; 2011-2016 <a href="http://greenrobot.org/">greenrobot.org</a>. All Rights Reserved.</i>'
+    doLast {
+        copy {
+            from '../javadoc-style/'
+            into "build/docs/javadoc/"
+        }
+    }
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from 'build/docs/javadoc'
+}
+
+task sourcesJar(type: Jar) {
+    from sourceSets.main.allSource
+    classifier = 'sources'
+}
+
+artifacts {
+    archives jar
+    archives javadocJar
+    // Not yet: archives sourcesJar
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            // Basic definitions are defined in root project
+            pom.project {
+                name 'ObjectBox Generator'
+                description 'Code generator for ObjectBox, the superfast NoSQL database for Objects'
+
+                licenses {
+                    license {
+                        name 'GNU General Public License, Version 3'
+                        url 'http://www.gnu.org/licenses/gpl.txt'
+                        distribution 'repo'
+                    }
+                }
+            }
+        }
+    }
+}

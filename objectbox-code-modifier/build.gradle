@@ -1,0 +1,63 @@
+apply plugin: 'kotlin'
+apply plugin: 'maven'
+
+group = 'io.objectbox'
+archivesBaseName = 'objectbox-code-modifier'
+
+sourceCompatibility = '1.7'
+targetCompatibility = '1.7'
+
+dependencies {
+    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    compile "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
+    compile 'org.greenrobot:essentials:3.0.0-RC1'
+    compile 'org.greenrobot:greenrobot-jdt:3.12.2'
+    compile 'com.squareup.moshi:moshi:1.3.1'
+
+    // Synchronize dependency versions with project version
+    def baseVersion = "${project.version}"
+//    baseVersion = "0.9.10-RC"
+    compile "io.objectbox:objectbox-java-api:$baseVersion"
+    compile project (':objectbox-generator')
+
+    testCompile 'junit:junit:4.12'
+    testCompile 'org.mockito:mockito-all:1.10.19'
+    testCompile 'com.natpryce:hamkrest:1.1.0.0'
+}
+
+task javadocJar(type: Jar) {
+    classifier = 'javadoc'
+    from 'README'
+}
+
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from 'README'
+}
+
+artifacts {
+    archives jar
+    archives javadocJar
+    // Not yet archives sourcesJar
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            // Basic definitions are defined in root project
+            pom.project {
+                name 'ObjectBox Code Modifier'
+                description 'Code modifier for ObjectBox (NoSQL for Objects)'
+
+                licenses {
+                    license {
+                        name 'GNU General Public License, Version 3'
+                        url 'http://www.gnu.org/licenses/gpl.txt'
+                        distribution 'repo'
+                    }
+                }
+
+            }
+        }
+    }
+}

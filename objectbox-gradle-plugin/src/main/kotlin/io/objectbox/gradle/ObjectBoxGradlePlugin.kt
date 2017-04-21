@@ -4,80 +4,63 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.logging.LogLevel
-import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.api.tasks.util.PatternFilterable
-import org.greenrobot.greendao.codemodifier.ObjectBoxGenerator
-import org.greenrobot.greendao.codemodifier.SchemaOptions
-import io.objectbox.gradle.Closure
-import io.objectbox.gradle.ObjectBoxOptions
-import io.objectbox.gradle.sourceProvider
-import io.objectbox.gradle.whenSourceProviderAvailable
+import io.objectbox.codemodifier.ObjectBoxGenerator
+import io.objectbox.codemodifier.SchemaOptions
 import java.io.File
-import java.util.*
+import java.io.IOException
+import java.util.Properties
 
 class ObjectBoxGradlePlugin : Plugin<Project> {
+
+    val name: String = "objectbox"
+    val packageName: String = "io/objectbox"
+
     override fun apply(project: Project) {
-        project.logger.debug("ObjectBox plugin starting...")
-        project.extensions.create("objectbox", ObjectBoxOptions::class.java, project)
+        project.logger.debug("$name plugin starting...")
+        project.extensions.create(name, ObjectBoxOptions::class.java, project)
 
         // Use afterEvaluate so order of applying the plugins in consumer projects does not matter
         project.afterEvaluate {
             val version = getVersion()
-            project.logger.debug("objectbox plugin ${version} preparing tasks...")
-            val candidatesFile = project.file("build/cache/objectbox-candidates.list")
+            project.logger.debug("$name plugin $version preparing tasks...")
+            val candidatesFile = project.file("build/cache/$name-candidates.list")
             val sourceProvider = project.sourceProvider
             val encoding = sourceProvider.encoding ?: "UTF-8"
 
             val taskArgs = mapOf("type" to DetectEntityCandidatesTask::class.java)
-            val prepareTask = project.task(taskArgs, "objectboxPrepare") as DetectEntityCandidatesTask
+            val prepareTask = project.task(taskArgs, "${name}Prepare") as DetectEntityCandidatesTask
             prepareTask.sourceFiles = sourceProvider.sourceTree().matching(Closure { pf: PatternFilterable ->
                 pf.include("**/*.java")
             })
             prepareTask.candidatesListFile = candidatesFile
             prepareTask.version = version
             prepareTask.charset = encoding
+            prepareTask.group = name
+            prepareTask.description = "Finds entity source files for $name"
 
-            val objectboxTask = createObjectBoxTask(project, candidatesFile, encoding, version)
+            val options = project.extensions.getByType(ObjectBoxOptions::class.java)
+            val writeToBuildFolder = options.targetGenDir == null
+            val targetGenDir = if (writeToBuildFolder)
+                File(project.buildDir, "generated/source/$name") else options.targetGenDir!!
+
+            val objectboxTask = createObjectBoxTask(project, candidatesFile, options, targetGenDir, encoding, version)
             objectboxTask.dependsOn(prepareTask)
 
-            project.tasks.forEach {
-                if (it is JavaCompile) {
-                    project.logger.debug("Make ${it.name} depend on objectbox")
-                    addObjectBoxTask(objectboxTask, it)
-                }
-            }
-
-            project.tasks.whenTaskAdded {
-                if (it is JavaCompile) {
-                    project.logger.debug("Make just added task ${it.name} depend on objectbox")
-                    addObjectBoxTask(objectboxTask, it)
-                }
-            }
+            sourceProvider.addGeneratorTask(objectboxTask, targetGenDir, writeToBuildFolder)
         }
     }
 
-    private fun addObjectBoxTask(objectboxTask: Task, javaTask: JavaCompile) {
-        javaTask.dependsOn(objectboxTask)
-        // ensure generated files are on classpath, just adding a srcDir seems not enough
-        javaTask.setSource(objectboxTask.outputs.files + javaTask.source)
-    }
-
-    private fun createObjectBoxTask(project: Project, candidatesFile: File, encoding: String, version: String): Task {
-        val options = project.extensions.getByType(ObjectBoxOptions::class.java)
-        val targetGenDir = options.targetGenDir?: File(project.buildDir, "generated/source/objectbox")
-        if (options.targetGenDir == null) {
-            project.whenSourceProviderAvailable {
-                it.addSourceDir(targetGenDir)
-            }
-        }
-        val generateTask = project.task("objectbox").apply {
+    private fun createObjectBoxTask(project: Project, candidatesFile: File, options: ObjectBoxOptions,
+                                    targetGenDir: File, encoding: String, version: String): Task {
+        val generateTask = project.task(name).apply {
             logging.captureStandardOutput(LogLevel.INFO)
 
             inputs.file(candidatesFile)
             inputs.property("plugin-version", version)
             inputs.property("source-encoding", encoding)
 
-            val schemaOptions = collectSchemaOptions(options.daoPackage, targetGenDir, options)
+            val schemaOptions = collectSchemaOptions(project, targetGenDir, options)
 
             schemaOptions.forEach { e ->
                 inputs.property("schema-${e.key}", e.value.toString())
@@ -103,30 +86,39 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
                 ObjectBoxGenerator(
                         options.formatting.data,
                         options.skipTestGeneration,
+                        options.daoCompat,
                         encoding
                 ).run(candidatesFiles, schemaOptions)
             }
         }
+        generateTask.group = name
+        generateTask.description = "Generates source files for $name"
         return generateTask
     }
 
     private fun getVersion(): String {
-        return ObjectBoxGradlePlugin::class.java.getResourceAsStream(
-                "/io/objectbox/gradle/version.properties")?.let {
-            val properties = Properties()
-            properties.load(it)
-            properties.getProperty("version") ?: throw RuntimeException("No version in version.properties")
-        } ?: "0"
+        val properties = Properties()
+        val stream = javaClass.getResourceAsStream("/$packageName/gradle/version.properties")
+        stream?.use {
+            try {
+                properties.load(it)
+            } catch (e: IOException) {
+                e.printStackTrace()
+            }
+        }
+        return properties.getProperty("version") ?: "Unknown (bad build)"
     }
 
-    private fun collectSchemaOptions(daoPackage: String?, genSrcDir: File, options: ObjectBoxOptions)
+    private fun collectSchemaOptions(project: Project, genSrcDir: File, options: ObjectBoxOptions)
             : MutableMap<String, SchemaOptions> {
+        val idModelDir = project.mkdir("objectbox-models")
         val defaultOptions = SchemaOptions(
                 name = "default",
                 version = options.schemaVersion,
-                daoPackage = daoPackage,
+                daoPackage = options.daoPackage,
                 outputDir = genSrcDir,
-                testsOutputDir = if (options.generateTests) options.targetGenDirTests else null
+                testsOutputDir = if (options.generateTests) options.targetGenDirTests else null,
+                idModelFile = File(idModelDir, "default.json")
         )
 
         val schemaOptions = mutableMapOf("default" to defaultOptions)
@@ -140,7 +132,8 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
                     outputDir = defaultOptions.outputDir,
                     testsOutputDir = if (options.generateTests) {
                         schemaExt.targetGenDirTests ?: defaultOptions.testsOutputDir
-                    } else null
+                    } else null,
+                    idModelFile = File(idModelDir, "$name.json")
             )
         }.associateTo(schemaOptions, { it.name to it })
         return schemaOptions

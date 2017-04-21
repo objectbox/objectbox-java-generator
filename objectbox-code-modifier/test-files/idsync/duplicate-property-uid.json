@@ -1,0 +1,27 @@
+{
+  "entities": [
+    {
+      "id": "1:4858050548069557694",
+      "lastPropertyId": "7:1224882392647796759",
+      "name": "Note",
+      "properties": [
+        {
+          "id": "1:8303367770402050741",
+          "name": "id"
+        },
+        {
+          "id": "4:8303367770402050741",
+          "name": "integerProperty"
+        }
+      ]
+    }
+  ],
+  "lastEntityId": "1:4858050548069557694",
+  "lastIndexId": "0:0",
+  "lastSequenceId": "0:0",
+  "modelVersion": 2,
+  "retiredEntityUids": [],
+  "retiredIndexUids": [],
+  "retiredPropertyUids": [],
+  "version": 1
+}

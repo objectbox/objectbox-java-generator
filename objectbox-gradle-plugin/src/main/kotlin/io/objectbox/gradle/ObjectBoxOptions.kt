@@ -3,8 +3,8 @@ package io.objectbox.gradle
 import groovy.lang.Closure
 import groovy.lang.GroovyObjectSupport
 import org.gradle.api.Project
-import org.greenrobot.greendao.codemodifier.FormattingOptions
-import org.greenrobot.greendao.codemodifier.Tabulation
+import io.objectbox.codemodifier.FormattingOptions
+import io.objectbox.codemodifier.Tabulation
 import java.io.File
 
 /**
@@ -59,6 +59,8 @@ open class ObjectBoxOptions(val project: Project) {
      * @see generateTests
      */
     var skipTestGeneration = mutableListOf<String>()
+
+    var daoCompat = false
 
     internal val formatting = FormattingExtension()
     internal val schemas = SchemasExtension(project)
@@ -162,6 +164,13 @@ open class ObjectBoxOptions(val project: Project) {
     /** @see skipTestGeneration */
     fun skipTestGeneration(vararg value: String) {
         this.skipTestGeneration.addAll(value)
+    }
+
+    /**
+     * If enabled, will generate DAO classes for compatibility with greenDAO.
+     */
+    fun daoCompat(value: Boolean) {
+        this.daoCompat = value
     }
 }
 
