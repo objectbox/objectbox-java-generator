@@ -277,7 +277,8 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
         val columnType = (convert["dbType"] as? TypeLiteral)?.type
         if (converterClassName == null || columnType == null) {
             throw RuntimeException(
-                    "Missing @Convert arguments for field '$fieldName' in ${typeDeclaration?.name?.identifier}")
+                    "@Convert attributes absent for field '$fieldName' in ${typeDeclaration?.name?.identifier}:" +
+                            convert.lineNumber + ". Example: @Convert(converter=\"..\", dbType=\"..\")")
         }
         return CustomType(converterClassName, columnType.toVariableType())
     }

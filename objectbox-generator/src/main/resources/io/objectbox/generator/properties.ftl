@@ -90,8 +90,9 @@ property.converter??>, ${property.converterClassName}.class, ${property.customTy
 <#if entity.pkProperty.nonPrimitiveType>
             ${entity.pkProperty.javaType} id = object.${entity.pkProperty.valueExpression};
             return id != null? id : 0;
-</#if>
+<#else>
             return object.${entity.pkProperty.valueExpression};
+</#if>
         }
     }
 }
