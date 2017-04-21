@@ -47,7 +47,7 @@ public class ${entity.className}_ implements Properties {
     public static final String __DB_NAME = "${entity.dbName}";
 
     @Internal
-    static final IdGetter<${entity.className}> __ID_GETTER = new ${entity.className}IdGetter();
+    static final ${entity.className}IdGetter __ID_GETTER = new ${entity.className}IdGetter();
 
 <#list entity.propertiesColumns as property>
     public final static Property ${property.propertyName} = new Property(${property_index}, <#if
@@ -85,8 +85,12 @@ property.converter??>, ${property.converterClassName}.class, ${property.customTy
     }
 
     @Internal
-    static class ${entity.className}IdGetter implements IdGetter<${entity.className}> {
+    static final class ${entity.className}IdGetter implements IdGetter<${entity.className}> {
         public long getId(${entity.className} object) {
+<#if entity.pkProperty.nonPrimitiveType>
+            ${entity.pkProperty.javaType} id = object.${entity.pkProperty.valueExpression};
+            return id != null? id : 0;
+</#if>
             return object.${entity.pkProperty.valueExpression};
         }
     }

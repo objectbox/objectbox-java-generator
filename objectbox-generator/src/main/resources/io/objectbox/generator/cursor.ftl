@@ -70,7 +70,9 @@ import ${entity.javaPackage}.${entity.className}.Builder;
  */
 public final class ${entity.classNameDao} extends Cursor<${entity.className}> {
 
-    private static Properties PROPERTIES = new ${entity.className}_();
+    private static final Properties PROPERTIES = new ${entity.className}_();
+
+    private static final ${entity.className}IdGetter ID_GETTER = PROPERTIES.__ID_GETTER;
 
 <#list entity.properties as property><#if property.customType?has_content><#--
 -->    private final ${property.converterClassName} ${property.propertyName}Converter = new ${property.converterClassName}();
@@ -80,11 +82,7 @@ public final class ${entity.classNameDao} extends Cursor<${entity.className}> {
 </#list>
 
     // Property IDs get verified in Cursor base class
-<#list entity.properties as property>
-<#if !property.isPrimaryKey()>
-    private final static int __ID_${property.propertyName} = ${entity.className}_.${property.propertyName}.id;
-</#if>
-</#list>
+    private final static int __ID_${entity.pkProperty.propertyName} = ${entity.className}_.${entity.pkProperty.propertyName}.id;
 
     public ${entity.classNameDao}(Transaction tx, long cursor) {
         super(tx, cursor, PROPERTIES);
@@ -92,7 +90,7 @@ public final class ${entity.classNameDao} extends Cursor<${entity.className}> {
 
     @Override
     public final long getId(${entity.className} entity) {
-        return entity.${entity.pkProperty.valueExpression};
+        return ID_GETTER.getId(entity);
     }
 
     /**
