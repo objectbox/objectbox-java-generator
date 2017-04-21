@@ -39,12 +39,8 @@ class PluginTest {
                 // to do: Make this work some time
 //                .withPluginClasspath()
                 .withPluginClasspath(classpath)
-                // None of these have an effect:
-                .withArguments("--stacktrace")
-                .withArguments("--info")
-                .withArguments("clean")
-                .withArguments("java")
-                .withArguments("objectbox")
+                // Note: args must be passed all at once, or they will overwrite each other
+                .withArguments("--stacktrace", "clean", "objectbox", "build")
                 .forwardOutput()
                 .withDebug(true)
                 .build()
