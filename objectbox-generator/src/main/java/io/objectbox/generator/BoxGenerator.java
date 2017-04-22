@@ -59,7 +59,7 @@ public class BoxGenerator {
     private final Template templateDao;
     private final Template templateDaoSession;
     private final Template templateEntity;
-    private final Template templateProperties;
+    private final Template templateEntityInfo;
     private final Template templateBoxUnitTest;
 
     private boolean daoCompat;
@@ -85,7 +85,7 @@ public class BoxGenerator {
         templateDao = config.getTemplate("dao.ftl");
         templateDaoSession = config.getTemplate("dao-session.ftl");
         templateEntity = config.getTemplate("entity.ftl");
-        templateProperties = config.getTemplate("properties.ftl");
+        templateEntityInfo = config.getTemplate("entity-info.ftl");
         templateBoxUnitTest = config.getTemplate("box-unit-test.ftl");
     }
 
@@ -152,7 +152,7 @@ public class BoxGenerator {
             if (!entity.isProtobuf() && !entity.isSkipGeneration()) {
                 generate(templateEntity, outDirEntityFile, entity.getJavaPackage(), entity.getClassName(), schema, entity);
             }
-            generate(templateProperties, outDirFile, entity.getJavaPackageDao(), entity.getClassName() + "_",
+            generate(templateEntityInfo, outDirFile, entity.getJavaPackageDao(), entity.getClassName() + "_",
                     schema, entity);
             if (outDirTestFile != null && !entity.isSkipGenerationTest()) {
                 String javaPackageTest = entity.getJavaPackageTest();

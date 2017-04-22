@@ -72,7 +72,7 @@ public class ${entity.classNameDao} extends AbstractDao<${entity.className}, Lon
     /**
     * Properties of the ${entity.className} box.
     */
-    private static io.objectbox.Properties BOX_PROPERTIES = new ${entity.className}_();
+    private static io.objectbox.EntityInfo BOX_PROPERTIES = new ${entity.className}_();
 
     /**
      * Properties of entity ${entity.className}.<br/>

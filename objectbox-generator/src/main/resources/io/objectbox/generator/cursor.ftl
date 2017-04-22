@@ -34,7 +34,7 @@ import java.util.ArrayList;
 
 import io.objectbox.BoxStore;
 import io.objectbox.Cursor;
-import io.objectbox.Properties;
+import io.objectbox.EntityInfo;
 import io.objectbox.Transaction;
 import io.objectbox.annotation.apihint.Internal;
 import io.objectbox.annotation.apihint.Temporary;
@@ -79,9 +79,9 @@ public final class ${entity.classNameDao} extends Cursor<${entity.className}> {
         }
     }
 
-    private static final ${entity.className}_ PROPERTIES = new ${entity.className}_();
+    private static final ${entity.className}_ ENTITY_INFO = new ${entity.className}_();
 
-    private static final ${entity.className}_.${entity.className}IdGetter ID_GETTER = PROPERTIES.__ID_GETTER;
+    private static final ${entity.className}_.${entity.className}IdGetter ID_GETTER = ENTITY_INFO.__ID_GETTER;
 
 <#list entity.properties as property><#if property.customType?has_content><#--
 -->    private final ${property.converterClassName} ${property.propertyName}Converter = new ${property.converterClassName}();
@@ -98,7 +98,7 @@ public final class ${entity.classNameDao} extends Cursor<${entity.className}> {
 </#list>
 
     public ${entity.classNameDao}(Transaction tx, long cursor, BoxStore boxStore) {
-        super(tx, cursor, PROPERTIES, boxStore);
+        super(tx, cursor, ENTITY_INFO, boxStore);
     }
 
     @Override

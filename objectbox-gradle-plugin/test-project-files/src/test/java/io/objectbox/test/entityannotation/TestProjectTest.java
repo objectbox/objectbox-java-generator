@@ -1,7 +1,7 @@
 package io.objectbox.test.entityannotation;
 
 import io.objectbox.BoxStoreBuilder;
-import io.objectbox.Properties;
+import io.objectbox.EntityInfo;
 
 import org.junit.Test;
 
@@ -21,8 +21,8 @@ public class TestProjectTest {
 
     @Test
     public void testProperties() {
-        Properties[] propertiesArray = {new Customer_(), new Order_(), new TypesInInnerClass_()};
-        for (Properties properties : propertiesArray) {
+        EntityInfo[] propertiesArray = {new Customer_(), new Order_(), new TypesInInnerClass_()};
+        for (EntityInfo properties : propertiesArray) {
             assertTrue(properties.getAllProperties().length >= 2);
             assertEquals(1, properties.getIdProperty().id);
         }

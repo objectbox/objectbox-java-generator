@@ -24,7 +24,7 @@ package ${entity.javaPackageDao};
 
 import ${entity.javaPackageDao}.${entity.classNameDao}.Factory;
 
-import io.objectbox.Properties;
+import io.objectbox.EntityInfo;
 import io.objectbox.Property;
 import io.objectbox.annotation.apihint.Internal;
 import io.objectbox.internal.CursorFactory;
@@ -46,7 +46,7 @@ import ${additionalImport};
 /**
  * Properties for entity "${entity.dbName}". Can be used for QueryBuilder and for referencing DB names.
  */
-public final class ${entity.className}_ implements Properties<${entity.className}> {
+public final class ${entity.className}_ implements EntityInfo<${entity.className}> {
 
     // Leading underscores for static constants to avoid naming conflicts with property names
 
@@ -75,6 +75,8 @@ property.converter??>, ${property.converterClassName}.class, ${property.customTy
     };
 
     public final static Property __ID_PROPERTY = ${entity.pkProperty.propertyName};
+
+    public final static ${entity.className}_ __INSTANCE = new ${entity.className}_();
 
     @Override
     public String getEntityName() {
