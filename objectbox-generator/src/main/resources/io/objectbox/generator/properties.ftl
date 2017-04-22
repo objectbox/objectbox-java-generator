@@ -22,9 +22,12 @@ along with ObjectBox Generator.  If not, see <http://www.gnu.org/licenses/>.
 
 package ${entity.javaPackageDao};
 
+import ${entity.javaPackageDao}.${entity.classNameDao}.Factory;
+
 import io.objectbox.Properties;
 import io.objectbox.Property;
 import io.objectbox.annotation.apihint.Internal;
+import io.objectbox.internal.CursorFactory;
 import io.objectbox.internal.IdGetter;
 <#if entity.hasRelations() >
 import io.objectbox.relation.RelationInfo;
@@ -43,11 +46,17 @@ import ${additionalImport};
 /**
  * Properties for entity "${entity.dbName}". Can be used for QueryBuilder and for referencing DB names.
  */
-public class ${entity.className}_ implements Properties {
+public final class ${entity.className}_ implements Properties<${entity.className}> {
 
     // Leading underscores for static constants to avoid naming conflicts with property names
 
+    public static final String __ENTITY_NAME = "${entity.className}";
+
+    public static final Class<${entity.className}> __ENTITY_CLASS = ${entity.className}.class;
+
     public static final String __DB_NAME = "${entity.dbName}";
+
+    public static final CursorFactory<${entity.className}> __CURSOR_FACTORY = new Factory();
 
     @Internal
     static final ${entity.className}IdGetter __ID_GETTER = new ${entity.className}IdGetter();
@@ -68,6 +77,21 @@ property.converter??>, ${property.converterClassName}.class, ${property.customTy
     public final static Property __ID_PROPERTY = ${entity.pkProperty.propertyName};
 
     @Override
+    public String getEntityName() {
+        return __ENTITY_NAME;
+    }
+
+    @Override
+    public Class<${entity.className}> getEntityClass() {
+        return __ENTITY_CLASS;
+    }
+
+    @Override
+    public String getDbName() {
+        return __DB_NAME;
+    }
+
+    @Override
     public Property[] getAllProperties() {
         return __ALL_PROPERTIES;
     }
@@ -78,13 +102,13 @@ property.converter??>, ${property.converterClassName}.class, ${property.customTy
     }
 
     @Override
-    public String getDbName() {
-        return __DB_NAME;
+    public IdGetter<${entity.className}> getIdGetter() {
+        return __ID_GETTER;
     }
 
     @Override
-    public IdGetter<${entity.className}> getIdGetter() {
-        return __ID_GETTER;
+    public CursorFactory<${entity.className}> getCursorFactory() {
+        return __CURSOR_FACTORY;
     }
 
     @Internal

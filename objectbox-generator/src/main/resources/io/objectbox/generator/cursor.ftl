@@ -32,10 +32,13 @@ import java.util.List;
 import java.util.ArrayList;
 </#if>
 
+import io.objectbox.BoxStore;
 import io.objectbox.Cursor;
 import io.objectbox.Properties;
 import io.objectbox.Transaction;
+import io.objectbox.annotation.apihint.Internal;
 import io.objectbox.annotation.apihint.Temporary;
+import io.objectbox.internal.CursorFactory;
 <#if entity.toOneRelations?has_content>
 </#if>
 <#if entity.incomingToManyRelations?has_content>
@@ -69,6 +72,12 @@ import ${entity.javaPackage}.${entity.className}.Builder;
  * Cursor for DB entity "${entity.dbName}".
  */
 public final class ${entity.classNameDao} extends Cursor<${entity.className}> {
+    @Internal
+    static final class Factory implements CursorFactory<${entity.className}> {
+        public Cursor<${entity.className}> createCursor(Transaction tx, long cursorHandle, BoxStore boxStoreForEntities) {
+            return new ${entity.classNameDao}(tx, cursorHandle, boxStoreForEntities);
+        }
+    }
 
     private static final ${entity.className}_ PROPERTIES = new ${entity.className}_();
 
@@ -88,8 +97,8 @@ public final class ${entity.classNameDao} extends Cursor<${entity.className}> {
     </#if>
 </#list>
 
-    public ${entity.classNameDao}(Transaction tx, long cursor) {
-        super(tx, cursor, PROPERTIES);
+    public ${entity.classNameDao}(Transaction tx, long cursor, BoxStore boxStore) {
+        super(tx, cursor, PROPERTIES, boxStore);
     }
 
     @Override
