@@ -3,6 +3,7 @@ package io.obectbox.codemodifier
 import io.objectbox.codemodifier.FormattingOptions
 import io.objectbox.codemodifier.ObjectBoxGenerator
 import io.objectbox.codemodifier.SchemaOptions
+import io.objectbox.generator.idsync.UidHelper
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -11,6 +12,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.ErrorCollector
 import java.io.File
+import java.security.SecureRandom
 import java.util.ArrayList
 
 class ObjectBoxGeneratorTest {
@@ -62,7 +64,14 @@ class ObjectBoxGeneratorTest {
         // copy model file over test model file
         File(samplesDirectory, "insert-uid/insert-uid-model.json").copyTo(schemaOptions.idModelFile, true)
 
-        generateAndAssertFile("insert-uid/InsertUid")
+        // to always generate the same new uid use a fixed seed for SecureRandom
+        val fixedRandom = SecureRandom()
+        fixedRandom.setSeed(42)
+        val uidHelper = UidHelper(random = fixedRandom)
+
+        val generator = ObjectBoxGenerator(formattingOptions, uidHelper = uidHelper)
+
+        generateAndAssertFile(generator, "insert-uid/InsertUid")
     }
 
     // NOTE: test may output multiple failed files, make sure to scroll up :)
@@ -141,7 +150,11 @@ class ObjectBoxGeneratorTest {
         assertTrue(content, content.contains(".indexId("))
     }
 
-    fun generateAndAssertFile(baseFileName: String) {
+    fun generateAndAssertFile(baseFileName: String){
+        generateAndAssertFile(ObjectBoxGenerator(formattingOptions), baseFileName)
+    }
+
+    fun generateAndAssertFile(generator: ObjectBoxGenerator, baseFileName: String) {
         val inputFileName = "${baseFileName}Input.java"
         val actualFileName = "${baseFileName}Actual.java"
         val expectedFileName = "${baseFileName}Expected.java"
@@ -158,7 +171,7 @@ class ObjectBoxGeneratorTest {
 
         // run the generator over the file
         try {
-            ObjectBoxGenerator(formattingOptions).run(listOf(actualFile), mapOf("default" to schemaOptions))
+            generator.run(listOf(actualFile), mapOf("default" to schemaOptions))
         } catch (ex: RuntimeException) {
             throw RuntimeException("Could not run generator on " + inputFileName, ex)
         }

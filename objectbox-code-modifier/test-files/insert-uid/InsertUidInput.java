@@ -19,6 +19,9 @@ public class Note {
     @Uid(1406015203155591783L)
     private String doNotInsert;
 
+    @Uid(-1)
+    private String generateNew;
+
     private String control;
 
 }

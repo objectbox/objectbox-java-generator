@@ -10,10 +10,10 @@ import java.util.*
  */
 // Note: make it independent from the (real) ID, it will be necessary to change ID after git conflicts.
 class UidHelper(
-        val existingUids: MutableSet<Long> = HashSet()
+        val existingUids: MutableSet<Long> = HashSet(),
+        // Use SecureRandom to better avoid conflicts when IDs are assigned in diverging git branches
+        val random: SecureRandom = SecureRandom()
 ) {
-    // Use SecureRandom to better avoid conflicts when IDs are assigned in diverging git branches
-    val random = SecureRandom();
 
     init {
         existingUids.forEach { verify(it) }

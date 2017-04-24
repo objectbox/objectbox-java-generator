@@ -2,6 +2,7 @@ package io.objectbox.codemodifier
 
 import io.objectbox.generator.BoxGenerator
 import io.objectbox.generator.idsync.IdSync
+import io.objectbox.generator.idsync.UidHelper
 import io.objectbox.generator.model.Entity
 import io.objectbox.generator.model.Schema
 import org.greenrobot.eclipse.jdt.core.JavaCore
@@ -19,7 +20,8 @@ import java.util.Hashtable
 class ObjectBoxGenerator(val formattingOptions: FormattingOptions? = null,
                          val skipTestGeneration: List<String> = emptyList(),
                          val daoCompat: Boolean = false,
-                         encoding: String = "UTF-8") {
+                         encoding: String = "UTF-8",
+                         val uidHelper: UidHelper = UidHelper()) {
 
     companion object {
         val JAVA_LEVEL: String = CompilerOptions.VERSION_1_7
@@ -120,7 +122,7 @@ class ObjectBoxGenerator(val formattingOptions: FormattingOptions? = null,
         val outputDir = options.outputDir
         val testsOutputDir = options.testsOutputDir
 
-        val idSync = IdSync(options.idModelFile)
+        val idSync = IdSync(options.idModelFile, uidHelper)
         idSync.sync(entities)
 
         // take explicitly specified package name, or package name of the first entity

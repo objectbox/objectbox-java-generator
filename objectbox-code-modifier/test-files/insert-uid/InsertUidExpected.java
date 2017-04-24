@@ -19,13 +19,17 @@ public class Note {
     @Uid(1406015203155591783L)
     private String doNotInsert;
 
+    @Uid(6127924131172114129L)
+    private String generateNew;
+
     private String control;
 
-    @Generated(hash = 1991994832)
-    public Note(Long id, String insert, String doNotInsert, String control) {
+    @Generated(hash = 1366117147)
+    public Note(Long id, String insert, String doNotInsert, String generateNew, String control) {
         this.id = id;
         this.insert = insert;
         this.doNotInsert = doNotInsert;
+        this.generateNew = generateNew;
         this.control = control;
     }
 
@@ -55,6 +59,14 @@ public class Note {
 
     public void setDoNotInsert(String doNotInsert) {
         this.doNotInsert = doNotInsert;
+    }
+
+    public String getGenerateNew() {
+        return generateNew;
+    }
+
+    public void setGenerateNew(String generateNew) {
+        this.generateNew = generateNew;
     }
 
     public String getControl() {
