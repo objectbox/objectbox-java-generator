@@ -174,14 +174,16 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
         val properties = ArrayList<Property>()
         for (parsedProperty in parsedEntity.properties) {
             val property = syncProperty(existingEntity, parsedEntity, parsedProperty, lastPropertyId)
-            if (property.modelId > lastPropertyId.id) {
+            // update last id:uid if id is bigger (new property) or id is equal and uid has changed
+            if (property.modelId > lastPropertyId.id
+                    || (property.modelId == lastPropertyId.id && property.uid != lastPropertyId.uid)) {
                 lastPropertyId.set(property.id)
             }
             properties.add(property)
         }
         properties.sortBy { it.id.id }
 
-        var sourceId = existingEntity?.id ?: lastEntityId.incId(uidHelper.create())
+        val sourceId = existingEntity?.id ?: lastEntityId.incId(uidHelper.create())
         val entity = Entity(
                 name = entityName,
                 id = sourceId.clone(),
@@ -211,7 +213,17 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
             sourceIndexId = existingProperty?.indexId ?: lastIndexId.incId(uidHelper.create())
         }
 
-        var sourceId = existingProperty?.id ?: lastPropertyId.incId(uidHelper.create())
+        val sourceId: IdUid
+        if (existingProperty?.id == null) {
+            sourceId = lastPropertyId.incId(uidHelper.create()) // create a new id + uid
+        } else if (parsedProperty.uid == -1L) {
+            // retire current uid
+            retiredPropertyUids.add(existingProperty.id.uid)
+            // create new uid + keep the id
+            sourceId = existingProperty.id.set(existingProperty.id.id, uidHelper.create())
+        } else {
+            sourceId = existingProperty.id // use existing id + uid
+        }
         val property = Property(
                 name = name,
                 id = sourceId.clone(),
@@ -250,7 +262,7 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
     }
 
     fun findProperty(entity: Entity, name: String, uid: Long?): Property? {
-        if (uid != null) {
+        if (uid != null && uid != -1L) {
             val filtered = entity.properties.filter { it.uid == uid }
             if (filtered.isEmpty()) {
                 throw IdSyncException("In entity ${entity.name}, no property with UID $uid found")
