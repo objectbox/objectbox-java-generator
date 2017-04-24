@@ -417,17 +417,22 @@ class EntityClassTransformerTest {
                 @Uid(21L)
                 private String doNotInsert;
 
+                @Uid(-1)
+                private String newUid;
+
                 private String control;
             }
             """.trimIndent())
 
         val annotatedPropertyInsert = entityClass.properties[0]
         val annotatedPropertyKeep = entityClass.properties[1]
-        val annotatedPropertyControl = entityClass.properties[2]
+        val annotatedPropertyNew = entityClass.properties[2]
+        val annotatedPropertyControl = entityClass.properties[3]
 
         val result = EntityClassTransformer(entityClass, jdtOptions, formattingOptions).apply {
             checkInsertUidAnnotationValue(annotatedPropertyInsert.astNode!!, 42)
             checkInsertUidAnnotationValue(annotatedPropertyKeep.astNode!!, 42)
+            checkInsertUidAnnotationValue(annotatedPropertyNew.astNode!!, 43)
             checkInsertUidAnnotationValue(annotatedPropertyControl.astNode!!, 42)
         }.writeToString()
 
@@ -444,6 +449,9 @@ class EntityClassTransformerTest {
 
                 @Uid(21L)
                 private String doNotInsert;
+
+                @Uid(43L)
+                private String newUid;
 
                 private String control;
             }

@@ -1,7 +1,15 @@
 package io.objectbox.codemodifier
 
 import io.objectbox.annotation.Uid
-import org.greenrobot.eclipse.jdt.core.dom.*
+import org.greenrobot.eclipse.jdt.core.dom.ASTNode
+import org.greenrobot.eclipse.jdt.core.dom.Annotation
+import org.greenrobot.eclipse.jdt.core.dom.BodyDeclaration
+import org.greenrobot.eclipse.jdt.core.dom.CompilationUnit
+import org.greenrobot.eclipse.jdt.core.dom.FieldDeclaration
+import org.greenrobot.eclipse.jdt.core.dom.MarkerAnnotation
+import org.greenrobot.eclipse.jdt.core.dom.MethodDeclaration
+import org.greenrobot.eclipse.jdt.core.dom.SingleMemberAnnotation
+import org.greenrobot.eclipse.jdt.core.dom.TypeDeclaration
 import org.greenrobot.eclipse.jdt.core.dom.rewrite.ASTRewrite
 import org.greenrobot.eclipse.jface.text.Document
 import java.nio.charset.Charset
@@ -78,17 +86,23 @@ class EntityClassTransformer(val parsedEntity: ParsedEntity, val jdtOptions: Has
     }
 
     /**
-     * If it exists, replaces a Uid marker annotation node with a single member annotation that has the given UID as
-     * value, like '@Uid' is replaced with '@Uid(42L)'.
+     * If it exists, replaces a Uid marker annotation node, such as '@Uid', or a Uid single member annotation node with
+     * value -1, such as '@Uid(-1)', with a single member annotation that has the given UID as value, such as '@Uid(42L)'.
      */
     fun checkInsertUidAnnotationValue(node: BodyDeclaration, uid: Long) {
-        // find the @Uid marker annotation node
+        // find the @Uid annotation node
         val uidAnnotation = node.modifiers().find {
-            // A MarkerAnnotation has no value, thus @Uid with values are skipped here
-            it is MarkerAnnotation && it.typeName.fullyQualifiedName == Uid::class.simpleName
-        } as MarkerAnnotation?
+            it is Annotation && it.typeName.fullyQualifiedName == Uid::class.simpleName
+        } as Annotation?
         if (uidAnnotation == null) {
-            return // field has no @Uid marker annotation
+            return // field has no @Uid annotation
+        }
+
+        // only replace a marker annotation '@Uid' or a single member annotation with value -1 '@Uid(-1)'
+        val shouldReplace = uidAnnotation is MarkerAnnotation ||
+                (uidAnnotation is SingleMemberAnnotation && AnnotationProxy<Uid>(uidAnnotation).value == -1L)
+        if (!shouldReplace) {
+            return // annotation already has a valid value
         }
 
         // create a new single member annotation such as '@Uid(42L)'
