@@ -25,8 +25,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import io.objectbox.generator.TextUtil;
 import io.objectbox.generator.IdUid;
+import io.objectbox.generator.TextUtil;
 
 /**
  * Model class for an entity: a Java data object mapped to a data base representation. A new entity is added to a {@link
@@ -37,7 +37,6 @@ import io.objectbox.generator.IdUid;
  * Entity#implementsInterface(String...)} and {@link #implementsSerializable()} to specify interfaces the entity will
  * implement</li> <li>{@link #setSuperclass(String)} to specify a class of which the entity will extend from</li>
  * <li>Various setXXX methods</li> </ul>
- *
  */
 @SuppressWarnings("unused")
 public class Entity implements HasParsedElement {
@@ -216,13 +215,6 @@ public class Entity implements HasParsedElement {
         }
 
         ToMany toMany = new ToMany(schema, this, sourceProperties, target, targetProperties);
-        toManyRelations.add(toMany);
-        target.incomingToManyRelations.add(toMany);
-        return toMany;
-    }
-
-    public ToManyWithJoinEntity addToMany(Entity target, Entity joinEntity, Property id1, Property id2) {
-        ToManyWithJoinEntity toMany = new ToManyWithJoinEntity(schema, this, target, joinEntity, id1, id2);
         toManyRelations.add(toMany);
         target.incomingToManyRelations.add(toMany);
         return toMany;
@@ -691,14 +683,6 @@ public class Entity implements HasParsedElement {
         for (ToManyBase toMany : toManyRelations) {
             Entity targetEntity = toMany.getTargetEntity();
             checkAdditionalImportsEntityTargetEntity(targetEntity);
-        }
-
-        for (ToManyBase incomingToMany : incomingToManyRelations) {
-            if (incomingToMany instanceof ToManyWithJoinEntity) {
-                final ToManyWithJoinEntity toManyWithJoinEntity = (ToManyWithJoinEntity) incomingToMany;
-                final Entity joinEntity = toManyWithJoinEntity.getJoinEntity();
-                checkAdditionalImportsDaoTargetEntity(joinEntity);
-            }
         }
 
         for (Property property : properties) {

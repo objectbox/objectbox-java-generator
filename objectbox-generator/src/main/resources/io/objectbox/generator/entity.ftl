@@ -164,9 +164,6 @@ ${property.javaDocField}
     })
 <#elseif toMany.targetProperties??>
     @ToMany(mappedBy = "${toMany.targetProperties[0]}")
-<#else>
-    @ToMany
-    @JoinEntity(entity = ${toMany.joinEntity.className}.class, sourceProperty = "${toMany.sourceProperty.propertyName}", targetProperty = "${toMany.targetProperty.propertyName}")
 </#if>
 <#assign orderSpec = (toMany.orderSpec)!"0">
 <#if orderSpec != "0">
