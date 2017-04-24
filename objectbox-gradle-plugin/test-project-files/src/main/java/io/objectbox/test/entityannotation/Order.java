@@ -31,8 +31,8 @@ public class Order {
     @Generated(hash = 975972993)
     transient BoxStore __boxStore;
     @Internal
-    @Generated(hash = 2136796894)
-    transient ToOne<Customer> customer__toOne = new ToOne<>(this, Order_._Relations.customer);
+    @Generated(hash = 1031210392)
+    transient ToOne<Customer> customer__toOne = new ToOne<>(this, Order_.customer);
 
     @Generated(hash = 1105174599)
     public Order() {

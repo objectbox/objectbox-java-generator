@@ -126,20 +126,17 @@ property.converter??>, ${property.converterClassName}.class, ${property.customTy
     }
 
 <#if entity.hasRelations() >
-    @Internal
-    static final class _Relations {
     <#list entity.toOneRelations as toOne>
-        static final RelationInfo<${toOne.targetEntity.className}> ${toOne.name} =
-            new RelationInfo<>(${toOne.sourceEntity.className}_.__INSTANCE,<#--
-        --> ${toOne.targetEntity.className}_.__INSTANCE, ${toOne.fkProperties[0].propertyName});
+    static final RelationInfo<${toOne.targetEntity.className}> ${toOne.name} =
+        new RelationInfo<>(${toOne.sourceEntity.className}_.__INSTANCE,<#--
+    --> ${toOne.targetEntity.className}_.__INSTANCE, ${toOne.fkProperties[0].propertyName});
 
     </#list>
     <#list entity.toManyRelations as toMany>
-        static final RelationInfo<${toMany.targetEntity.className}> ${toMany.name} =
-            new RelationInfo<>(${toMany.sourceEntity.className}_.__INSTANCE,<#--
-         --> ${toMany.targetEntity.className}_.__INSTANCE);
+    static final RelationInfo<${toMany.targetEntity.className}> ${toMany.name} =
+        new RelationInfo<>(${toMany.sourceEntity.className}_.__INSTANCE,<#--
+     --> ${toMany.targetEntity.className}_.__INSTANCE);
 
     </#list>
-    }
 </#if>
 }

@@ -288,7 +288,7 @@ class ObjectBoxGenerator(val formattingOptions: FormattingOptions? = null,
                     VariableType(toOne.targetEntity.className, false, toOne.targetEntity.javaPackage)
             )
             val variableType = VariableType("ToOne", false, "ToOne", toOneTypeArgs)
-            val assignment = "new ToOne<>(this, ${entity.className}_._Relations.${toOne.name})"
+            val assignment = "new ToOne<>(this, ${entity.className}_.${toOne.name})"
             transformer.defineTransientGeneratedField("${toOne.name}__toOne", variableType, null, null, assignment)
         }
     }

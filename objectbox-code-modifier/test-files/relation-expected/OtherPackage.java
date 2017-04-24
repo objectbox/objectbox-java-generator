@@ -63,8 +63,8 @@ public class OtherPackage {
     }
 
     @Internal
-    @Generated(hash = 1003586515)
-    transient ToOne<Customer> customer__toOne = new ToOne<>(this, OtherPackage_._Relations.customer);
+    @Generated(hash = 706681037)
+    transient ToOne<Customer> customer__toOne = new ToOne<>(this, OtherPackage_.customer);
 
     /** To-one relationship, resolved on first access. */
     @Generated(hash = 97719339)

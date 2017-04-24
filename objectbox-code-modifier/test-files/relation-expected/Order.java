@@ -56,8 +56,8 @@ public class Order {
     }
 
     @Internal
-    @Generated(hash = 2136796894)
-    transient ToOne<Customer> customer__toOne = new ToOne<>(this, Order_._Relations.customer);
+    @Generated(hash = 1031210392)
+    transient ToOne<Customer> customer__toOne = new ToOne<>(this, Order_.customer);
 
     /** To-one relationship, resolved on first access. */
     @Generated(hash = 97719339)
