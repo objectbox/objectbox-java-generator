@@ -56,20 +56,20 @@ public class Order {
     }
 
     @Internal
-    @Generated(hash = 22656633)
-    private transient ToOne<Customer> customer__toOne = new ToOne<>(this, Order_.Relations.customer);
+    @Generated(hash = 2136796894)
+    transient ToOne<Customer> customer__toOne = new ToOne<>(this, Order_._Relations.customer);
 
     /** To-one relationship, resolved on first access. */
-    @Generated(hash = 424372732)
+    @Generated(hash = 97719339)
     public Customer getCustomer() {
-        customer = getCustomer__toOne().getTarget(this.customerId);
+        customer = customer__toOne.getTarget(this.customerId);
         return customer;
     }
 
     /** Set the to-one relation including its ID property. */
-    @Generated(hash = 410684144)
+    @Generated(hash = 50954149)
     public void setCustomer(Customer customer) {
-        getCustomer__toOne().setTarget(customer);
+        customer__toOne.setTarget(customer);
         this.customer = customer;
     }
 

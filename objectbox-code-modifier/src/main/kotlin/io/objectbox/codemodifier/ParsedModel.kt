@@ -72,8 +72,6 @@ data class Method(
 
 data class JoinOnProperty(val source: String, val target: String)
 
-data class JoinEntitySpec(val entityName: String, val sourceIdProperty: String, val targetIdProperty: String)
-
 data class ToOneRelation(
         val variable: Variable,
         val targetIdField: String? = null,
@@ -87,7 +85,6 @@ data class ToManyRelation(
         val variable: Variable,
         val mappedBy: String? = null,
         val joinOnProperties: List<JoinOnProperty> = emptyList(),
-        val joinEntitySpec: JoinEntitySpec? = null,
         val order: List<OrderProperty>? = null,
         val astNode: FieldDeclaration? = null
 )

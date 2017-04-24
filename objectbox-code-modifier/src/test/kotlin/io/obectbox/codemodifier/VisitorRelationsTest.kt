@@ -151,35 +151,6 @@ class VisitorRelationsTest : VisitorTestBase() {
     }
 
     @Test
-    fun toManyWithJoinEntity() {
-        val entity = visit(
-                //language=java
-                """
-        package com.example;
-
-        import io.objectbox.annotation.Entity;
-        import io.objectbox.annotation.JoinEntity;
-        import io.objectbox.annotation.ToMany;
-
-        import java.util.List;
-
-        @Entity
-        class Foo {
-            String name;
-
-            @ToMany
-            @JoinEntity(entity = Foobar.class, sourceProperty = "fooId", targetProperty = "barId")
-            List<Bar> bars;
-        }
-        """, listOf("Bar", "Foobar"))!!
-        assertThat(entity.toManyRelations, equalTo(
-                listOf(ToManyRelation(Variable(BarListType, "bars"), joinEntitySpec =
-                JoinEntitySpec("com.example.Foobar", "fooId", "barId")
-                ))
-        ))
-    }
-
-    @Test
     fun toManyOrderBy() {
         val entity = visit(
                 //language=java

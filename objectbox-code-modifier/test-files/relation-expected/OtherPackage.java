@@ -63,20 +63,20 @@ public class OtherPackage {
     }
 
     @Internal
-    @Generated(hash = 218395872)
-    private transient ToOne<Customer> customer__toOne = new ToOne<>(this, OtherPackage_.Relations.customer);
+    @Generated(hash = 1003586515)
+    transient ToOne<Customer> customer__toOne = new ToOne<>(this, OtherPackage_._Relations.customer);
 
     /** To-one relationship, resolved on first access. */
-    @Generated(hash = 424372732)
+    @Generated(hash = 97719339)
     public Customer getCustomer() {
-        customer = getCustomer__toOne().getTarget(this.customerId);
+        customer = customer__toOne.getTarget(this.customerId);
         return customer;
     }
 
     /** Set the to-one relation including its ID property. */
-    @Generated(hash = 410684144)
+    @Generated(hash = 50954149)
     public void setCustomer(Customer customer) {
-        getCustomer__toOne().setTarget(customer);
+        customer__toOne.setTarget(customer);
         this.customer = customer;
     }
 

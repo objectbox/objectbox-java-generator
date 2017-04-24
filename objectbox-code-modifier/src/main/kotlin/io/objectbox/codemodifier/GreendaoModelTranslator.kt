@@ -89,7 +89,7 @@ object GreendaoModelTranslator {
     }
 
     private fun convertToOne(toOne: ToOneRelation, parsedEntity: ParsedEntity, entity: Entity, schema: Schema) {
-        val targetEntity: Entity = schema.entities.find {
+        val targetEntity: Entity = schema.entities.singleOrNull() {
             it.className == toOne.variable.type.simpleName
         } ?: throw RuntimeException("Class ${toOne.variable.type.name} marked " +
                 "with @Relation in class ${parsedEntity.name} is not an entity")
@@ -128,7 +128,7 @@ object GreendaoModelTranslator {
                 ?: throw RuntimeException("Can't create to-many relation on ${toMany.variable.name}. " +
                 "ToMany type should have specified exactly one type argument")
 
-        val targetEntity = schema.entities.find {
+        val targetEntity: Entity = schema.entities.singleOrNull() {
             it.className == targetType.simpleName
         } ?: throw RuntimeException("${targetType.name} is not an entity, but it is referenced " +
                 "for @Relation relation (field: ${toMany.variable.name})")
@@ -140,9 +140,7 @@ object GreendaoModelTranslator {
         }
 
         // Currently not support in ObjectBox:
-        val options = if (toMany.joinEntitySpec != null) 1 else 0 +
-                if (toMany.mappedBy != null) 1 else 0 +
-                        if (toMany.joinOnProperties.isNotEmpty()) 1 else 0
+        val options = if (toMany.mappedBy != null) 1 else 0 + if (toMany.joinOnProperties.isNotEmpty()) 1 else 0
         if (options != 1) {
             throw RuntimeException("Can't create to-many relation on ${toMany.variable.name}. " +
                     "Either referencedJoinProperty, joinProperties or @JoinEntity must be used to describe the relation")
@@ -164,24 +162,7 @@ object GreendaoModelTranslator {
                     name = toMany.variable.name
                 }
             }
-        // Currently not supported by ObjectBox TODO remove to simplify
-            else -> {
-                if (toMany.joinEntitySpec == null) {
-                    throw RuntimeException("Unknown @ToMany relation type")
-                }
-                val spec = toMany.joinEntitySpec
-                val joinEntity = schema.entities.singleOrNull() {
-                    it.className == spec.entityName
-                } ?: throw RuntimeException("Can't find join entity with name ${spec.entityName}")
-                entity.addToMany(
-                        targetEntity,
-                        joinEntity,
-                        joinEntity.findProperty(spec.sourceIdProperty),
-                        joinEntity.findProperty(spec.targetIdProperty)
-                ).apply {
-                    name = toMany.variable.name
-                }
-            }
+            else -> throw RuntimeException("Insufficient relation info for $toMany")
         }
         if (toMany.order != null) {
             if (toMany.order.size > 0) {
