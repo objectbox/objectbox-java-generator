@@ -114,7 +114,14 @@ public final class ${entity.classNameDao} extends Cursor<${entity.className}> {
     @Override
     public final long put(${entity.className} entity) {
 <#list entity.toOneRelations as toOne>
-        entity.${toOne.name}__toOne.internalPrepareForPut(boxStoreForEntities);
+        if(entity.${toOne.name}__toOne.internalRequiresPutTarget()) {
+            Cursor<${toOne.targetEntity.className}> targetCursor = getRelationTargetCursor(${toOne.targetEntity.className}.class);
+            try {
+                entity.${toOne.name}__toOne.internalPutTarget(targetCursor);
+            } finally {
+                targetCursor.close();
+            }
+        }
 </#list>
 ${propertyCollector}
     }
