@@ -122,7 +122,7 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
     override fun visit(node: FieldDeclaration): Boolean = isEntity
 
     override fun endVisit(node: FieldDeclaration) {
-        // TODO why a list here? We have one type, how can we have more than one name??
+        // There can be multiple variables defined like "int a, b, c" and thus we need to operate on lists here.
         val variableNames = node.fragments()
                 .filter { it is VariableDeclarationFragment }
                 .map { it as VariableDeclarationFragment }.map { it.name }
