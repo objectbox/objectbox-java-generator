@@ -31,8 +31,8 @@ class VisitorRelationsTest : VisitorTestBase() {
             Bar bar;
         }
         """, listOf("Bar"))!!
-        assertThat(entity.oneRelations, equalTo(
-                listOf(OneRelation(Variable(BarType, "bar"), foreignKeyField = "barId"))
+        assertThat(entity.toOneRelations, equalTo(
+                listOf(ToOneRelation(Variable(BarType, "bar"), targetIdField = "barId"))
         ))
     }
 
@@ -56,8 +56,8 @@ class VisitorRelationsTest : VisitorTestBase() {
             Bar bar;
         }
         """, listOf("Bar"))!!
-        assertThat(entity.oneRelations, equalTo(
-                listOf(OneRelation(Variable(BarType, "bar")))
+        assertThat(entity.toOneRelations, equalTo(
+                listOf(ToOneRelation(Variable(BarType, "bar")))
         ))
     }
 
@@ -82,12 +82,11 @@ class VisitorRelationsTest : VisitorTestBase() {
             @ToOne
             @Unique
             @NotNull
-            @Property(nameInDb = "BAR_ID")
             Bar bar;
         }
         """, listOf("Bar"))!!
-        assertThat(entity.oneRelations, equalTo(
-                listOf(OneRelation(Variable(BarType, "bar"), columnName = "BAR_ID", isNotNull = true, unique = true))
+        assertThat(entity.toOneRelations, equalTo(
+                listOf(ToOneRelation(Variable(BarType, "bar"), isNotNull = true, unique = true))
         ))
     }
 
@@ -111,8 +110,8 @@ class VisitorRelationsTest : VisitorTestBase() {
             List<Bar> bars;
         }
         """, listOf("Bar"))!!
-        assertThat(entity.manyRelations, equalTo(
-                listOf(ManyRelation(Variable(BarListType, "bars"), mappedBy = "barId"))
+        assertThat(entity.toManyRelations, equalTo(
+                listOf(ToManyRelation(Variable(BarListType, "bars"), mappedBy = "barId"))
         ))
     }
 
@@ -143,8 +142,8 @@ class VisitorRelationsTest : VisitorTestBase() {
             List<Bar> bars;
         }
         """, listOf("Bar"))!!
-        assertThat(entity.manyRelations, equalTo(
-                listOf(ManyRelation(Variable(BarListType, "bars"), joinOnProperties = listOf(
+        assertThat(entity.toManyRelations, equalTo(
+                listOf(ToManyRelation(Variable(BarListType, "bars"), joinOnProperties = listOf(
                         JoinOnProperty("barId", "id"),
                         JoinOnProperty("barSubId", "subId")
                 )))
@@ -173,8 +172,8 @@ class VisitorRelationsTest : VisitorTestBase() {
             List<Bar> bars;
         }
         """, listOf("Bar", "Foobar"))!!
-        assertThat(entity.manyRelations, equalTo(
-                listOf(ManyRelation(Variable(BarListType, "bars"), joinEntitySpec =
+        assertThat(entity.toManyRelations, equalTo(
+                listOf(ToManyRelation(Variable(BarListType, "bars"), joinEntitySpec =
                 JoinEntitySpec("com.example.Foobar", "fooId", "barId")
                 ))
         ))
@@ -203,8 +202,8 @@ class VisitorRelationsTest : VisitorTestBase() {
             List<Bar> bars;
         }
         """, listOf("Bar"))!!
-        assertThat(entity.manyRelations, equalTo(
-                listOf(ManyRelation(Variable(BarListType, "bars"), mappedBy = "barId",
+        assertThat(entity.toManyRelations, equalTo(
+                listOf(ToManyRelation(Variable(BarListType, "bars"), mappedBy = "barId",
                         order = listOf(OrderProperty("date", Order.ASC), OrderProperty("likes", Order.DESC))
                 ))
         ))

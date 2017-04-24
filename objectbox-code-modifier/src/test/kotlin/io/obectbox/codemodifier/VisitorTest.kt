@@ -53,8 +53,8 @@ class VisitorTest : VisitorTestBase() {
         assertThat(entity.transientFields, isEmpty)
         assertThat(entity.methods, isEmpty)
         assertThat(entity.constructors, isEmpty)
-        assertThat(entity.oneRelations, isEmpty)
-        assertThat(entity.manyRelations, isEmpty)
+        assertThat(entity.toOneRelations, isEmpty)
+        assertThat(entity.toManyRelations, isEmpty)
     }
 
     @Test

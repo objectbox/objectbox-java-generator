@@ -91,13 +91,13 @@ class ObjectBoxGenerator(val formattingOptions: FormattingOptions? = null,
     private fun parse2ndPass(parsedEntities: List<ParsedEntity>) {
         // val parsedEntitiesByName = parsedEntities.groupBy { it.dbName ?: it.name }
         parsedEntities.forEach { parsedEntity ->
-            parsedEntity.oneRelations.forEach { toOne ->
-                val idName = toOne.foreignKeyField ?: throw RuntimeException("Unnamed idProperty for to-one " +
+            parsedEntity.toOneRelations.forEach { toOne ->
+                val idName = toOne.targetIdField ?: throw RuntimeException("Unnamed idProperty for to-one " +
                         "@Relation")
                 var parsedProperty: ParsedProperty? = parsedEntity.properties.find { it.variable.name == idName }
                 if (parsedProperty == null) {
                     if (parsedEntity.keepSource) {
-                        throw RuntimeException("No idProperty available with the name \"${toOne.foreignKeyField}\"" +
+                        throw RuntimeException("No idProperty available with the name \"${toOne.targetIdField}\"" +
                                 " (needed for @Relation)")
                     } else {
                         // Property does not exist yet, adding it to parsedEntity.propertiesToGenerate will take care
@@ -128,7 +128,7 @@ class ObjectBoxGenerator(val formattingOptions: FormattingOptions? = null,
         schema.lastEntityId = idSync.lastEntityId
         schema.lastIndexId = idSync.lastIndexId
         val mapping: Map<ParsedEntity, Entity> =
-                GreendaoModelTranslator.translate(entities, schema, options.daoPackage, idSync)
+                GreendaoModelTranslator.convert(entities, schema, options.daoPackage, idSync)
 
         if (skipTestGeneration.isNotEmpty()) {
             schema.entities.forEach { e ->
@@ -284,18 +284,12 @@ class ObjectBoxGenerator(val formattingOptions: FormattingOptions? = null,
                 Templates.entity.oneRelationGetter(toOne, entity)
             }
 
-            transformer.defMethod(getterName + "__toOne") {
-                Templates.entity.oneRelationToOneGetter(toOne, entity)
-            }
-
             val toOneTypeArgs = listOf(
                     VariableType(toOne.targetEntity.className, false, toOne.targetEntity.javaPackage)
             )
             val variableType = VariableType("ToOne", false, "ToOne", toOneTypeArgs)
-            val assignment = null
-            //val assignment = "new ToOne<>(this, ${entity.className}_.${relationIdProperty.propertyName}, " +
-            //        toOne.targetEntity.className + ".class)"
-            transformer.defineTransientGeneratedField("${toOne.name}__toOne", variableType, null, "private", assignment)
+            val assignment = "new ToOne<>(this, ${entity.className}_._Relations.${toOne.name})"
+            transformer.defineTransientGeneratedField("${toOne.name}__toOne", variableType, null, null, assignment)
         }
     }
 

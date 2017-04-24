@@ -23,7 +23,7 @@ import io.objectbox.generator.TextUtil;
 
 /** Model class for an entity's property: a Java property mapped to a data base representation. */
 @SuppressWarnings("unused")
-public class Property {
+public class Property implements HasParsedElement {
 
     public static class PropertyBuilder {
         private final Property property;
@@ -239,6 +239,8 @@ public class Property {
     private String javaType;
 
     private boolean nonDefaultDbName;
+
+    private Object parsedElement;
 
     /**
      * Index, which has only this property
@@ -495,6 +497,14 @@ public class Property {
 
     void init3ndPass() {
         // Nothing to do so far
+    }
+
+    public Object getParsedElement() {
+        return parsedElement;
+    }
+
+    public void setParsedElement(Object parsedElement) {
+        this.parsedElement = parsedElement;
     }
 
     @Override

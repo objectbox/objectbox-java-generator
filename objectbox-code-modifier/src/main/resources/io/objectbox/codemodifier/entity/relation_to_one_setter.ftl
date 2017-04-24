@@ -8,6 +8,6 @@ public void set${toOne.name?cap_first}(<#if false && toOne.fkProperties[0].notNu
         throw new DbException("To-one property '${toOne.fkProperties[0].propertyName}' has not-null constraint; cannot set to-one to null");
     }
 </#if>
-    get${toOne.name?cap_first}__toOne().setTarget(${toOne.name});
+    ${toOne.name}__toOne.setTarget(${toOne.name});
     this.${toOne.name} = ${toOne.name};
 }

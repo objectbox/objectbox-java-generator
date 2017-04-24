@@ -31,8 +31,8 @@ public class Order {
     @Generated(hash = 975972993)
     transient BoxStore __boxStore;
     @Internal
-    @Generated(hash = 35245611)
-    private transient ToOne<Customer> customer__toOne;
+    @Generated(hash = 2136796894)
+    transient ToOne<Customer> customer__toOne = new ToOne<>(this, Order_._Relations.customer);
 
     @Generated(hash = 1105174599)
     public Order() {
@@ -87,26 +87,17 @@ public class Order {
     }
 
     /** To-one relationship, resolved on first access. */
-    @Generated(hash = 424372732)
+    @Generated(hash = 97719339)
     public Customer getCustomer() {
-        customer = getCustomer__toOne().getTarget(this.customerId);
+        customer = customer__toOne.getTarget(this.customerId);
         return customer;
     }
 
     /** Set the to-one relation including its ID property. */
-    @Generated(hash = 410684144)
+    @Generated(hash = 50954149)
     public void setCustomer(Customer customer) {
-        getCustomer__toOne().setTarget(customer);
+        customer__toOne.setTarget(customer);
         this.customer = customer;
-    }
-
-    /** See {@link io.objectbox.relation.ToOne} for details. */
-    @Generated(hash = 310001897)
-    public synchronized ToOne<Customer> getCustomer__toOne() {
-        if (customer__toOne == null) {
-            customer__toOne = new ToOne<>(this, Order_.customerId, Customer.class);
-        }
-        return customer__toOne;
     }
 
 }

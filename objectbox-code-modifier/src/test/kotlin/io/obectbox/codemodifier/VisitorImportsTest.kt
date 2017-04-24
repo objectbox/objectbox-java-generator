@@ -54,7 +54,7 @@ class VisitorImportsTest : VisitorTestBase() {
         }
         """, listOf("Bar"))!!
 
-        Assert.assertEquals(BarType, entity.oneRelations[0].variable.type)
+        Assert.assertEquals(BarType, entity.toOneRelations[0].variable.type)
     }
 
     @Test
@@ -79,7 +79,7 @@ class VisitorImportsTest : VisitorTestBase() {
         }
         """, listOf("Bar"))!!
 
-        Assert.assertEquals(BarItemType, entity.oneRelations[0].variable.type)
+        Assert.assertEquals(BarItemType, entity.toOneRelations[0].variable.type)
     }
 
     @Test
@@ -105,7 +105,7 @@ class VisitorImportsTest : VisitorTestBase() {
         """)!!
 
         val fullBarItemType = VariableType("com.example.Bar.Item", false, "com.example.Bar.Item")
-        Assert.assertEquals(fullBarItemType, entity.oneRelations[0].variable.type)
+        Assert.assertEquals(fullBarItemType, entity.toOneRelations[0].variable.type)
     }
 
     @Test
@@ -131,7 +131,7 @@ class VisitorImportsTest : VisitorTestBase() {
         """)!!
 
         val fullBarType = VariableType("com.example.Bar", false, "com.example.Bar")
-        Assert.assertEquals(fullBarType, entity.oneRelations[0].variable.type)
+        Assert.assertEquals(fullBarType, entity.toOneRelations[0].variable.type)
     }
 
 }

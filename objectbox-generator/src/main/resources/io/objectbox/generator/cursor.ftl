@@ -114,7 +114,7 @@ public final class ${entity.classNameDao} extends Cursor<${entity.className}> {
     @Override
     public final long put(${entity.className} entity) {
 <#list entity.toOneRelations as toOne>
-        entity.get${toOne.name?cap_first}__toOne().internalPrepareForPut(boxStoreForEntities);
+        entity.${toOne.name}__toOne.internalPrepareForPut(boxStoreForEntities);
 </#list>
 ${propertyCollector}
     }

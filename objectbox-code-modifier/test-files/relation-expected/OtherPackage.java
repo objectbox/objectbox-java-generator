@@ -63,17 +63,8 @@ public class OtherPackage {
     }
 
     @Internal
-    @Generated(hash = 35245611)
-    private transient ToOne<Customer> customer__toOne;
-
-    /** See {@link io.objectbox.relation.ToOne} for details. */
-    @Generated(hash = 1398841471)
-    public synchronized ToOne<Customer> getCustomer__toOne() {
-        if (customer__toOne == null) {
-            customer__toOne = new ToOne<>(this, OtherPackage_.customerId, Customer.class);
-        }
-        return customer__toOne;
-    }
+    @Generated(hash = 218395872)
+    private transient ToOne<Customer> customer__toOne = new ToOne<>(this, OtherPackage_.Relations.customer);
 
     /** To-one relationship, resolved on first access. */
     @Generated(hash = 424372732)

@@ -130,16 +130,14 @@ property.converter??>, ${property.converterClassName}.class, ${property.customTy
     static final class _Relations {
     <#list entity.toOneRelations as toOne>
         static final RelationInfo<${toOne.targetEntity.className}> ${toOne.name} =
-            new RelationInfo<>(${toOne.sourceEntity.className}.class,<#--
-        --> ${toOne.fkProperties[0].propertyName}, ${toOne.targetEntity.className}.class,<#--
-        --> ${toOne.targetEntity.className}_.__ID_GETTER);
+            new RelationInfo<>(${toOne.sourceEntity.className}_.__INSTANCE,<#--
+        --> ${toOne.targetEntity.className}_.__INSTANCE, ${toOne.fkProperties[0].propertyName});
 
     </#list>
     <#list entity.toManyRelations as toMany>
         static final RelationInfo<${toMany.targetEntity.className}> ${toMany.name} =
-            new RelationInfo<>(${toMany.sourceEntity.className}.class,<#--
-         --> null, ${toMany.targetEntity.className}.class,<#--
-         --> ${toMany.targetEntity.className}_.__ID_GETTER);
+            new RelationInfo<>(${toMany.sourceEntity.className}_.__INSTANCE,<#--
+         --> ${toMany.targetEntity.className}_.__INSTANCE);
 
     </#list>
     }

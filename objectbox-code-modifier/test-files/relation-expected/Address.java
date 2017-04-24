@@ -56,17 +56,8 @@ public class Address {
     }
 
     @Internal
-    @Generated(hash = 35245611)
-    private transient ToOne<Customer> customer__toOne;
-
-    /** See {@link io.objectbox.relation.ToOne} for details. */
-    @Generated(hash = 1394863534)
-    public synchronized ToOne<Customer> getCustomer__toOne() {
-        if (customer__toOne == null) {
-            customer__toOne = new ToOne<>(this, Address_.customerId, Customer.class);
-        }
-        return customer__toOne;
-    }
+    @Generated(hash = 426595248)
+    private transient ToOne<Customer> customer__toOne = new ToOne<>(this, Address_.Relations.customer);
 
     /** To-one relationship, resolved on first access. */
     @Generated(hash = 424372732)

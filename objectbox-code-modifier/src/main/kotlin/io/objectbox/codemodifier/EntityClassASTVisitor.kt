@@ -21,8 +21,8 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
     var packageName: String? = null
     var entityDbName: String? = null
     var typeDeclaration: TypeDeclaration? = null
-    val oneRelations = mutableListOf<OneRelation>()
-    val manyRelations = mutableListOf<ManyRelation>()
+    val oneRelations = mutableListOf<ToOneRelation>()
+    val manyRelations = mutableListOf<ToManyRelation>()
     var active = false
     var keepSource = false
     var createTable = true
@@ -131,8 +131,7 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
         // check how the field(s) should be treated
         val annotations = fieldAnnotations
         if (annotations.any { it.typeName.fullyQualifiedName == "Transient" }
-                || Modifier.isTransient(node.modifiers)
-                || Modifier.isStatic(node.modifiers)) {
+                || Modifier.isTransient(node.modifiers) || Modifier.isStatic(node.modifiers)) {
             // field is considered transient (@Transient, transient or static)
             val generatorHint = annotations.generatorHint
             if (generatorHint != null) {
@@ -144,6 +143,8 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
             transientFields += variableNames.map {
                 TransientField(Variable(variableType, it.toString()), node, generatorHint)
             }
+        } else if (variableType.name == "io.objectbox.relation.ToOne") {
+            // TODO
         } else if (annotations.has<Relation>()) {
             if (variableType.name == "java.util.List") {
                 manyRelations += variableNames.map { parseRelationToMany(annotations, it, variableType) }
@@ -210,24 +211,23 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
     }
 
 
-    private fun parseRelationToOne(fa: MutableList<Annotation>, fieldName: SimpleName,
-                                   variableType: VariableType): OneRelation {
+    private fun parseRelationToOne(fa: MutableList<Annotation>, fieldName: SimpleName, variableType: VariableType)
+            : ToOneRelation {
         val proxy = fa.proxy<Relation>()!!
-        return OneRelation(
+        return ToOneRelation(
                 variable = Variable(variableType, fieldName.toString()),
                 // In ObjectBox, we always use a id property (at least for now), defaults to name + "Id" if absent
-                foreignKeyField = proxy.idProperty.nullIfBlank() ?: fieldName.toString() + "Id",
-                columnName = fa.proxy<Property>()?.nameInDb?.nullIfBlank(),
+                targetIdField = proxy.idProperty.nullIfBlank() ?: fieldName.toString() + "Id",
                 isNotNull = fa.hasNotNull,
                 unique = false //fa.has<Unique>()
         )
     }
 
-    private fun parseRelationToMany(fa: MutableList<Annotation>, fieldName: SimpleName,
-                                    variableType: VariableType): ManyRelation {
+    private fun parseRelationToMany(fa: MutableList<Annotation>, fieldName: SimpleName, variableType: VariableType)
+            : ToManyRelation {
         val proxy = fa.proxy<Relation>()!!
 //        val orderByAnnotation = fa.proxy<OrderBy>()
-        return ManyRelation(
+        return ToManyRelation(
                 variable = Variable(variableType, fieldName.toString()),
                 mappedBy = proxy.idProperty.nullIfBlank()
 //                ,joinOnProperties = proxy.joinProperties.map { JoinOnProperty(it.name, it.referencedName) },
@@ -385,8 +385,8 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
                     packageName = packageName ?: "",
                     dbName = entityDbName,
                     uid = if (entityUid != null && entityUid != 0L) entityUid else null,
-                    oneRelations = oneRelations,
-                    manyRelations = manyRelations,
+                    toOneRelations = oneRelations,
+                    toManyRelations = manyRelations,
                     sourceFile = javaFile,
                     source = source,
                     keepSource = keepSource,

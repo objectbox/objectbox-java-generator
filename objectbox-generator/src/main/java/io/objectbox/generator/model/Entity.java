@@ -38,11 +38,9 @@ import io.objectbox.generator.IdUid;
  * implement</li> <li>{@link #setSuperclass(String)} to specify a class of which the entity will extend from</li>
  * <li>Various setXXX methods</li> </ul>
  *
- * @see <a href="http://greendao-orm.com/documentation/modelling-entities/">Modelling Entities (Documentation page)</a>
- * @see <a href="http://greendao-orm.com/documentation/relations/">Relations (Documentation page)</a>
  */
 @SuppressWarnings("unused")
-public class Entity {
+public class Entity implements HasParsedElement {
     private final Schema schema;
     private final String className;
     private Integer modelId;
@@ -83,6 +81,7 @@ public class Entity {
     private boolean skipCreationInDb;
     private Boolean active;
     private Boolean hasKeepSections;
+    private Object parsedElement;
 
     Entity(Schema schema, String className) {
         this.schema = schema;
@@ -752,6 +751,14 @@ public class Entity {
 
     public boolean isNonDefaultDbName() {
         return nonDefaultDbName;
+    }
+
+    public Object getParsedElement() {
+        return parsedElement;
+    }
+
+    public void setParsedElement(Object parsedElement) {
+        this.parsedElement = parsedElement;
     }
 
     @Override

@@ -20,7 +20,7 @@ package io.objectbox.generator.model;
 
 /** To-one relationship from a source entity to one (or zero) target entity. */
 @SuppressWarnings("unused")
-public class ToOne {
+public class ToOne implements HasParsedElement {
     private final Schema schema;
     private final Entity sourceEntity;
     private final Entity targetEntity;
@@ -29,6 +29,9 @@ public class ToOne {
     private final boolean[] resolvedKeyUseEquals;
     private String name;
     private final boolean useFkProperty;
+
+    // A parser (like JDT or Java annotation processor) may use this optional element for its own purpose.
+    private Object parsedElement;
 
     public ToOne(Schema schema, Entity sourceEntity, Entity targetEntity, Property[] fkProperties, boolean useFkProperty) {
         this.schema = schema;
@@ -125,6 +128,14 @@ public class ToOne {
                 break;
         }
         return useEquals;
+    }
+
+    public Object getParsedElement() {
+        return parsedElement;
+    }
+
+    public void setParsedElement(Object parsedElement) {
+        this.parsedElement = parsedElement;
     }
 
     @Override
