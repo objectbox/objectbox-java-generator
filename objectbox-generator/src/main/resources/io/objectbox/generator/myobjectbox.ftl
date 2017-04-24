@@ -51,7 +51,7 @@ public class MyObjectBox {
     public static BoxStoreBuilder builder() {
         BoxStoreBuilder builder = new BoxStoreBuilder(getModel());
 <#list schema.entities as entity>
-        builder.entity(new ${entity.className}_());
+        builder.entity(${entity.className}_.__INSTANCE);
 </#list>
         return builder;
     }
