@@ -4,6 +4,7 @@ import io.objectbox.annotation.Entity;
 import io.objectbox.annotation.Generated;
 import io.objectbox.annotation.Id;
 import io.objectbox.annotation.Property;
+import io.objectbox.annotation.Uid;
 
 @Entity
 @Uid(3030961966062954432L)
@@ -15,7 +16,7 @@ public class Note {
     @Uid(3564132052700598090L)
     private String insert;
 
-    @Uid(21L)
+    @Uid(1406015203155591783L)
     private String doNotInsert;
 
     private String control;
