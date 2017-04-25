@@ -2,8 +2,10 @@ package io.obectbox.codemodifier
 
 import io.objectbox.codemodifier.FormattingOptions
 import io.objectbox.codemodifier.ObjectBoxGenerator
+import io.objectbox.codemodifier.ParsedEntity
 import io.objectbox.codemodifier.SchemaOptions
 import io.objectbox.generator.idsync.IdSync
+import io.objectbox.generator.idsync.IdSyncModel
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
@@ -78,30 +80,30 @@ class ObjectBoxGeneratorTest {
         val baseFileName = "insert-uid/ChangeUid"
         val actualFile = generateFile(baseFileName)
 
-        val propertyName = "generateNew"
-        val newIndex = 4
-        val originalUid = 1661365307719275952
-
-        // assert entity class
         val parsedEntity = tryParseEntity(actualFile!!.readText())
         assertNotNull("Parsing updated entity failed.", parsedEntity)
-        val parsedProperty = parsedEntity!!.properties.find { it.variable.name == propertyName }
-        assertNotNull("Could not find test property in entity.", parsedProperty)
-
-        // UID for property should not be -1, not be original UID
-        assertTrue(parsedProperty!!.uid != -1L)
-        assertTrue(parsedProperty.uid != originalUid)
-
-        // assert model
         val model = IdSync(schemaOptions.idModelFile).justRead()
         assertNotNull("Reading updated model failed.", model)
-        val entity = model!!.entities.first()
-        val property = entity.properties.find { it.name == propertyName }
-        assertNotNull("Could not find test property in model.", property)
 
-        assertTrue("id should change", property!!.modelId == newIndex)
-        assertTrue("uid should change", property.uid != originalUid)
-        assertTrue("old uid should be retired", model.retiredPropertyUids!!.contains(originalUid))
+        assertProperty(model!!, parsedEntity!!, "generateNew", 5, 1661365307719275952)
+        assertProperty(model, parsedEntity, "generateNewWithIndex", 6, 5183165565872484426)
+    }
+
+    private fun assertProperty(model: IdSyncModel, parsedEntity: ParsedEntity, name: String, idExpected: Int,
+                               uidOriginal: Long) {
+        val parsedProperty = parsedEntity.properties.find { it.variable.name == name }
+        assertNotNull("Could not find $name in entity.", parsedProperty)
+
+        assertTrue("$name @Uid value should no longer be -1", parsedProperty!!.uid != -1L)
+        assertTrue("$name @Uid value should change", parsedProperty.uid != uidOriginal)
+
+        val entity = model.entities.first()
+        val property = entity.properties.find { it.name == name }
+        assertNotNull("Could not find $name in model.", property)
+
+        assertTrue("$name id should change", property!!.modelId == idExpected)
+        assertTrue("$name uid should change", property.uid != uidOriginal)
+        assertTrue("$name old uid should be retired", model.retiredPropertyUids!!.contains(uidOriginal))
     }
 
     // NOTE: test may output multiple failed files, make sure to scroll up :)

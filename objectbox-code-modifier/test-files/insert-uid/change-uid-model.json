@@ -5,7 +5,7 @@
   "entities": [
     {
       "id": "1:3030961966062954432",
-      "lastPropertyId": "3:1661365307719275952",
+      "lastPropertyId": "4:5900839708219325784",
       "name": "Note",
       "properties": [
         {
@@ -13,18 +13,23 @@
           "name": "id"
         },
         {
-          "id": "2:5900839708219325784",
-          "name": "control"
+          "id": "2:1661365307719275952",
+          "name": "generateNew"
         },
         {
-          "id": "3:1661365307719275952",
-          "name": "generateNew"
+          "id": "3:5183165565872484426",
+          "indexId": "1:372830150263263690",
+          "name": "generateNewWithIndex"
+        },
+        {
+          "id": "4:5900839708219325784",
+          "name": "control"
         }
       ]
     }
   ],
   "lastEntityId": "1:3030961966062954432",
-  "lastIndexId": "0:0",
+  "lastIndexId": "1:372830150263263690",
   "lastSequenceId": "0:0",
   "modelVersion": 2,
   "retiredEntityUids": [],
