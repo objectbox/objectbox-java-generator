@@ -34,14 +34,6 @@ import io.objectbox.Cursor;
 import io.objectbox.Transaction;
 import io.objectbox.annotation.apihint.Internal;
 import io.objectbox.internal.CursorFactory;
-<#if entity.toOneRelations?has_content>
-</#if>
-<#if entity.incomingToManyRelations?has_content>
-<#-- TODO
-import io.objectbox.query.Query;
-import io.objectbox.query.QueryBuilder;
--->
-</#if>
 
 <#if entity.javaPackageDao != schema.defaultJavaPackageDao>
 //import ${schema.defaultJavaPackageDao}.${schema.prefix}DaoSession;
@@ -133,38 +125,4 @@ ${propertyCollector}
 
 </#if>
 
-<#list entity.incomingToManyRelations as toMany>
-    /** Internal query to resolve the "${toMany.name}" to-many relationship of ${toMany.sourceEntity.className}. */
-    /* TODO
-    public List<${toMany.targetEntity.className}> _query${toMany.sourceEntity.className?cap_first}_${toMany.name?cap_first}(<#--
-    --><#if toMany.targetProperties??><#list toMany.targetProperties as property><#--
-    -->${property.javaType} ${property.propertyName}<#if property_has_next>, </#if></#list><#else><#--
-    -->${toMany.sourceProperty.javaType} ${toMany.sourceProperty.propertyName}</#if>) {
-        synchronized (this) {
-            if (${toMany.sourceEntity.className?uncap_first}_${toMany.name?cap_first}Query == null) {
-                QueryBuilder<${toMany.targetEntity.className}> queryBuilder = queryBuilder();
-<#if toMany.targetProperties??>
-    <#list toMany.targetProperties as property>
-                queryBuilder.where(Properties.${property.propertyName}.eq(null));
-    </#list>
-</#if>
-<#if toMany.order?has_content>
-                queryBuilder.orderRaw("${toMany.order}");
-</#if>
-                ${toMany.sourceEntity.className?uncap_first}_${toMany.name?cap_first}Query = queryBuilder.build();
-            }
-        }
-        Query<${toMany.targetEntity.className}> query = ${toMany.sourceEntity.className?uncap_first}_${toMany.name?cap_first}Query.forCurrentThread();
-<#if toMany.targetProperties??>
-    <#list toMany.targetProperties as property>
-        query.setParameter(${property_index}, ${property.propertyName});
-    </#list>
-<#else>
-        query.setParameter(0, ${toMany.sourceProperty.propertyName});
-</#if>
-        return query.list();
-    }
-    */
-
-</#list>   
 }
