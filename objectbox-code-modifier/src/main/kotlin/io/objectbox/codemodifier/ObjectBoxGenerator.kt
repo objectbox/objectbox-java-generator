@@ -270,9 +270,9 @@ class ObjectBoxGenerator(val formattingOptions: FormattingOptions? = null,
         // add everything in reverse as transformer writes in reverse direction
         entity.toOneRelations.reversed().forEach { toOne ->
             // define methods
-            val relationIdProperty = toOne.fkProperties[0]
+            val targetIdProperty = toOne.targetIdProperty
             transformer.defMethod("set${toOne.name.capitalize()}", toOne.targetEntity.className) {
-                if (parsedEntity.notNullAnnotation == null && relationIdProperty.isNotNull) {
+                if (parsedEntity.notNullAnnotation == null && targetIdProperty.isNotNull) {
                     // Not yet supported
                     //transformer.ensureImport("io.objectbox.annotation.NotNull")
                 }

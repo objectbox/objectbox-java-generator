@@ -224,14 +224,13 @@ public class Entity implements HasParsedElement {
      * Adds a to-one relationship to the given target entity using the given given foreign key property (which belongs
      * to this entity).
      */
-    public ToOne addToOne(Entity target, Property fkProperty) {
+    public ToOne addToOne(Entity target, Property targetIdProperty) {
         if (protobuf) {
             throw new IllegalStateException("Protobuf entities do not support realtions, currently");
         }
 
-        Property[] fkProperties = {fkProperty};
-        fkProperty.convertToRelationId(target);
-        ToOne toOne = new ToOne(schema, this, target, fkProperties, true);
+        targetIdProperty.convertToRelationId(target);
+        ToOne toOne = new ToOne(schema, this, target, targetIdProperty, true);
         toOneRelations.add(toOne);
         return toOne;
     }
@@ -257,9 +256,8 @@ public class Entity implements HasParsedElement {
             propertyBuilder.unique();
         }
         propertyBuilder.dbName(fkColumnName);
-        Property column = propertyBuilder.getProperty();
-        Property[] fkColumns = {column};
-        ToOne toOne = new ToOne(schema, this, target, fkColumns, false);
+        Property targetIdProperty = propertyBuilder.getProperty();
+        ToOne toOne = new ToOne(schema, this, target, targetIdProperty, false);
         toOne.setName(name);
         toOneRelations.add(toOne);
         return toOne;
@@ -549,11 +547,9 @@ public class Entity implements HasParsedElement {
         propertiesColumns = new ArrayList<>(properties);
         for (ToOne toOne : toOneRelations) {
             toOne.init2ndPass();
-            Property[] fkProperties = toOne.getFkProperties();
-            for (Property fkProperty : fkProperties) {
-                if (!propertiesColumns.contains(fkProperty)) {
-                    propertiesColumns.add(fkProperty);
-                }
+            Property targetIdProperty = toOne.getTargetIdProperty();
+                if (!propertiesColumns.contains(targetIdProperty)) {
+                    propertiesColumns.add(targetIdProperty);
             }
         }
 

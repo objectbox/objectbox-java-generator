@@ -24,23 +24,20 @@ public class ToOne implements HasParsedElement {
     private final Schema schema;
     private final Entity sourceEntity;
     private final Entity targetEntity;
-    private final Property[] fkProperties;
-    private final String[] resolvedKeyJavaType;
-    private final boolean[] resolvedKeyUseEquals;
+    private final Property targetIdProperty;
+
+    private String resolvedKeyJavaType;
+    private boolean resolvedKeyUseEquals;
     private String name;
     private final boolean useFkProperty;
-
-    // A parser (like JDT or Java annotation processor) may use this optional element for its own purpose.
     private Object parsedElement;
 
-    public ToOne(Schema schema, Entity sourceEntity, Entity targetEntity, Property[] fkProperties, boolean useFkProperty) {
+    public ToOne(Schema schema, Entity sourceEntity, Entity targetEntity, Property targetIdProperty, boolean useFkProperty) {
         this.schema = schema;
         this.sourceEntity = sourceEntity;
         this.targetEntity = targetEntity;
-        this.fkProperties = fkProperties;
+        this.targetIdProperty = targetIdProperty;
         this.useFkProperty = useFkProperty;
-        resolvedKeyJavaType = new String[fkProperties.length];
-        resolvedKeyUseEquals = new boolean[fkProperties.length];
     }
 
     public Entity getSourceEntity() {
@@ -51,15 +48,15 @@ public class ToOne implements HasParsedElement {
         return targetEntity;
     }
 
-    public Property[] getFkProperties() {
-        return fkProperties;
+    public Property getTargetIdProperty() {
+        return targetIdProperty;
     }
 
-    public String[] getResolvedKeyJavaType() {
+    public String getResolvedKeyJavaType() {
         return resolvedKeyJavaType;
     }
 
-    public boolean[] getResolvedKeyUseEquals() {
+    public boolean getResolvedKeyUseEquals() {
         return resolvedKeyUseEquals;
     }
 
@@ -85,31 +82,23 @@ public class ToOne implements HasParsedElement {
             nameCharArray[0] = Character.toLowerCase(nameCharArray[0]);
             name = new String(nameCharArray);
         }
-
     }
 
     /** Constructs fkColumns. Depends on 2nd pass of target key properties. */
     void init3ndPass() {
-
-        Property targetPkProperty = targetEntity.getPkProperty();
-        if (fkProperties.length != 1 || targetPkProperty == null) {
-            throw new RuntimeException("Currently only single FK properties are supported: " + this);
-        }
-
-        Property property = fkProperties[0];
-        PropertyType propertyType = property.getPropertyType();
+        PropertyType propertyType = targetIdProperty.getPropertyType();
         if (propertyType == null) {
-            propertyType = targetPkProperty.getPropertyType();
-            property.setPropertyType(propertyType);
+            // TODO does this happen??
+            targetIdProperty.setPropertyType(PropertyType.RelationId);
             // Property is not a regular property with primitive getters/setters, so let it catch up
-            property.init2ndPass();
-            property.init3ndPass();
-        } else if (!propertyType.supportsRelationToTarget(targetPkProperty.getPropertyType())) {
-            throw new RuntimeException("To-one property types incompatible: " + this +
-                    " (" + propertyType + " vs. " + targetPkProperty.getPropertyType() + ")");
+            targetIdProperty.init2ndPass();
+            targetIdProperty.init3ndPass();
+        } else if (propertyType != PropertyType.RelationId) {
+            throw new RuntimeException("To-one target ID property type is incompatible with a to-one relation: "
+                    + propertyType);
         }
-        resolvedKeyJavaType[0] = schema.mapToJavaTypeNullable(propertyType);
-        resolvedKeyUseEquals[0] = checkUseEquals(propertyType);
+        resolvedKeyJavaType = schema.mapToJavaTypeNullable(propertyType);
+        resolvedKeyUseEquals = checkUseEquals(propertyType);
     }
 
     protected boolean checkUseEquals(PropertyType propertyType) {
@@ -130,10 +119,12 @@ public class ToOne implements HasParsedElement {
         return useEquals;
     }
 
+    @Override
     public Object getParsedElement() {
         return parsedElement;
     }
 
+    @Override
     public void setParsedElement(Object parsedElement) {
         this.parsedElement = parsedElement;
     }

@@ -1,5 +1,7 @@
 <#--
 
+OUTDATED for ObjectBox!! We might resurrect it for greenDAO generator project migration(?).
+
 Copyright (C) 2016 Markus Junginger, greenrobot (http://greenrobot.org)
 
 This file is part of ObjectBox Generator.
@@ -131,20 +133,20 @@ ${property.javaDocField}
 <#list entity.toOneRelations as toOne>
 
 <#if toOne.useFkProperty>
-    @ToOne(joinProperty = "${toOne.fkProperties[0].propertyName}")
+    @ToOne(joinProperty = "${toOne.targetIdProperty.propertyName}")
     private ${toOne.targetEntity.className} ${toOne.name};
 
     @Generated
     private transient ${toOne.resolvedKeyJavaType[0]} ${toOne.name}__resolvedKey;
 <#else>
     @ToOne
-<#if toOne.fkProperties[0].nonDefaultDbName>
-    @Property(nameInDb = "${toOne.fkProperties[0].dbName}")
+<#if toOne.targetIdProperty.nonDefaultDbName>
+    @Property(nameInDb = "${toOne.targetIdProperty.dbName}")
 </#if>
-<#if toOne.fkProperties[0].unique>
+<#if toOne.targetIdProperty.unique>
     @Unique
 </#if>
-<#if toOne.fkProperties[0].notNull>
+<#if toOne.targetIdProperty.notNull>
     @NotNull
 </#if>
     private ${toOne.targetEntity.className} ${toOne.name};
@@ -248,9 +250,9 @@ ${property.javaDocSetter}
     @Generated
     public ${toOne.targetEntity.className} get${toOne.name?cap_first}() {
 <#if toOne.useFkProperty>
-        ${toOne.fkProperties[0].javaType} __key = this.${toOne.fkProperties[0].propertyName};
+        ${toOne.targetIdProperty.javaType} __key = this.${toOne.targetIdProperty.propertyName};
         if (${toOne.name}__resolvedKey == null || <#--
-        --><#if toOne.resolvedKeyUseEquals[0]>!${toOne.name}__resolvedKey.equals(__key)<#--
+        --><#if toOne.resolvedKeyUseEquals>!${toOne.name}__resolvedKey.equals(__key)<#--
         --><#else>${toOne.name}__resolvedKey != __key</#if>) {
             __throwIfDetached();
             ${toOne.targetEntity.classNameDao} targetDao = daoSession.get${toOne.targetEntity.classNameDao?cap_first}();
@@ -280,17 +282,17 @@ ${property.javaDocSetter}
 </#if>
 
     @Generated
-    public void set${toOne.name?cap_first}(<#if toOne.fkProperties[0].notNull && !primitiveTypes?seq_contains(toOne.fkProperties[0].javaTypeInEntity)>@NotNull </#if>${toOne.targetEntity.className} ${toOne.name}) {
-<#if toOne.fkProperties[0].notNull>
+    public void set${toOne.name?cap_first}(<#if toOne.targetIdProperty.notNull && !primitiveTypes?seq_contains(toOne.targetIdProperty.javaTypeInEntity)>@NotNull </#if>${toOne.targetEntity.className} ${toOne.name}) {
+<#if toOne.targetIdProperty.notNull>
         if (${toOne.name} == null) {
-            throw new DaoException("To-one property '${toOne.fkProperties[0].propertyName}' has not-null constraint; cannot set to-one to null");
+            throw new DaoException("To-one property '${toOne.targetIdProperty.propertyName}' has not-null constraint; cannot set to-one to null");
         }
 </#if>
         synchronized (this) {
             this.${toOne.name} = ${toOne.name};
 <#if toOne.useFkProperty>        
-            ${toOne.fkProperties[0].propertyName} = <#if !toOne.fkProperties[0].notNull>${toOne.name} == null ? null : </#if>${toOne.name}.get${toOne.targetEntity.pkProperty.propertyName?cap_first}();
-            ${toOne.name}__resolvedKey = ${toOne.fkProperties[0].propertyName};
+            ${toOne.targetIdProperty.propertyName} = <#if !toOne.targetIdProperty.notNull>${toOne.name} == null ? null : </#if>${toOne.name}.get${toOne.targetEntity.pkProperty.propertyName?cap_first}();
+            ${toOne.name}__resolvedKey = ${toOne.targetIdProperty.propertyName};
 <#else>
             ${toOne.name}__refreshed = true;
 </#if>
