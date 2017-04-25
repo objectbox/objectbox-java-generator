@@ -85,18 +85,20 @@ class ObjectBoxGeneratorTest {
         val model = IdSync(schemaOptions.idModelFile).justRead()
         assertNotNull("Reading updated model failed.", model)
 
-        assertProperty(model!!, parsedEntity!!, "generateNew", 5, 1661365307719275952)
-        assertProperty(model, parsedEntity, "generateNewWithIndex", 6, 5183165565872484426)
+        assertProperty(model!!, parsedEntity!!, "generateNew", 5, 1661365307719275952, null)
+        assertProperty(model, parsedEntity, "generateNewWithIndex", 6, 5183165565872484426, 372830150263263690)
     }
 
     private fun assertProperty(model: IdSyncModel, parsedEntity: ParsedEntity, name: String, idExpected: Int,
-                               uidOriginal: Long) {
+                               uidOriginal: Long, indexUidOriginal: Long?) {
+        // assert class
         val parsedProperty = parsedEntity.properties.find { it.variable.name == name }
         assertNotNull("Could not find $name in entity.", parsedProperty)
 
         assertTrue("$name @Uid value should no longer be -1", parsedProperty!!.uid != -1L)
         assertTrue("$name @Uid value should change", parsedProperty.uid != uidOriginal)
 
+        // assert model
         val entity = model.entities.first()
         val property = entity.properties.find { it.name == name }
         assertNotNull("Could not find $name in model.", property)
@@ -104,6 +106,12 @@ class ObjectBoxGeneratorTest {
         assertTrue("$name id should change", property!!.modelId == idExpected)
         assertTrue("$name uid should change", property.uid != uidOriginal)
         assertTrue("$name old uid should be retired", model.retiredPropertyUids!!.contains(uidOriginal))
+
+        // assert index
+        if (indexUidOriginal != null) {
+            assertTrue("$name index uid should change", property.indexId!!.uid != indexUidOriginal)
+            assertTrue("$name old index uid should be retired", model.retiredIndexUids!!.contains(indexUidOriginal))
+        }
     }
 
     // NOTE: test may output multiple failed files, make sure to scroll up :)

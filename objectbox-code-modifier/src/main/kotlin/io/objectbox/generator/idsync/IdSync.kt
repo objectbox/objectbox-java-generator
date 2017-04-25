@@ -209,20 +209,17 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
 
         var sourceIndexId: IdUid? = null
         if (parsedProperty.index != null) {
-            sourceIndexId = existingProperty?.indexId ?: lastIndexId.incId(uidHelper.create())
+            if (shouldGenerateNewIdUid) {
+                sourceIndexId = lastIndexId.incId(uidHelper.create())
+            } else {
+                sourceIndexId = existingProperty?.indexId ?: lastIndexId.incId(uidHelper.create())
+            }
         }
 
-        val sourceId: IdUid
-        if (existingProperty?.id == null) {
-            sourceId = lastPropertyId.incId(uidHelper.create()) // create a new id + uid
-        } else if (shouldGenerateNewIdUid) {
-            // retire current uid
-            retiredPropertyUids.add(existingProperty.id.uid)
-            // create and set a new id + uid
-            sourceId = lastPropertyId.incId(uidHelper.create())
-            existingProperty.id.set(sourceId)
+        val sourceId = if (existingProperty?.id == null || shouldGenerateNewIdUid) {
+            lastPropertyId.incId(uidHelper.create()) // create a new id + uid
         } else {
-            sourceId = existingProperty.id // use existing id + uid
+            existingProperty.id // use existing id + uid
         }
         val property = Property(
                 name = name,
