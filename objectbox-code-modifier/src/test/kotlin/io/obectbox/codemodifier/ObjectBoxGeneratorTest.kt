@@ -2,8 +2,12 @@ package io.obectbox.codemodifier
 
 import io.objectbox.codemodifier.FormattingOptions
 import io.objectbox.codemodifier.ObjectBoxGenerator
+import io.objectbox.codemodifier.ParsedEntity
 import io.objectbox.codemodifier.SchemaOptions
+import io.objectbox.generator.idsync.IdSync
+import io.objectbox.generator.idsync.IdSyncModel
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Ignore
@@ -63,6 +67,87 @@ class ObjectBoxGeneratorTest {
         File(samplesDirectory, "insert-uid/insert-uid-model.json").copyTo(schemaOptions.idModelFile, true)
 
         generateAndAssertFile("insert-uid/InsertUid")
+    }
+
+    @Test
+    fun testFileChangeUid() {
+        ensureEmptyTestDirectory()
+
+        // to always insert the same UID we use a pre-defined model file
+        // copy model file over test model file
+        File(samplesDirectory, "insert-uid/change-uid-model.json").copyTo(schemaOptions.idModelFile, true)
+
+        val baseFileName = "insert-uid/ChangeUid"
+        val actualFile = generateFile(baseFileName)
+
+        val parsedEntity = tryParseEntity(actualFile!!.readText())
+        assertNotNull("Parsing updated entity failed.", parsedEntity)
+        val model = IdSync(schemaOptions.idModelFile).justRead()
+        assertNotNull("Reading updated model failed.", model)
+
+        assertProperty(model!!, parsedEntity!!, "generateNew", 5, 1661365307719275952, null)
+        assertProperty(model, parsedEntity, "generateNewWithIndex", 6, 5183165565872484426, 372830150263263690)
+    }
+
+    private fun assertProperty(model: IdSyncModel, parsedEntity: ParsedEntity, name: String, idExpected: Int,
+                               uidOriginal: Long, indexUidOriginal: Long?) {
+        // assert class
+        val parsedProperty = parsedEntity.properties.find { it.variable.name == name }
+        assertNotNull("Could not find $name in entity.", parsedProperty)
+
+        assertTrue("$name @Uid value should no longer be -1", parsedProperty!!.uid != -1L)
+        assertTrue("$name @Uid value should change", parsedProperty.uid != uidOriginal)
+
+        // assert model
+        val entity = model.entities.first()
+        val property = entity.properties.find { it.name == name }
+        assertNotNull("Could not find $name in model.", property)
+
+        assertTrue("$name id should change", property!!.modelId == idExpected)
+        assertTrue("$name uid should change", property.uid != uidOriginal)
+        assertTrue("$name old uid should be retired", model.retiredPropertyUids!!.contains(uidOriginal))
+
+        // assert index
+        if (indexUidOriginal != null) {
+            assertTrue("$name index uid should change", property.indexId!!.uid != indexUidOriginal)
+            assertTrue("$name old index uid should be retired", model.retiredIndexUids!!.contains(indexUidOriginal))
+        }
+    }
+
+    @Test
+    fun testFileChangeEntityUid() {
+        ensureEmptyTestDirectory()
+
+        // to always insert the same UID we use a pre-defined model file
+        // copy model file over test model file
+        File(samplesDirectory, "insert-uid/change-entity-uid-model.json").copyTo(schemaOptions.idModelFile, true)
+
+        val baseFileName = "insert-uid/ChangeEntityUid"
+        val actualFile = generateFile(baseFileName)
+
+        val parsedEntity = tryParseEntity(actualFile!!.readText())
+        assertNotNull("Parsing updated entity failed.", parsedEntity)
+        val model = IdSync(schemaOptions.idModelFile).justRead()
+        assertNotNull("Reading updated model failed.", model)
+
+        val entityIdOriginal = 1
+        val entityUidOriginal = 3030961966062954432
+        val entity = model!!.entities.find { it.name == "Note" }!!
+
+        // assert entity class
+        assertTrue("entity @Uid value should no longer be -1", parsedEntity!!.uid != -1L)
+        assertTrue("entity @Uid value should change", parsedEntity.uid != entityUidOriginal)
+
+        // assert entity model
+        assertTrue("old entity uid should be retired", model.retiredEntityUids!!.contains(entityUidOriginal))
+        assertTrue("entity id should change", entity.modelId != entityIdOriginal)
+        assertTrue("entity uid should change", entity.uid != entityUidOriginal)
+
+        // assert entity properties
+        // property ids should start at 1, continue without gap
+        // old property and index uids should be retired
+        assertProperty(model, parsedEntity, "id", 1, 484136188553235815, null)
+        assertProperty(model, parsedEntity, "control", 2, 5900839708219325784, 372830150263263690)
     }
 
     // NOTE: test may output multiple failed files, make sure to scroll up :)
@@ -141,10 +226,9 @@ class ObjectBoxGeneratorTest {
         assertTrue(content, content.contains(".indexId("))
     }
 
-    fun generateAndAssertFile(baseFileName: String) {
+    fun generateFile(baseFileName: String): File? {
         val inputFileName = "${baseFileName}Input.java"
         val actualFileName = "${baseFileName}Actual.java"
-        val expectedFileName = "${baseFileName}Expected.java"
 
         // copy the input file to the test directory
         val inputFile = File(samplesDirectory, inputFileName)
@@ -152,7 +236,7 @@ class ObjectBoxGeneratorTest {
         if (inputContent.contains("generateGettersSetters = false")) {
             // TODO allow generateGettersSetters again
             println("!!! Disabled $inputFileName")
-            return
+            return null
         }
         val actualFile = inputFile.copyTo(File(testDirectory, actualFileName), true)
 
@@ -163,6 +247,13 @@ class ObjectBoxGeneratorTest {
             throw RuntimeException("Could not run generator on " + inputFileName, ex)
         }
 
+        return actualFile
+    }
+
+    fun generateAndAssertFile(baseFileName: String) {
+        val actualFile = generateFile(baseFileName) ?: return
+
+        val expectedFileName = "${baseFileName}Expected.java"
         checkSameFileContent(actualFile, File(samplesDirectory, expectedFileName))
     }
 

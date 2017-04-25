@@ -165,12 +165,17 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
     private fun syncEntity(parsedEntity: ParsedEntity): Entity {
         val entityName = parsedEntity.dbName ?: parsedEntity.name
         val entityRefId = parsedEntity.uid
-        if (entityRefId != null && !parsedRefIds.add(entityRefId)) {
+        val shouldGenerateNewIdUid = parsedEntity.uid == -1L
+        if (entityRefId != null && !shouldGenerateNewIdUid && !parsedRefIds.add(entityRefId)) {
             throw IdSyncException("Non-unique refId $entityRefId in parsed entity ${parsedEntity.name} in file " +
                     parsedEntity.sourceFile.absolutePath)
         }
         val existingEntity: Entity? = findEntity(entityName, entityRefId)
-        val lastPropertyId = existingEntity?.lastPropertyId?.clone() ?: IdUid()
+        val lastPropertyId = if (existingEntity?.lastPropertyId == null || shouldGenerateNewIdUid) {
+            IdUid() // create empty id + uid
+        } else {
+            existingEntity.lastPropertyId.clone() // use existing id + uid
+        }
         val properties = ArrayList<Property>()
         for (parsedProperty in parsedEntity.properties) {
             val property = syncProperty(existingEntity, parsedEntity, parsedProperty, lastPropertyId)
@@ -181,7 +186,11 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
         }
         properties.sortBy { it.id.id }
 
-        var sourceId = existingEntity?.id ?: lastEntityId.incId(uidHelper.create())
+        val sourceId = if (existingEntity?.id == null || shouldGenerateNewIdUid) {
+            lastEntityId.incId(uidHelper.create()) // create new id + uid
+        } else {
+            existingEntity.id // use existing id + uid
+        }
         val entity = Entity(
                 name = entityName,
                 id = sourceId.clone(),
@@ -195,10 +204,11 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
     private fun syncProperty(existingEntity: Entity?, parsedEntity: ParsedEntity, parsedProperty: ParsedProperty,
                              lastPropertyId: IdUid): Property {
         val name = parsedProperty.dbName ?: parsedProperty.variable.name
+        val shouldGenerateNewIdUid = parsedEntity.uid == -1L || parsedProperty.uid == -1L
         var existingProperty: Property? = null
         if (existingEntity != null) {
             val propertyRefId = parsedProperty.uid
-            if (propertyRefId != null && !parsedRefIds.add(propertyRefId)) {
+            if (propertyRefId != null && !shouldGenerateNewIdUid && !parsedRefIds.add(propertyRefId)) {
                 throw IdSyncException("Non-unique refId $propertyRefId in parsed entity ${parsedEntity.name} " +
                         "and property ${parsedProperty.variable.name} in file " +
                         parsedEntity.sourceFile.absolutePath)
@@ -208,10 +218,18 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
 
         var sourceIndexId: IdUid? = null
         if (parsedProperty.index != null) {
-            sourceIndexId = existingProperty?.indexId ?: lastIndexId.incId(uidHelper.create())
+            if (shouldGenerateNewIdUid) {
+                sourceIndexId = lastIndexId.incId(uidHelper.create())
+            } else {
+                sourceIndexId = existingProperty?.indexId ?: lastIndexId.incId(uidHelper.create())
+            }
         }
 
-        var sourceId = existingProperty?.id ?: lastPropertyId.incId(uidHelper.create())
+        val sourceId = if (existingProperty?.id == null || shouldGenerateNewIdUid) {
+            lastPropertyId.incId(uidHelper.create()) // create a new id + uid
+        } else {
+            existingProperty.id // use existing id + uid
+        }
         val property = Property(
                 name = name,
                 id = sourceId.clone(),
@@ -241,7 +259,7 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
     }
 
     fun findEntity(name: String, uid: Long?): Entity? {
-        if (uid != null) {
+        if (uid != null && uid != -1L) {
             return entitiesReadByRefId[uid] ?:
                     throw IdSyncException("No entity with UID $uid found")
         } else {
@@ -250,7 +268,7 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
     }
 
     fun findProperty(entity: Entity, name: String, uid: Long?): Property? {
-        if (uid != null) {
+        if (uid != null && uid != -1L) {
             val filtered = entity.properties.filter { it.uid == uid }
             if (filtered.isEmpty()) {
                 throw IdSyncException("In entity ${entity.name}, no property with UID $uid found")
