@@ -47,14 +47,6 @@ public class Order {
         this.id = id;
     }
 
-    public long getCustomerId() {
-        return customerId;
-    }
-
-    public void setCustomerId(long customerId) {
-        this.customerId = customerId;
-    }
-
     @Internal
     @Generated(hash = 1318389891)
     transient ToOne<Customer> customerToOne = new ToOne<>(this, Order_.customer);

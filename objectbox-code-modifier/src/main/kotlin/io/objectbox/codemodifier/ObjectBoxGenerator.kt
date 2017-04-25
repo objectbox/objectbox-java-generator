@@ -250,9 +250,14 @@ class ObjectBoxGenerator(val formattingOptions: FormattingOptions? = null,
             println("Not generating getters or setters for ${parsedEntity.name}.")
             return
         }
-        // define missing getters and setters
         // add everything (fields, set before get) in reverse as transformer writes in reverse direction
-        parsedEntity.properties.reversed().forEach { field ->
+        parsedEntity.properties.reversed().filter {
+            // always add getter/setter if daoCompat is enabled as compat DAO classes use them
+            // otherwise only add getter/setter if field is not visible (except always for ID field)
+            // background: Cursor does access fields directly if they are visible (except for the ID field)
+            daoCompat || !it.fieldAccessible || it.idParams != null
+        }.forEach { field ->
+            // only define missing getters/setters to avoid overwriting customized getters/setters
             transformer.defMethodIfMissing("set${field.variable.name.capitalize()}", field.variable.type.name) {
                 Templates.entity.fieldSet(field.variable)
             }
