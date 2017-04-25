@@ -200,7 +200,7 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
         var existingProperty: Property? = null
         if (existingEntity != null) {
             val propertyRefId = parsedProperty.uid
-            if (propertyRefId != null && !parsedRefIds.add(propertyRefId)) {
+            if (propertyRefId != null && propertyRefId != -1L && !parsedRefIds.add(propertyRefId)) {
                 throw IdSyncException("Non-unique refId $propertyRefId in parsed entity ${parsedEntity.name} " +
                         "and property ${parsedProperty.variable.name} in file " +
                         parsedEntity.sourceFile.absolutePath)
