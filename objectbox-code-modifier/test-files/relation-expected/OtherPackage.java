@@ -54,14 +54,6 @@ public class OtherPackage {
         this.id = id;
     }
 
-    public long getCustomerId() {
-        return customerId;
-    }
-
-    public void setCustomerId(long customerId) {
-        this.customerId = customerId;
-    }
-
     @Internal
     @Generated(hash = 706681037)
     transient ToOne<Customer> customer__toOne = new ToOne<>(this, OtherPackage_.customer);
