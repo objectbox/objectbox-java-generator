@@ -114,6 +114,42 @@ class ObjectBoxGeneratorTest {
         }
     }
 
+    @Test
+    fun testFileChangeEntityUid() {
+        ensureEmptyTestDirectory()
+
+        // to always insert the same UID we use a pre-defined model file
+        // copy model file over test model file
+        File(samplesDirectory, "insert-uid/change-entity-uid-model.json").copyTo(schemaOptions.idModelFile, true)
+
+        val baseFileName = "insert-uid/ChangeEntityUid"
+        val actualFile = generateFile(baseFileName)
+
+        val parsedEntity = tryParseEntity(actualFile!!.readText())
+        assertNotNull("Parsing updated entity failed.", parsedEntity)
+        val model = IdSync(schemaOptions.idModelFile).justRead()
+        assertNotNull("Reading updated model failed.", model)
+
+        val entityIdOriginal = 1
+        val entityUidOriginal = 3030961966062954432
+        val entity = model!!.entities.find { it.name == "Note" }!!
+
+        // assert entity class
+        assertTrue("entity @Uid value should no longer be -1", parsedEntity!!.uid != -1L)
+        assertTrue("entity @Uid value should change", parsedEntity.uid != entityUidOriginal)
+
+        // assert entity model
+        assertTrue("old entity uid should be retired", model.retiredEntityUids!!.contains(entityUidOriginal))
+        assertTrue("entity id should change", entity.modelId != entityIdOriginal)
+        assertTrue("entity uid should change", entity.uid != entityUidOriginal)
+
+        // assert entity properties
+        // property ids should start at 1, continue without gap
+        // old property and index uids should be retired
+        assertProperty(model, parsedEntity, "id", 1, 484136188553235815, null)
+        assertProperty(model, parsedEntity, "control", 2, 5900839708219325784, 372830150263263690)
+    }
+
     // NOTE: test may output multiple failed files, make sure to scroll up :)
     @Test
     fun testAllTestFiles() {
