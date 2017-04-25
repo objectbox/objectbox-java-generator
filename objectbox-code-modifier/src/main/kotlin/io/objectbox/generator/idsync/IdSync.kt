@@ -16,16 +16,15 @@ import com.squareup.moshi.FromJson
 import com.squareup.moshi.ToJson
 import io.objectbox.generator.IdUid
 
-class IdSync(
-        val jsonFile: File = File("objectmodel.json"),
-        val uidHelper: UidHelper = UidHelper()
-) {
+class IdSync(val jsonFile: File = File("objectmodel.json")) {
     private val noteSeeDocs = "Please read the docs how to resolve this."
 
     // public for tests to delete
     val backupFile = File(jsonFile.absolutePath + ".bak")
 
     private val modelJsonAdapter: JsonAdapter<IdSyncModel>
+
+    private val uidHelper = UidHelper()
 
     private val entitiesReadByRefId = HashMap<Long, Entity>()
     private val entitiesReadByName = HashMap<String, Entity>()

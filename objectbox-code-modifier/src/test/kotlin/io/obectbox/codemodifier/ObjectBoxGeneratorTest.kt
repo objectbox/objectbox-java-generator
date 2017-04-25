@@ -3,8 +3,9 @@ package io.obectbox.codemodifier
 import io.objectbox.codemodifier.FormattingOptions
 import io.objectbox.codemodifier.ObjectBoxGenerator
 import io.objectbox.codemodifier.SchemaOptions
-import io.objectbox.generator.idsync.UidHelper
+import io.objectbox.generator.idsync.IdSync
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Ignore
@@ -12,7 +13,6 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.ErrorCollector
 import java.io.File
-import java.security.SecureRandom
 import java.util.ArrayList
 
 class ObjectBoxGeneratorTest {
@@ -64,14 +64,46 @@ class ObjectBoxGeneratorTest {
         // copy model file over test model file
         File(samplesDirectory, "insert-uid/insert-uid-model.json").copyTo(schemaOptions.idModelFile, true)
 
-        // to always generate the same new uid use a fixed seed for SecureRandom
-        val fixedRandom = SecureRandom()
-        fixedRandom.setSeed(42)
-        val uidHelper = UidHelper(random = fixedRandom)
+        generateAndAssertFile("insert-uid/InsertUid")
+    }
 
-        val generator = ObjectBoxGenerator(formattingOptions, uidHelper = uidHelper)
+    @Test
+    fun testFileChangeUid() {
+        ensureEmptyTestDirectory()
 
-        generateAndAssertFile(generator, "insert-uid/InsertUid")
+        // to always insert the same UID we use a pre-defined model file
+        // copy model file over test model file
+        File(samplesDirectory, "insert-uid/change-uid-model.json").copyTo(schemaOptions.idModelFile, true)
+
+        val baseFileName = "insert-uid/ChangeUid"
+        val actualFile = generateFile(baseFileName)
+
+        val propertyName = "generateNew"
+        val originalIndex = 3
+        val originalUid = 1661365307719275952
+
+        // assert entity class
+        val parsedEntity = tryParseEntity(actualFile!!.readText())
+        assertNotNull("Parsing updated entity failed.", parsedEntity)
+        val parsedProperty = parsedEntity!!.properties.find { it.variable.name == propertyName }
+        assertNotNull("Could not find test property in entity.", parsedProperty)
+
+        // UID for property should not be -1, not be original UID
+        assertTrue(parsedProperty!!.uid != -1L)
+        assertTrue(parsedProperty.uid != originalUid)
+
+        // assert model
+        val model = IdSync(schemaOptions.idModelFile).justRead()
+        assertNotNull("Reading updated model failed.", model)
+        val entity = model!!.entities.first()
+        val property = entity.properties.find { it.name == propertyName }
+        assertNotNull("Could not find test property in model.", property)
+
+        // same index, new UID for property
+        assertTrue(property!!.modelId == originalIndex)
+        assertTrue(property.uid != originalUid)
+        // old UID should be retired
+        assertTrue(model.retiredPropertyUids!!.contains(originalUid))
     }
 
     // NOTE: test may output multiple failed files, make sure to scroll up :)
@@ -150,14 +182,9 @@ class ObjectBoxGeneratorTest {
         assertTrue(content, content.contains(".indexId("))
     }
 
-    fun generateAndAssertFile(baseFileName: String){
-        generateAndAssertFile(ObjectBoxGenerator(formattingOptions), baseFileName)
-    }
-
-    fun generateAndAssertFile(generator: ObjectBoxGenerator, baseFileName: String) {
+    fun generateFile(baseFileName: String): File? {
         val inputFileName = "${baseFileName}Input.java"
         val actualFileName = "${baseFileName}Actual.java"
-        val expectedFileName = "${baseFileName}Expected.java"
 
         // copy the input file to the test directory
         val inputFile = File(samplesDirectory, inputFileName)
@@ -165,17 +192,24 @@ class ObjectBoxGeneratorTest {
         if (inputContent.contains("generateGettersSetters = false")) {
             // TODO allow generateGettersSetters again
             println("!!! Disabled $inputFileName")
-            return
+            return null
         }
         val actualFile = inputFile.copyTo(File(testDirectory, actualFileName), true)
 
         // run the generator over the file
         try {
-            generator.run(listOf(actualFile), mapOf("default" to schemaOptions))
+            ObjectBoxGenerator(formattingOptions).run(listOf(actualFile), mapOf("default" to schemaOptions))
         } catch (ex: RuntimeException) {
             throw RuntimeException("Could not run generator on " + inputFileName, ex)
         }
 
+        return actualFile
+    }
+
+    fun generateAndAssertFile(baseFileName: String) {
+        val actualFile = generateFile(baseFileName) ?: return
+
+        val expectedFileName = "${baseFileName}Expected.java"
         checkSameFileContent(actualFile, File(samplesDirectory, expectedFileName))
     }
 

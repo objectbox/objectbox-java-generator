@@ -13,12 +13,9 @@ public class Note {
     @Id
     private Long id;
 
-    @Uid
-    private String insert;
-
-    @Uid(1406015203155591783L)
-    private String doNotInsert;
-
     private String control;
+
+    @Uid(-1)
+    private String generateNew;
 
 }
