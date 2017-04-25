@@ -79,7 +79,7 @@ class ObjectBoxGeneratorTest {
         val actualFile = generateFile(baseFileName)
 
         val propertyName = "generateNew"
-        val originalIndex = 3
+        val newIndex = 4
         val originalUid = 1661365307719275952
 
         // assert entity class
@@ -99,11 +99,9 @@ class ObjectBoxGeneratorTest {
         val property = entity.properties.find { it.name == propertyName }
         assertNotNull("Could not find test property in model.", property)
 
-        // same index, new UID for property
-        assertTrue(property!!.modelId == originalIndex)
-        assertTrue(property.uid != originalUid)
-        // old UID should be retired
-        assertTrue(model.retiredPropertyUids!!.contains(originalUid))
+        assertTrue("id should change", property!!.modelId == newIndex)
+        assertTrue("uid should change", property.uid != originalUid)
+        assertTrue("old uid should be retired", model.retiredPropertyUids!!.contains(originalUid))
     }
 
     // NOTE: test may output multiple failed files, make sure to scroll up :)

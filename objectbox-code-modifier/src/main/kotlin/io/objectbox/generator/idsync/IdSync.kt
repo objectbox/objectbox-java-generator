@@ -174,9 +174,7 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
         val properties = ArrayList<Property>()
         for (parsedProperty in parsedEntity.properties) {
             val property = syncProperty(existingEntity, parsedEntity, parsedProperty, lastPropertyId)
-            // update last id:uid if id is bigger (new property) or id is equal and uid has changed
-            if (property.modelId > lastPropertyId.id
-                    || (property.modelId == lastPropertyId.id && property.uid != lastPropertyId.uid)) {
+            if (property.modelId > lastPropertyId.id) {
                 lastPropertyId.set(property.id)
             }
             properties.add(property)
@@ -197,10 +195,11 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
     private fun syncProperty(existingEntity: Entity?, parsedEntity: ParsedEntity, parsedProperty: ParsedProperty,
                              lastPropertyId: IdUid): Property {
         val name = parsedProperty.dbName ?: parsedProperty.variable.name
+        val shouldGenerateNewIdUid = parsedProperty.uid == -1L
         var existingProperty: Property? = null
         if (existingEntity != null) {
             val propertyRefId = parsedProperty.uid
-            if (propertyRefId != null && propertyRefId != -1L && !parsedRefIds.add(propertyRefId)) {
+            if (propertyRefId != null && !shouldGenerateNewIdUid && !parsedRefIds.add(propertyRefId)) {
                 throw IdSyncException("Non-unique refId $propertyRefId in parsed entity ${parsedEntity.name} " +
                         "and property ${parsedProperty.variable.name} in file " +
                         parsedEntity.sourceFile.absolutePath)
@@ -216,11 +215,12 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
         val sourceId: IdUid
         if (existingProperty?.id == null) {
             sourceId = lastPropertyId.incId(uidHelper.create()) // create a new id + uid
-        } else if (parsedProperty.uid == -1L) {
+        } else if (shouldGenerateNewIdUid) {
             // retire current uid
             retiredPropertyUids.add(existingProperty.id.uid)
-            // create new uid + keep the id
-            sourceId = existingProperty.id.set(existingProperty.id.id, uidHelper.create())
+            // create and set a new id + uid
+            sourceId = lastPropertyId.incId(uidHelper.create())
+            existingProperty.id.set(sourceId)
         } else {
             sourceId = existingProperty.id // use existing id + uid
         }
