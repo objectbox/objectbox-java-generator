@@ -191,6 +191,11 @@ public class Property implements HasParsedElement {
             return this;
         }
 
+        public PropertyBuilder virtualTarget(Object virtualTarget) {
+            property.virtualTarget = virtualTarget;
+            return this;
+        }
+
         public Property getProperty() {
             return property;
         }
@@ -239,6 +244,9 @@ public class Property implements HasParsedElement {
     private String javaType;
 
     private boolean nonDefaultDbName;
+
+    /** For virtual properties, this is target host where the property actually is located (e.g. a {@link ToOne}). */
+    private Object virtualTarget;
 
     private Object parsedElement;
 
@@ -385,6 +393,14 @@ public class Property implements HasParsedElement {
         return fieldAccessible;
     }
 
+    public boolean isVirtual() {
+        return virtualTarget != null;
+    }
+
+    public Object getVirtualTarget() {
+        return virtualTarget;
+    }
+
     /**
      * Makes this property an relation ID - this is done after initial parsing once all entities and relations are
      * present;
@@ -407,7 +423,15 @@ public class Property implements HasParsedElement {
     }
 
     public String getValueExpression() {
-        return fieldAccessible ?  propertyName : "get" + TextUtil.capFirst(propertyName) + "()";
+        return fieldAccessible ? propertyName : "get" + TextUtil.capFirst(propertyName) + "()";
+    }
+
+    public String getSetValueExpression(String value) {
+        if (fieldAccessible) {
+            return propertyName + " = " + value;
+        } else {
+            return "set" + TextUtil.capFirst(propertyName) + "(" + value + ")";
+        }
     }
 
     public String getDatabaseValueExpression() {

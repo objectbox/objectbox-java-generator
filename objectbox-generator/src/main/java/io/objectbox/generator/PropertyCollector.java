@@ -264,7 +264,7 @@ class PropertyCollector {
         all.append(call);
         if (last) {
             if (!entity.isProtobuf()) {
-                all.append(INDENT).append(setValue(idProperty,"__assignedId")).append(";\n");
+                all.append(INDENT).append(setValue(idProperty, "__assignedId")).append(";\n");
                 if (Boolean.TRUE.equals(entity.getActive())) {
                     all.append(INDENT).append("entity.__boxStore = boxStoreForEntities;\n");
                 }
@@ -274,15 +274,11 @@ class PropertyCollector {
     }
 
     private String getValue(Property property) {
-        return "entity." + (property.isFieldAccessible() ? property.getPropertyName()
-                : "get" + nameCapFirst(property) + "()");
+        return "entity." + property.getValueExpression();
     }
 
     private String setValue(Property property, String value) {
-        if (property.isFieldAccessible())
-            return "entity." + property.getPropertyName() + " = " + value;
-        else
-            return "entity.set" + nameCapFirst(property) + "(" + value + ")";
+        return "entity." + property.getSetValueExpression(value);
     }
 
     private String nameCapFirst(Property property) {
