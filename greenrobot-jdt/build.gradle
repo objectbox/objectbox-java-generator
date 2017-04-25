@@ -7,6 +7,9 @@ group = 'org.greenrobot'
 // so version it after the contained JDT release
 version = '3.12.2'
 
+// Only upload again after we have updated the version.
+uploadArchives.enabled = version != '3.12.2'
+
 sourceCompatibility = 1.7
 
 dependencies {
