@@ -49,7 +49,7 @@ class ObjectBoxGeneratorTest {
     @Test
     @Ignore
     fun testSingleTestFile() {
-        val testFilePrefix = "AnnotationConstant"
+        val testFilePrefix = "NoGettersSettersIfVisible"
         ensureEmptyTestDirectory()
         generateAndAssertFile(testFilePrefix)
     }
