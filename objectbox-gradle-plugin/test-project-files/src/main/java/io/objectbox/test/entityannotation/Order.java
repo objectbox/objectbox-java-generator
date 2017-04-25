@@ -42,7 +42,9 @@ public class Order {
         this.id = id;
     }
 
-    @Generated(hash = 10986505)
+    @Generated(hash = 332453654)
+    @Internal
+    /** Used by ObjectBox - do not rely on this generated constructor because it may change. */
     public Order(long id, java.util.Date date, long customerId, String text) {
         this.id = id;
         this.date = date;

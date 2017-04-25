@@ -37,7 +37,9 @@ public class Customer {
     public Customer() {
     }
 
-    @Generated(hash = 1039711609)
+    @Generated(hash = 1412276269)
+    @Internal
+    /** Used by ObjectBox - do not rely on this generated constructor because it may change. */
     public Customer(long id, String name) {
         this.id = id;
         this.name = name;

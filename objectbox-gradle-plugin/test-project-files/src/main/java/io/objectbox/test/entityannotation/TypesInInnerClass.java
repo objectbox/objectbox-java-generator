@@ -6,6 +6,7 @@ import io.objectbox.annotation.Generated;
 import io.objectbox.annotation.Id;
 import io.objectbox.annotation.Transient;
 import io.objectbox.converter.PropertyConverter;
+import io.objectbox.annotation.apihint.Internal;
 
 @Entity
 public class TypesInInnerClass {
@@ -63,7 +64,9 @@ public class TypesInInnerClass {
         this.dummy = dummy;
     }
 
-    @Generated(hash = 1578029265)
+    @Generated(hash = 57031260)
+    @Internal
+    /** Used by ObjectBox - do not rely on this generated constructor because it may change. */
     public TypesInInnerClass(Long id, TypesInInnerClass.MyInnerType type, String dummy) {
         this.id = id;
         this.type = type;

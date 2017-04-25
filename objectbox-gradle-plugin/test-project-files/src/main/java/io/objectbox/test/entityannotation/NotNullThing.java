@@ -3,6 +3,7 @@ package io.objectbox.test.entityannotation;
 import io.objectbox.annotation.Entity;
 import io.objectbox.annotation.Generated;
 import io.objectbox.annotation.Id;
+import io.objectbox.annotation.apihint.Internal;
 
 @Entity
 public class NotNullThing {
@@ -20,11 +21,12 @@ public class NotNullThing {
     Boolean notNullWrappedBoolean;
     Integer notNullWrappedInteger;
 
-    @Generated(hash = 1888217008)
+    @Generated(hash = 1890099741)
+    @Internal
+    /** Used by ObjectBox - do not rely on this generated constructor because it may change. */
     public NotNullThing(Long id, boolean nullableBoolean, int nullableInteger,
-            Boolean nullableWrappedBoolean, Integer nullableWrappedInteger,
-            boolean notNullBoolean, int notNullInteger, Boolean notNullWrappedBoolean,
-            Integer notNullWrappedInteger) {
+            Boolean nullableWrappedBoolean, Integer nullableWrappedInteger, boolean notNullBoolean,
+            int notNullInteger, Boolean notNullWrappedBoolean, Integer notNullWrappedInteger) {
         this.id = id;
         this.nullableBoolean = nullableBoolean;
         this.nullableInteger = nullableInteger;

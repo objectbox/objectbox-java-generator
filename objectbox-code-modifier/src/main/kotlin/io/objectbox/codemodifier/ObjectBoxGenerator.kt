@@ -178,12 +178,12 @@ class ObjectBoxGenerator(val formattingOptions: FormattingOptions? = null,
         val transformer = EntityClassTransformer(parsedEntity, jdtOptions, formattingOptions)
 
         transformer.ensureImport("io.objectbox.annotation.Generated")
+        transformer.ensureImport("io.objectbox.annotation.apihint.Internal")
 
         // add everything (fields, constructors, methods) in reverse as transformer writes in reverse direction
         if (entity.active) {
             transformer.ensureImport("io.objectbox.Box")
             transformer.ensureImport("io.objectbox.BoxStore")
-            transformer.ensureImport("io.objectbox.annotation.apihint.Internal")
             transformer.ensureImport("io.objectbox.exception.DbDetachedException")
             transformer.ensureImport("io.objectbox.exception.DbException")
 
@@ -201,7 +201,7 @@ class ObjectBoxGenerator(val formattingOptions: FormattingOptions? = null,
 //                    "Used for active entity operations.")
 
             val type = VariableType("io.objectbox.BoxStore", false, "BoxStore")
-            transformer.defineTransientGeneratedField("__boxStore", type, "@Depreacted Used to resolve relations")
+            transformer.defineTransientGeneratedField("__boxStore", type, "Used to resolve relations")
         }
 
         parsedEntity.propertiesToGenerate.forEach {
