@@ -8,6 +8,6 @@ public void set${toOne.name?cap_first}(<#if false && toOne.targetIdProperty.notN
         throw new DbException("To-one property '${toOne.targetIdProperty.propertyName}' has not-null constraint; cannot set to-one to null");
     }
 </#if>
-    ${toOne.name}__toOne.setTarget(${toOne.name});
+    ${toOne.nameToOne}.setTarget(${toOne.name});
     this.${toOne.name} = ${toOne.name};
 }

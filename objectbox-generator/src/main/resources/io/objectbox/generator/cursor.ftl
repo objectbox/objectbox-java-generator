@@ -76,7 +76,7 @@ public final class ${entity.classNameDao} extends Cursor<${entity.className}> {
     // TODO private Query<${toMany.targetEntity.className}> ${toMany.sourceEntity.className?uncap_first}_${toMany.name?cap_first}Query;
 </#list>
 
-    // Property IDs get verified in Cursor base class
+<#-- Property IDs get verified in Cursor base class -->
 <#list entity.properties as property>
     <#if !property.isPrimaryKey()>
     private final static int __ID_${property.propertyName} = ${entity.className}_.${property.propertyName}.id;
@@ -104,10 +104,10 @@ public final class ${entity.classNameDao} extends Cursor<${entity.className}> {
     @Override
     public final long put(${entity.className} entity) {
 <#list entity.toOneRelations as toOne>
-        if(entity.${toOne.name}__toOne.internalRequiresPutTarget()) {
+        if(entity.${toOne.nameToOne}.internalRequiresPutTarget()) {
             Cursor<${toOne.targetEntity.className}> targetCursor = getRelationTargetCursor(${toOne.targetEntity.className}.class);
             try {
-                entity.${toOne.name}__toOne.internalPutTarget(targetCursor);
+                entity.${toOne.nameToOne}.internalPutTarget(targetCursor);
             } finally {
                 targetCursor.close();
             }

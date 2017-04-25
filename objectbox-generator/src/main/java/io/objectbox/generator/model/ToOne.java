@@ -29,6 +29,7 @@ public class ToOne implements HasParsedElement {
     private String resolvedKeyJavaType;
     private boolean resolvedKeyUseEquals;
     private String name;
+    private String nameToOne;
     private final boolean useFkProperty;
     private Object parsedElement;
 
@@ -76,29 +77,46 @@ public class ToOne implements HasParsedElement {
         return useFkProperty;
     }
 
+    public String getNameToOne() {
+        return nameToOne;
+    }
+
+    public void setNameToOne(String nameToOne) {
+        this.nameToOne = nameToOne;
+    }
+
     void init2ndPass() {
         if (name == null) {
             char[] nameCharArray = targetEntity.getClassName().toCharArray();
             nameCharArray[0] = Character.toLowerCase(nameCharArray[0]);
             name = new String(nameCharArray);
         }
+        if (nameToOne == null) {
+            if (targetIdProperty != null) {
+                nameToOne = name + "ToOne";
+            } else {
+                nameToOne = name;
+            }
+        }
     }
 
     /** Constructs fkColumns. Depends on 2nd pass of target key properties. */
     void init3ndPass() {
-        PropertyType propertyType = targetIdProperty.getPropertyType();
-        if (propertyType == null) {
-            // TODO does this happen??
-            targetIdProperty.setPropertyType(PropertyType.RelationId);
-            // Property is not a regular property with primitive getters/setters, so let it catch up
-            targetIdProperty.init2ndPass();
-            targetIdProperty.init3ndPass();
-        } else if (propertyType != PropertyType.RelationId) {
-            throw new RuntimeException("To-one target ID property type is incompatible with a to-one relation: "
-                    + propertyType);
+        if (targetIdProperty != null) {
+            PropertyType propertyType = targetIdProperty.getPropertyType();
+            if (propertyType == null) {
+                // TODO does this happen??
+                targetIdProperty.setPropertyType(PropertyType.RelationId);
+                // Property is not a regular property with primitive getters/setters, so let it catch up
+                targetIdProperty.init2ndPass();
+                targetIdProperty.init3ndPass();
+            } else if (propertyType != PropertyType.RelationId) {
+                throw new RuntimeException("To-one target ID property type is incompatible with a to-one relation: "
+                        + propertyType);
+            }
+            resolvedKeyJavaType = schema.mapToJavaTypeNullable(propertyType);
+            resolvedKeyUseEquals = checkUseEquals(propertyType);
         }
-        resolvedKeyJavaType = schema.mapToJavaTypeNullable(propertyType);
-        resolvedKeyUseEquals = checkUseEquals(propertyType);
     }
 
     protected boolean checkUseEquals(PropertyType propertyType) {

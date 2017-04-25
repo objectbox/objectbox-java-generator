@@ -56,20 +56,20 @@ public class Address {
     }
 
     @Internal
-    @Generated(hash = 703225382)
-    transient ToOne<Customer> customer__toOne = new ToOne<>(this, Address_.customer);
+    @Generated(hash = 1429753430)
+    transient ToOne<Customer> customerToOne = new ToOne<>(this, Address_.customer);
 
     /** To-one relationship, resolved on first access. */
-    @Generated(hash = 97719339)
+    @Generated(hash = 982764858)
     public Customer getCustomer() {
-        customer = customer__toOne.getTarget(this.customerId);
+        customer = customerToOne.getTarget(this.customerId);
         return customer;
     }
 
     /** Set the to-one relation including its ID property. */
-    @Generated(hash = 50954149)
+    @Generated(hash = 1896550034)
     public void setCustomer(Customer customer) {
-        customer__toOne.setTarget(customer);
+        customerToOne.setTarget(customer);
         this.customer = customer;
     }
 
