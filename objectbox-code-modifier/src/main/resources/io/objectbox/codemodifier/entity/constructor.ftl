@@ -2,6 +2,8 @@
 <#-- @ftlvariable name="properties" type="java.util.List<io.objectbox.codemodifier.ParsedProperty>" -->
 <#-- @ftlvariable name="notNullAnnotation" type="java.lang.String" -->
 @Generated(hash = GENERATED_HASH_STUB)
+@Internal
+/** Used by ObjectBox - do not rely on this generated constructor because it may change. */
 public ${className}(<#list properties as property><#if property.notNull && !property.variable.type.primitive>${notNullAnnotation} </#if>${property.variable.type.originalName} ${property.variable.name}<#sep>, </#list>) {
 <#list properties as property>
     this.${property.variable.name} = ${property.variable.name};
