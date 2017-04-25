@@ -113,7 +113,7 @@ class ObjectBoxGeneratorTest {
         val cursorFile = File(testDirectory, "/main/java/io/objectbox/codemodifier/test/IdOnlyCursor.java")
         assertTrue(cursorFile.exists())
         val content = cursorFile.readText()
-        assertTrue(content, content.contains("entity.setId(__assignedId);"))
+        assertTrue(content, content.contains("entity.id = __assignedId;"))
     }
 
     // NOTE: test may output multiple failed files, make sure to scroll up :)

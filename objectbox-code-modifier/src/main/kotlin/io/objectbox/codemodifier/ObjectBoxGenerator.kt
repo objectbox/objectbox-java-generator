@@ -254,8 +254,8 @@ class ObjectBoxGenerator(val formattingOptions: FormattingOptions? = null,
         parsedEntity.properties.reversed().filter {
             // always add getter/setter if daoCompat is enabled as compat DAO classes use them
             // otherwise only add getter/setter if field is not visible (except always for ID field)
-            // background: Cursor does access fields directly if they are visible (except for the ID field)
-            daoCompat || !it.fieldAccessible || it.idParams != null
+            // background: Cursor does access fields directly if they are visible
+            daoCompat || !it.fieldAccessible
         }.forEach { field ->
             // only define missing getters/setters to avoid overwriting customized getters/setters
             transformer.defMethodIfMissing("set${field.variable.name.capitalize()}", field.variable.type.name) {

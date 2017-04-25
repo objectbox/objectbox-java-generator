@@ -31,8 +31,8 @@ public class Order {
     @Generated(hash = 975972993)
     transient BoxStore __boxStore;
     @Internal
-    @Generated(hash = 1031210392)
-    transient ToOne<Customer> customer__toOne = new ToOne<>(this, Order_.customer);
+    @Generated(hash = 1318389891)
+    transient ToOne<Customer> customerToOne = new ToOne<>(this, Order_.customer);
 
     @Generated(hash = 1105174599)
     public Order() {
@@ -50,30 +50,6 @@ public class Order {
         this.text = text;
     }
 
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
-
-    public java.util.Date getDate() {
-        return date;
-    }
-
-    public void setDate(java.util.Date date) {
-        this.date = date;
-    }
-
-    public long getCustomerId() {
-        return customerId;
-    }
-
-    public void setCustomerId(long customerId) {
-        this.customerId = customerId;
-    }
-
     public String getText() {
         return text;
     }
@@ -87,16 +63,16 @@ public class Order {
     }
 
     /** To-one relationship, resolved on first access. */
-    @Generated(hash = 97719339)
+    @Generated(hash = 982764858)
     public Customer getCustomer() {
-        customer = customer__toOne.getTarget(this.customerId);
+        customer = customerToOne.getTarget(this.customerId);
         return customer;
     }
 
     /** Set the to-one relation including its ID property. */
-    @Generated(hash = 50954149)
+    @Generated(hash = 1896550034)
     public void setCustomer(Customer customer) {
-        customer__toOne.setTarget(customer);
+        customerToOne.setTarget(customer);
         this.customer = customer;
     }
 
