@@ -133,7 +133,7 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
         if (annotations.any { it.typeName.fullyQualifiedName == "Transient" }
                 || Modifier.isTransient(node.modifiers) || Modifier.isStatic(node.modifiers)) {
             // field is considered transient (@Transient, transient or static)
-            val generatorHint = annotations.generatorHint
+            val generatorHint = getGeneratorHint(annotations)
             if (generatorHint != null) {
                 // check code is not changed
                 if (generatorHint is GeneratorHint.Generated) {
@@ -145,7 +145,7 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
             }
         } else if (variableType.name == "io.objectbox.relation.ToOne") {
             // TODO
-        } else if (annotations.has<Relation>()) {
+        } else if (has<Relation>(annotations)) {
             if (variableType.name == "java.util.List") {
                 manyRelations += variableNames.map { parseRelationToMany(annotations, it, variableType) }
             } else {
@@ -189,20 +189,23 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
         }
     }
 
-    private val List<Annotation>.generatorHint: GeneratorHint?
-        get() = if (has<Keep>()) {
+    private fun getGeneratorHint(annotations: List<Annotation>): GeneratorHint? {
+        return if (has<Keep>(annotations)) {
             GeneratorHint.Keep
         } else {
-            proxy<Generated>()?.let { GeneratorHint.Generated(it.hash) }
+            annotations.proxy<Generated>()?.let { GeneratorHint.Generated(it.hash) }
         }
+    }
 
-    private val List<Annotation>.hasNotNull: Boolean
-        get() = any {
-            it.typeName.fullyQualifiedName == "NotNull" || it.typeName.fullyQualifiedName == "NonNull"
+    private fun hasNotNull(annotations: List<Annotation>): Boolean {
+        return annotations.any {
+            val name = it.typeName.fullyQualifiedName.substringAfterLast('.')
+            name == "NotNull" || name == "NonNull" || name == "Nonnull"
         }
+    }
 
-    private inline fun <reified A> List<Annotation>.has(): Boolean {
-        return any { it.hasType(A::class) }
+    private inline fun <reified A> has(annotations: List<Annotation>): Boolean {
+        return annotations.any { it.hasType(A::class) }
     }
 
     /** Tries to find annotation of specified list, and if any, then create proxy for it */
@@ -218,7 +221,7 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
                 variable = Variable(variableType, fieldName.toString()),
                 // In ObjectBox, we always use a id property (at least for now), defaults to name + "Id" if absent
                 targetIdField = proxy.idProperty.nullIfBlank() ?: fieldName.toString() + "Id",
-                isNotNull = fa.hasNotNull,
+                isNotNull = hasNotNull(fa),
                 unique = false //fa.has<Unique>()
         )
     }
@@ -259,7 +262,7 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
                 astNode = astNode,
                 idParams = id?.let { EntityIdParams(false /*it.monotonic*/, it.assignable) },
                 index = index?.let { PropertyIndex(null, false /* TODO indexAnnotation.unique*/) },
-                isNotNull = astNode.type.isPrimitiveType || fa.hasNotNull,
+                isNotNull = astNode.type.isPrimitiveType || hasNotNull(fa),
                 dbName = property?.nameInDb?.nullIfBlank(),
                 uid = if (uid?.value != 0L) uid?.value else null,
                 customType = findConvert(fieldName, fa),
@@ -286,7 +289,7 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
     override fun visit(node: MethodDeclaration): Boolean = isEntity
 
     override fun endVisit(node: MethodDeclaration) {
-        val generatorHint = methodAnnotations.generatorHint
+        val generatorHint = getGeneratorHint(methodAnnotations)
         if (generatorHint is GeneratorHint.Generated) {
             node.checkUntouched(generatorHint)
         }
