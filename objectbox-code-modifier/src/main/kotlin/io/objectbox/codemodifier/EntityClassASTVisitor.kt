@@ -125,15 +125,14 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
         // There can be multiple variables defined like "int a, b, c" and thus we need to operate on lists here.
         val variableNames = node.fragments()
                 .filter { it is VariableDeclarationFragment }
-                .map { it as VariableDeclarationFragment }.map { it.name }
+                .map { (it as VariableDeclarationFragment).name }
         val variableType = node.type.toVariableType()
 
         // check how the field(s) should be treated
-        val annotations = fieldAnnotations
-        if (annotations.any { it.typeName.fullyQualifiedName == "Transient" }
+        if (fieldAnnotations.any { it.typeName.fullyQualifiedName == "Transient" }
                 || Modifier.isTransient(node.modifiers) || Modifier.isStatic(node.modifiers)) {
             // field is considered transient (@Transient, transient or static)
-            val generatorHint = getGeneratorHint(annotations)
+            val generatorHint = getGeneratorHint(fieldAnnotations)
             if (generatorHint != null) {
                 // check code is not changed
                 if (generatorHint is GeneratorHint.Generated) {
@@ -143,28 +142,38 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
             transientFields += variableNames.map {
                 TransientField(Variable(variableType, it.toString()), node, generatorHint)
             }
-        } else if (variableType.name == "io.objectbox.relation.ToOne") {
-            // TODO
-        } else if (has<Relation>(annotations)) {
-            if (variableType.name == "java.util.List") {
-                manyRelations += variableNames.map { parseRelationToMany(annotations, it, variableType) }
-            } else {
-                oneRelations += variableNames.map { parseRelationToOne(annotations, it, variableType) }
-            }
         } else {
-            properties += variableNames.map { parseProperty(annotations, it, node, variableType) }
+            for (variableName in variableNames) {
+                parseNonTransientField(node, fieldAnnotations, variableType, variableName)
+            }
         }
 
         // check what type of not-null annotation is used
         if (usedNotNullAnnotation == null) {
-            usedNotNullAnnotation = annotations.find {
+            usedNotNullAnnotation = fieldAnnotations.find {
+                // TODO there are more null related relations
                 it.typeName.fullyQualifiedName == "NotNull" || it.typeName.fullyQualifiedName == "NonNull"
             }?.typeName?.fullyQualifiedName?.let { "@" + it }
         }
 
         // clear all collected annotations for this field
-        annotations.clear()
+        fieldAnnotations.clear()
         lastField = node
+    }
+
+    private fun parseNonTransientField(node: FieldDeclaration, annotations: MutableList<Annotation>,
+                                       variableType: VariableType, variableName: SimpleName) {
+        if (variableType.name == "io.objectbox.relation.ToOne" && !has<Generated>(fieldAnnotations)) {
+            // TODO
+        } else if (has<Relation>(annotations)) {
+            if (variableType.name == "java.util.List") {
+                manyRelations += parseRelationToMany(annotations, variableName, variableType)
+            } else {
+                oneRelations += parseRelationToOne(annotations, variableName, variableType)
+            }
+        } else {
+            properties += parseProperty(node, annotations, variableType, variableName)
+        }
     }
 
     private val ASTNode.codePlace: String?
@@ -220,6 +229,7 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
         return ToOneRelation(
                 variable = Variable(variableType, fieldName.toString()),
                 // In ObjectBox, we always use a id property (at least for now), defaults to name + "Id" if absent
+                // TODO check if property is present, if not mark it virtual
                 targetIdField = proxy.idProperty.nullIfBlank() ?: fieldName.toString() + "Id",
                 isNotNull = hasNotNull(fa),
                 unique = false //fa.has<Unique>()
@@ -250,8 +260,8 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
         )
     }
 
-    private fun parseProperty(fa: MutableList<Annotation>, fieldName: SimpleName,
-                              astNode: FieldDeclaration, variableType: VariableType): ParsedProperty {
+    private fun parseProperty(astNode: FieldDeclaration, fa: MutableList<Annotation>,
+                              variableType: VariableType, fieldName: SimpleName): ParsedProperty {
         val property = fa.proxy<Property>()
         val index = fa.proxy<Index>()
         val id = fa.proxy<Id>()
