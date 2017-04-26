@@ -7,37 +7,59 @@ import org.junit.Ignore
 import org.junit.Test
 
 /**
- * Tests if the @ToOne and @ToMany annotations are properly parsed.
+ * Tests @Relation parsing (to-one and to-many)
  */
-@Ignore("Feature not yet available")
-class VisitorRelationsTest : VisitorTestBase() {
+class RelationParseTest : VisitorTestBase() {
 
     @Test
-    fun toOne() {
+    fun toOneWithCustomTargetId() {
         val entity = visit(
                 //language=java
                 """
         package com.example;
 
         import io.objectbox.annotation.Entity;
-        import io.objectbox.annotation.ToOne;
+        import io.objectbox.annotation.Relation;
 
         @Entity
         class Foobar {
             String name;
-            long barId;
+            long customBarId;
 
-            @ToOne(joinProperty = "barId")
+            @Relation(idProperty = "customBarId")
             Bar bar;
         }
         """, listOf("Bar"))!!
         assertThat(entity.toOneRelations, equalTo(
-                listOf(ToOneRelation(Variable(BarType, "bar"), targetIdField = "barId"))
+                listOf(ToOneRelation(Variable(BarType, "bar"), targetIdField = "customBarId"))
         ))
     }
 
     @Test
-    fun toOneWithoutProperty() {
+    fun toOneWithDefaultTargetIdProperty() {
+        val entity = visit(
+                //language=java
+                """
+        package com.example;
+
+        import io.objectbox.annotation.Entity;
+        import io.objectbox.annotation.Relation;
+
+        @Entity
+        class Foobar {
+            String name;
+
+            @Relation
+            Bar bar;
+        }
+        """, listOf("Bar"))!!
+        assertThat(entity.toOneRelations, equalTo(
+                listOf(ToOneRelation(Variable(BarType, "bar"), targetIdField = "barId")))
+        )
+    }
+
+    @Test
+    fun toOneWithAdditionalAnnotations() {
         val entity = visit(
                 //language=java
                 """
@@ -45,33 +67,9 @@ class VisitorRelationsTest : VisitorTestBase() {
 
         import io.objectbox.annotation.Column;
         import io.objectbox.annotation.Entity;
-        import io.objectbox.annotation.ToOne;
-        import org.jetbrains.annotations.NotNull;
-
-        @Entity
-        class Foobar {
-            String name;
-
-            @ToOne
-            Bar bar;
-        }
-        """, listOf("Bar"))!!
-        assertThat(entity.toOneRelations, equalTo(
-                listOf(ToOneRelation(Variable(BarType, "bar")))
-        ))
-    }
-
-    @Test
-    fun toOneWithoutPropertyMore() {
-        val entity = visit(
-                //language=java
-                """
-        package com.example;
-
-        import io.objectbox.annotation.Column;
-        import io.objectbox.annotation.Entity;
-        import io.objectbox.annotation.Property;import io.objectbox.annotation.ToOne;
-        import io.objectbox.annotation.Unique;
+        import io.objectbox.annotation.Property;
+        import io.objectbox.annotation.Relation;
+        // unsupported: import io.objectbox.annotation.Unique;
         import org.jetbrains.annotations.NotNull;
 
         @Entity
@@ -79,14 +77,14 @@ class VisitorRelationsTest : VisitorTestBase() {
             String name;
 
             @SuppressWarnings("NullableProblems")
-            @ToOne
-            @Unique
+            @Relation
+            // unsupported: @Unique
             @NotNull
             Bar bar;
         }
         """, listOf("Bar"))!!
         assertThat(entity.toOneRelations, equalTo(
-                listOf(ToOneRelation(Variable(BarType, "bar"), isNotNull = true, unique = true))
+                listOf(ToOneRelation(Variable(BarType, "bar"), targetIdField = "barId", isNotNull = true))
         ))
     }
 
@@ -98,7 +96,7 @@ class VisitorRelationsTest : VisitorTestBase() {
         package com.example;
 
         import io.objectbox.annotation.Entity;
-        import io.objectbox.annotation.ToMany;
+        import io.objectbox.annotation.Relation;
 
         import java.util.List;
 
@@ -106,7 +104,7 @@ class VisitorRelationsTest : VisitorTestBase() {
         class Foobar {
             String name;
 
-            @ToMany(referencedJoinProperty = "barId")
+            @Relation(idProperty = "barId")
             List<Bar> bars;
         }
         """, listOf("Bar"))!!
@@ -116,6 +114,7 @@ class VisitorRelationsTest : VisitorTestBase() {
     }
 
     @Test
+    @Ignore("to-many with multiple join conditions is not supported by ObjectBox")
     fun toManyWithMulticolumnJoin() {
         val entity = visit(
                 //language=java
@@ -151,6 +150,7 @@ class VisitorRelationsTest : VisitorTestBase() {
     }
 
     @Test
+    @Ignore("to-many with order is not yet supported by ObjectBox")
     fun toManyOrderBy() {
         val entity = visit(
                 //language=java
