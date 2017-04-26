@@ -74,7 +74,8 @@ data class JoinOnProperty(val source: String, val target: String)
 
 data class ToOneRelation(
         val variable: Variable,
-        val targetIdField: String? = null,
+        val targetType: VariableType,
+        val targetIdName: String? = null,
         val isNotNull: Boolean = false,
         val unique: Boolean = false,
         val astNode: FieldDeclaration? = null,

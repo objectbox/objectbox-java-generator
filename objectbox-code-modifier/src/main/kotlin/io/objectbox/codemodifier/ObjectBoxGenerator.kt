@@ -92,12 +92,12 @@ class ObjectBoxGenerator(val formattingOptions: FormattingOptions? = null,
         // val parsedEntitiesByName = parsedEntities.groupBy { it.dbName ?: it.name }
         parsedEntities.forEach { parsedEntity ->
             parsedEntity.toOneRelations.forEach { toOne ->
-                val idName = toOne.targetIdField ?: throw RuntimeException("Unnamed idProperty for to-one " +
+                val idName = toOne.targetIdName ?: throw RuntimeException("Unnamed idProperty for to-one " +
                         "@Relation")
                 var parsedProperty: ParsedProperty? = parsedEntity.properties.find { it.variable.name == idName }
                 if (parsedProperty == null) {
                     if (parsedEntity.keepSource) {
-                        throw RuntimeException("No idProperty available with the name \"${toOne.targetIdField}\"" +
+                        throw RuntimeException("No idProperty available with the name \"${toOne.targetIdName}\"" +
                                 " (needed for @Relation)")
                     } else {
                         // Property does not exist yet, adding it to parsedEntity.propertiesToGenerate will take care

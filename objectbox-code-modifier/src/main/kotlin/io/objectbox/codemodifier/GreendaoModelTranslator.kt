@@ -1,7 +1,6 @@
 package io.objectbox.codemodifier
 
 import io.objectbox.generator.idsync.IdSync
-import io.objectbox.generator.TextUtil
 import io.objectbox.generator.model.*
 
 object GreendaoModelTranslator {
@@ -90,15 +89,15 @@ object GreendaoModelTranslator {
 
     private fun convertToOne(toOne: ToOneRelation, parsedEntity: ParsedEntity, entity: Entity, schema: Schema) {
         val targetEntity: Entity = schema.entities.singleOrNull() {
-            it.className == toOne.variable.type.simpleName
+            it.className == toOne.targetType.simpleName
         } ?: throw RuntimeException("Class ${toOne.variable.type.name} marked " +
                 "with @Relation in class ${parsedEntity.name} is not an entity")
         val toOneConverted: ToOne
-        if (toOne.targetIdField != null) {
+        if (toOne.targetIdName != null) {
             // find fkProperty in current entity
             val fkProperty: Property = entity.properties.find {
-                it.propertyName == toOne.targetIdField
-            } ?: throw RuntimeException("Can't find ${toOne.targetIdField} in ${parsedEntity.name} " +
+                it.propertyName == toOne.targetIdName
+            } ?: throw RuntimeException("Can't find ${toOne.targetIdName} in ${parsedEntity.name} " +
                     "for @Relation")
             if (toOne.unique) {
                 // wat?

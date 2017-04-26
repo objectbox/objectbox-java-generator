@@ -2,7 +2,10 @@ package io.obectbox.codemodifier
 
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
+import com.natpryce.hamkrest.hasSize
 import io.objectbox.codemodifier.*
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Ignore
 import org.junit.Test
 
@@ -12,7 +15,32 @@ import org.junit.Test
 class RelationParseTest : VisitorTestBase() {
 
     @Test
-    fun toOneWithCustomTargetId() {
+    fun toOne() {
+        val entity = visit(
+                //language=java
+                """
+        package com.example;
+
+        import io.objectbox.annotation.Entity;
+        import io.objectbox.relation.ToOne;
+
+        @Entity
+        class Foobar {
+            String name;
+
+            ToOne<Bar> bar;
+        }
+        """, listOf("Bar"))!!
+        assertThat(entity.toOneRelations, hasSize(equalTo(1)))
+        val toOneRelation = entity.toOneRelations[0]
+        assertEquals(toOneRelation.variable.type.name, "io.objectbox.relation.ToOne")
+        assertEquals(toOneRelation.targetType, BarType)
+        assertEquals(toOneRelation.targetIdName, "barId")
+        assertTrue(toOneRelation.variableIsToOne)
+    }
+
+    @Test
+    fun toOneTargetWithCustomTargetId() {
         val entity = visit(
                 //language=java
                 """
@@ -30,13 +58,15 @@ class RelationParseTest : VisitorTestBase() {
             Bar bar;
         }
         """, listOf("Bar"))!!
-        assertThat(entity.toOneRelations, equalTo(
-                listOf(ToOneRelation(Variable(BarType, "bar"), targetIdField = "customBarId"))
-        ))
+        assertThat(entity.toOneRelations, equalTo(toOneBarList("customBarId")))
     }
 
+    private fun toOneBarList(targetIdFieldName: String = "barId") = listOf(
+            ToOneRelation(Variable(BarType, "bar"), targetType = BarType, targetIdName = targetIdFieldName)
+    )
+
     @Test
-    fun toOneWithDefaultTargetIdProperty() {
+    fun toOneTargetWithDefaultTargetIdProperty() {
         val entity = visit(
                 //language=java
                 """
@@ -53,13 +83,11 @@ class RelationParseTest : VisitorTestBase() {
             Bar bar;
         }
         """, listOf("Bar"))!!
-        assertThat(entity.toOneRelations, equalTo(
-                listOf(ToOneRelation(Variable(BarType, "bar"), targetIdField = "barId")))
-        )
+        assertThat(entity.toOneRelations, equalTo(toOneBarList()))
     }
 
     @Test
-    fun toOneWithAdditionalAnnotations() {
+    fun toOneTargetWithAdditionalAnnotations() {
         val entity = visit(
                 //language=java
                 """
@@ -83,13 +111,13 @@ class RelationParseTest : VisitorTestBase() {
             Bar bar;
         }
         """, listOf("Bar"))!!
-        assertThat(entity.toOneRelations, equalTo(
-                listOf(ToOneRelation(Variable(BarType, "bar"), targetIdField = "barId", isNotNull = true))
+        assertThat(entity.toOneRelations, equalTo(listOf(
+                ToOneRelation(Variable(BarType, "bar"), targetType = BarType, targetIdName = "barId", isNotNull = true))
         ))
     }
 
     @Test
-    fun toMany() {
+    fun toManyTarget() {
         val entity = visit(
                 //language=java
                 """

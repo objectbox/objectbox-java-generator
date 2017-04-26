@@ -164,12 +164,12 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
     private fun parseNonTransientField(node: FieldDeclaration, annotations: MutableList<Annotation>,
                                        variableType: VariableType, variableName: SimpleName) {
         if (variableType.name == "io.objectbox.relation.ToOne" && !has<Generated>(fieldAnnotations)) {
-            // TODO
+            oneRelations += parseRelationToOne(annotations, variableName, variableType, true)
         } else if (has<Relation>(annotations)) {
             if (variableType.name == "java.util.List") {
                 manyRelations += parseRelationToMany(annotations, variableName, variableType)
             } else {
-                oneRelations += parseRelationToOne(annotations, variableName, variableType)
+                oneRelations += parseRelationToOne(annotations, variableName, variableType, false)
             }
         } else {
             properties += parseProperty(node, annotations, variableType, variableName)
@@ -223,15 +223,25 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
     }
 
 
-    private fun parseRelationToOne(fa: MutableList<Annotation>, fieldName: SimpleName, variableType: VariableType)
+    private fun parseRelationToOne(annotations: MutableList<Annotation>, fieldName: SimpleName,
+                                   variableType: VariableType, plainToOne: Boolean)
             : ToOneRelation {
-        val proxy = fa.proxy<Relation>()!!
+        val proxy = annotations.proxy<Relation>()
+        // In ObjectBox, we always use a id property (at least for now), defaults to name + "Id" if absent
+        // TODO check if property is present, if not mark it virtual
+        val targetIdName: String? = proxy?.idProperty?.nullIfBlank() ?: fieldName.toString() + "Id"
+
+        val targetType = if (plainToOne) {
+            variableType.typeArguments?.singleOrNull()
+                    ?: throw RuntimeException("You must specify a type argument for ToOne: " + fieldName)
+        } else variableType
+
         return ToOneRelation(
                 variable = Variable(variableType, fieldName.toString()),
-                // In ObjectBox, we always use a id property (at least for now), defaults to name + "Id" if absent
-                // TODO check if property is present, if not mark it virtual
-                targetIdField = proxy.idProperty.nullIfBlank() ?: fieldName.toString() + "Id",
-                isNotNull = hasNotNull(fa),
+                targetType = targetType,
+                targetIdName = targetIdName,
+                isNotNull = hasNotNull(annotations),
+                variableIsToOne = plainToOne,
                 unique = false //fa.has<Unique>()
         )
     }
