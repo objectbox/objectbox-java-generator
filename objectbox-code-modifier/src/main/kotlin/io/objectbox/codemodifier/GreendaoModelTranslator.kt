@@ -97,8 +97,8 @@ object GreendaoModelTranslator {
             // find fkProperty in current entity
             val fkProperty: Property = entity.properties.find {
                 it.propertyName == toOne.targetIdName
-            } ?: throw RuntimeException("Can't find ${toOne.targetIdName} in ${parsedEntity.name} " +
-                    "for @Relation")
+            } ?: throw RuntimeException("Can't find to-one target ID property ${toOne.targetIdName}" +
+                    " in ${parsedEntity.name} for @Relation")
             if (toOne.unique) {
                 // wat?
                 throw RuntimeException("If @Relation with ID property used, @Unique is ignored. " +
@@ -106,7 +106,7 @@ object GreendaoModelTranslator {
             }
             toOneConverted = entity.addToOne(targetEntity, fkProperty, toOne.variable.name)
         } else {
-            toOneConverted = entity.addToOneWithoutProperty(
+            toOneConverted = entity.addToOneVirtualProperty(
                     toOne.variable.name,
                     targetEntity,
                     null,

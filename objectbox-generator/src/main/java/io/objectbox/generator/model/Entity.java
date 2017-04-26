@@ -242,11 +242,11 @@ public class Entity implements HasParsedElement {
         return toOne;
     }
 
-    public ToOne addToOneWithoutProperty(String name, Entity target, String fkColumnName) {
-        return addToOneWithoutProperty(name, target, fkColumnName, false, false);
+    public ToOne addToOneVirtualProperty(String name, Entity target, String targetIdDbName) {
+        return addToOneVirtualProperty(name, target, targetIdDbName, false, false);
     }
 
-    public ToOne addToOneWithoutProperty(String name, Entity target, String fkColumnName, boolean notNull,
+    public ToOne addToOneVirtualProperty(String name, Entity target, String targetIdDbName, boolean notNull,
                                          boolean unique) {
         Property.PropertyBuilder propertyBuilder = new Property.PropertyBuilder(schema, this, null, name);
         if (notNull) {
@@ -255,9 +255,10 @@ public class Entity implements HasParsedElement {
         if (unique) {
             propertyBuilder.unique();
         }
-        propertyBuilder.dbName(fkColumnName);
+        propertyBuilder.dbName(targetIdDbName);
         Property targetIdProperty = propertyBuilder.getProperty();
         ToOne toOne = new ToOne(schema, this, target, targetIdProperty, false);
+        propertyBuilder.virtualTarget(toOne);
         toOne.setName(name);
         toOneRelations.add(toOne);
         return toOne;
