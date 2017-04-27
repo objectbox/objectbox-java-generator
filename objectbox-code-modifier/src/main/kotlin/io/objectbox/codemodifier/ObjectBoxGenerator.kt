@@ -184,8 +184,6 @@ class ObjectBoxGenerator(val formattingOptions: FormattingOptions? = null,
         if (entity.active) {
             transformer.ensureImport("io.objectbox.Box")
             transformer.ensureImport("io.objectbox.BoxStore")
-            transformer.ensureImport("io.objectbox.exception.DbDetachedException")
-            transformer.ensureImport("io.objectbox.exception.DbException")
 
             generateToManyRelations(entity, transformer)
             generateToOneRelations(entity, parsedEntity, transformer)
@@ -294,6 +292,9 @@ class ObjectBoxGenerator(val formattingOptions: FormattingOptions? = null,
     }
 
     private fun generateToManyRelations(entity: Entity, transformer: EntityClassTransformer) {
+        if (entity.toManyRelations.isEmpty()) return
+        transformer.ensureImport("io.objectbox.exception.DbDetachedException")
+
         // add everything in reverse as transformer writes in reverse direction
         entity.toManyRelations.reversed().forEach { toMany ->
             transformer.ensureImport("${toMany.targetEntity.javaPackage}.${toMany.targetEntity.className}_")
