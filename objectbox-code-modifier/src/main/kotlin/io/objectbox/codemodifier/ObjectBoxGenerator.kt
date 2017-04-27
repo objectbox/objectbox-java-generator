@@ -228,7 +228,7 @@ class ObjectBoxGenerator(val formattingOptions: FormattingOptions? = null,
             if (properties.isNotEmpty()
                     && parsedEntity.constructors.none { it.parameters.isEmpty() && !it.generated }) {
                 transformer.defConstructor(emptyList()) {
-                    """ @Generated(hash = $HASH_STUB)
+                    """ @Generated($HASH_STUB)
                         public ${parsedEntity.name}() {
                         }"""
                 }
@@ -246,15 +246,10 @@ class ObjectBoxGenerator(val formattingOptions: FormattingOptions? = null,
     }
 
     private fun generateGettersAndSetters(parsedEntity: ParsedEntity, transformer: EntityClassTransformer) {
-        if (!parsedEntity.generateGettersSetters) {
-            println("Not generating getters or setters for ${parsedEntity.name}.")
-            return
-        }
         // add everything (fields, set before get) in reverse as transformer writes in reverse direction
         parsedEntity.properties.reversed().filter {
             // always add getter/setter if daoCompat is enabled as compat DAO classes use them
-            // otherwise only add getter/setter if field is not visible (except always for ID field)
-            // background: Cursor does access fields directly if they are visible
+            // otherwise only add getter/setter if field is not visible for Cursor
             daoCompat || !it.fieldAccessible
         }.forEach { field ->
             // only define missing getters/setters to avoid overwriting customized getters/setters

@@ -262,7 +262,8 @@ class ObjectBoxGeneratorTest {
         val expectedSource = expectedFile.readText()
 
         val sameFileContent = collector.checkSucceeds({
-            assertEquals("${expectedFile.name} does not match with ${actualFile.name}", expectedSource, actualSource)
+            assertEquals("${expectedFile.parentFile.name}/${expectedFile.name} does not match with" +
+                    " ${actualFile.parentFile.name}/${actualFile.name}", expectedSource, actualSource)
             true
         }) ?: false
         if (!sameFileContent && UPDATE_EXPECTED_FILES) {

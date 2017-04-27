@@ -93,7 +93,6 @@ data class ToManyRelation(
 data class ParsedEntity(
         val name: String,
         val schema: String,
-        val active: Boolean,
         val properties: MutableList<ParsedProperty>,
         val transientFields: List<TransientField>,
         val constructors: List<Method>,
@@ -110,7 +109,6 @@ data class ParsedEntity(
         val keepSource: Boolean,
         val createInDb: Boolean,
         val generateConstructors: Boolean,
-        val generateGettersSetters: Boolean,
         val protobufClassName: String?,
         val notNullAnnotation: String?,
         val lastFieldDeclaration: FieldDeclaration?,
@@ -143,7 +141,7 @@ sealed class GeneratorHint {
         }
 
         override fun toString(): String {
-            return "Generated(hash=$hash)"
+            return "Generated($hash)"
         }
     }
 }

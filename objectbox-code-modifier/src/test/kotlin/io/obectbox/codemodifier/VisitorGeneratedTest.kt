@@ -29,7 +29,7 @@ class VisitorGeneratedTest : VisitorTestBase() {
 
             transient String surname;
 
-            @Generated(hash = $cityHash)
+            @Generated($cityHash)
             @Transient
             String city;
         }
@@ -59,7 +59,7 @@ class VisitorGeneratedTest : VisitorTestBase() {
             Foobar(String name) {
             }
 
-            @Generated(hash = $constructorHash)
+            @Generated($constructorHash)
             Foobar(String name, int age) {
             }
 
@@ -71,9 +71,9 @@ class VisitorGeneratedTest : VisitorTestBase() {
             }
         }
         """)!!
-        Assert.assertEquals(entity.constructors[0].hint, GeneratorHint.Generated(-1))
-        Assert.assertEquals(entity.constructors[1].hint, GeneratorHint.Generated(constructorHash))
-        Assert.assertEquals(entity.constructors[2].hint, GeneratorHint.Keep)
+        Assert.assertEquals(GeneratorHint.Generated(-1), entity.constructors[0].hint)
+        Assert.assertEquals(GeneratorHint.Generated(constructorHash), entity.constructors[1].hint)
+        Assert.assertEquals(GeneratorHint.Keep, entity.constructors[2].hint)
         Assert.assertNull(entity.constructors[3].hint)
     }
 
@@ -115,7 +115,7 @@ class VisitorGeneratedTest : VisitorTestBase() {
 
         @Entity
         class Foobar {
-            @Generated(hash = 10)
+            @Generated(10)
             transient String name;
         }
         """)!!
@@ -130,7 +130,7 @@ class VisitorGeneratedTest : VisitorTestBase() {
 
         @Entity
         class Foobar {
-            @Generated(hash = 10)
+            @Generated(10)
             Foobar() {
                 // body
             }
@@ -147,7 +147,7 @@ class VisitorGeneratedTest : VisitorTestBase() {
 
         @Entity
         class Foobar {
-            @Generated(hash = 10)
+            @Generated(10)
             void hello() {
                 // body
             }

@@ -42,7 +42,6 @@ object GreendaoModelTranslator {
             val entity = schema.addEntity(parsedEntity.name)
             addBasicProperties(daoPackage, parsedEntity, entity)
             if (parsedEntity.dbName != null) entity.dbName = parsedEntity.dbName
-            if (parsedEntity.active) entity.active = true
             entity.isSkipCreationInDb = !parsedEntity.createInDb
             entity.javaPackage = parsedEntity.packageName
 

@@ -10,8 +10,15 @@ public class Note {
 
     @Id
     private Long id;
+    private String text;
 
+    @Generated(1272611929)
     public Note() {
+    }
+
+    public Note(Long id) {
+        // custom constructor
+        this.id = id + 1;
     }
 
     public Long getId() {
@@ -20,6 +27,14 @@ public class Note {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getText() {
+        return text;
+    }
+
+    public void setText(String text) {
+        this.text = text;
     }
 
 }

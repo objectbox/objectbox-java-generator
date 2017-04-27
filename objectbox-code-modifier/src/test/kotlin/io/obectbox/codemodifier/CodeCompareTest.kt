@@ -103,7 +103,7 @@ class CodeCompareTest {
     fun codeHashConsiderJdocs2() {
         val hashA = CodeCompare.codeHash(
             """
-            @Generated(hash = 60841032)
+            @Generated(60841032)
             public Customer() {
             }
             """.trimIndent()
@@ -111,7 +111,7 @@ class CodeCompareTest {
 
         val hashB = CodeCompare.codeHash(
             """
-            @Generated(hash = 60841032)
+            @Generated(60841032)
             public Customer() {
                 /** test*/
             }

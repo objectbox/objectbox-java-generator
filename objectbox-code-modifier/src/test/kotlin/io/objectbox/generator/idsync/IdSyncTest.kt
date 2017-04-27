@@ -288,7 +288,6 @@ class IdSyncTest {
         return ParsedEntity(
                 name = name + "_",
                 schema = "default",
-                active = false,
                 properties = properties.toMutableList(),
                 transientFields = emptyList(),
                 constructors = emptyList(),
@@ -305,7 +304,6 @@ class IdSyncTest {
                 keepSource = false,
                 createInDb = true,
                 generateConstructors = true,
-                generateGettersSetters = true,
                 protobufClassName = null,
                 notNullAnnotation = null,
                 lastFieldDeclaration = null

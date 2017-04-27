@@ -12,13 +12,13 @@ public class Note {
 
     private String name;
 
-    @Generated(hash = 654067880)
+    @Generated(654067880)
     public Note(Long id, String name) {
         this.id = id;
         this.name = name;
     }
 
-    @Generated(hash = 1272611929)
+    @Generated(1272611929)
     public Note() {
     }
 

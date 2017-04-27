@@ -10,7 +10,7 @@ public class Note {
     @Id
     private Long id;
 
-    @Generated(hash = 1272611929)
+    @Generated(1272611929)
     public Note() {
     }
 

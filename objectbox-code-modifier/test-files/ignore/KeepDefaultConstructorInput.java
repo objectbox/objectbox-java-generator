@@ -11,7 +11,7 @@ public class Note {
     private Long id;
     private String text;
 
-    @Generated(hash = 1272611929)
+    @Generated(1272611929)
     public Note() {
     }
 

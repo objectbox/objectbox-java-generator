@@ -151,7 +151,7 @@ class EntityClassTransformerTest {
                 int age;
                 /** Name of the Foobar */
                 @Internal
-                @Generated(hash = 474271387)
+                @Generated(474271387)
                 transient String name;
 
                 Foobar() {
@@ -208,7 +208,7 @@ class EntityClassTransformerTest {
 
                     public    int age=10000;
                     @Internal
-                    @Generated(hash = 469875918)
+                    @Generated(469875918)
                     transient int age;
 
                         private Foobar(){
@@ -238,7 +238,7 @@ class EntityClassTransformerTest {
             """.trimIndent()
         )
         val methodCode = """
-                @Generated(hash = GENERATED_HASH_STUB)
+                @Generated(GENERATED_HASH_STUB)
                 public void hello(String name, int age) {
                     System.out.println("Hi, " + name);
                 }
@@ -255,7 +255,7 @@ class EntityClassTransformerTest {
 
             @Entity
             class Foobar {
-                @Generated(hash = ${CodeCompare.codeHash(methodCode)})
+                @Generated(${CodeCompare.codeHash(methodCode)})
                 public void hello(String name, int age) {
                     System.out.println("Hi, " + name);
                 }
@@ -285,7 +285,7 @@ class EntityClassTransformerTest {
         )
 
         val constructorCode = """
-                @Generated(hash = GENERATED_HASH_STUB)
+                @Generated(GENERATED_HASH_STUB)
                 public Foobar(String name, int age) {
                     throw new RuntimeException("Error");
                 }
@@ -304,7 +304,7 @@ class EntityClassTransformerTest {
 
             @Entity
             class Foobar {
-                @Generated(hash = ${CodeCompare.codeHash(constructorCode)})
+                @Generated(${CodeCompare.codeHash(constructorCode)})
                 public Foobar(String name, int age) {
                     throw new RuntimeException("Error");
                 }
@@ -324,7 +324,7 @@ class EntityClassTransformerTest {
 
             @Entity
             class Foobar {
-                @Generated(hash = 400782353)
+                @Generated(400782353)
                 public Foobar() {
                 }
             }
@@ -332,7 +332,7 @@ class EntityClassTransformerTest {
         )
 
         val constructorCode = """
-                @Generated(hash = GENERATED_HASH_STUB)
+                @Generated(GENERATED_HASH_STUB)
                 public Foobar(String name, int age) {
                     throw new RuntimeException("Error");
                 }
@@ -351,11 +351,11 @@ class EntityClassTransformerTest {
 
             @Entity
             class Foobar {
-                @Generated(hash = 400782353)
+                @Generated(400782353)
                 public Foobar() {
                 }
 
-                @Generated(hash = ${CodeCompare.codeHash(constructorCode)})
+                @Generated(${CodeCompare.codeHash(constructorCode)})
                 public Foobar(String name, int age) {
                     throw new RuntimeException("Error");
                 }
@@ -393,7 +393,7 @@ class EntityClassTransformerTest {
             @Entity
             class Foobar {
                 @Internal
-                @Generated(hash = 999070538)
+                @Generated(999070538)
                 transient String name;
             }
             """.trimIndent(),
@@ -481,7 +481,7 @@ class EntityClassTransformerTest {
                 }
 
                 /** will be removed */
-                @Generated(hash = -1)
+                @Generated(-1)
                 public void hello() {
                 }
             }
@@ -500,7 +500,7 @@ class EntityClassTransformerTest {
             @Entity
             class Foobar {
                 @Internal
-                @Generated(hash = 999070538)
+                @Generated(999070538)
                 transient String name;
             }
             """.trimIndent(),
@@ -527,7 +527,7 @@ class EntityClassTransformerTest {
         val result = EntityClassTransformer(entityClass, jdtOptions, formattingOptions).apply {
             defMethod("hello", "String", "int") {
                 """
-                @Generated(hash = -1)
+                @Generated(-1)
                 public void hello(String name, int age) {
                     System.out.println("Hi, " + name);
                 }
@@ -558,7 +558,7 @@ class EntityClassTransformerTest {
         val result = EntityClassTransformer(entityClass, jdtOptions, formattingOptions).apply {
             defConstructor(listOf("String", "int")) {
                 """
-                @Generated(hash = -1)
+                @Generated(-1)
                 public Foobar(String name, int age) {
                     throw new RuntimeException("Error");
                 }
@@ -608,7 +608,7 @@ class EntityClassTransformerTest {
         EntityClassTransformer(entityClass, jdtOptions, formattingOptions).apply {
             defMethod("hello", "String", "int") {
                 """
-                @Generated(hash = -1)
+                @Generated(-1)
                 public void hello(String name, int age) {
                     System.out.println("Hi, " + name);
                 }
@@ -636,7 +636,7 @@ class EntityClassTransformerTest {
         EntityClassTransformer(entityClass, jdtOptions, formattingOptions).apply {
             defConstructor(listOf("String", "int")) {
                 """
-                @Generated(hash = -1)
+                @Generated(-1)
                 public Foobar(String name, int age) {
                     throw new RuntimeException("Error");
                 }

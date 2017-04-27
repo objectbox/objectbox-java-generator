@@ -13,14 +13,14 @@ public class Note {
     private String string;
     private int newInt;
 
-    @Generated(hash = 1884512397)
+    @Generated(1884512397)
     public Note(Long id, String string, String string2) {
         this.id = id;
         this.string = string;
         this.string2 = string2;
     }
 
-    @Generated(hash = 1272611929)
+    @Generated(1272611929)
     public Note() {
     }
 

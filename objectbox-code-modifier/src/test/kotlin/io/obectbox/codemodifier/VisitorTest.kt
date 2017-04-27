@@ -162,7 +162,7 @@ class VisitorTest : VisitorTestBase() {
 
         @Entity
         class Foobar {
-            @Property(nameInDb = "SECOND_NAME")
+            @Property @NameInDb("SECOND_NAME")
             String name;
         }
         """)!!
@@ -325,7 +325,7 @@ class VisitorTest : VisitorTestBase() {
             String name;
             int age;
 
-            @Generated(hash = -1)
+            @Generated(-1)
             Foobar(String name, int age) {
             }
 

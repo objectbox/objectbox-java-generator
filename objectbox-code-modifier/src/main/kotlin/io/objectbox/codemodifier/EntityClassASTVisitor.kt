@@ -10,6 +10,8 @@ import kotlin.reflect.KClass
  * Visits compilation unit, find if it is an Entity and reads all the required information about it
  */
 class EntityClassASTVisitor(val source: String, val classesInPackage: List<String> = emptyList()) : LazyVisitor() {
+    // TODO do we need all those members (vs. parsed model)?
+
     var isEntity = false
     var schemaName: String = "default"
     val properties = mutableListOf<ParsedProperty>()
@@ -23,11 +25,8 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
     var typeDeclaration: TypeDeclaration? = null
     val oneRelations = mutableListOf<ToOneRelation>()
     val manyRelations = mutableListOf<ToManyRelation>()
-    var active = false
     var keepSource = false
     var createTable = true
-    var generateConstructors = true
-    var generateGettersSetters = true
     var protobufClassName: String? = null
     var usedNotNullAnnotation: String? = null
     var lastField: FieldDeclaration? = null
@@ -82,12 +81,7 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
                     node.hasType(Entity::class) -> {
                         isEntity = true
                         val entityAnnotation = AnnotationProxy<Entity>(node)
-                        // schemaName = "entityAnnotation.schema
-                        // active = entityAnnotation.active
-                        entityDbName = entityAnnotation.nameInDb.nullIfBlank()
-                        // createTable = entityAnnotation.createInDb
-                        generateConstructors = entityAnnotation.generateConstructors
-                        generateGettersSetters = true // TODO trouble with that - getters and setter are gone in tests - entityAnnotation.generateGettersSetters
+                        // schemaName = entityAnnotation.schema
                         if (node is NormalAnnotation) {
                             // protobufClassName = (node["protobuf"] as? TypeLiteral)?.type?.typeName?.nullIfBlank()
                             if (protobufClassName != null && entityDbName == null) {
@@ -104,6 +98,9 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
                     }
                     node.hasType(Keep::class) -> {
                         keepSource = true
+                    }
+                    node.hasType(NameInDb::class) -> {
+                        entityDbName = AnnotationProxy<NameInDb>(node).value.nullIfBlank()
                     }
                 }
             }
@@ -202,7 +199,7 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
         return if (has<Keep>(annotations)) {
             GeneratorHint.Keep
         } else {
-            annotations.proxy<Generated>()?.let { GeneratorHint.Generated(it.hash) }
+            annotations.proxy<Generated>()?.let { GeneratorHint.Generated(it.value) }
         }
     }
 
@@ -230,6 +227,7 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
         // In ObjectBox, we always use a id property (at least for now), defaults to name + "Id" if absent
         // TODO check if property is present, if not mark it virtual
         val targetIdName: String? = proxy?.idProperty?.nullIfBlank() ?: fieldName.toString() + "Id"
+        //TODO NEW: val targetIdName: String? = proxy?.idProperty?.nullIfBlank()
 
         val targetType = if (plainToOne) {
             variableType.typeArguments?.singleOrNull()
@@ -272,7 +270,7 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
 
     private fun parseProperty(astNode: FieldDeclaration, fa: MutableList<Annotation>,
                               variableType: VariableType, fieldName: SimpleName): ParsedProperty {
-        val property = fa.proxy<Property>()
+        val nameInDb = fa.proxy<NameInDb>()
         val index = fa.proxy<Index>()
         val id = fa.proxy<Id>()
         val uid = fa.proxy<Uid>()
@@ -283,7 +281,7 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
                 idParams = id?.let { EntityIdParams(false /*it.monotonic*/, it.assignable) },
                 index = index?.let { PropertyIndex(null, false /* TODO indexAnnotation.unique*/) },
                 isNotNull = astNode.type.isPrimitiveType || hasNotNull(fa),
-                dbName = property?.nameInDb?.nullIfBlank(),
+                dbName = nameInDb?.value?.nullIfBlank(),
                 uid = if (uid?.value != 0L) uid?.value else null,
                 customType = findConvert(fieldName, fa),
                 fieldAccessible = !Modifier.isPrivate(astNode.modifiers)
@@ -398,7 +396,6 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
             ParsedEntity(
                     name = node.name.identifier,
                     schema = schemaName,
-                    active = active,
                     properties = properties,
                     transientFields = transientFields,
                     constructors = constructors,
@@ -414,8 +411,7 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
                     source = source,
                     keepSource = keepSource,
                     createInDb = createTable,
-                    generateConstructors = generateConstructors,
-                    generateGettersSetters = generateGettersSetters,
+                    generateConstructors = true,
                     protobufClassName = protobufClassName,
                     notNullAnnotation = usedNotNullAnnotation,
                     lastFieldDeclaration = lastField

@@ -17,13 +17,13 @@ public class Note {
     @Property(nameInDb = CONSTANT_COLUMN)
     private String text;
 
-    @Generated(hash = 1816070532)
+    @Generated(1816070532)
     public Note(Long id, String text) {
         this.id = id;
         this.text = text;
     }
 
-    @Generated(hash = 1272611929)
+    @Generated(1272611929)
     public Note() {
     }
 

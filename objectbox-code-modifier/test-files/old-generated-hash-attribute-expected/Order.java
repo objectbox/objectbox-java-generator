@@ -5,7 +5,6 @@ import io.objectbox.BoxStore;
 import io.objectbox.annotation.Entity;
 import io.objectbox.annotation.Generated;
 import io.objectbox.annotation.Id;
-import io.objectbox.annotation.NameInDb;
 import io.objectbox.annotation.Relation;
 import io.objectbox.annotation.apihint.Internal;
 import io.objectbox.exception.DbDetachedException;
@@ -15,8 +14,7 @@ import io.objectbox.exception.DbException;
 /**
  * Entity mapped to table "ORDERS".
  */
-@Entity
-@NameInDb("ORDERS")
+@Entity(nameInDb = "ORDERS")
 public class Order {
 
     @Id(assignable = true)

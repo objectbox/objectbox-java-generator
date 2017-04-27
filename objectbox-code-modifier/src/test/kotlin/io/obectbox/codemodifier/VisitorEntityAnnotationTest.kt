@@ -76,19 +76,6 @@ class VisitorEntityAnnotationTest : VisitorTestBase() {
     }
 
     @Test
-    @Ignore("Feature not yet available")
-    fun activeEntity() {
-        val entity = visit(
-                //language=java
-                """
-        import io.objectbox.annotation.Entity;
-
-        @Entity(active = true) class Foobar {}
-        """)!!
-        Assert.assertTrue(entity.active)
-    }
-
-    @Test
     fun entityName() {
         val entity = visit(
                 //language=java
@@ -145,7 +132,7 @@ class VisitorEntityAnnotationTest : VisitorTestBase() {
                 """
         import io.objectbox.annotation.*;
 
-        @Entity(nameInDb = "BAR")
+        @Entity @NameInDb("BAR")
         class Foobar {}
         """)!!
         Assert.assertEquals("BAR", entity.dbName)

@@ -263,7 +263,7 @@ class EntityClassTransformer(val parsedEntity: ParsedEntity, val jdtOptions: Has
             }
             var code = if (comment != null) "/** $comment */\n" else ""
             code += "@Internal\n"
-            code += "@Generated(hash = $HASH_STUB)\n"
+            code += "@Generated($HASH_STUB)\n"
             var genericParams = type.typeArguments?.map { it.simpleName }?.joinToString() ?: ""
             if (genericParams.isNotBlank()) genericParams = "<$genericParams>"
             if (qualifier != null) {
