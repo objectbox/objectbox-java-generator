@@ -4,8 +4,7 @@ import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
 import com.natpryce.hamkrest.hasSize
 import io.objectbox.codemodifier.*
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
+import org.junit.Assert.*
 import org.junit.Ignore
 import org.junit.Test
 
@@ -35,7 +34,7 @@ class RelationParseTest : VisitorTestBase() {
         val toOneRelation = entity.toOneRelations[0]
         assertEquals(toOneRelation.variable.type.name, "io.objectbox.relation.ToOne")
         assertEquals(toOneRelation.targetType, BarType)
-        assertEquals(toOneRelation.targetIdName, "barId")
+        assertNull(toOneRelation.targetIdName)
         assertTrue(toOneRelation.variableIsToOne)
     }
 
@@ -61,7 +60,7 @@ class RelationParseTest : VisitorTestBase() {
         assertThat(entity.toOneRelations, equalTo(toOneBarList("customBarId")))
     }
 
-    private fun toOneBarList(targetIdFieldName: String = "barId") = listOf(
+    private fun toOneBarList(targetIdFieldName: String? = "barId") = listOf(
             ToOneRelation(Variable(BarType, "bar"), targetType = BarType, targetIdName = targetIdFieldName)
     )
 
@@ -83,7 +82,7 @@ class RelationParseTest : VisitorTestBase() {
             Bar bar;
         }
         """, listOf("Bar"))!!
-        assertThat(entity.toOneRelations, equalTo(toOneBarList()))
+        assertThat(entity.toOneRelations, equalTo(toOneBarList(null)))
     }
 
     @Test
@@ -112,7 +111,7 @@ class RelationParseTest : VisitorTestBase() {
         }
         """, listOf("Bar"))!!
         assertThat(entity.toOneRelations, equalTo(listOf(
-                ToOneRelation(Variable(BarType, "bar"), targetType = BarType, targetIdName = "barId", isNotNull = true))
+                ToOneRelation(Variable(BarType, "bar"), targetType = BarType, targetIdName = null, isNotNull = true))
         ))
     }
 

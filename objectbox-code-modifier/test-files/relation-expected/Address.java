@@ -20,8 +20,6 @@ public class Address {
     @Relation
     Customer customer;
 
-    long customerId;
-
     /** Used to resolve relations */
     @Internal
     @Generated(1307364262)

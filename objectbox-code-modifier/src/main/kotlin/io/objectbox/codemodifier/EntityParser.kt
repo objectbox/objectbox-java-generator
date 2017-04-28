@@ -3,7 +3,6 @@ package io.objectbox.codemodifier
 import org.greenrobot.eclipse.jdt.core.compiler.IProblem
 import org.greenrobot.eclipse.jdt.core.dom.AST
 import org.greenrobot.eclipse.jdt.core.dom.ASTParser
-import org.greenrobot.eclipse.jdt.core.dom.Comment
 import org.greenrobot.eclipse.jdt.core.dom.CompilationUnit
 import java.io.File
 import java.util.Hashtable
@@ -63,40 +62,6 @@ class EntityParser(val jdtOptions: Hashtable<String, String>, val encoding: Stri
         return entitiesBySchema
     }
 
-    /**
-     * Look at to-one relation ID properties to:
-     * * generate missing properties
-     * * add the index so IdSync can assign a index ID
-     */
-    private fun parse2ndPass(parsedEntities: List<ParsedEntity>) {
-        // val parsedEntitiesByName = parsedEntities.groupBy { it.dbName ?: it.name }
-        parsedEntities.forEach { parsedEntity ->
-            parsedEntity.toOneRelations.forEach { toOne ->
-                val idName = toOne.targetIdName ?: throw RuntimeException("Unnamed idProperty for to-one " +
-                        "@Relation")
-                var parsedProperty: ParsedProperty? = parsedEntity.properties.find { it.variable.name == idName }
-                if (parsedProperty == null) {
-                    if (parsedEntity.keepSource) {
-                        throw RuntimeException("No idProperty available with the name \"${toOne.targetIdName}\"" +
-                                " (needed for @Relation)")
-                    } else {
-                        // Property does not exist yet, adding it to parsedEntity.propertiesToGenerate will take care
-                        parsedProperty = ParsedProperty(
-                                variable = Variable(VariableType("long", true, "long"), idName),
-                                fieldAccessible = true
-                        )
-                        parsedEntity.properties.add(parsedProperty)
-                        parsedEntity.propertiesToGenerate.add(parsedProperty)
-                    }
-                }
-                if (parsedProperty.index == null) {
-                    parsedProperty.index = PropertyIndex(null, false)
-                }
-            }
-        }
-    }
-
-
     fun parse(javaFile: File, classesInPackage: List<String>): ParsedEntity? {
         val source = javaFile.readText(charset(encoding))
 
@@ -141,5 +106,40 @@ class EntityParser(val jdtOptions: Hashtable<String, String>, val encoding: Stri
         return visitor.createParsedEntity(javaFile, source)
     }
 
+    private fun parse2ndPass(parsedEntities: List<ParsedEntity>) {
+        parsedEntities.forEach { parsedEntity ->
+            parsedEntity.toOneRelations.forEach { toOne ->
+                parse2ndPassToOne(parsedEntity, toOne)
+            }
+        }
+    }
+
+    /**
+     * Look at to-one relation ID properties to:
+     * 1) generate virtual properties
+     * 2) add the index so IdSync can assign a index ID
+     */
+    private fun parse2ndPassToOne(parsedEntity: ParsedEntity, toOne: ToOneRelation) {
+        val defaultName = toOne.variable.name + "Id"
+        if (toOne.targetIdName == null) {
+            toOne.targetIdName = defaultName
+        }
+
+        var parsedProperty: ParsedProperty? = parsedEntity.properties.find { it.variable.name == toOne.targetIdName }
+        if (parsedProperty == null) {
+            // Property does not exist, adding a virtual property
+            parsedProperty = ParsedProperty(
+                    variable = Variable(VariableType("long", true, "long"), toOne.targetIdName!!),
+                    fieldAccessible = true,
+                    dbName = toOne.targetIdDbName,
+                    virtualTargetName = toOne.variable.name
+            )
+            parsedEntity.properties.add(parsedProperty)
+            // parsedEntity.propertiesToGenerate.add(parsedProperty)
+        }
+        if (parsedProperty.index == null) {
+            parsedProperty.index = PropertyIndex(null, false)
+        }
+    }
 
 }

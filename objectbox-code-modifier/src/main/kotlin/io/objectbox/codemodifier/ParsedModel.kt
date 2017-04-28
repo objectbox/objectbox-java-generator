@@ -37,7 +37,8 @@ data class ParsedProperty(
         var uid: Long? = null,
         val customType: CustomType? = null,
         val unique: Boolean = false,
-        val fieldAccessible: Boolean = false
+        val fieldAccessible: Boolean = false,
+        val virtualTargetName: String? = null
 )
 
 data class TransientField(val variable: Variable,
@@ -75,7 +76,8 @@ data class JoinOnProperty(val source: String, val target: String)
 data class ToOneRelation(
         val variable: Variable,
         val targetType: VariableType,
-        val targetIdName: String? = null,
+        var targetIdName: String? = null,
+        val targetIdDbName: String? = null,
         val isNotNull: Boolean = false,
         val unique: Boolean = false,
         val astNode: FieldDeclaration? = null,

@@ -89,30 +89,13 @@ object GreendaoModelTranslator {
     private fun convertToOne(toOne: ToOneRelation, parsedEntity: ParsedEntity, entity: Entity, schema: Schema) {
         val targetEntity: Entity = schema.entities.singleOrNull() {
             it.className == toOne.targetType.simpleName
-        } ?: throw RuntimeException("Class ${toOne.variable.type.name} marked " +
-                "with @Relation in class ${parsedEntity.name} is not an entity")
+        } ?: throw RuntimeException("Relation target class ${toOne.variable.type.name} " +
+                "defined in class ${parsedEntity.name} could not be found (is it an @Entity?)")
+
         val toOneConverted: ToOne
-        if (toOne.targetIdName != null) {
-            // find fkProperty in current entity
-            val fkProperty: Property = entity.properties.find {
-                it.propertyName == toOne.targetIdName
-            } ?: throw RuntimeException("Can't find to-one target ID property ${toOne.targetIdName}" +
-                    " in ${parsedEntity.name} for @Relation")
-            if (toOne.unique) {
-                // wat?
-                throw RuntimeException("If @Relation with ID property used, @Unique is ignored. " +
-                        "See ${parsedEntity.name}.${toOne.variable.name}")
-            }
-            toOneConverted = entity.addToOne(targetEntity, fkProperty, toOne.variable.name)
-        } else {
-            toOneConverted = entity.addToOneVirtualProperty(
-                    toOne.variable.name,
-                    targetEntity,
-                    null,
-                    toOne.isNotNull,
-                    toOne.unique
-            )
-        }
+        val fkProperty: Property = entity.findPropertyByNameOrThrow(toOne.targetIdName)!!
+        toOneConverted = entity.addToOne(targetEntity, fkProperty, toOne.variable.name)
+
         toOneConverted.parsedElement = toOne.astNode
     }
 
@@ -146,16 +129,16 @@ object GreendaoModelTranslator {
         val toManyConverted = when {
         // ObjectBox currently only supports "mappedBy"
             toMany.mappedBy != null -> {
-                val backlinkProperty = targetEntity.findProperty(toMany.mappedBy)
+                val backlinkProperty = targetEntity.findPropertyByNameOrThrow(toMany.mappedBy)
                 entity.addToMany(targetEntity, backlinkProperty, toMany.variable.name)
             }
         // Currently not supported by ObjectBox
             toMany.joinOnProperties.isNotEmpty() -> {
                 val joinOn = toMany.joinOnProperties
                 entity.addToMany(
-                        joinOn.map { entity.findProperty(it.source) }.toTypedArray(),
+                        joinOn.map { entity.findPropertyByNameOrThrow(it.source) }.toTypedArray(),
                         targetEntity,
-                        joinOn.map { targetEntity.findProperty(it.target) }.toTypedArray()
+                        joinOn.map { targetEntity.findPropertyByNameOrThrow(it.target) }.toTypedArray()
                 ).apply {
                     name = toMany.variable.name
                 }
@@ -165,9 +148,10 @@ object GreendaoModelTranslator {
         if (toMany.order != null) {
             if (toMany.order.size > 0) {
                 toMany.order.forEach {
+                    val propertyInTarget = targetEntity.findPropertyByNameOrThrow(it.name)
                     when (it.order) {
-                        Order.ASC -> toManyConverted.orderAsc(targetEntity.findProperty(it.name))
-                        Order.DESC -> toManyConverted.orderDesc(targetEntity.findProperty(it.name))
+                        Order.ASC -> toManyConverted.orderAsc(propertyInTarget)
+                        Order.DESC -> toManyConverted.orderDesc(propertyInTarget)
                     }
                 }
             } else {
@@ -219,6 +203,9 @@ object GreendaoModelTranslator {
         if (property.fieldAccessible) {
             propertyBuilder.fieldAccessible()
         }
+        if (property.virtualTargetName != null) {
+            propertyBuilder.virtualTargetName(property.virtualTargetName)
+        }
         propertyBuilder.property.parsedElement = property.astNode
     }
 
@@ -236,9 +223,4 @@ object GreendaoModelTranslator {
         else -> throw RuntimeException("Unsupported type ${javaTypeName}")
     }
 
-    private fun Entity.findProperty(name: String): Property {
-        return properties.find {
-            it.propertyName == name
-        } ?: throw RuntimeException("Can't find $name field in $className")
-    }
 }

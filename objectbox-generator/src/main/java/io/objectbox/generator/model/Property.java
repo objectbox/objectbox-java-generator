@@ -191,8 +191,8 @@ public class Property implements HasParsedElement {
             return this;
         }
 
-        public PropertyBuilder virtualTarget(Object virtualTarget) {
-            property.virtualTarget = virtualTarget;
+        public PropertyBuilder virtualTargetName(String virtualTargetName) {
+            property.virtualTargetName = virtualTargetName;
             return this;
         }
 
@@ -246,7 +246,7 @@ public class Property implements HasParsedElement {
     private boolean nonDefaultDbName;
 
     /** For virtual properties, this is target host where the property actually is located (e.g. a {@link ToOne}). */
-    private Object virtualTarget;
+    private String virtualTargetName;
 
     private Object parsedElement;
 
@@ -394,11 +394,11 @@ public class Property implements HasParsedElement {
     }
 
     public boolean isVirtual() {
-        return virtualTarget != null;
+        return virtualTargetName != null;
     }
 
-    public Object getVirtualTarget() {
-        return virtualTarget;
+    public Object getVirtualTargetName() {
+        return virtualTargetName;
     }
 
     /**

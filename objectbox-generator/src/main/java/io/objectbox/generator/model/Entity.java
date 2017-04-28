@@ -242,28 +242,6 @@ public class Entity implements HasParsedElement {
         return toOne;
     }
 
-    public ToOne addToOneVirtualProperty(String name, Entity target, String targetIdDbName) {
-        return addToOneVirtualProperty(name, target, targetIdDbName, false, false);
-    }
-
-    public ToOne addToOneVirtualProperty(String name, Entity target, String targetIdDbName, boolean notNull,
-                                         boolean unique) {
-        Property.PropertyBuilder propertyBuilder = new Property.PropertyBuilder(schema, this, null, name);
-        if (notNull) {
-            propertyBuilder.notNull();
-        }
-        if (unique) {
-            propertyBuilder.unique();
-        }
-        propertyBuilder.dbName(targetIdDbName);
-        Property targetIdProperty = propertyBuilder.getProperty();
-        ToOne toOne = new ToOne(schema, this, target, targetIdProperty, false);
-        propertyBuilder.virtualTarget(toOne);
-        toOne.setName(name);
-        toOneRelations.add(toOne);
-        return toOne;
-    }
-
     protected void addIncomingToMany(ToMany toMany) {
         incomingToManyRelations.add(toMany);
     }
@@ -316,6 +294,23 @@ public class Entity implements HasParsedElement {
 
     public List<Property> getProperties() {
         return properties;
+    }
+
+    public Property findPropertyByName(String name) {
+        for (Property property : properties) {
+            if (name.equals(property.getPropertyName())) {
+                return property;
+            }
+        }
+        return null;
+    }
+
+    public Property findPropertyByNameOrThrow(String name) {
+        Property property = findPropertyByName(name);
+        if (property == null) {
+            throw new RuntimeException(("Could not find property " + name + " in " + name));
+        }
+        return property;
     }
 
     public List<Property> getPropertiesColumns() {
@@ -549,8 +544,8 @@ public class Entity implements HasParsedElement {
         for (ToOne toOne : toOneRelations) {
             toOne.init2ndPass();
             Property targetIdProperty = toOne.getTargetIdProperty();
-                if (!propertiesColumns.contains(targetIdProperty)) {
-                    propertiesColumns.add(targetIdProperty);
+            if (!propertiesColumns.contains(targetIdProperty)) {
+                propertiesColumns.add(targetIdProperty);
             }
         }
 

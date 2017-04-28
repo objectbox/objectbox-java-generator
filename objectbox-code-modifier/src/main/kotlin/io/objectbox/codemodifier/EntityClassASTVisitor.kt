@@ -223,11 +223,8 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
     private fun parseRelationToOne(annotations: MutableList<Annotation>, fieldName: SimpleName,
                                    variableType: VariableType, plainToOne: Boolean)
             : ToOneRelation {
-        val proxy = annotations.proxy<Relation>()
-        // In ObjectBox, we always use a id property (at least for now), defaults to name + "Id" if absent
-        // TODO check if property is present, if not mark it virtual
-        val targetIdName: String? = proxy?.idProperty?.nullIfBlank() ?: fieldName.toString() + "Id"
-        //TODO NEW: val targetIdName: String? = proxy?.idProperty?.nullIfBlank()
+        val targetIdDbName = annotations.proxy<NameInDb>()?.value
+        val targetIdName: String? = annotations.proxy<Relation>()?.idProperty?.nullIfBlank()
 
         val targetType = if (plainToOne) {
             variableType.typeArguments?.singleOrNull()
@@ -238,6 +235,7 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
                 variable = Variable(variableType, fieldName.toString()),
                 targetType = targetType,
                 targetIdName = targetIdName,
+                targetIdDbName = targetIdDbName,
                 isNotNull = hasNotNull(annotations),
                 variableIsToOne = plainToOne,
                 unique = false //fa.has<Unique>()
