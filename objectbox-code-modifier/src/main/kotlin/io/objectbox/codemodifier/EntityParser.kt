@@ -131,6 +131,7 @@ class EntityParser(val jdtOptions: Hashtable<String, String>, val encoding: Stri
             parsedProperty = ParsedProperty(
                     variable = Variable(VariableType("long", true, "long"), toOne.targetIdName!!),
                     fieldAccessible = true,
+                    uid = toOne.uid,
                     dbName = toOne.targetIdDbName,
                     virtualTargetName = toOne.variable.name
             )

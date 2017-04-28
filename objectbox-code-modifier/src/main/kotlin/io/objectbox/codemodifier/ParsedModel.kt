@@ -77,11 +77,14 @@ data class ToOneRelation(
         val variable: Variable,
         val targetType: VariableType,
         var targetIdName: String? = null,
+        // TODO Only with virtual properties, add test
         val targetIdDbName: String? = null,
         val isNotNull: Boolean = false,
         val unique: Boolean = false,
         val astNode: FieldDeclaration? = null,
-        val variableIsToOne: Boolean = false
+        val variableIsToOne: Boolean = false,
+        // TODO Only with virtual properties, add test
+        val uid: Long? = null
 )
 
 data class ToManyRelation(

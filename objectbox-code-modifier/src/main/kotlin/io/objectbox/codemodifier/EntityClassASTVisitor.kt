@@ -223,8 +223,6 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
     private fun parseRelationToOne(annotations: MutableList<Annotation>, fieldName: SimpleName,
                                    variableType: VariableType, plainToOne: Boolean)
             : ToOneRelation {
-        val targetIdDbName = annotations.proxy<NameInDb>()?.value
-        val targetIdName: String? = annotations.proxy<Relation>()?.idProperty?.nullIfBlank()
 
         val targetType = if (plainToOne) {
             variableType.typeArguments?.singleOrNull()
@@ -234,8 +232,9 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
         return ToOneRelation(
                 variable = Variable(variableType, fieldName.toString()),
                 targetType = targetType,
-                targetIdName = targetIdName,
-                targetIdDbName = targetIdDbName,
+                targetIdName = annotations.proxy<Relation>()?.idProperty?.nullIfBlank(),
+                targetIdDbName = annotations.proxy<NameInDb>()?.value,
+                uid = annotations.proxy<Uid>()?.value,
                 isNotNull = hasNotNull(annotations),
                 variableIsToOne = plainToOne,
                 unique = false //fa.has<Unique>()
