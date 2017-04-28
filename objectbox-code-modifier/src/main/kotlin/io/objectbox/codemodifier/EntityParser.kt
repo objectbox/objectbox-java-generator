@@ -8,7 +8,7 @@ import org.greenrobot.eclipse.jdt.core.dom.CompilationUnit
 import java.io.File
 import java.util.Hashtable
 
-class EntityClassParser(val jdtOptions: Hashtable<String, String>, val encoding: String) {
+class EntityParser(val jdtOptions: Hashtable<String, String>, val encoding: String) {
 
     companion object {
         val AST_PARSER_LEVEL: Int = AST.JLS8
@@ -35,6 +35,67 @@ class EntityClassParser(val jdtOptions: Hashtable<String, String>, val encoding:
             return !ignoredProblemIds.contains(problemId)
         }
     }
+
+    fun parseEntityFiles(sourceFiles: Iterable<File>): Map<String, List<ParsedEntity>> {
+        val start = System.currentTimeMillis()
+        val classesByDir = sourceFiles.map { it.parentFile }.distinct().map {
+            it to it.getJavaClassNames()
+        }.toMap()
+
+        val parsedEntities = sourceFiles.asSequence()
+                .map {
+                    val entity = parse(it, classesByDir[it.parentFile]!!)
+                    if (entity != null && entity.properties.size == 0) {
+                        System.err.println("Skipping entity ${entity.name} as it has no properties.")
+                        null
+                    } else {
+                        entity
+                    }
+                }
+                .filterNotNull()
+                .toList()
+
+        val time = System.currentTimeMillis() - start
+        println("Parsed ${parsedEntities.size} entities in $time ms among ${sourceFiles.count()} source files: " +
+                "${parsedEntities.asSequence().map { it.name }.joinToString()}")
+        val entitiesBySchema = parsedEntities.groupBy { it.schema }
+        entitiesBySchema.values.forEach { parse2ndPass(it) }
+        return entitiesBySchema
+    }
+
+    /**
+     * Look at to-one relation ID properties to:
+     * * generate missing properties
+     * * add the index so IdSync can assign a index ID
+     */
+    private fun parse2ndPass(parsedEntities: List<ParsedEntity>) {
+        // val parsedEntitiesByName = parsedEntities.groupBy { it.dbName ?: it.name }
+        parsedEntities.forEach { parsedEntity ->
+            parsedEntity.toOneRelations.forEach { toOne ->
+                val idName = toOne.targetIdName ?: throw RuntimeException("Unnamed idProperty for to-one " +
+                        "@Relation")
+                var parsedProperty: ParsedProperty? = parsedEntity.properties.find { it.variable.name == idName }
+                if (parsedProperty == null) {
+                    if (parsedEntity.keepSource) {
+                        throw RuntimeException("No idProperty available with the name \"${toOne.targetIdName}\"" +
+                                " (needed for @Relation)")
+                    } else {
+                        // Property does not exist yet, adding it to parsedEntity.propertiesToGenerate will take care
+                        parsedProperty = ParsedProperty(
+                                variable = Variable(VariableType("long", true, "long"), idName),
+                                fieldAccessible = true
+                        )
+                        parsedEntity.properties.add(parsedProperty)
+                        parsedEntity.propertiesToGenerate.add(parsedProperty)
+                    }
+                }
+                if (parsedProperty.index == null) {
+                    parsedProperty.index = PropertyIndex(null, false)
+                }
+            }
+        }
+    }
+
 
     fun parse(javaFile: File, classesInPackage: List<String>): ParsedEntity? {
         val source = javaFile.readText(charset(encoding))

@@ -1,7 +1,7 @@
 package io.obectbox.codemodifier
 
 import io.objectbox.codemodifier.EntityClassASTVisitor
-import io.objectbox.codemodifier.EntityClassParser
+import io.objectbox.codemodifier.EntityParser
 import io.objectbox.codemodifier.ObjectBoxGenerator
 import io.objectbox.codemodifier.ParsedEntity
 import io.objectbox.codemodifier.VariableType
@@ -22,7 +22,7 @@ fun parseCompilationUnit(javaCode: String): CompilationUnit {
     jdtOptions.put(CompilerOptions.OPTION_Compliance, ObjectBoxGenerator.JAVA_LEVEL)
     jdtOptions.put(CompilerOptions.OPTION_Encoding, "UTF-8")
 
-    val parser = ASTParser.newParser(EntityClassParser.AST_PARSER_LEVEL)
+    val parser = ASTParser.newParser(EntityParser.AST_PARSER_LEVEL)
     parser.setCompilerOptions(jdtOptions)
     parser.setKind(ASTParser.K_COMPILATION_UNIT)
 
@@ -41,7 +41,7 @@ fun parseCompilationUnit(javaCode: String): CompilationUnit {
         var fail = false
         problems.forEachIndexed { i, problem ->
             val message = "#${i + 1} @${problem.sourceLineNumber}: $problem (ID: ${problem.id}; error: ${problem.isError})"
-            if (EntityClassParser.shouldReportProblem(problem.id)) {
+            if (EntityParser.shouldReportProblem(problem.id)) {
                 System.err.println(message)
                 fail = true
             } else {

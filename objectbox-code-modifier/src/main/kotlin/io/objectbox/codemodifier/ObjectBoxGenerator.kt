@@ -27,7 +27,7 @@ class ObjectBoxGenerator(val formattingOptions: FormattingOptions? = null,
 
     val jdtOptions: Hashtable<String, String> = JavaCore.getOptions()
 
-    val entityClassParser: EntityClassParser
+    val entityParser: EntityParser
 
     init {
         jdtOptions.put(CompilerOptions.OPTION_Source, JAVA_LEVEL)
@@ -35,14 +35,14 @@ class ObjectBoxGenerator(val formattingOptions: FormattingOptions? = null,
         // it could be the encoding is never used by JDT itself for our use case, but just to be sure (and for future)
         jdtOptions.put(CompilerOptions.OPTION_Encoding, encoding)
 
-        entityClassParser = EntityClassParser(jdtOptions, encoding)
+        entityParser = EntityParser(jdtOptions, encoding)
     }
 
     /** Triggered by plugin. */
     fun run(sourceFiles: Iterable<File>, schemaOptions: Map<String, SchemaOptions>) {
         require(schemaOptions.size > 0) { "There should be options for at least one schema" }
 
-        val parsedEntities = parseEntityFiles(sourceFiles)
+        val parsedEntities = entityParser.parseEntityFiles(sourceFiles)
         if (parsedEntities.isEmpty()) {
             System.err.println("No entities found")
         }
@@ -53,66 +53,6 @@ class ObjectBoxGenerator(val formattingOptions: FormattingOptions? = null,
                     " (referenced in entities: " + "${schemaEntities.joinToString()}). " +
                     "Please, define non-default schemas explicitly inside build.gradle")
             generateSchema(schemaEntities, options)
-        }
-    }
-
-    private fun parseEntityFiles(sourceFiles: Iterable<File>): Map<String, List<ParsedEntity>> {
-        val start = System.currentTimeMillis()
-        val classesByDir = sourceFiles.map { it.parentFile }.distinct().map {
-            it to it.getJavaClassNames()
-        }.toMap()
-
-        val parsedEntities = sourceFiles.asSequence()
-                .map {
-                    val entity = entityClassParser.parse(it, classesByDir[it.parentFile]!!)
-                    if (entity != null && entity.properties.size == 0) {
-                        System.err.println("Skipping entity ${entity.name} as it has no properties.")
-                        null
-                    } else {
-                        entity
-                    }
-                }
-                .filterNotNull()
-                .toList()
-
-        val time = System.currentTimeMillis() - start
-        println("Parsed ${parsedEntities.size} entities in $time ms among ${sourceFiles.count()} source files: " +
-                "${parsedEntities.asSequence().map { it.name }.joinToString()}")
-        val entitiesBySchema = parsedEntities.groupBy { it.schema }
-        entitiesBySchema.values.forEach { parse2ndPass(it) }
-        return entitiesBySchema
-    }
-
-    /**
-     * Look at to-one relation ID properties to:
-     * * generate missing properties
-     * * add the index so IdSync can assign a index ID
-     */
-    private fun parse2ndPass(parsedEntities: List<ParsedEntity>) {
-        // val parsedEntitiesByName = parsedEntities.groupBy { it.dbName ?: it.name }
-        parsedEntities.forEach { parsedEntity ->
-            parsedEntity.toOneRelations.forEach { toOne ->
-                val idName = toOne.targetIdName ?: throw RuntimeException("Unnamed idProperty for to-one " +
-                        "@Relation")
-                var parsedProperty: ParsedProperty? = parsedEntity.properties.find { it.variable.name == idName }
-                if (parsedProperty == null) {
-                    if (parsedEntity.keepSource) {
-                        throw RuntimeException("No idProperty available with the name \"${toOne.targetIdName}\"" +
-                                " (needed for @Relation)")
-                    } else {
-                        // Property does not exist yet, adding it to parsedEntity.propertiesToGenerate will take care
-                        parsedProperty = ParsedProperty(
-                                variable = Variable(VariableType("long", true, "long"), idName),
-                                fieldAccessible = true
-                        )
-                        parsedEntity.properties.add(parsedProperty)
-                        parsedEntity.propertiesToGenerate.add(parsedProperty)
-                    }
-                }
-                if (parsedProperty.index == null) {
-                    parsedProperty.index = PropertyIndex(null, false)
-                }
-            }
         }
     }
 
