@@ -128,12 +128,15 @@ class EntityParser(val jdtOptions: Hashtable<String, String>, val encoding: Stri
         var parsedProperty: ParsedProperty? = parsedEntity.properties.find { it.variable.name == toOne.targetIdName }
         if (parsedProperty == null) {
             // Property does not exist, adding a virtual property
+
+            // TODO ensure generator's ToOne uses the same targetName (ToOne.nameToOne)
+            val targetName = if (toOne.variableIsToOne) toOne.variable.name else toOne.variable.name + "ToOne"
             parsedProperty = ParsedProperty(
                     variable = Variable(VariableType("long", true, "long"), toOne.targetIdName!!),
                     fieldAccessible = true,
                     uid = toOne.uid,
                     dbName = toOne.targetIdDbName,
-                    virtualTargetName = toOne.variable.name
+                    virtualTargetName = targetName
             )
             parsedEntity.properties.add(parsedProperty)
             // parsedEntity.propertiesToGenerate.add(parsedProperty)

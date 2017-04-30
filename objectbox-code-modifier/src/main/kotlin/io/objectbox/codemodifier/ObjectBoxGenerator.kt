@@ -56,19 +56,19 @@ class ObjectBoxGenerator(val formattingOptions: FormattingOptions? = null,
         }
     }
 
-    fun generateSchema(entities: List<ParsedEntity>, options: SchemaOptions) {
+    fun generateSchema(parsedEntities: List<ParsedEntity>, options: SchemaOptions) {
         val outputDir = options.outputDir
         val testsOutputDir = options.testsOutputDir
 
         val idSync = IdSync(options.idModelFile)
-        idSync.sync(entities)
+        idSync.sync(parsedEntities)
 
         // take explicitly specified package name, or package name of the first entity
-        val schema = Schema(options.name, options.version, options.daoPackage ?: entities.first().packageName)
+        val schema = Schema(options.name, options.version, options.daoPackage ?: parsedEntities.first().packageName)
         schema.lastEntityId = idSync.lastEntityId
         schema.lastIndexId = idSync.lastIndexId
         val mapping: Map<ParsedEntity, Entity> =
-                GreendaoModelTranslator.convert(entities, schema, options.daoPackage, idSync)
+                GreendaoModelTranslator.convert(parsedEntities, schema, options.daoPackage, idSync)
 
         if (skipTestGeneration.isNotEmpty()) {
             schema.entities.forEach { e ->
@@ -84,17 +84,17 @@ class ObjectBoxGenerator(val formattingOptions: FormattingOptions? = null,
 
         // modify existing entity classes after using DaoGenerator, because not all schema properties are available before
         // for each entity add missing fields/methods/constructors
-        entities.forEach { entityClass ->
-            if (entityClass.keepSource) {
-                checkClass(entityClass)
-                println("Keeping source for ${entityClass.name}")
+        parsedEntities.forEach { parsedEntity ->
+            if (parsedEntity.keepSource) {
+                checkClass(parsedEntity)
+                println("Keeping source for ${parsedEntity.name}")
             } else {
-                transformClass(idSync, entityClass, mapping)
+                transformClass(idSync, parsedEntity, mapping)
             }
         }
 
-        val keptClasses = entities.count { it.keepSource }
-        val keptMethods = entities.sumBy { it.constructors.count { it.keep } + it.methods.count { it.keep } }
+        val keptClasses = parsedEntities.count { it.keepSource }
+        val keptMethods = parsedEntities.sumBy { it.constructors.count { it.keep } + it.methods.count { it.keep } }
         if (keptClasses + keptMethods > 0) {
             System.err.println(
                     "Kept source for $keptClasses classes and $keptMethods methods because of @Keep annotation")
@@ -206,7 +206,7 @@ class ObjectBoxGenerator(val formattingOptions: FormattingOptions? = null,
         transformer.ensureImport("io.objectbox.relation.ToOne")
 
         // add everything in reverse as transformer writes in reverse direction
-        entity.toOneRelations.reversed().forEach { toOne ->
+        entity.toOneRelations.filter { it.name != it.nameToOne }.reversed().forEach { toOne ->
             // define methods
             val targetIdProperty = toOne.targetIdProperty
             transformer.defMethod("set${toOne.name.capitalize()}", toOne.targetEntity.className) {
