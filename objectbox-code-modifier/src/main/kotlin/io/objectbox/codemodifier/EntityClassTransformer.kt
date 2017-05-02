@@ -31,15 +31,19 @@ import java.util.Hashtable
  * TODO make formatting detection lazy
  * TODO don't write AST to string if nothing is changed
  */
-class EntityClassTransformer(val parsedEntity: ParsedEntity, val jdtOptions: Hashtable<String, String>,
-                             formattingOptions: FormattingOptions?, val charset: Charset = Charsets.UTF_8) {
-    private val cu = parsedEntity.node.root
+class EntityClassTransformer(
+        val parsedEntity: ParsedEntity,
+        val jdtOptions: Hashtable<String, String>,
+        formattingOptions: FormattingOptions?,
+        val charset: Charset = Charsets.UTF_8
+) {
+    private val rootNode = parsedEntity.node.root
     private val formatting = formattingOptions?.toFormatting()
             ?: Formatting.detect(parsedEntity.source, formattingOptions)
     private val formatter = Formatter(formatting)
     // Get a rewriter for this tree, that allows for transformation of the tree
-    private val astRewrite = ASTRewrite.create(cu.ast)
-    private val importsRewrite = astRewrite.getListRewrite(cu, CompilationUnit.IMPORTS_PROPERTY)
+    private val astRewrite = ASTRewrite.create(rootNode.ast)
+    private val importsRewrite = astRewrite.getListRewrite(rootNode, CompilationUnit.IMPORTS_PROPERTY)
     private val bodyRewrite = astRewrite.getListRewrite(parsedEntity.node, TypeDeclaration.BODY_DECLARATIONS_PROPERTY)
     private val keepNodes = mutableSetOf<ASTNode>()
     private val addedImports = mutableSetOf<String>()
@@ -56,8 +60,8 @@ class EntityClassTransformer(val parsedEntity: ParsedEntity, val jdtOptions: Has
         val maybeInnerClassName = packageName.substringAfterLast(".", "")
         if (packageName != parsedEntity.packageName && maybeInnerClassName != parsedEntity.name
                 && !parsedEntity.imports.has(name) && !addedImports.contains(name)) {
-            val id = cu.ast.newImportDeclaration()
-            id.name = cu.ast.newName(name.split('.').toTypedArray())
+            val id = rootNode.ast.newImportDeclaration()
+            id.name = rootNode.ast.newName(name.split('.').toTypedArray())
             importsRewrite.insertLast(id, null)
             addedImports += name
         }
@@ -106,9 +110,9 @@ class EntityClassTransformer(val parsedEntity: ParsedEntity, val jdtOptions: Has
         }
 
         // create a new single member annotation such as '@Uid(42L)'
-        val newUidAnnotation = cu.ast.newSingleMemberAnnotation()
-        newUidAnnotation.typeName = cu.ast.newName(Uid::class.simpleName)
-        newUidAnnotation.value = cu.ast.newNumberLiteral("${uid}L")
+        val newUidAnnotation = rootNode.ast.newSingleMemberAnnotation()
+        newUidAnnotation.typeName = rootNode.ast.newName(Uid::class.simpleName)
+        newUidAnnotation.value = rootNode.ast.newNumberLiteral("${uid}L")
 
         // replace the annotation
         val property =
