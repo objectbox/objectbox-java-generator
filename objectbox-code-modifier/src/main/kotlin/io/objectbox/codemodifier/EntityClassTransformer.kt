@@ -65,13 +65,13 @@ class EntityClassTransformer(val parsedEntity: ParsedEntity, val jdtOptions: Has
 
     fun remove(node: ASTNode) = bodyRewrite.remove(node, null)
 
-    private fun insertMethod(code: String, replaceOld: ASTNode?, insertAfter: ASTNode?) {
-        if (replaceOld != null && CodeCompare.isSameCode(replaceOld, code)) {
-            keepNodes += replaceOld
+    private fun insertMethod(code: String, replaceOldNode: ASTNode?, insertAfter: ASTNode?) {
+        if (replaceOldNode != null && CodeCompare.isSameCode(replaceOldNode, code)) {
+            keepNodes += replaceOldNode
         } else {
             val formatted = formatter.format(code)
-            val newMethod = astRewrite.createStringPlaceholder(formatted, TypeDeclaration.METHOD_DECLARATION)
-            replaceNode(newMethod, replaceOld, insertAfter)
+            val newMethodNode = astRewrite.createStringPlaceholder(formatted, TypeDeclaration.METHOD_DECLARATION)
+            replaceNode(newMethodNode, replaceOldNode, insertAfter)
         }
     }
 

@@ -221,6 +221,10 @@ class PropertyCollector {
                 }
             } else {
                 sb.append(propertyId).append(", ").append("entity.").append(property.getDatabaseValueExpression());
+                if(property.getVirtualTargetName() != null) {
+                    // TODO this is hard-coded for to-ones, not really a generic "virtual property"
+                    sb.append(".getTargetId()");
+                }
             }
         }
         return sb;

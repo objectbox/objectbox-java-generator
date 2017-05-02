@@ -93,8 +93,10 @@ object GreendaoModelTranslator {
                 "defined in class ${parsedEntity.name} could not be found (is it an @Entity?)")
 
         val toOneConverted: ToOne
-        val fkProperty: Property = entity.findPropertyByNameOrThrow(toOne.targetIdName)!!
-        toOneConverted = entity.addToOne(targetEntity, fkProperty, toOne.variable.name)
+        val targetIdProperty: Property = entity.findPropertyByNameOrThrow(toOne.targetIdName)!!
+        val name = toOne.variable.name
+        val nameToOne = if(toOne.variableIsToOne) name else null
+        toOneConverted = entity.addToOne(targetEntity, targetIdProperty, name, nameToOne)
 
         toOneConverted.parsedElement = toOne.astNode
     }
