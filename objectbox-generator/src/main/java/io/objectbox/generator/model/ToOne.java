@@ -85,6 +85,11 @@ public class ToOne implements HasParsedElement {
         this.nameToOne = nameToOne;
     }
 
+    /** Represented as just a ToOne property without a property of the target type. */
+    public boolean isPlainToOne() {
+        return name.equals(nameToOne);
+    }
+
     void init2ndPass() {
         if (name == null) {
             char[] nameCharArray = targetEntity.getClassName().toCharArray();

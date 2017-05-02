@@ -57,12 +57,9 @@ class RelationParseTest : VisitorTestBase() {
             Bar bar;
         }
         """, listOf("Bar"))!!
-        assertThat(entity.toOneRelations, equalTo(toOneBarList("customBarId")))
-    }
 
-    private fun toOneBarList(targetIdFieldName: String? = "barId") = listOf(
-            ToOneRelation(Variable(BarType, "bar"), targetType = BarType, targetIdName = targetIdFieldName)
-    )
+        assertToOneBar(entity.toOneRelations.single(), "customBarId")
+    }
 
     @Test
     fun toOneTargetWithDefaultTargetIdProperty() {
@@ -82,7 +79,14 @@ class RelationParseTest : VisitorTestBase() {
             Bar bar;
         }
         """, listOf("Bar"))!!
-        assertThat(entity.toOneRelations, equalTo(toOneBarList(null)))
+
+        assertToOneBar(entity.toOneRelations.single(), null)
+    }
+
+    private fun assertToOneBar(toOne: ToOneRelation, expectedTargetIdFieldName: String?) {
+        assertEquals(Variable(BarType, "bar"), toOne.variable)
+        assertEquals(BarType, toOne.targetType)
+        assertEquals(expectedTargetIdFieldName, toOne.targetIdName)
     }
 
     @Test
@@ -110,9 +114,10 @@ class RelationParseTest : VisitorTestBase() {
             Bar bar;
         }
         """, listOf("Bar"))!!
-        assertThat(entity.toOneRelations, equalTo(listOf(
-                ToOneRelation(Variable(BarType, "bar"), targetType = BarType, targetIdName = null, isNotNull = true))
-        ))
+
+        val toOne = entity.toOneRelations.single()
+        assertToOneBar(toOne, null)
+        assertTrue(toOne.isNotNull)
     }
 
     @Test

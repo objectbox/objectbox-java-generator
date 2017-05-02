@@ -161,12 +161,12 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
     private fun parseNonTransientField(node: FieldDeclaration, annotations: MutableList<Annotation>,
                                        variableType: VariableType, variableName: SimpleName) {
         if (variableType.name == "io.objectbox.relation.ToOne" && !has<Generated>(fieldAnnotations)) {
-            oneRelations += parseRelationToOne(annotations, variableName, variableType, true)
+            oneRelations += parseRelationToOne(annotations, variableName, variableType, node, true)
         } else if (has<Relation>(annotations)) {
             if (variableType.name == "java.util.List") {
                 manyRelations += parseRelationToMany(annotations, variableName, variableType)
             } else {
-                oneRelations += parseRelationToOne(annotations, variableName, variableType, false)
+                oneRelations += parseRelationToOne(annotations, variableName, variableType, node, false)
             }
         } else {
             properties += parseProperty(node, annotations, variableType, variableName)
@@ -221,7 +221,7 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
 
 
     private fun parseRelationToOne(annotations: MutableList<Annotation>, fieldName: SimpleName,
-                                   variableType: VariableType, plainToOne: Boolean)
+                                   variableType: VariableType, node: FieldDeclaration, plainToOne: Boolean)
             : ToOneRelation {
 
         val targetType = if (plainToOne) {
@@ -237,6 +237,7 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
                 uid = annotations.proxy<Uid>()?.value,
                 isNotNull = hasNotNull(annotations),
                 variableIsToOne = plainToOne,
+                astNode = node,
                 unique = false //fa.has<Unique>()
         )
     }

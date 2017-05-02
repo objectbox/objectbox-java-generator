@@ -1,15 +1,8 @@
 package io.objectbox.codemodifier
 
 import io.objectbox.annotation.Uid
-import org.greenrobot.eclipse.jdt.core.dom.ASTNode
+import org.greenrobot.eclipse.jdt.core.dom.*
 import org.greenrobot.eclipse.jdt.core.dom.Annotation
-import org.greenrobot.eclipse.jdt.core.dom.BodyDeclaration
-import org.greenrobot.eclipse.jdt.core.dom.CompilationUnit
-import org.greenrobot.eclipse.jdt.core.dom.FieldDeclaration
-import org.greenrobot.eclipse.jdt.core.dom.MarkerAnnotation
-import org.greenrobot.eclipse.jdt.core.dom.MethodDeclaration
-import org.greenrobot.eclipse.jdt.core.dom.SingleMemberAnnotation
-import org.greenrobot.eclipse.jdt.core.dom.TypeDeclaration
 import org.greenrobot.eclipse.jdt.core.dom.rewrite.ASTRewrite
 import org.greenrobot.eclipse.jface.text.Document
 import java.nio.charset.Charset
@@ -130,6 +123,7 @@ class EntityClassTransformer(
     private fun replaceNode(newNode: ASTNode, oldNode: ASTNode?, orInsertAfter: ASTNode?) {
         when {
             oldNode != null -> {
+                // Does not work (why?): bodyRewrite.replace(oldNode, newNode, null)
                 bodyRewrite.insertAfter(newNode, oldNode, null)
                 remove(oldNode)
             }
@@ -331,6 +325,19 @@ class EntityClassTransformer(
             newSource
         } else {
             null
+        }
+    }
+
+    fun addInitializer(field: FieldDeclaration, variableName: String, initCode: String) {
+        val ast = field.ast
+        // Just replacing the fragment did not work (type declaration of field was removed), thus we clone the field
+        val newField = ASTNode.copySubtree(ast, field) as FieldDeclaration
+        newField.fragments().forEach {
+            if (it is VariableDeclarationFragment && variableName == it.name.identifier) {
+                it.initializer = astRewrite.createStringPlaceholder(initCode, TypeDeclaration.CLASS_INSTANCE_CREATION)
+                        as Expression
+                astRewrite.replace(field, newField, null)
+            }
         }
     }
 }
