@@ -9,6 +9,7 @@ import kotlin.reflect.KClass
 /**
  * Visits compilation unit, find if it is an Entity and reads all the required information about it
  */
+// TODO unify error info (gather line number etc.)
 class EntityClassASTVisitor(val source: String, val classesInPackage: List<String> = emptyList()) : LazyVisitor() {
     // TODO do we need all those members (vs. parsed model)?
 
@@ -161,6 +162,10 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
     private fun parseNonTransientField(node: FieldDeclaration, annotations: MutableList<Annotation>,
                                        variableType: VariableType, variableName: SimpleName) {
         if (variableType.name == "io.objectbox.relation.ToOne" && !has<Generated>(fieldAnnotations)) {
+            if (Modifier.isPrivate(node.modifiers)) {
+                throw RuntimeException("Currently, ToOne's may not be private, change it to package visible: " +
+                        "${typeDeclaration?.name?.identifier}.${variableName.identifier}:${node.lineNumber}")
+            }
             oneRelations += parseRelationToOne(annotations, variableName, variableType, node, true)
         } else if (has<Relation>(annotations)) {
             if (variableType.name == "java.util.List") {
@@ -173,25 +178,20 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
         }
     }
 
-    private val ASTNode.codePlace: String?
-        get() = "${typeDeclaration?.name?.identifier}:$lineNumber"
-
-    private val ASTNode.originalCode: String
-        get() = source.substring(startPosition..(startPosition + length - 1))
-
     private fun ASTNode.checkUntouched(hint: GeneratorHint.Generated) {
-        if (hint.hash != -1 && hint.hash != CodeCompare.codeHash(this.originalCode)) {
+        val originalCode = source.substring(startPosition..(startPosition + length - 1))
+        if (hint.hash != -1 && hint.hash != CodeCompare.codeHash(originalCode)) {
             val place = when (this) {
                 is MethodDeclaration -> if (this.isConstructor) "Constructor" else "Method '$name'"
-                is FieldDeclaration -> "Field '${this.originalCode.trim()}'"
+                is FieldDeclaration -> "Field '${originalCode.trim()}'"
                 else -> "Node"
             }
+            val codePlace = "${typeDeclaration?.name?.identifier}:$lineNumber"
             throw RuntimeException("""
                         $place (see ${codePlace}) has been changed after generation.
                         Please either mark it with @Keep annotation instead of @Generated to keep it untouched,
                         or use @Generated (without hash) to allow to replace it.
                         """.trimIndent())
-
         }
     }
 
