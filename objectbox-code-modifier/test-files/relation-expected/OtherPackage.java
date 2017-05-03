@@ -11,7 +11,7 @@ import io.objectbox.codemodifier.test.Order;
 import io.objectbox.annotation.apihint.Internal;
 import io.objectbox.Box;
 import io.objectbox.BoxStore;
-import io.objectbox.exception.DbDetachedException;
+import io.objectbox.relation.ToMany;
 import io.objectbox.codemodifier.test.Order_;
 import io.objectbox.relation.ToOne;
 
@@ -26,9 +26,8 @@ public class OtherPackage {
     @Relation()
     Customer customer;
 
-    // idProperty is totally wrong here, but OK for this test
-    @Relation(idProperty="customerId")
-    List<Order> orders;
+    @Relation(idProperty = "customerId")
+    List<Order> orders = new ToMany<>(this, OtherPackage_.orders);
 
     /** Used to resolve relations */
     @Internal
@@ -63,35 +62,6 @@ public class OtherPackage {
     public void setCustomer(Customer customer) {
         customerToOne.setTarget(customer);
         this.customer = customer;
-    }
-
-    /**
-     * To-many relationship, resolved on first access (and after reset).
-     * Changes to to-many relations are not persisted, make changes to the target entity.
-     */
-    @Generated(1958088637)
-    public List<Order> getOrders() {
-        if (orders == null) {
-            final BoxStore boxStore = this.__boxStore;
-            if (boxStore == null) {
-                throw new DbDetachedException();
-            }
-            Box<Order> box = boxStore.boxFor(Order.class);
-            int targetTypeId = boxStore.getEntityTypeIdOrThrow(Order.class);
-            List<Order> ordersNew = box.getBacklinkEntities(targetTypeId, Order_.customerId, id);
-            synchronized (this) {
-                if (orders == null) {
-                    orders = ordersNew;
-                }
-            }
-        }
-        return orders;
-    }
-
-    /** Resets a to-many relationship, making the next get call to query for a fresh result. */
-    @Generated(1446109810)
-    public synchronized void resetOrders() {
-        orders = null;
     }
 
 }

@@ -95,7 +95,7 @@ object GreendaoModelTranslator {
         val toOneConverted: ToOne
         val targetIdProperty: Property = entity.findPropertyByNameOrThrow(toOne.targetIdName)!!
         val name = toOne.variable.name
-        val nameToOne = if(toOne.variableIsToOne) name else null
+        val nameToOne = if (toOne.variableIsToOne) name else null
         toOneConverted = entity.addToOne(targetEntity, targetIdProperty, name, nameToOne)
 
         toOneConverted.parsedElement = toOne.astNode
@@ -132,7 +132,9 @@ object GreendaoModelTranslator {
         // ObjectBox currently only supports "mappedBy"
             toMany.mappedBy != null -> {
                 val backlinkProperty = targetEntity.findPropertyByNameOrThrow(toMany.mappedBy)
-                entity.addToMany(targetEntity, backlinkProperty, toMany.variable.name)
+                val converted = entity.addToMany(targetEntity, backlinkProperty, toMany.variable.name)
+                converted.parsedElement = toMany.astNode
+                converted
             }
         // Currently not supported by ObjectBox
             toMany.joinOnProperties.isNotEmpty() -> {

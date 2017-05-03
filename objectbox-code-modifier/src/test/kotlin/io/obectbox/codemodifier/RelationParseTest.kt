@@ -140,9 +140,10 @@ class RelationParseTest : VisitorTestBase() {
             List<Bar> bars;
         }
         """, listOf("Bar"))!!
-        assertThat(entity.toManyRelations, equalTo(
-                listOf(ToManyRelation(Variable(BarListType, "bars"), mappedBy = "barId"))
-        ))
+
+        val toMany = entity.toManyRelations.single()
+        assertEquals(Variable(BarListType, "bars"), toMany.variable);
+        assertEquals("barId", toMany.mappedBy)
     }
 
     @Test

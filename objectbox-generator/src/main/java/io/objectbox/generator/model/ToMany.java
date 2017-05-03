@@ -25,6 +25,7 @@ import java.util.List;
 public class ToMany extends ToManyBase {
     private Property[] sourceProperties;
     private final Property[] targetProperties;
+    private Object parsedElement;
 
     public ToMany(Schema schema, Entity sourceEntity, Property[] sourceProperties, Entity targetEntity,
                   Property[] targetProperties) {
@@ -43,6 +44,16 @@ public class ToMany extends ToManyBase {
 
     public Property[] getTargetProperties() {
         return targetProperties;
+    }
+
+    @Override
+    public Object getParsedElement() {
+        return parsedElement;
+    }
+
+    @Override
+    public void setParsedElement(Object parsedElement) {
+        this.parsedElement = parsedElement;
     }
 
     void init2ndPass() {

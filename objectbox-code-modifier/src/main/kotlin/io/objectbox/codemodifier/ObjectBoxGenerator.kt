@@ -252,18 +252,20 @@ class ObjectBoxGenerator(val formattingOptions: FormattingOptions? = null,
 
     private fun generateToManyRelations(entity: Entity, transformer: EntityClassTransformer) {
         if (entity.toManyRelations.isEmpty()) return
-        transformer.ensureImport("io.objectbox.exception.DbDetachedException")
+        transformer.ensureImport("io.objectbox.relation.ToMany")
 
         // add everything in reverse as transformer writes in reverse direction
         entity.toManyRelations.reversed().forEach { toMany ->
             transformer.ensureImport("${toMany.targetEntity.javaPackage}.${toMany.targetEntity.className}_")
 
-            transformer.defMethod("reset${toMany.name.capitalize()}") {
-                Templates.entity.manyRelationReset(toMany)
-            }
-
-            transformer.defMethod("get${toMany.name.capitalize()}") {
-                Templates.entity.manyRelationGetter(toMany, entity)
+            val field = toMany.parsedElement as FieldDeclaration
+            field.fragments().forEach { fragment ->
+                if(fragment is VariableDeclarationFragment) {
+                    if(fragment.initializer == null) {
+                        val initCode = "new ToMany<>(this, ${entity.className}_.${toMany.name})"
+                        transformer.addInitializer(field, fragment.name.identifier, initCode)
+                    }
+                }
             }
         }
     }

@@ -169,7 +169,7 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
             oneRelations += parseRelationToOne(annotations, variableName, variableType, node, true)
         } else if (has<Relation>(annotations)) {
             if (variableType.name == "java.util.List") {
-                manyRelations += parseRelationToMany(annotations, variableName, variableType)
+                manyRelations += parseRelationToMany(annotations, variableName, variableType, node)
             } else {
                 oneRelations += parseRelationToOne(annotations, variableName, variableType, node, false)
             }
@@ -242,13 +242,14 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
         )
     }
 
-    private fun parseRelationToMany(fa: MutableList<Annotation>, fieldName: SimpleName, variableType: VariableType)
-            : ToManyRelation {
+    private fun parseRelationToMany(fa: MutableList<Annotation>, fieldName: SimpleName, variableType: VariableType,
+                                    node: FieldDeclaration): ToManyRelation {
         val proxy = fa.proxy<Relation>()!!
 //        val orderByAnnotation = fa.proxy<OrderBy>()
         return ToManyRelation(
                 variable = Variable(variableType, fieldName.toString()),
-                mappedBy = proxy.idProperty.nullIfBlank()
+                mappedBy = proxy.idProperty.nullIfBlank(),
+                astNode = node
 //                ,joinOnProperties = proxy.joinProperties.map { JoinOnProperty(it.name, it.referencedName) },
 //                order = orderByAnnotation?.let {
 //                    val spec = it.value
