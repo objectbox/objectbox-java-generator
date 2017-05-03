@@ -132,6 +132,13 @@ property.converter??>, ${property.converterClassName}.class, ${property.customTy
         }
     }
 
+<#--
+^^^^ Up to here we did not reference any other entity-info classes.
+     Thus, relations may reference all fields above to ensure correct initialization.
+     Explanation: if a static field in class A needs a static field in class B at some point,
+     it will switch to completely init class B leaving class A only partially initialized until init of B is complete.
+     For entity infos, partial initialization of the above fields is guaranteed.
+-->
 <#if entity.hasRelations() >
     <#list entity.toOneRelations as toOne>
     static final RelationInfo<${toOne.targetEntity.className}> ${toOne.name} =
@@ -142,7 +149,8 @@ property.converter??>, ${property.converterClassName}.class, ${property.customTy
     <#list entity.toManyRelations as toMany>
     static final RelationInfo<${toMany.targetEntity.className}> ${toMany.name} =
         new RelationInfo<>(${toMany.sourceEntity.className}_.__INSTANCE,<#--
-     --> ${toMany.targetEntity.className}_.__INSTANCE);
+     --> ${toMany.targetEntity.className}_.__INSTANCE,<#--
+     --> ${toMany.targetEntity.className}_.${toMany.targetProperties[0].propertyName});
 
     </#list>
 </#if>
