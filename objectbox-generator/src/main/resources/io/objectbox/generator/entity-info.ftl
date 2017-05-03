@@ -52,6 +52,8 @@ public final class ${entity.className}_ implements EntityInfo<${entity.className
 
     public static final String __ENTITY_NAME = "${entity.className}";
 
+    public static final int __ENTITY_ID = ${entity.modelId?c};
+
     public static final Class<${entity.className}> __ENTITY_CLASS = ${entity.className}.class;
 
     public static final String __DB_NAME = "${entity.dbName}";
@@ -81,6 +83,11 @@ property.converter??>, ${property.converterClassName}.class, ${property.customTy
     @Override
     public String getEntityName() {
         return __ENTITY_NAME;
+    }
+
+    @Override
+    public int getEntityId() {
+        return __ENTITY_ID;
     }
 
     @Override
