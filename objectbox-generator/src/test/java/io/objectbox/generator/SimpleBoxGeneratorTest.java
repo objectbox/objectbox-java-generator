@@ -54,6 +54,7 @@ public class SimpleBoxGeneratorTest {
         propertiesFile.delete();
         assertFalse(propertiesFile.exists());
 
+        assignIdsUids(schema);
         new BoxGenerator().generateAll(schema, outputDir.getPath());
 
         // Assert Cursor file
@@ -75,6 +76,15 @@ public class SimpleBoxGeneratorTest {
         assertContains(propertiesContent, "getAllProperties()");
     }
 
+    private void assignIdsUids(Schema schema) {
+        int id = 1;
+        long uid = 1000;
+        for (Entity entity : schema.getEntities()) {
+            entity.setModelId(id++);
+            entity.setModelUid(uid++);
+        }
+    }
+
     @Test
     public void testSchemaWithTwoCollects() throws Exception {
         Schema schema = new Schema(1, "io.objectbox.test.multicollect");
@@ -93,6 +103,7 @@ public class SimpleBoxGeneratorTest {
         cursorFile.delete();
         assertFalse(cursorFile.exists());
 
+        assignIdsUids(schema);
         new BoxGenerator().generateAll(schema, outputDir.getPath());
 
         assertTrue(cursorFile.toString(), cursorFile.exists());
@@ -119,6 +130,7 @@ public class SimpleBoxGeneratorTest {
         cursorFile.delete();
         assertFalse(cursorFile.exists());
 
+        assignIdsUids(schema);
         new BoxGenerator().generateAll(schema, outputDir.getPath());
 
         assertTrue(cursorFile.toString(), cursorFile.exists());
@@ -192,6 +204,7 @@ public class SimpleBoxGeneratorTest {
         myObjectBoxFile.delete();
         assertFalse(myObjectBoxFile.exists());
 
+        assignIdsUids(schema);
         new BoxGenerator().generateAll(schema, outputDir.getPath());
 
         // Assert Cursor file
