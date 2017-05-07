@@ -26,7 +26,7 @@ public class OtherPackage {
     @Relation
     Customer customer;
 
-    @Relation(idProperty = "otherId")
+    @Relation(idProperty = "other")
     List<OnePackage> ones = new ToMany<>(this, OtherPackage_.ones);
 
     /** Used to resolve relations */

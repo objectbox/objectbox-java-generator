@@ -18,19 +18,10 @@ object GreendaoModelTranslator {
         val mapping = convertEntities(parsedEntities, schema, daoPackage, idSync)
 
         // Have the entities ready before parsing relations because target entities are required
-        for (parsedEntity in parsedEntities) {
-            try {
-                val entity = mapping[parsedEntity]!!
-                for (toOne in parsedEntity.toOneRelations) {
-                    convertToOne(toOne, parsedEntity, entity, schema)
-                }
-                for (toMany in parsedEntity.toManyRelations) {
-                    convertToMany(toMany, parsedEntity, entity, schema)
-                }
-            } catch (e: Exception) {
-                throw RuntimeException("Can't process ${parsedEntity.name}: ${e.message}", e)
-            }
-        }
+        convertToOnes(parsedEntities, mapping, schema)
+
+        // ToMany may depend on ToOne Backlinks, so ensure ToOnes were processed before
+        convertToManys(parsedEntities, mapping, schema)
 
         return mapping
     }
@@ -86,6 +77,19 @@ object GreendaoModelTranslator {
         }
     }
 
+    private fun convertToOnes(parsedEntities: Iterable<ParsedEntity>, mapping: Map<ParsedEntity, Entity>, schema: Schema) {
+        for (parsedEntity in parsedEntities) {
+            try {
+                val entity = mapping[parsedEntity]!!
+                for (toOne in parsedEntity.toOneRelations) {
+                    convertToOne(toOne, parsedEntity, entity, schema)
+                }
+            } catch (e: Exception) {
+                throw RuntimeException("Can't process ${parsedEntity.name}: ${e.message}", e)
+            }
+        }
+    }
+
     private fun convertToOne(toOne: ToOneRelation, parsedEntity: ParsedEntity, entity: Entity, schema: Schema) {
         val targetEntity: Entity = schema.entities.singleOrNull() {
             it.className == toOne.targetType.simpleName
@@ -99,6 +103,19 @@ object GreendaoModelTranslator {
         toOneConverted = entity.addToOne(targetEntity, targetIdProperty, name, nameToOne)
 
         toOneConverted.parsedElement = toOne.astNode
+    }
+
+    private fun convertToManys(parsedEntities: Iterable<ParsedEntity>, mapping: Map<ParsedEntity, Entity>, schema: Schema) {
+        for (parsedEntity in parsedEntities) {
+            try {
+                val entity = mapping[parsedEntity]!!
+                for (toMany in parsedEntity.toManyRelations) {
+                    convertToMany(toMany, parsedEntity, entity, schema)
+                }
+            } catch (e: Exception) {
+                throw RuntimeException("Can't process ${parsedEntity.name}: ${e.message}", e)
+            }
+        }
     }
 
     private fun convertToMany(toMany: ToManyRelation, parsedEntity: ParsedEntity, entity: Entity, schema: Schema) {
@@ -131,7 +148,12 @@ object GreendaoModelTranslator {
         val toManyConverted = when {
         // ObjectBox currently only supports "mappedBy"
             toMany.mappedBy != null -> {
-                val backlinkProperty = targetEntity.findPropertyByNameOrThrow(toMany.mappedBy)
+                val backlinkToOne = targetEntity.toOneRelations.singleOrNull() {
+                    // it.nameToOne may not be available yet, so also check + "ToOne" (quick hack)
+                    it.name == toMany.mappedBy || it.name + "ToOne" == toMany.mappedBy
+                }
+                val toOneTargetIdProperty = backlinkToOne?.targetIdProperty
+                val backlinkProperty = toOneTargetIdProperty ?: targetEntity.findPropertyByNameOrThrow(toMany.mappedBy)
                 val converted = entity.addToMany(targetEntity, backlinkProperty, toMany.variable.name)
                 converted.parsedElement = toMany.astNode
                 converted
