@@ -17,11 +17,10 @@ public class OtherPackage {
 
     long customerId;
 
-    @Relation()
+    @Relation
     Customer customer;
 
-    // idProperty is totally wrong here, but OK for this test
-    @Relation(idProperty="customerId")
-    List<Order> orders;
+    @Relation(idProperty="otherId")
+    List<OnePackage> ones;
 
 }

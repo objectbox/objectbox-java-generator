@@ -12,7 +12,7 @@ import io.objectbox.annotation.apihint.Internal;
 import io.objectbox.Box;
 import io.objectbox.BoxStore;
 import io.objectbox.relation.ToMany;
-import io.objectbox.codemodifier.test.Order_;
+import io.objectbox.codemodifier.test.one.OnePackage_;
 import io.objectbox.relation.ToOne;
 
 @Entity
@@ -23,11 +23,11 @@ public class OtherPackage {
 
     long customerId;
 
-    @Relation()
+    @Relation
     Customer customer;
 
-    @Relation(idProperty = "customerId")
-    List<Order> orders = new ToMany<>(this, OtherPackage_.orders);
+    @Relation(idProperty = "otherId")
+    List<OnePackage> ones = new ToMany<>(this, OtherPackage_.ones);
 
     /** Used to resolve relations */
     @Internal

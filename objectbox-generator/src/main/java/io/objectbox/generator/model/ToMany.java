@@ -26,6 +26,7 @@ public class ToMany extends ToManyBase {
     private Property[] sourceProperties;
     private final Property[] targetProperties;
     private Object parsedElement;
+    private ToOne backlinkToOne;
 
     public ToMany(Schema schema, Entity sourceEntity, Property[] sourceProperties, Entity targetEntity,
                   Property[] targetProperties) {
@@ -44,6 +45,10 @@ public class ToMany extends ToManyBase {
 
     public Property[] getTargetProperties() {
         return targetProperties;
+    }
+
+    public ToOne getBacklinkToOne() {
+        return backlinkToOne;
     }
 
     @Override
@@ -89,6 +94,21 @@ public class ToMany extends ToManyBase {
 
     void init3rdPass() {
         super.init3rdPass();
+        if (targetProperties.length == 1) {
+            String propertyName = targetProperties[0].getPropertyName();
+            for (ToOne toOne : getTargetEntity().getToOneRelations()) {
+                if (toOne.getTargetEntity() == sourceEntity && (propertyName.equalsIgnoreCase(toOne.getNameToOne()) ||
+                        propertyName.equalsIgnoreCase(toOne.getTargetIdProperty().getPropertyName()))) {
+                    if (backlinkToOne != null) {
+                        throw new IllegalStateException("More than one matching backlink: " + backlinkToOne + " vs. " + toOne);
+                    }
+                    backlinkToOne = toOne;
+                }
+            }
+            if (backlinkToOne == null) {
+                throw new IllegalStateException("No one matching backling found for " + this);
+            }
+        }
     }
 
 }

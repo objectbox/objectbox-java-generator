@@ -29,8 +29,12 @@ import io.objectbox.Property;
 import io.objectbox.annotation.apihint.Internal;
 import io.objectbox.internal.CursorFactory;
 import io.objectbox.internal.IdGetter;
-<#if entity.hasRelations() >
+<#if entity.hasRelations()>
 import io.objectbox.relation.RelationInfo;
+<#if entity.toManyRelations?has_content>
+import io.objectbox.relation.ToOne;
+import io.objectbox.relation.ToOneGetter;
+</#if>
 </#if>
 
 <#-- For custom types only here. TODO: do not import relation stuff -->
@@ -150,7 +154,13 @@ property.converter??>, ${property.converterClassName}.class, ${property.customTy
     static final RelationInfo<${toMany.targetEntity.className}> ${toMany.name} =
         new RelationInfo<>(${toMany.sourceEntity.className}_.__INSTANCE,<#--
      --> ${toMany.targetEntity.className}_.__INSTANCE,<#--
-     --> ${toMany.targetEntity.className}_.${toMany.targetProperties[0].propertyName});
+     --> ${toMany.targetEntity.className}_.${toMany.targetProperties[0].propertyName},<#--
+     --> new ToOneGetter<${toMany.targetEntity.className}>() {
+            @Override
+            public ToOne<${toMany.sourceEntity.className}> getToOne(${toMany.targetEntity.className} entity) {
+                return entity.${toMany.backlinkToOne.nameToOne};
+            }
+        });
 
     </#list>
 </#if>
