@@ -128,7 +128,7 @@ class RelationParseTest : VisitorTestBase() {
         package com.example;
 
         import io.objectbox.annotation.Entity;
-        import io.objectbox.annotation.Relation;
+        import io.objectbox.annotation.Backlink;
 
         import java.util.List;
 
@@ -136,14 +136,14 @@ class RelationParseTest : VisitorTestBase() {
         class Foobar {
             String name;
 
-            @Relation(idProperty = "barId")
+            @Backlink(to = "barId")
             List<Bar> bars;
         }
         """, listOf("Bar"))!!
 
         val toMany = entity.toManyRelations.single()
         assertEquals(Variable(BarListType, "bars"), toMany.variable);
-        assertEquals("barId", toMany.mappedBy)
+        assertEquals("barId", toMany.backlinkName)
     }
 
     @Test
@@ -207,7 +207,7 @@ class RelationParseTest : VisitorTestBase() {
         }
         """, listOf("Bar"))!!
         assertThat(entity.toManyRelations, equalTo(
-                listOf(ToManyRelation(Variable(BarListType, "bars"), mappedBy = "barId",
+                listOf(ToManyRelation(Variable(BarListType, "bars"), backlinkName = "barId",
                         order = listOf(OrderProperty("date", Order.ASC), OrderProperty("likes", Order.DESC))
                 ))
         ))

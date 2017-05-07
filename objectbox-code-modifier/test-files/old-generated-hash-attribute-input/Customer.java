@@ -8,7 +8,7 @@ import io.objectbox.annotation.Entity;
 import io.objectbox.annotation.Generated;
 import io.objectbox.annotation.Id;
 import io.objectbox.annotation.Index;
-import io.objectbox.annotation.Relation;
+import io.objectbox.annotation.Backlink;
 import io.objectbox.annotation.apihint.Internal;
 import io.objectbox.exception.DbDetachedException;
 import io.objectbox.exception.DbException;
@@ -25,7 +25,7 @@ public class Customer {
     @Index
     String name;
 
-    @Relation(idProperty = "customerId")
+    @Backlink
     List<Order> orders;
 
     /** Used to resolve relations */

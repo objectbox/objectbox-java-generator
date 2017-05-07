@@ -3,6 +3,7 @@ package io.objectbox.codemodifier.test.other;
 import io.objectbox.annotation.Entity;
 import io.objectbox.annotation.Generated;
 import io.objectbox.annotation.Id;
+import io.objectbox.annotation.Backlink;
 import io.objectbox.annotation.Relation;
 import java.util.List;
 
@@ -26,7 +27,7 @@ public class OtherPackage {
     @Relation
     Customer customer;
 
-    @Relation(idProperty = "other")
+    @Backlink(to = "other")
     List<OnePackage> ones = new ToMany<>(this, OtherPackage_.ones);
 
     /** Used to resolve relations */

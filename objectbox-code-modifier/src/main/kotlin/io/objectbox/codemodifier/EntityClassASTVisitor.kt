@@ -9,7 +9,7 @@ import kotlin.reflect.KClass
 /**
  * Visits compilation unit, find if it is an Entity and reads all the required information about it
  */
-// TODO unify error info (gather line number etc.)
+// TODO unify error info (gather line number etc.) see #throwWithLocation
 class EntityClassASTVisitor(val source: String, val classesInPackage: List<String> = emptyList()) : LazyVisitor() {
     // TODO do we need all those members (vs. parsed model)?
 
@@ -163,19 +163,23 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
                                        variableType: VariableType, variableName: SimpleName) {
         if (variableType.name == "io.objectbox.relation.ToOne" && !has<Generated>(fieldAnnotations)) {
             if (Modifier.isPrivate(node.modifiers)) {
-                throw RuntimeException("Currently, ToOne's may not be private, change it to package visible: " +
-                        "${typeDeclaration?.name?.identifier}.${variableName.identifier}:${node.lineNumber}")
+                throwWithLocation("Currently, ToOne's may not be private, change it to package visible: " +
+                        variableName.identifier, node)
             }
             oneRelations += parseRelationToOne(annotations, variableName, variableType, node, true)
+        } else if (variableType.name == "java.util.List" || variableType.name == "io.objectbox.relation.ToMany") {
+            manyRelations += parseRelationToMany(annotations, variableName, variableType, node)
         } else if (has<Relation>(annotations)) {
-            if (variableType.name == "java.util.List") {
-                manyRelations += parseRelationToMany(annotations, variableName, variableType, node)
-            } else {
-                oneRelations += parseRelationToOne(annotations, variableName, variableType, node, false)
-            }
+            oneRelations += parseRelationToOne(annotations, variableName, variableType, node, false)
         } else {
             properties += parseProperty(node, annotations, variableType, variableName)
         }
+    }
+
+    private fun throwWithLocation(msg: String, node: ASTNode) {
+        val additionalInfo = if (node is FieldDeclaration) node.type.typeName + " in " else ""
+        // TODO grab field name if available
+        throw RuntimeException(msg + " ($additionalInfo${typeDeclaration?.name?.identifier}:${node.lineNumber})")
     }
 
     private fun ASTNode.checkUntouched(hint: GeneratorHint.Generated) {
@@ -244,11 +248,15 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
 
     private fun parseRelationToMany(fa: MutableList<Annotation>, fieldName: SimpleName, variableType: VariableType,
                                     node: FieldDeclaration): ToManyRelation {
-        val proxy = fa.proxy<Relation>()!!
+        val backlink = fa.proxy<Backlink>()
+        if (backlink == null) {
+            throwWithLocation("For now, all ToMany relations must be backlinks" +
+                    "(annotate with @Backlink with a ToOne counterpart in the target entity)", node)
+        }
 //        val orderByAnnotation = fa.proxy<OrderBy>()
         return ToManyRelation(
                 variable = Variable(variableType, fieldName.toString()),
-                mappedBy = proxy.idProperty.nullIfBlank(),
+                backlinkName = backlink?.to?.nullIfBlank(),
                 astNode = node
 //                ,joinOnProperties = proxy.joinProperties.map { JoinOnProperty(it.name, it.referencedName) },
 //                order = orderByAnnotation?.let {

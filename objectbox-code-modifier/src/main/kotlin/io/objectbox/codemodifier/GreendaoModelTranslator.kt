@@ -133,27 +133,39 @@ object GreendaoModelTranslator {
         } ?: throw RuntimeException("${targetType.name} is not an entity, but it is referenced " +
                 "for @Relation relation (field: ${toMany.variable.name})")
 
-        if (toMany.mappedBy == null) {
-            throw RuntimeException("Can't create to-many relation on ${toMany.variable.name}: use " +
-                    "@Relation(idProperty=\"...\") with idProperty being a to-one @Relation in the " +
-                    "target entity (to-many relations are \"backlinks\" of to-one relations)")
+        var backlinkName = toMany.backlinkName
+        if (backlinkName == null) {
+            // TODO test
+            val backlinks = targetEntity.toOneRelations.filter {
+                it.targetEntity == entity
+            }
+            if (backlinks.isEmpty()) {
+                throw RuntimeException("Can't create to-many relation on ${toMany.variable.name}: create a ToOne on" +
+                        "the target side first: only backlink to-many relations are supported at the moment")
+            } else if (backlinks.size > 1) {
+                throw RuntimeException("Can't create to-many relation on ${toMany.variable.name}:" +
+                        "more than one possible backlink detected. use " +
+                        "@Relation(idProperty=\"...\") with idProperty being a to-one @Relation in the " +
+                        "target entity (to-many relations are \"backlinks\" of to-one relations)")
+            }
+            backlinkName = backlinks.single().name
         }
 
         // Currently not support in ObjectBox:
-        val options = if (toMany.mappedBy != null) 1 else 0 + if (toMany.joinOnProperties.isNotEmpty()) 1 else 0
+        val options = if (backlinkName != null) 1 else 0 + if (toMany.joinOnProperties.isNotEmpty()) 1 else 0
         if (options != 1) {
             throw RuntimeException("Can't create to-many relation on ${toMany.variable.name}. " +
                     "Either referencedJoinProperty, joinProperties or @JoinEntity must be used to describe the relation")
         }
         val toManyConverted = when {
         // ObjectBox currently only supports "mappedBy"
-            toMany.mappedBy != null -> {
-                val backlinkToOne = targetEntity.toOneRelations.singleOrNull() {
+            backlinkName != null -> {
+                val backlinkToOne = targetEntity.toOneRelations.singleOrNull {
                     // it.nameToOne may not be available yet, so also check + "ToOne" (quick hack)
-                    it.name == toMany.mappedBy || it.name + "ToOne" == toMany.mappedBy
+                    it.targetEntity == entity && (it.name == backlinkName || it.name + "ToOne" == backlinkName)
                 }
                 val toOneTargetIdProperty = backlinkToOne?.targetIdProperty
-                val backlinkProperty = toOneTargetIdProperty ?: targetEntity.findPropertyByNameOrThrow(toMany.mappedBy)
+                val backlinkProperty = toOneTargetIdProperty ?: targetEntity.findPropertyByNameOrThrow(backlinkName)
                 val converted = entity.addToMany(targetEntity, backlinkProperty, toMany.variable.name)
                 converted.parsedElement = toMany.astNode
                 converted
