@@ -71,7 +71,7 @@ object GreendaoModelTranslator {
             try {
                 convertProperty(entity, it, idSync.get(it))
             } catch (e: Exception) {
-                throw RuntimeException("Can't add property '${it.variable}' to entity ${parsedEntity.name} " +
+                throw RuntimeException("Can't add property '${it.variable.name}' to entity ${parsedEntity.name} " +
                         "due to: ${e.message}", e)
             }
         }
