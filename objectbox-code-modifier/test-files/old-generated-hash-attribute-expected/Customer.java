@@ -10,8 +10,6 @@ import io.objectbox.annotation.Id;
 import io.objectbox.annotation.Index;
 import io.objectbox.annotation.Backlink;
 import io.objectbox.annotation.apihint.Internal;
-import io.objectbox.exception.DbDetachedException;
-import io.objectbox.exception.DbException;
 import io.objectbox.relation.ToMany;
 
 /**
