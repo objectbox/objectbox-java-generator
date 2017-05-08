@@ -2,7 +2,7 @@ package io.objectbox.codemodifier.test;
 
 import io.objectbox.annotation.Entity;
 import io.objectbox.annotation.Id;
-import io.objectbox.annotation.Relation;
+import io.objectbox.annotation.Backlink;
 
 import java.util.List;
 
@@ -14,6 +14,6 @@ public class Customer {
 
     String name;
 
-    @Relation(idProperty = "customerId")
+    @Backlink(to = "customerId")
     List<Order> orders;
 }

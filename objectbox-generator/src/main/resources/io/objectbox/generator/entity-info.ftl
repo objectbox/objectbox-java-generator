@@ -29,8 +29,12 @@ import io.objectbox.Property;
 import io.objectbox.annotation.apihint.Internal;
 import io.objectbox.internal.CursorFactory;
 import io.objectbox.internal.IdGetter;
-<#if entity.hasRelations() >
+<#if entity.hasRelations()>
 import io.objectbox.relation.RelationInfo;
+<#if entity.toManyRelations?has_content>
+import io.objectbox.relation.ToOne;
+import io.objectbox.relation.ToOneGetter;
+</#if>
 </#if>
 
 <#-- For custom types only here. TODO: do not import relation stuff -->
@@ -51,6 +55,8 @@ public final class ${entity.className}_ implements EntityInfo<${entity.className
     // Leading underscores for static constants to avoid naming conflicts with property names
 
     public static final String __ENTITY_NAME = "${entity.className}";
+
+    public static final int __ENTITY_ID = ${entity.modelId?c};
 
     public static final Class<${entity.className}> __ENTITY_CLASS = ${entity.className}.class;
 
@@ -81,6 +87,11 @@ property.converter??>, ${property.converterClassName}.class, ${property.customTy
     @Override
     public String getEntityName() {
         return __ENTITY_NAME;
+    }
+
+    @Override
+    public int getEntityId() {
+        return __ENTITY_ID;
     }
 
     @Override
@@ -125,6 +136,13 @@ property.converter??>, ${property.converterClassName}.class, ${property.customTy
         }
     }
 
+<#--
+^^^^ Up to here we did not reference any other entity-info classes.
+     Thus, relations may reference all fields above to ensure correct initialization.
+     Explanation: if a static field in class A needs a static field in class B at some point,
+     it will switch to completely init class B leaving class A only partially initialized until init of B is complete.
+     For entity infos, partial initialization of the above fields is guaranteed.
+-->
 <#if entity.hasRelations() >
     <#list entity.toOneRelations as toOne>
     static final RelationInfo<${toOne.targetEntity.className}> ${toOne.name} =
@@ -135,7 +153,14 @@ property.converter??>, ${property.converterClassName}.class, ${property.customTy
     <#list entity.toManyRelations as toMany>
     static final RelationInfo<${toMany.targetEntity.className}> ${toMany.name} =
         new RelationInfo<>(${toMany.sourceEntity.className}_.__INSTANCE,<#--
-     --> ${toMany.targetEntity.className}_.__INSTANCE);
+     --> ${toMany.targetEntity.className}_.__INSTANCE,<#--
+     --> ${toMany.targetEntity.className}_.${toMany.targetProperties[0].propertyName},<#--
+     --> new ToOneGetter<${toMany.targetEntity.className}>() {
+            @Override
+            public ToOne<${toMany.sourceEntity.className}> getToOne(${toMany.targetEntity.className} entity) {
+                return entity.${toMany.backlinkToOne.nameToOne};
+            }
+        });
 
     </#list>
 </#if>

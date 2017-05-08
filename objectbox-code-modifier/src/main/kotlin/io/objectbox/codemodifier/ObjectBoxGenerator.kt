@@ -5,6 +5,8 @@ import io.objectbox.generator.idsync.IdSync
 import io.objectbox.generator.model.Entity
 import io.objectbox.generator.model.Schema
 import org.greenrobot.eclipse.jdt.core.JavaCore
+import org.greenrobot.eclipse.jdt.core.dom.FieldDeclaration
+import org.greenrobot.eclipse.jdt.core.dom.VariableDeclarationFragment
 import org.greenrobot.eclipse.jdt.internal.compiler.impl.CompilerOptions
 import java.io.File
 import java.util.Hashtable
@@ -206,45 +208,64 @@ class ObjectBoxGenerator(val formattingOptions: FormattingOptions? = null,
         transformer.ensureImport("io.objectbox.relation.ToOne")
 
         // add everything in reverse as transformer writes in reverse direction
-        entity.toOneRelations.filter { it.name != it.nameToOne }.reversed().forEach { toOne ->
-            // define methods
-            val targetIdProperty = toOne.targetIdProperty
-            transformer.defMethod("set${toOne.name.capitalize()}", toOne.targetEntity.className) {
-                if (parsedEntity.notNullAnnotation == null && targetIdProperty.isNotNull) {
-                    // Not yet supported
-                    //transformer.ensureImport("io.objectbox.annotation.NotNull")
+        val toOnes = entity.toOneRelations.reversed()
+
+        // Methods first, then fields TODO have two insertion points in AST for a) fields and b) methods
+        toOnes.filter { !it.isPlainToOne }.forEach { toOne ->
+                val targetIdProperty = toOne.targetIdProperty
+                transformer.defMethod("set${toOne.name.capitalize()}", toOne.targetEntity.className) {
+                    if (parsedEntity.notNullAnnotation == null && targetIdProperty.isNotNull) {
+                        // Not yet supported
+                        //transformer.ensureImport("io.objectbox.annotation.NotNull")
+                    }
+                    Templates.entity.oneRelationSetter(toOne, parsedEntity.notNullAnnotation ?: "@NotNull")
                 }
-                Templates.entity.oneRelationSetter(toOne, parsedEntity.notNullAnnotation ?: "@NotNull")
-            }
 
-            val getterName = "get${toOne.name.capitalize()}"
-            transformer.defMethod(getterName) {
-                Templates.entity.oneRelationGetter(toOne, entity)
-            }
+                val getterName = "get${toOne.name.capitalize()}"
+                transformer.defMethod(getterName) {
+                    Templates.entity.oneRelationGetter(toOne, entity)
+                }
+        }
 
-            val toOneTypeArgs = listOf(
-                    VariableType(toOne.targetEntity.className, false, toOne.targetEntity.javaPackage)
-            )
-            val variableType = VariableType("ToOne", false, "ToOne", toOneTypeArgs)
-            val assignment = "new ToOne<>(this, ${entity.className}_.${toOne.name})"
-            transformer.defineTransientGeneratedField("${toOne.nameToOne}", variableType, null, null, assignment)
+        // Fields
+        toOnes.forEach { toOne ->
+            if(toOne.isPlainToOne) {
+                val field = toOne.parsedElement as FieldDeclaration
+                field.fragments().forEach { fragment ->
+                    if(fragment is VariableDeclarationFragment) {
+                        if(fragment.initializer == null) {
+                            val initCode = "new ToOne<>(this, ${entity.className}_.${toOne.name})"
+                            transformer.addInitializer(field, fragment.name.identifier, initCode)
+                        }
+                    }
+                }
+            } else {
+                val toOneTypeArgs = listOf(
+                        VariableType(toOne.targetEntity.className, false, toOne.targetEntity.javaPackage)
+                )
+                val variableType = VariableType("ToOne", false, "ToOne", toOneTypeArgs)
+                val assignment = "new ToOne<>(this, ${entity.className}_.${toOne.name})"
+                transformer.defineTransientGeneratedField("${toOne.nameToOne}", variableType, null, null, assignment)
+            }
         }
     }
 
     private fun generateToManyRelations(entity: Entity, transformer: EntityClassTransformer) {
         if (entity.toManyRelations.isEmpty()) return
-        transformer.ensureImport("io.objectbox.exception.DbDetachedException")
+        transformer.ensureImport("io.objectbox.relation.ToMany")
 
         // add everything in reverse as transformer writes in reverse direction
         entity.toManyRelations.reversed().forEach { toMany ->
             transformer.ensureImport("${toMany.targetEntity.javaPackage}.${toMany.targetEntity.className}_")
 
-            transformer.defMethod("reset${toMany.name.capitalize()}") {
-                Templates.entity.manyRelationReset(toMany)
-            }
-
-            transformer.defMethod("get${toMany.name.capitalize()}") {
-                Templates.entity.manyRelationGetter(toMany, entity)
+            val field = toMany.parsedElement as FieldDeclaration
+            field.fragments().forEach { fragment ->
+                if(fragment is VariableDeclarationFragment) {
+                    if(fragment.initializer == null) {
+                        val initCode = "new ToMany<>(this, ${entity.className}_.${toMany.name})"
+                        transformer.addInitializer(field, fragment.name.identifier, initCode)
+                    }
+                }
             }
         }
     }

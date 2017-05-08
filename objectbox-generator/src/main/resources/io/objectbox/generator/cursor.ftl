@@ -34,7 +34,9 @@ import io.objectbox.Cursor;
 import io.objectbox.Transaction;
 import io.objectbox.annotation.apihint.Internal;
 import io.objectbox.internal.CursorFactory;
-
+<#if entity.toManyRelations?has_content>
+import io.objectbox.relation.ToMany;
+</#if>
 <#if entity.javaPackageDao != schema.defaultJavaPackageDao>
 //import ${schema.defaultJavaPackageDao}.${schema.prefix}DaoSession;
 
@@ -113,7 +115,20 @@ public final class ${entity.classNameDao} extends Cursor<${entity.className}> {
             }
         }
 </#list>
+<#--
+Do ToOnes before because we need the target's ID before the put.
+Do ToMany after because the targets entities need our ID.
+-->
 ${propertyCollector}
+<#list entity.toManyRelations as toMany>
+    if (entity.${toMany.name} instanceof ToMany) {
+        ToMany<${toMany.targetEntity.className}> toMany = (ToMany<${toMany.targetEntity.className}>) entity.${toMany.name};
+        if (toMany.internalRequiresPutTarget()) {
+            toMany.internalPutTarget(getRelationTargetCursor(${toMany.targetEntity.className}.class));
+        }
+    }
+</#list>
+        return __assignedId;
     }
 
 <#if entity.active>

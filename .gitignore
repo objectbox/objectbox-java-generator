@@ -13,3 +13,6 @@ gradle-app.setting
 *.iml
 
 gradle.properties
+
+# objectbox-models/
+default.json.bak

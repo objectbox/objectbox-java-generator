@@ -1,15 +1,8 @@
 package io.objectbox.codemodifier
 
 import io.objectbox.annotation.Uid
-import org.greenrobot.eclipse.jdt.core.dom.ASTNode
+import org.greenrobot.eclipse.jdt.core.dom.*
 import org.greenrobot.eclipse.jdt.core.dom.Annotation
-import org.greenrobot.eclipse.jdt.core.dom.BodyDeclaration
-import org.greenrobot.eclipse.jdt.core.dom.CompilationUnit
-import org.greenrobot.eclipse.jdt.core.dom.FieldDeclaration
-import org.greenrobot.eclipse.jdt.core.dom.MarkerAnnotation
-import org.greenrobot.eclipse.jdt.core.dom.MethodDeclaration
-import org.greenrobot.eclipse.jdt.core.dom.SingleMemberAnnotation
-import org.greenrobot.eclipse.jdt.core.dom.TypeDeclaration
 import org.greenrobot.eclipse.jdt.core.dom.rewrite.ASTRewrite
 import org.greenrobot.eclipse.jface.text.Document
 import java.nio.charset.Charset
@@ -31,15 +24,19 @@ import java.util.Hashtable
  * TODO make formatting detection lazy
  * TODO don't write AST to string if nothing is changed
  */
-class EntityClassTransformer(val parsedEntity: ParsedEntity, val jdtOptions: Hashtable<String, String>,
-                             formattingOptions: FormattingOptions?, val charset: Charset = Charsets.UTF_8) {
-    private val cu = parsedEntity.node.root
+class EntityClassTransformer(
+        val parsedEntity: ParsedEntity,
+        val jdtOptions: Hashtable<String, String>,
+        formattingOptions: FormattingOptions?,
+        val charset: Charset = Charsets.UTF_8
+) {
+    private val rootNode = parsedEntity.node.root
     private val formatting = formattingOptions?.toFormatting()
             ?: Formatting.detect(parsedEntity.source, formattingOptions)
     private val formatter = Formatter(formatting)
     // Get a rewriter for this tree, that allows for transformation of the tree
-    private val astRewrite = ASTRewrite.create(cu.ast)
-    private val importsRewrite = astRewrite.getListRewrite(cu, CompilationUnit.IMPORTS_PROPERTY)
+    private val astRewrite = ASTRewrite.create(rootNode.ast)
+    private val importsRewrite = astRewrite.getListRewrite(rootNode, CompilationUnit.IMPORTS_PROPERTY)
     private val bodyRewrite = astRewrite.getListRewrite(parsedEntity.node, TypeDeclaration.BODY_DECLARATIONS_PROPERTY)
     private val keepNodes = mutableSetOf<ASTNode>()
     private val addedImports = mutableSetOf<String>()
@@ -56,8 +53,8 @@ class EntityClassTransformer(val parsedEntity: ParsedEntity, val jdtOptions: Has
         val maybeInnerClassName = packageName.substringAfterLast(".", "")
         if (packageName != parsedEntity.packageName && maybeInnerClassName != parsedEntity.name
                 && !parsedEntity.imports.has(name) && !addedImports.contains(name)) {
-            val id = cu.ast.newImportDeclaration()
-            id.name = cu.ast.newName(name.split('.').toTypedArray())
+            val id = rootNode.ast.newImportDeclaration()
+            id.name = rootNode.ast.newName(name.split('.').toTypedArray())
             importsRewrite.insertLast(id, null)
             addedImports += name
         }
@@ -65,13 +62,13 @@ class EntityClassTransformer(val parsedEntity: ParsedEntity, val jdtOptions: Has
 
     fun remove(node: ASTNode) = bodyRewrite.remove(node, null)
 
-    private fun insertMethod(code: String, replaceOld: ASTNode?, insertAfter: ASTNode?) {
-        if (replaceOld != null && CodeCompare.isSameCode(replaceOld, code)) {
-            keepNodes += replaceOld
+    private fun insertMethod(code: String, replaceOldNode: ASTNode?, insertAfter: ASTNode?) {
+        if (replaceOldNode != null && CodeCompare.isSameCode(replaceOldNode, code)) {
+            keepNodes += replaceOldNode
         } else {
             val formatted = formatter.format(code)
-            val newMethod = astRewrite.createStringPlaceholder(formatted, TypeDeclaration.METHOD_DECLARATION)
-            replaceNode(newMethod, replaceOld, insertAfter)
+            val newMethodNode = astRewrite.createStringPlaceholder(formatted, TypeDeclaration.METHOD_DECLARATION)
+            replaceNode(newMethodNode, replaceOldNode, insertAfter)
         }
     }
 
@@ -106,9 +103,9 @@ class EntityClassTransformer(val parsedEntity: ParsedEntity, val jdtOptions: Has
         }
 
         // create a new single member annotation such as '@Uid(42L)'
-        val newUidAnnotation = cu.ast.newSingleMemberAnnotation()
-        newUidAnnotation.typeName = cu.ast.newName(Uid::class.simpleName)
-        newUidAnnotation.value = cu.ast.newNumberLiteral("${uid}L")
+        val newUidAnnotation = rootNode.ast.newSingleMemberAnnotation()
+        newUidAnnotation.typeName = rootNode.ast.newName(Uid::class.simpleName)
+        newUidAnnotation.value = rootNode.ast.newNumberLiteral("${uid}L")
 
         // replace the annotation
         val property =
@@ -126,6 +123,7 @@ class EntityClassTransformer(val parsedEntity: ParsedEntity, val jdtOptions: Has
     private fun replaceNode(newNode: ASTNode, oldNode: ASTNode?, orInsertAfter: ASTNode?) {
         when {
             oldNode != null -> {
+                // Does not work (why?): bodyRewrite.replace(oldNode, newNode, null)
                 bodyRewrite.insertAfter(newNode, oldNode, null)
                 remove(oldNode)
             }
@@ -327,6 +325,19 @@ class EntityClassTransformer(val parsedEntity: ParsedEntity, val jdtOptions: Has
             newSource
         } else {
             null
+        }
+    }
+
+    fun addInitializer(field: FieldDeclaration, variableName: String, initCode: String) {
+        val ast = field.ast
+        // Just replacing the fragment did not work (type declaration of field was removed), thus we clone the field
+        val newField = ASTNode.copySubtree(ast, field) as FieldDeclaration
+        newField.fragments().forEach {
+            if (it is VariableDeclarationFragment && variableName == it.name.identifier) {
+                it.initializer = astRewrite.createStringPlaceholder(initCode, TypeDeclaration.CLASS_INSTANCE_CREATION)
+                        as Expression
+                astRewrite.replace(field, newField, null)
+            }
         }
     }
 }

@@ -236,9 +236,10 @@ public class Entity implements HasParsedElement {
     }
 
     /** Convenience for {@link #addToOne(Entity, Property)} with a subsequent call to {@link ToOne#setName(String)}. */
-    public ToOne addToOne(Entity target, Property fkProperty, String name) {
+    public ToOne addToOne(Entity target, Property fkProperty, String name, String nameToOne) {
         ToOne toOne = addToOne(target, fkProperty);
         toOne.setName(name);
+        toOne.setNameToOne(nameToOne);
         return toOne;
     }
 

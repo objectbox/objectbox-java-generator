@@ -89,7 +89,7 @@ data class ToOneRelation(
 
 data class ToManyRelation(
         val variable: Variable,
-        val mappedBy: String? = null,
+        var backlinkName: String? = null,
         val joinOnProperties: List<JoinOnProperty> = emptyList(),
         val order: List<OrderProperty>? = null,
         val astNode: FieldDeclaration? = null

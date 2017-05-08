@@ -8,10 +8,11 @@ import io.objectbox.annotation.Entity;
 import io.objectbox.annotation.Generated;
 import io.objectbox.annotation.Id;
 import io.objectbox.annotation.Index;
-import io.objectbox.annotation.Relation;
+import io.objectbox.annotation.Backlink;
 import io.objectbox.annotation.apihint.Internal;
 import io.objectbox.exception.DbDetachedException;
 import io.objectbox.exception.DbException;
+import io.objectbox.relation.ToMany;
 
 /**
  * Entity mapped to table "CUSTOMER".
@@ -25,8 +26,8 @@ public class Customer {
     @Index
     String name;
 
-    @Relation(idProperty = "customerId")
-    List<Order> orders;
+    @Backlink
+    List<Order> orders = new ToMany<>(this, Customer_.orders);
 
     /** Used to resolve relations */
     @Internal
@@ -59,35 +60,6 @@ public class Customer {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    /**
-     * To-many relationship, resolved on first access (and after reset).
-     * Changes to to-many relations are not persisted, make changes to the target entity.
-     */
-    @Generated(1958088637)
-    public List<Order> getOrders() {
-        if (orders == null) {
-            final BoxStore boxStore = this.__boxStore;
-            if (boxStore == null) {
-                throw new DbDetachedException();
-            }
-            Box<Order> box = boxStore.boxFor(Order.class);
-            int targetTypeId = boxStore.getEntityTypeIdOrThrow(Order.class);
-            List<Order> ordersNew = box.getBacklinkEntities(targetTypeId, Order_.customerId, id);
-            synchronized (this) {
-                if (orders == null) {
-                    orders = ordersNew;
-                }
-            }
-        }
-        return orders;
-    }
-
-    /** Resets a to-many relationship, making the next get call to query for a fresh result. */
-    @Generated(1446109810)
-    public synchronized void resetOrders() {
-        orders = null;
     }
 
 }

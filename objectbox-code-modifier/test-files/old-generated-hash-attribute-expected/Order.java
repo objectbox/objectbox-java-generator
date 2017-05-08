@@ -7,9 +7,7 @@ import io.objectbox.annotation.Generated;
 import io.objectbox.annotation.Id;
 import io.objectbox.annotation.Relation;
 import io.objectbox.annotation.apihint.Internal;
-import io.objectbox.exception.DbDetachedException;
 import io.objectbox.relation.ToOne;
-import io.objectbox.exception.DbException;
 
 /**
  * Entity mapped to table "ORDERS".

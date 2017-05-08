@@ -57,12 +57,9 @@ class RelationParseTest : VisitorTestBase() {
             Bar bar;
         }
         """, listOf("Bar"))!!
-        assertThat(entity.toOneRelations, equalTo(toOneBarList("customBarId")))
-    }
 
-    private fun toOneBarList(targetIdFieldName: String? = "barId") = listOf(
-            ToOneRelation(Variable(BarType, "bar"), targetType = BarType, targetIdName = targetIdFieldName)
-    )
+        assertToOneBar(entity.toOneRelations.single(), "customBarId")
+    }
 
     @Test
     fun toOneTargetWithDefaultTargetIdProperty() {
@@ -82,7 +79,14 @@ class RelationParseTest : VisitorTestBase() {
             Bar bar;
         }
         """, listOf("Bar"))!!
-        assertThat(entity.toOneRelations, equalTo(toOneBarList(null)))
+
+        assertToOneBar(entity.toOneRelations.single(), null)
+    }
+
+    private fun assertToOneBar(toOne: ToOneRelation, expectedTargetIdFieldName: String?) {
+        assertEquals(Variable(BarType, "bar"), toOne.variable)
+        assertEquals(BarType, toOne.targetType)
+        assertEquals(expectedTargetIdFieldName, toOne.targetIdName)
     }
 
     @Test
@@ -110,9 +114,10 @@ class RelationParseTest : VisitorTestBase() {
             Bar bar;
         }
         """, listOf("Bar"))!!
-        assertThat(entity.toOneRelations, equalTo(listOf(
-                ToOneRelation(Variable(BarType, "bar"), targetType = BarType, targetIdName = null, isNotNull = true))
-        ))
+
+        val toOne = entity.toOneRelations.single()
+        assertToOneBar(toOne, null)
+        assertTrue(toOne.isNotNull)
     }
 
     @Test
@@ -123,7 +128,7 @@ class RelationParseTest : VisitorTestBase() {
         package com.example;
 
         import io.objectbox.annotation.Entity;
-        import io.objectbox.annotation.Relation;
+        import io.objectbox.annotation.Backlink;
 
         import java.util.List;
 
@@ -131,13 +136,14 @@ class RelationParseTest : VisitorTestBase() {
         class Foobar {
             String name;
 
-            @Relation(idProperty = "barId")
+            @Backlink(to = "barId")
             List<Bar> bars;
         }
         """, listOf("Bar"))!!
-        assertThat(entity.toManyRelations, equalTo(
-                listOf(ToManyRelation(Variable(BarListType, "bars"), mappedBy = "barId"))
-        ))
+
+        val toMany = entity.toManyRelations.single()
+        assertEquals(Variable(BarListType, "bars"), toMany.variable);
+        assertEquals("barId", toMany.backlinkName)
     }
 
     @Test
@@ -201,7 +207,7 @@ class RelationParseTest : VisitorTestBase() {
         }
         """, listOf("Bar"))!!
         assertThat(entity.toManyRelations, equalTo(
-                listOf(ToManyRelation(Variable(BarListType, "bars"), mappedBy = "barId",
+                listOf(ToManyRelation(Variable(BarListType, "bars"), backlinkName = "barId",
                         order = listOf(OrderProperty("date", Order.ASC), OrderProperty("likes", Order.DESC))
                 ))
         ))

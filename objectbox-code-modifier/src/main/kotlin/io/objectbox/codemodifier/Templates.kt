@@ -27,9 +27,6 @@ object Templates {
         private val relationToOneSetter = get("entity/relation_to_one_setter.ftl")
         private val relationToOneGetter = get("entity/relation_to_one_getter.ftl")
 
-        private val relationToManyGetter = get("entity/relation_to_many_getter.ftl")
-        private val relationToManyReset = get("entity/relation_to_many_reset.ftl")
-
         private val fieldGet = get("entity/field_get.ftl")
         private val fieldSet = get("entity/field_set.ftl")
 
@@ -44,11 +41,6 @@ object Templates {
 
         fun oneRelationGetter(one: ToOne, entity: Entity): String =
                 relationToOneGetter(mapOf("entity" to entity, "toOne" to one))
-
-        fun manyRelationGetter(many: ToManyBase, entity: Entity): String =
-                relationToManyGetter(mapOf("toMany" to many, "entity" to entity))
-
-        fun manyRelationReset(many: ToManyBase): String = relationToManyReset(mapOf("toMany" to many))
 
         fun fieldGet(variable: Variable): String = fieldGet(mapOf("variable" to variable))
         fun fieldSet(variable: Variable): String = fieldSet(mapOf("variable" to variable))

@@ -20,7 +20,7 @@ package io.objectbox.generator.model;
 
 /** Base class for to-many relationship from source entities to target entities. */
 @SuppressWarnings("unused")
-public abstract class ToManyBase {
+public abstract class ToManyBase implements HasParsedElement {
     @SuppressWarnings("unused")
     private final Schema schema;
     private String name;
