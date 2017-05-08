@@ -1,6 +1,8 @@
 package io.objectbox.processor;
 
 import com.google.auto.service.AutoService;
+
+import io.objectbox.annotation.Convert;
 import io.objectbox.annotation.Entity;
 import io.objectbox.annotation.Id;
 import io.objectbox.annotation.Transient;
@@ -8,28 +10,36 @@ import io.objectbox.generator.model.Property;
 import io.objectbox.generator.model.PropertyType;
 import io.objectbox.generator.model.Schema;
 
+import org.jetbrains.annotations.Nullable;
+
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Filer;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.SourceVersion;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
+
 import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @AutoService(Processor.class)
@@ -123,17 +133,29 @@ public final class ObjectBoxProcessor extends AbstractProcessor {
             return;
         }
 
-        // verify type is supported
-        TypeMirror typeMirror = field.asType();
-        PropertyType propertyType = getPropertyType(typeMirror);
-        if (propertyType == null) {
-            error(field, "Field type is not supported. (%s.%s)", enclosingElement.getQualifiedName(),
-                    fieldName);
-            return;
+        Property.PropertyBuilder propertyBuilder;
+
+        Convert convertAnnotation = field.getAnnotation(Convert.class);
+        if (convertAnnotation != null) {
+            // @Convert custom type
+            propertyBuilder = parseCustomProperty(entity, field, enclosingElement);
+            if (propertyBuilder == null) {
+                return;
+            }
+        } else {
+            // verify that supported type is used
+            TypeMirror typeMirror = field.asType();
+            PropertyType propertyType = getPropertyType(typeMirror);
+            if (propertyType == null) {
+                error(field, "Field type is not supported. (%s.%s)", enclosingElement.getQualifiedName(),
+                        fieldName);
+                return;
+            }
+
+            propertyBuilder = entity.addProperty(propertyType, fieldName.toString());
         }
 
-        Property.PropertyBuilder propertyBuilder = entity.addProperty(propertyType, fieldName.toString());
-
+        // @Id
         Id idAnnotation = field.getAnnotation(Id.class);
         if (idAnnotation != null) {
             propertyBuilder.primaryKey();
@@ -143,6 +165,68 @@ public final class ObjectBoxProcessor extends AbstractProcessor {
         }
 
         // TODO ut: add remaining property build steps
+    }
+
+    @Nullable
+    private Property.PropertyBuilder parseCustomProperty(io.objectbox.generator.model.Entity entity,
+            VariableElement field, TypeElement enclosingElement) {
+        // extract @Convert annotation member values
+        // as they are types, need to access them via annotation mirrors
+        AnnotationMirror annotationMirror = getAnnotationMirror(field, Convert.class);
+        if (annotationMirror == null) {
+            return null; // did not find @Convert mirror
+        }
+
+        TypeMirror converter = getAnnotationValueType(annotationMirror, "converter");
+        if (converter == null) {
+            error(field, "@Convert requires a value for converter. (%s.%s)",
+                    enclosingElement.getQualifiedName(), field.getSimpleName());
+            return null;
+        }
+
+        TypeMirror dbType = getAnnotationValueType(annotationMirror, "dbType");
+        if (dbType == null) {
+            error(field, "@Convert requires a value for dbType. (%s.%s)",
+                    enclosingElement.getQualifiedName(), field.getSimpleName());
+            return null;
+        }
+        PropertyType propertyType = getPropertyType(dbType);
+        if (propertyType == null) {
+            error(field, "@Convert dbType type is not supported. (%s.%s)",
+                    enclosingElement.getQualifiedName(), field.getSimpleName());
+            return null;
+        }
+
+        Property.PropertyBuilder propertyBuilder = entity.addProperty(propertyType, field.getSimpleName().toString());
+        propertyBuilder.customType(field.asType().toString(), converter.toString());
+        return propertyBuilder;
+    }
+
+    @Nullable
+    private AnnotationMirror getAnnotationMirror(Element element, Class annotationClass) {
+        List<? extends AnnotationMirror> annotationMirrors = element.getAnnotationMirrors();
+        for (AnnotationMirror annotationMirror : annotationMirrors) {
+            DeclaredType annotationType = annotationMirror.getAnnotationType();
+            TypeMirror convertType = elementUtils.getTypeElement(annotationClass.getCanonicalName()).asType();
+            if (typeUtils.isSameType(annotationType, convertType)) {
+                return annotationMirror;
+            }
+        }
+        return null;
+    }
+
+    @Nullable
+    private TypeMirror getAnnotationValueType(AnnotationMirror annotationMirror, String memberName) {
+        Map<? extends ExecutableElement, ? extends AnnotationValue> elementValues =
+                annotationMirror.getElementValues();
+        for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry : elementValues.entrySet()) {
+            String elementName = entry.getKey().getSimpleName().toString();
+            if (elementName.equals(memberName)) {
+                // this is a shortcut instead of using entry.getValue().accept(visitor, null)
+                return (TypeMirror) entry.getValue().getValue();
+            }
+        }
+        return null;
     }
 
     private PropertyType getPropertyType(TypeMirror typeMirror) {

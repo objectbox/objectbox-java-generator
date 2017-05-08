@@ -1,10 +1,12 @@
 package io.objectbox.processor.test;
 
+import java.util.Date;
+
+import io.objectbox.annotation.Convert;
 import io.objectbox.annotation.Entity;
 import io.objectbox.annotation.Id;
 import io.objectbox.annotation.Transient;
-
-import java.util.Date;
+import io.objectbox.converter.PropertyConverter;
 
 @Entity
 public class SimpleEntity {
@@ -42,4 +44,37 @@ public class SimpleEntity {
     transient String transientField2;
     @Transient
     String transientField3;
+
+    @Convert(converter = SimpleEnumConverter.class, dbType = Integer.class)
+    SimpleEnum role;
+
+    public enum SimpleEnum {
+        DEFAULT(0), A(1), B(2);
+
+        final int id;
+
+        SimpleEnum(int id) {
+            this.id = id;
+        }
+    }
+
+    public class SimpleEnumConverter implements PropertyConverter<SimpleEnum, Integer> {
+        @Override
+        public SimpleEnum convertToEntityProperty(Integer databaseValue) {
+            if (databaseValue == null) {
+                return null;
+            }
+            for (SimpleEnum value : SimpleEnum.values()) {
+                if (value.id == databaseValue) {
+                    return value;
+                }
+            }
+            return SimpleEnum.DEFAULT;
+        }
+
+        @Override
+        public Integer convertToDatabaseValue(SimpleEnum entityProperty) {
+            return entityProperty == null ? null : entityProperty.id;
+        }
+    }
 }
