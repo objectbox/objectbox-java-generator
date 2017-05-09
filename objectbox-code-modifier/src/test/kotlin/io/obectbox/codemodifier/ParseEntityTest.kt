@@ -10,11 +10,11 @@ import org.junit.Test
 /**
  * Tests if the @Entity annotation is properly parsed.
  */
-class VisitorEntityAnnotationTest : VisitorTestBase() {
+class ParseEntityTest : ParseTestBase() {
 
     @Test
     fun entityIsRecognised() {
-        val entity = visit(
+        val entity = parse(
                 //language=java
                 """
         import io.objectbox.annotation.Entity;
@@ -26,7 +26,7 @@ class VisitorEntityAnnotationTest : VisitorTestBase() {
 
     @Test
     fun entityIsRecognisedQualifiedName() {
-        val entity = visit(
+        val entity = parse(
                 //language=java
                 """
         @io.objectbox.annotation.Entity class Foobar {}
@@ -36,13 +36,13 @@ class VisitorEntityAnnotationTest : VisitorTestBase() {
 
     @Test
     fun entityIsNotRecognized() {
-        val entity = visit("class Foobar {}")
+        val entity = parse("class Foobar {}")
         Assert.assertNull(entity)
     }
 
     @Test
     fun entityIsNotRecognizedIfWrongAnnotation() {
-        val entity = visit(
+        val entity = parse(
                 //language=java
                 """
         import myapp.Entity;
@@ -54,7 +54,7 @@ class VisitorEntityAnnotationTest : VisitorTestBase() {
 
     @Test
     fun entityIsNotRecognizedWithoutAnnotationImport() {
-        val entity = visit(
+        val entity = parse(
                 //language=java
                 """
         @Entity class Foobar {}
@@ -64,7 +64,7 @@ class VisitorEntityAnnotationTest : VisitorTestBase() {
 
     @Test
     fun entityIsRecognizedWithWildcardImports() {
-        val entity = visit(
+        val entity = parse(
                 //language=java
                 """
         import io.objectbox.annotation.*;
@@ -77,7 +77,7 @@ class VisitorEntityAnnotationTest : VisitorTestBase() {
 
     @Test
     fun entityName() {
-        val entity = visit(
+        val entity = parse(
                 //language=java
                 """
         import io.objectbox.annotation.*;
@@ -89,7 +89,7 @@ class VisitorEntityAnnotationTest : VisitorTestBase() {
 
     @Test
     fun packageName() {
-        val entity = visit(
+        val entity = parse(
                 //language=java
                 """
         package com.user.myapp;
@@ -103,7 +103,7 @@ class VisitorEntityAnnotationTest : VisitorTestBase() {
 
     @Test
     fun noPackageName() {
-        val entity = visit(
+        val entity = parse(
                 //language=java
                 """
         import io.objectbox.annotation.*;
@@ -115,7 +115,7 @@ class VisitorEntityAnnotationTest : VisitorTestBase() {
 
     @Test
     fun noCustomTableName() {
-        val entity = visit(
+        val entity = parse(
                 //language=java
                 """
         import io.objectbox.annotation.*;
@@ -127,7 +127,7 @@ class VisitorEntityAnnotationTest : VisitorTestBase() {
 
     @Test
     fun customTableName() {
-        val entity = visit(
+        val entity = parse(
                 //language=java
                 """
         import io.objectbox.annotation.*;
@@ -140,7 +140,7 @@ class VisitorEntityAnnotationTest : VisitorTestBase() {
 
     @Test
     fun defaultSchemaName() {
-        val entity = visit(
+        val entity = parse(
                 //language=java
                 """
         import io.objectbox.annotation.*;
@@ -154,7 +154,7 @@ class VisitorEntityAnnotationTest : VisitorTestBase() {
     @Test
     @Ignore("Feature not yet available")
     fun customSchemaName() {
-        val entity = visit(
+        val entity = parse(
                 //language=java
                 """
         import io.objectbox.annotation.*;
@@ -167,7 +167,7 @@ class VisitorEntityAnnotationTest : VisitorTestBase() {
 
     @Test
     fun noKeepAnnotation() {
-        val entity = visit(
+        val entity = parse(
                 //language=java
                 """
         import io.objectbox.annotation.*;
@@ -180,7 +180,7 @@ class VisitorEntityAnnotationTest : VisitorTestBase() {
 
     @Test
     fun keepAnnotation() {
-        val entity = visit(
+        val entity = parse(
                 //language=java
                 """
         import io.objectbox.annotation.*;
@@ -194,7 +194,7 @@ class VisitorEntityAnnotationTest : VisitorTestBase() {
 
     @Test
     fun uid() {
-        val entity = visit(
+        val entity = parse(
                 //language=java
                 """
         import io.objectbox.annotation.*;

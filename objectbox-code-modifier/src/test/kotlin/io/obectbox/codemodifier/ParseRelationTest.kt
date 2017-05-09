@@ -11,11 +11,11 @@ import org.junit.Test
 /**
  * Tests @Relation parsing (to-one and to-many)
  */
-class RelationParseTest : VisitorTestBase() {
+class ParseRelationTest : ParseTestBase() {
 
     @Test
     fun toOne() {
-        val entity = visit(
+        val entity = parse(
                 //language=java
                 """
         package com.example;
@@ -40,7 +40,7 @@ class RelationParseTest : VisitorTestBase() {
 
     @Test
     fun toOneTargetWithCustomTargetId() {
-        val entity = visit(
+        val entity = parse(
                 //language=java
                 """
         package com.example;
@@ -63,7 +63,7 @@ class RelationParseTest : VisitorTestBase() {
 
     @Test
     fun toOneTargetWithDefaultTargetIdProperty() {
-        val entity = visit(
+        val entity = parse(
                 //language=java
                 """
         package com.example;
@@ -91,7 +91,7 @@ class RelationParseTest : VisitorTestBase() {
 
     @Test
     fun toOneTargetWithAdditionalAnnotations() {
-        val entity = visit(
+        val entity = parse(
                 //language=java
                 """
         package com.example;
@@ -122,7 +122,7 @@ class RelationParseTest : VisitorTestBase() {
 
     @Test
     fun toManyTarget() {
-        val entity = visit(
+        val entity = parse(
                 //language=java
                 """
         package com.example;
@@ -149,7 +149,7 @@ class RelationParseTest : VisitorTestBase() {
     @Test
     @Ignore("to-many with multiple join conditions is not supported by ObjectBox")
     fun toManyWithMulticolumnJoin() {
-        val entity = visit(
+        val entity = parse(
                 //language=java
                 """
         package com.example;
@@ -185,7 +185,7 @@ class RelationParseTest : VisitorTestBase() {
     @Test
     @Ignore("to-many with order is not yet supported by ObjectBox")
     fun toManyOrderBy() {
-        val entity = visit(
+        val entity = parse(
                 //language=java
                 """
         package com.example;

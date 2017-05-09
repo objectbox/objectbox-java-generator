@@ -2,23 +2,20 @@ package io.obectbox.codemodifier
 
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
-import com.natpryce.hamkrest.hasSize
 import com.natpryce.hamkrest.isEmpty
-import io.objectbox.codemodifier.*
+import io.objectbox.codemodifier.Variable
 import org.junit.Assert.*
 import org.junit.Ignore
 import org.junit.Test
 
-val myType = VariableType("com.example.myapp.MyType", isPrimitive = false, originalName = "MyType")
-
 /**
  * Tests if fields, constructors and methods are properly recognized.
  */
-class VisitorTest : VisitorTestBase() {
+class ParseBasicsTest : ParseTestBase() {
 
     @Test
     fun fieldDef() {
-        val entity = visit(
+        val entity = parse(
                 //language=java
                 """
         import io.objectbox.annotation.*;
@@ -38,7 +35,7 @@ class VisitorTest : VisitorTestBase() {
 
     @Test
     fun noDefinitions() {
-        val entity = visit(
+        val entity = parse(
                 //language=java
                 """
         import io.objectbox.annotation.*;
@@ -56,7 +53,7 @@ class VisitorTest : VisitorTestBase() {
 
     @Test
     fun transientModifierTest() {
-        val entity = visit(
+        val entity = parse(
                 //language=java
                 """
         import io.objectbox.annotation.*;
@@ -75,7 +72,7 @@ class VisitorTest : VisitorTestBase() {
 
     @Test
     fun transientAnnotationTest() {
-        val entity = visit(
+        val entity = parse(
                 //language=java
                 """
         import io.objectbox.annotation.*;
@@ -94,7 +91,7 @@ class VisitorTest : VisitorTestBase() {
 
     @Test
     fun staticFieldsAreTransientTest() {
-        val entity = visit(
+        val entity = parse(
                 //language=java
                 """
         import io.objectbox.annotation.*;
@@ -117,7 +114,7 @@ class VisitorTest : VisitorTestBase() {
 
     @Test
     fun idAnnotation() {
-        val entity = visit(
+        val entity = parse(
                 //language=java
                 """
         import io.objectbox.annotation.*;
@@ -136,7 +133,7 @@ class VisitorTest : VisitorTestBase() {
     @Test
     @Ignore("Feature not yet available")
     fun idAutoincrement() {
-        val entity = visit(
+        val entity = parse(
                 //language=java
                 """
         import io.objectbox.annotation.*;
@@ -151,15 +148,15 @@ class VisitorTest : VisitorTestBase() {
     }
 
     @Test
-    fun columnAnnotation() {
-        val entity = visit(
+    fun nameInDbAnnotation() {
+        val entity = parse(
                 //language=java
                 """
         import io.objectbox.annotation.*;
 
         @Entity
         class Foobar {
-            @Property @NameInDb("SECOND_NAME")
+            @NameInDb("SECOND_NAME")
             String name;
         }
         """)!!
@@ -169,7 +166,7 @@ class VisitorTest : VisitorTestBase() {
 
     @Test
     fun propertyIndexAnnotation() {
-        val entity = visit(
+        val entity = parse(
                 //language=java
                 """
         import io.objectbox.annotation.*;
@@ -187,7 +184,7 @@ class VisitorTest : VisitorTestBase() {
 
     @Test
     fun propertyUniqueAnnotation() {
-        val entity = visit(
+        val entity = parse(
                 //language=java
                 """
         import io.objectbox.annotation.*;
@@ -202,162 +199,8 @@ class VisitorTest : VisitorTestBase() {
     }
 
     @Test
-    fun convertAnnotation() {
-        val entity = visit(
-                //language=java
-                """
-        package com.example.myapp;
-
-        import io.objectbox.annotation.Entity;
-        import io.objectbox.annotation.Convert;
-        import com.example.myapp.Converter;
-
-        @Entity
-        class Foobar {
-            @Convert(converter = Converter.class, dbType = String.class)
-            MyType name;
-        }
-        """, listOf("MyType"))!!
-        val field = entity.properties[0]
-        assertEquals(Variable(myType, "name"), field.variable)
-        assertEquals(CustomType("com.example.myapp.Converter", StringType), field.customType)
-        assertTrue(field.fieldAccessible)
-    }
-
-    @Test
-    fun convertAnnotation_missingAttributes() {
-        try {
-            visit(
-                    //language=java
-                    """
-        import io.objectbox.annotation.Entity;
-        import io.objectbox.annotation.Convert;
-
-        @Entity
-        class Foobar {
-            @Convert
-            MyType name;
-        }
-        """, listOf("MyType"))!!
-            fail("Should have failed")
-        } catch (e: ParseException) {
-            assertTrue(e.message, e.message!!.contains("@Convert attributes absent "))
-        }
-    }
-
-    @Test
-    fun convertAnnotation_list() {
-        val entity = visit(
-                //language=java
-                """
-        package com.example.myapp;
-
-        import io.objectbox.annotation.Entity;
-        import io.objectbox.annotation.Convert;
-        import com.example.myapp.Converter;
-        import java.util.List;
-
-        @Entity
-        class Foobar {
-            @Convert(converter = Converter.class, dbType = String.class)
-            List<MyType> name;
-        }
-        """, listOf("MyType"))!!
-        val field = entity.properties[0]
-        assertEquals(myType, field.variable.type.typeArguments!![0])
-        assertEquals(CustomType("com.example.myapp.Converter", StringType), field.customType)
-        assertTrue(field.fieldAccessible)
-    }
-
-    @Test
-    fun convertAnnotation_innerClass() {
-        val entity = visit(
-                //language=java
-                """
-        package com.example.myapp;
-
-        import io.objectbox.annotation.Entity;
-        import io.objectbox.annotation.Convert;
-        import org.greenrobot.greendao.converter.PropertyConverter;
-
-        @Entity
-        class Foobar {
-            @Convert(converter = InnerConverter.class, dbType = String.class)
-            MyType name;
-            public static class InnerConverter implements PropertyConverter<MyType, String> {
-                @Override
-                public MyType convertToEntityProperty(String databaseValue) {
-                    return null;
-                }
-
-                @Override
-                public String convertToDatabaseValue(MyType entityProperty) {
-                    return null;
-                }
-            }
-        }
-        """, listOf("MyType"))!!
-        val field = entity.properties[0]
-        assertEquals(Variable(myType, "name"), field.variable)
-        assertEquals(CustomType("com.example.myapp.Foobar.InnerConverter", StringType), field.customType)
-        assertTrue(field.fieldAccessible)
-    }
-
-    @Test(expected = IllegalArgumentException::class)
-    fun convertAnnotation_innerClassNotStatic() {
-        visit(
-                //language=java
-                """
-        package com.example.myapp;
-
-        import io.objectbox.annotation.Entity;
-        import io.objectbox.annotation.Convert;
-        import org.greenrobot.greendao.converter.PropertyConverter;
-
-        @Entity
-        class Foobar {
-            @Convert(converter = InnerConverter.class, dbType = String.class)
-            MyType name;
-            public class InnerConverter implements PropertyConverter<MyType, String> {
-                @Override
-                public MyType convertToEntityProperty(String databaseValue) {
-                    return null;
-                }
-
-                @Override
-                public String convertToDatabaseValue(MyType entityProperty) {
-                    return null;
-                }
-            }
-        }
-        """, listOf("MyType"))!!
-    }
-
-    @Test(expected = IllegalArgumentException::class)
-    fun convertAnnotation_innerTypeNotStatic() {
-        visit(
-                //language=java
-                """
-        package com.example.myapp;
-
-        import io.objectbox.annotation.Entity;
-        import io.objectbox.annotation.Convert;
-        import org.greenrobot.greendao.converter.PropertyConverter;
-
-        @Entity
-        class Foobar {
-            @Convert(converter = MyConverter.class, dbType = String.class)
-            MyType name;
-
-            public class MyType {
-            }
-        }
-        """, listOf("MyConverter"))!!
-    }
-
-    @Test
     fun constructors() {
-        val entity = visit(
+        val entity = parse(
                 //language=java
                 """
         import io.objectbox.annotation.*;
@@ -386,7 +229,7 @@ class VisitorTest : VisitorTestBase() {
 
     @Test
     fun methods() {
-        val entity = visit(
+        val entity = parse(
                 //language=java
                 """
         import io.objectbox.annotation.*;
