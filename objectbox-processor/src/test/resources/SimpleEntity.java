@@ -5,6 +5,8 @@ import java.util.Date;
 import io.objectbox.annotation.Convert;
 import io.objectbox.annotation.Entity;
 import io.objectbox.annotation.Id;
+import io.objectbox.annotation.Index;
+import io.objectbox.annotation.NameInDb;
 import io.objectbox.annotation.Transient;
 import io.objectbox.converter.PropertyConverter;
 
@@ -45,8 +47,14 @@ public class SimpleEntity {
     @Transient
     String transientField3;
 
+    @Index
+    Integer indexedProperty;
+
+    @NameInDb("A")
+    String namedProperty;
+
     @Convert(converter = SimpleEnumConverter.class, dbType = Integer.class)
-    SimpleEnum role;
+    SimpleEnum customType;
 
     public enum SimpleEnum {
         DEFAULT(0), A(1), B(2);

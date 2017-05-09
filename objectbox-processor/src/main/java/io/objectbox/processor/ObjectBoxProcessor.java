@@ -5,6 +5,8 @@ import com.google.auto.service.AutoService;
 import io.objectbox.annotation.Convert;
 import io.objectbox.annotation.Entity;
 import io.objectbox.annotation.Id;
+import io.objectbox.annotation.Index;
+import io.objectbox.annotation.NameInDb;
 import io.objectbox.annotation.Transient;
 import io.objectbox.generator.model.Property;
 import io.objectbox.generator.model.Property.PropertyBuilder;
@@ -155,6 +157,24 @@ public final class ObjectBoxProcessor extends AbstractProcessor {
             if (idAnnotation.assignable()) {
                 propertyBuilder.idAssignable();
             }
+        }
+
+        // @NameInDb
+        NameInDb nameInDbAnnotation = field.getAnnotation(NameInDb.class);
+        if (nameInDbAnnotation != null) {
+            String name = nameInDbAnnotation.value();
+            if (name.length() > 0) {
+                propertyBuilder.dbName(name);
+            }
+        } else if (idAnnotation != null && propertyBuilder.getProperty().getPropertyType() == PropertyType.Long) {
+            // use special name for @Id column if type is Long
+            propertyBuilder.dbName("_id");
+        }
+
+        // @Index
+        Index indexAnnotation = field.getAnnotation(Index.class);
+        if (indexAnnotation != null) {
+            propertyBuilder.indexAsc(null, false);
         }
 
         // TODO ut: add remaining property build steps
