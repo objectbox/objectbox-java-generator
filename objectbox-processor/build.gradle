@@ -1,4 +1,4 @@
-apply plugin: 'java'
+apply plugin: 'kotlin'
 
 group = 'io.objectbox'
 
@@ -9,9 +9,12 @@ repositories {
 }
 
 dependencies {
-    compile "io.objectbox:objectbox-java-api:${project.version}"
     compile project (':objectbox-code-modifier')
     compile project (':objectbox-generator')
+    
+    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    compile "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
+    compile "io.objectbox:objectbox-java-api:${project.version}"
     // auto-service generates service configuration
     compileOnly 'com.google.auto.service:auto-service:1.0-rc2'
 
