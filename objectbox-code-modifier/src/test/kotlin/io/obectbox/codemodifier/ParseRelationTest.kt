@@ -147,6 +147,40 @@ class ParseRelationTest : ParseTestBase() {
     }
 
     @Test
+    fun toMany() {
+        val entity = parse(
+                //language=java
+                """
+        package com.example;
+
+        import io.objectbox.annotation.Entity;
+        import io.objectbox.annotation.Backlink;
+        import io.objectbox.relation.ToMany;
+
+        @Entity
+        class Foobar {
+            String name;
+
+            @Backlink(to = "barId")
+            ToMany<Bar> bars;
+        }
+        """, listOf("Bar"))!!
+
+        val toMany = entity.toManyRelations.single()
+        val toManyType = VariableType("io.objectbox.relation.ToMany", false, "ToMany<Bar>", listOf(BarType))
+        assertEquals("bars", toMany.variable.name);
+        assertEquals(toManyType, toMany.variable.type);
+        assertEquals("barId", toMany.backlinkName)
+
+        try {
+            convertToGeneratorModel(entity)
+        } catch (e: ParseException) {
+            // We only get that far...
+            assertTrue(e.message, e.message!!.contains("Bar is not an entity"))
+        }
+    }
+
+    @Test
     @Ignore("to-many with multiple join conditions is not supported by ObjectBox")
     fun toManyWithMulticolumnJoin() {
         val entity = parse(

@@ -119,10 +119,11 @@ object GreendaoModelTranslator {
     }
 
     private fun convertToMany(toMany: ToManyRelation, parsedEntity: ParsedEntity, entity: Entity, schema: Schema) {
-        if (toMany.variable.type.name != "java.util.List") {
+        val toManyName = toMany.variable.type.name
+        if (toManyName != "java.util.List" && toManyName != "io.objectbox.relation.ToMany") {
             throw ParseException("Can't create to-many relation for ${parsedEntity.name} " +
-                    "on ${toMany.variable.type.name} ${toMany.variable.name}: " +
-                    "use java.util.List<T>")
+                    "on $toManyName ${toMany.variable.name}: " +
+                    "use java.util.List<T> or ToMany<T>")
         }
         val targetType = toMany.variable.type.typeArguments?.singleOrNull()
                 ?: throw ParseException("Can't create to-many relation on ${toMany.variable.name}. " +
