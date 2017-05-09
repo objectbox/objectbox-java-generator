@@ -16,7 +16,7 @@ import io.objectbox.converter.PropertyConverter;
 @Uid(4858050548069557694L)
 public class SimpleEntity {
 
-    @Id
+    @Id(assignable = true)
     long id;
 
     short simpleShortPrimitive;
@@ -26,7 +26,7 @@ public class SimpleEntity {
     Integer simpleInt;
 
     long simpleLongPrimitive;
-    Long simepleLong;
+    Long simpleLong;
 
     float simpleFloatPrimitive;
     Float simpleFloat;

@@ -34,6 +34,9 @@ import javax.tools.Diagnostic
 
 open class ObjectBoxProcessor : AbstractProcessor() {
 
+    // make processed schema accessible for testing
+    var schema: Schema? = null
+
     private var elementUtils: Elements? = null
     private var typeUtils: Types? = null
     private var filer: Filer? = null
@@ -87,6 +90,8 @@ open class ObjectBoxProcessor : AbstractProcessor() {
 
         schema.lastEntityId = idSync.lastEntityId
         schema.lastIndexId = idSync.lastIndexId
+
+        this.schema = schema // make processed schema accessible for testing
 
         // can't use Filer + only Gradle knows the build directory... :/
         //        File outDir = new File(project.buildDir, "generated/source/objectbox");
