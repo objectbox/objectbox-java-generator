@@ -150,6 +150,9 @@ public final class ObjectBoxProcessor extends AbstractProcessor {
             return;
         }
 
+        // checks above ensure field is NOT private
+        propertyBuilder.fieldAccessible();
+
         // @Id
         Id idAnnotation = field.getAnnotation(Id.class);
         if (idAnnotation != null) {
