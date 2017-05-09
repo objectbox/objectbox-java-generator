@@ -225,8 +225,8 @@ public final class ObjectBoxProcessor extends AbstractProcessor {
         TypeMirror typeMirror = field.asType();
         PropertyType propertyType = getPropertyType(typeMirror);
         if (propertyType == null) {
-            error(field, "Field type is not supported. (%s.%s)", enclosingElement.getQualifiedName(),
-                    field.getSimpleName());
+            error(field, "Field type is not supported, maybe add @Convert. (%s.%s)",
+                    enclosingElement.getQualifiedName(), field.getSimpleName());
             return null;
         }
 
@@ -271,6 +271,7 @@ public final class ObjectBoxProcessor extends AbstractProcessor {
         return null;
     }
 
+    @Nullable
     private PropertyType getPropertyType(TypeMirror typeMirror) {
         if (isTypeEqual(typeMirror, Short.class.getName()) || typeMirror.getKind() == TypeKind.SHORT) {
             return PropertyType.Short;
