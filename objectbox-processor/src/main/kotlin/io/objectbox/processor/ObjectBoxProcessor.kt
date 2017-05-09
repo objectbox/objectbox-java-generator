@@ -93,13 +93,14 @@ open class ObjectBoxProcessor : AbstractProcessor() {
 
         this.schema = schema // make processed schema accessible for testing
 
-        // can't use Filer + only Gradle knows the build directory... :/
-        //        File outDir = new File(project.buildDir, "generated/source/objectbox");
-        //        try {
-        //            new BoxGenerator(false).generateAll(schema, outDir.getPath());
-        //        } catch (Exception e) {
-        //            printMessage(Diagnostic.Kind.ERROR, "Code generation failed: %s", e.getMessage());
-        //        }
+        // probably only works in real environment: when running through test wants to use mem: URL (in-memory)
+//        val fileProbe = filer!!.createSourceFile("ObjectBoxProbe")
+//        val pathGeneratedSources = Paths.get(fileProbe.toUri())
+//        try {
+//            BoxGenerator(false).generateAll(schema, pathGeneratedSources.toFile().path)
+//        } catch (e: Exception) {
+//            printMessage(Diagnostic.Kind.ERROR, "Code generation failed: ${e.message}")
+//        }
     }
 
     private fun parseEntity(schema: Schema, idSync: IdSync, entity: Element) {
@@ -338,19 +339,19 @@ open class ObjectBoxProcessor : AbstractProcessor() {
     }
 
     private fun error(element: Element, message: String, vararg args: Any) {
-        printMessage(Diagnostic.Kind.ERROR, element, message, *args)
+        printMessage(Diagnostic.Kind.ERROR, message, element, args)
     }
 
     private fun note(element: Element, message: String, vararg args: Any) {
-        printMessage(Diagnostic.Kind.NOTE, element, message, *args)
+        printMessage(Diagnostic.Kind.NOTE, message, element, args)
     }
 
     private fun printMessage(kind: Diagnostic.Kind, message: String, vararg args: Any) {
-        val finalMessage = if (args.isNotEmpty()) String.format(message, *args) else message
+        val finalMessage = if (args.isNotEmpty()) String.format(message, args) else message
         processingEnv.messager.printMessage(kind, finalMessage)
     }
 
-    private fun printMessage(kind: Diagnostic.Kind, element: Element, message: String, vararg args: Any) {
+    private fun printMessage(kind: Diagnostic.Kind, message: String, element: Element, args: Array<out Any>) {
         val finalMessage = if (args.isNotEmpty()) String.format(message, *args) else message
         processingEnv.messager.printMessage(kind, finalMessage, element)
     }
