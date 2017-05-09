@@ -8,6 +8,9 @@ import io.objectbox.annotation.Id;
 import io.objectbox.annotation.Index;
 import io.objectbox.annotation.NameInDb;
 import io.objectbox.annotation.Transient;
+import io.objectbox.annotation.Uid;
+import io.objectbox.generator.IdUid;
+import io.objectbox.generator.idsync.IdSync;
 import io.objectbox.generator.model.Property;
 import io.objectbox.generator.model.Property.PropertyBuilder;
 import io.objectbox.generator.model.PropertyType;
@@ -39,6 +42,7 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 
+import java.io.File;
 import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -83,6 +87,10 @@ public final class ObjectBoxProcessor extends AbstractProcessor {
     private void findAndParse(RoundEnvironment env) {
         Schema schema = null;
 
+        // TODO ut: get the correct model file path relative to the module root
+        File modelFile = new File(new File("src/test/resources/objectbox-models"), "default.json");
+        IdSync idSync = new IdSync(modelFile);
+
         for (Element element : env.getElementsAnnotatedWith(Entity.class)) {
             note(element, "Processing @Entity annotation.");
 
@@ -92,8 +100,15 @@ public final class ObjectBoxProcessor extends AbstractProcessor {
                 schema = new Schema(1, packageName.toString());
             }
 
-            parseEntity(schema, element);
+            parseEntity(schema, idSync, element);
         }
+
+        if (schema == null) {
+            return; // no entities found
+        }
+
+        schema.setLastEntityId(idSync.getLastEntityId());
+        schema.setLastIndexId(idSync.getLastIndexId());
 
         // can't use Filer + only Gradle knows the build directory... :/
 //        File outDir = new File(project.buildDir, "generated/source/objectbox");
@@ -104,7 +119,7 @@ public final class ObjectBoxProcessor extends AbstractProcessor {
 //        }
     }
 
-    private void parseEntity(Schema schema, Element entity) {
+    private void parseEntity(Schema schema, IdSync idSync, Element entity) {
         io.objectbox.generator.model.Entity entityModel = schema.addEntity(entity.getSimpleName().toString());
 
         // @NameInDb
@@ -113,6 +128,28 @@ public final class ObjectBoxProcessor extends AbstractProcessor {
             if (nameInDbAnnotation.value().length() != 0) {
                 entityModel.setDbName(nameInDbAnnotation.value());
             }
+        }
+
+        // @Uid
+        Long uid = null;
+        Uid uidAnnotation = entity.getAnnotation(Uid.class);
+        if (uidAnnotation != null) {
+            uid = uidAnnotation.value();
+            if (uid == 0) {
+                uid = null;
+            }
+        }
+
+        // TODO ut: update ID sync model: add new entities + properties, remove old ones
+        String entityName = entityModel.getDbName() != null ? entityModel.getDbName() : entityModel.getClassName();
+        io.objectbox.generator.idsync.Entity idSyncEntity = idSync.findEntity(entityName, uid);
+        if (idSyncEntity == null) {
+            // TODO ut: add new sync model entity + properties
+            // something like idSync.addEntity(...) and idSync.addProperty(entity, ...)
+        } else {
+            entityModel.setModelUid(idSyncEntity.getUid());
+            entityModel.setModelId(idSyncEntity.getModelId());
+            entityModel.setLastPropertyId(idSyncEntity.getLastPropertyId());
         }
 
         List<VariableElement> fields = ElementFilter.fieldsIn(entity.getEnclosedElements());

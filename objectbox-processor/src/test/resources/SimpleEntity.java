@@ -8,10 +8,12 @@ import io.objectbox.annotation.Id;
 import io.objectbox.annotation.Index;
 import io.objectbox.annotation.NameInDb;
 import io.objectbox.annotation.Transient;
+import io.objectbox.annotation.Uid;
 import io.objectbox.converter.PropertyConverter;
 
 @Entity
 @NameInDb("A")
+@Uid(4858050548069557694L)
 public class SimpleEntity {
 
     @Id

@@ -10,6 +10,7 @@ repositories {
 
 dependencies {
     compile "io.objectbox:objectbox-java-api:${project.version}"
+    compile project (':objectbox-code-modifier')
     compile project (':objectbox-generator')
     // auto-service generates service configuration
     compileOnly 'com.google.auto.service:auto-service:1.0-rc2'
