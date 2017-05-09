@@ -11,6 +11,7 @@ import io.objectbox.annotation.Transient;
 import io.objectbox.converter.PropertyConverter;
 
 @Entity
+@NameInDb("A")
 public class SimpleEntity {
 
     @Id
@@ -50,7 +51,7 @@ public class SimpleEntity {
     @Index
     Integer indexedProperty;
 
-    @NameInDb("A")
+    @NameInDb("B")
     String namedProperty;
 
     @Convert(converter = SimpleEnumConverter.class, dbType = Integer.class)

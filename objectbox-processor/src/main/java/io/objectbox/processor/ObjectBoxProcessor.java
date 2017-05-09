@@ -104,12 +104,20 @@ public final class ObjectBoxProcessor extends AbstractProcessor {
 //        }
     }
 
-    private void parseEntity(Schema schema, Element element) {
-        io.objectbox.generator.model.Entity entity = schema.addEntity(element.getSimpleName().toString());
+    private void parseEntity(Schema schema, Element entity) {
+        io.objectbox.generator.model.Entity entityModel = schema.addEntity(entity.getSimpleName().toString());
 
-        List<VariableElement> fields = ElementFilter.fieldsIn(element.getEnclosedElements());
+        // @NameInDb
+        NameInDb nameInDbAnnotation = entity.getAnnotation(NameInDb.class);
+        if (nameInDbAnnotation != null) {
+            if (nameInDbAnnotation.value().length() != 0) {
+                entityModel.setDbName(nameInDbAnnotation.value());
+            }
+        }
+
+        List<VariableElement> fields = ElementFilter.fieldsIn(entity.getEnclosedElements());
         for (VariableElement field : fields) {
-            parseProperty(entity, field);
+            parseProperty(entityModel, field);
         }
     }
 
