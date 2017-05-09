@@ -8,7 +8,6 @@ import io.objectbox.relation.ToOne;
 
 import java.util.List;
 import io.objectbox.annotation.apihint.Internal;
-import io.objectbox.Box;
 import io.objectbox.BoxStore;
 
 @Entity

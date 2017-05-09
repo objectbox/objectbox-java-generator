@@ -1,6 +1,5 @@
 package io.objectbox.test.entityannotation;
 
-import io.objectbox.Box;
 import io.objectbox.BoxStore;
 import io.objectbox.annotation.Entity;
 import io.objectbox.annotation.Generated;
