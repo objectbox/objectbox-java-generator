@@ -3,7 +3,7 @@ pipeline {
     stages {
         stage('build') {
             steps {
-                sh 'cp /var/my-gradle-files/ .'
+                sh 'cp /var/my-gradle-files/gradle.properties .'
                 sh './gradlew build'
             }
         }
