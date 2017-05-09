@@ -4,10 +4,7 @@ import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
 import com.natpryce.hamkrest.hasSize
 import com.natpryce.hamkrest.isEmpty
-import io.objectbox.codemodifier.CustomType
-import io.objectbox.codemodifier.ParsedProperty
-import io.objectbox.codemodifier.Variable
-import io.objectbox.codemodifier.VariableType
+import io.objectbox.codemodifier.*
 import org.junit.Assert.*
 import org.junit.Ignore
 import org.junit.Test
@@ -223,6 +220,51 @@ class VisitorTest : VisitorTestBase() {
         """, listOf("MyType"))!!
         val field = entity.properties[0]
         assertEquals(Variable(myType, "name"), field.variable)
+        assertEquals(CustomType("com.example.myapp.Converter", StringType), field.customType)
+        assertTrue(field.fieldAccessible)
+    }
+
+    @Test
+    fun convertAnnotation_missingAttributes() {
+        try {
+            visit(
+                    //language=java
+                    """
+        import io.objectbox.annotation.Entity;
+        import io.objectbox.annotation.Convert;
+
+        @Entity
+        class Foobar {
+            @Convert
+            MyType name;
+        }
+        """, listOf("MyType"))!!
+            fail("Should have failed")
+        } catch (e: ParseException) {
+            assertTrue(e.message, e.message!!.contains("@Convert attributes absent "))
+        }
+    }
+
+    @Test
+    fun convertAnnotation_list() {
+        val entity = visit(
+                //language=java
+                """
+        package com.example.myapp;
+
+        import io.objectbox.annotation.Entity;
+        import io.objectbox.annotation.Convert;
+        import com.example.myapp.Converter;
+        import java.util.List;
+
+        @Entity
+        class Foobar {
+            @Convert(converter = Converter.class, dbType = String.class)
+            List<MyType> name;
+        }
+        """, listOf("MyType"))!!
+        val field = entity.properties[0]
+        assertEquals(myType, field.variable.type.typeArguments!![0])
         assertEquals(CustomType("com.example.myapp.Converter", StringType), field.customType)
         assertTrue(field.fieldAccessible)
     }
