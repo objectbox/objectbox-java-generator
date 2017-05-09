@@ -7,6 +7,7 @@ import io.objectbox.annotation.Entity;
 import io.objectbox.annotation.Id;
 import io.objectbox.annotation.Transient;
 import io.objectbox.generator.model.Property;
+import io.objectbox.generator.model.Property.PropertyBuilder;
 import io.objectbox.generator.model.PropertyType;
 import io.objectbox.generator.model.Schema;
 
@@ -137,22 +138,14 @@ public final class ObjectBoxProcessor extends AbstractProcessor {
 
         Convert convertAnnotation = field.getAnnotation(Convert.class);
         if (convertAnnotation != null) {
-            // @Convert custom type
+            // verify @Convert custom type
             propertyBuilder = parseCustomProperty(entity, field, enclosingElement);
-            if (propertyBuilder == null) {
-                return;
-            }
         } else {
             // verify that supported type is used
-            TypeMirror typeMirror = field.asType();
-            PropertyType propertyType = getPropertyType(typeMirror);
-            if (propertyType == null) {
-                error(field, "Field type is not supported. (%s.%s)", enclosingElement.getQualifiedName(),
-                        fieldName);
-                return;
-            }
-
-            propertyBuilder = entity.addProperty(propertyType, fieldName.toString());
+            propertyBuilder = parseSupportedProperty(entity, field, enclosingElement);
+        }
+        if (propertyBuilder == null) {
+            return;
         }
 
         // @Id
@@ -199,6 +192,32 @@ public final class ObjectBoxProcessor extends AbstractProcessor {
 
         Property.PropertyBuilder propertyBuilder = entity.addProperty(propertyType, field.getSimpleName().toString());
         propertyBuilder.customType(field.asType().toString(), converter.toString());
+        // note: custom types are already assumed non-primitive by Property#isNonPrimitiveType()
+        return propertyBuilder;
+    }
+
+    @Nullable
+    private PropertyBuilder parseSupportedProperty(io.objectbox.generator.model.Entity entity, VariableElement field,
+            TypeElement enclosingElement) {
+        TypeMirror typeMirror = field.asType();
+        PropertyType propertyType = getPropertyType(typeMirror);
+        if (propertyType == null) {
+            error(field, "Field type is not supported. (%s.%s)", enclosingElement.getQualifiedName(),
+                    field.getSimpleName());
+            return null;
+        }
+
+        PropertyBuilder propertyBuilder = entity.addProperty(propertyType, field.getSimpleName().toString());
+
+        boolean isPrimitive = typeMirror.getKind().isPrimitive();
+        if (isPrimitive) {
+            // treat primitive types as non-null
+            propertyBuilder.notNull();
+        } else if (propertyType.isScalar()) {
+            // treat wrapper types (Long, Integer, ...) of scalar types as non-primitive
+            propertyBuilder.nonPrimitiveType();
+        }
+
         return propertyBuilder;
     }
 
