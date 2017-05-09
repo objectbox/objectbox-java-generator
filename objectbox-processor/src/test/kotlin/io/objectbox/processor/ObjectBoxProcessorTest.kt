@@ -46,6 +46,17 @@ class ObjectBoxProcessorTest {
         assertThat(entity.modelUid).isEqualTo(4858050548069557694)
         assertThat(entity.lastPropertyId).isEqualTo(IdUid(1, 8303367770402050741))
 
+        // assert index
+        for (index in entity.indexes) {
+            when (index.orderSpec) {
+                "indexedProperty ASC" -> {
+                    assertThat(!index.isUnique)
+                    assertThat(!index.isNonDefaultName)
+                }
+                else -> fail("Found stray index '${index.orderSpec}' in schema.")
+            }
+        }
+
         // assert properties
         for (prop in entity.properties) {
             when (prop.propertyName) {
@@ -55,67 +66,26 @@ class ObjectBoxProcessorTest {
                     assertThat(prop.dbName).isEqualTo("_id")
                     assertPrimitiveType(prop, PropertyType.Long)
                 }
-                "simpleShortPrimitive" -> {
-                    assertPrimitiveType(prop, PropertyType.Short)
-                }
-                "simpleShort" -> {
-                    assertType(prop, PropertyType.Short)
-                }
-                "simpleIntPrimitive" -> {
-                    assertPrimitiveType(prop, PropertyType.Int)
-                }
-                "simpleInt" -> {
-                    assertType(prop, PropertyType.Int)
-                }
-                "simpleLongPrimitive" -> {
-                    assertPrimitiveType(prop, PropertyType.Long)
-                }
-                "simpleLong" -> {
-                    assertType(prop, PropertyType.Long)
-                }
-                "simpleFloatPrimitive" -> {
-                    assertPrimitiveType(prop, PropertyType.Float)
-                }
-                "simpleFloat" -> {
-                    assertType(prop, PropertyType.Float)
-                }
-                "simpleDoublePrimitive" -> {
-                    assertPrimitiveType(prop, PropertyType.Double)
-                }
-                "simpleDouble" -> {
-                    assertType(prop, PropertyType.Double)
-                }
-                "simpleBooleanPrimitive" -> {
-                    assertPrimitiveType(prop, PropertyType.Boolean)
-                }
-                "simpleBoolean" -> {
-                    assertType(prop, PropertyType.Boolean)
-                }
-                "simpleBytePrimitive" -> {
-                    assertPrimitiveType(prop, PropertyType.Byte)
-                }
-                "simpleByte" -> {
-                    assertType(prop, PropertyType.Byte)
-                }
-                "simpleDate" -> {
-                    assertType(prop, PropertyType.Date)
-                }
-                "simpleString" -> {
-                    assertType(prop, PropertyType.String)
-                }
-                "simpleByteArray" -> {
-                    assertType(prop, PropertyType.ByteArray)
-                }
-                "transientField", "transientField2", "transientField3" -> {
+                "simpleShortPrimitive" -> assertPrimitiveType(prop, PropertyType.Short)
+                "simpleShort" -> assertType(prop, PropertyType.Short)
+                "simpleIntPrimitive" -> assertPrimitiveType(prop, PropertyType.Int)
+                "simpleInt" -> assertType(prop, PropertyType.Int)
+                "simpleLongPrimitive" -> assertPrimitiveType(prop, PropertyType.Long)
+                "simpleLong" -> assertType(prop, PropertyType.Long)
+                "simpleFloatPrimitive" -> assertPrimitiveType(prop, PropertyType.Float)
+                "simpleFloat" -> assertType(prop, PropertyType.Float)
+                "simpleDoublePrimitive" -> assertPrimitiveType(prop, PropertyType.Double)
+                "simpleDouble" -> assertType(prop, PropertyType.Double)
+                "simpleBooleanPrimitive" -> assertPrimitiveType(prop, PropertyType.Boolean)
+                "simpleBoolean" -> assertType(prop, PropertyType.Boolean)
+                "simpleBytePrimitive" -> assertPrimitiveType(prop, PropertyType.Byte)
+                "simpleByte" -> assertType(prop, PropertyType.Byte)
+                "simpleDate" -> assertType(prop, PropertyType.Date)
+                "simpleString" -> assertType(prop, PropertyType.String)
+                "simpleByteArray" -> assertType(prop, PropertyType.ByteArray)
+                "transientField", "transientField2", "transientField3" ->
                     fail("Transient field should not be added to schema.")
-                }
-                "indexedProperty" -> {
-                    val index = prop.entity.indexes.get(0)
-                    assertThat(!index.isUnique)
-                    assertThat(!index.isNonDefaultName)
-                    assertThat(index.orderSpec).isEqualTo("indexedProperty ASC")
-                    assertType(prop, PropertyType.Int)
-                }
+                "indexedProperty" -> assertType(prop, PropertyType.Int)
                 "namedProperty" -> {
                     assertThat(prop.dbName).isEqualTo("B")
                     assertType(prop, PropertyType.String)
@@ -125,9 +95,7 @@ class ObjectBoxProcessorTest {
                     assertThat(prop.converter).isEqualTo("io.objectbox.processor.test.SimpleEntity.SimpleEnumConverter")
                     assertType(prop, PropertyType.Int)
                 }
-                else -> {
-                    fail("Found stray field ${prop.propertyName} in schema.")
-                }
+                else -> fail("Found stray field '${prop.propertyName}' in schema.")
             }
         }
     }
