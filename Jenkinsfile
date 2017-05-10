@@ -16,9 +16,10 @@ pipeline {
         /*}
 
         failure {*/
+            echo "Sending notification to $emailToNotify"
             mail to: emailToNotify,
-            subject: "Build failed: ${currentBuild.fullDisplayName}",
-            body: "${env.BUILD_URL}"
+                subject: "Build failed: ${currentBuild.fullDisplayName}",
+                body: "${env.BUILD_URL}"
         }
     }
 }
