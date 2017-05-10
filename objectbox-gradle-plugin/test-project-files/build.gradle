@@ -11,7 +11,7 @@ objectbox {
 }
 
 dependencies {
-    compile 'io.objectbox:objectbox-android:0.9.12-SNAPSHOT'
+    compile 'io.objectbox:objectbox-java:0.9.12'
     testCompile 'junit:junit:4.12'
     testCompile 'org.mockito:mockito-core:2.7.22'
 }
@@ -21,6 +21,11 @@ repositories {
 
     // Ensure to have the correct ObjectBox version deployed here
     mavenLocal()
+
+    // Not the most current, but OK for now for Jenkins
+    maven {
+        url "http://objectbox.net/beta-repo/"
+    }
 
     // For essentials
     mavenCentral()
