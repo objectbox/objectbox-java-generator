@@ -15,7 +15,7 @@ pipeline {
             junit '**/build/test-results/**/TEST-*.xml'
         /*}
 
-        //*/failure {
+        failure {*/
             mail to: emailToNotify,
             subject: "Build failed: ${currentBuild.fullDisplayName}",
             body: "${env.BUILD_URL}"
