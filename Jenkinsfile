@@ -20,8 +20,9 @@ pipeline {
     post {
         always {
             junit '**/build/test-results/**/TEST-*.xml'
-            slackSend channel: '#jenkins',
-                    message: "Pipeline ${currentBuild.fullDisplayName} completed: ${env.BUILD_URL}"
+            // For global vars see /jenkins/pipeline-syntax/globals
+            slackSend color: "${currentBuild.currentBuild.result == 'SUCCESS'? 'good': 'warning'}"
+                    message: "${currentBuild.fullDisplayName} completed: ${env.BUILD_URL}, by @${env.CHANGE_AUTHOR}"
         }
     }
 }
