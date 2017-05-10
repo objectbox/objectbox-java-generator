@@ -4,8 +4,13 @@ pipeline {
         stage('build') {
             steps {
                 sh 'cp /var/my-gradle-files/gradle.properties .'
-                sh './gradlew build'
+                sh './gradlew classes'
             }
+        }
+
+        stage('test') {
+            sh './gradlew test'
+            junit '**/build/test-results/**/TEST-*.xml'
         }
     }
 }
