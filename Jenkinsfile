@@ -12,13 +12,7 @@ pipeline {
 
         stage('build') {
             steps {
-                script {
-                    env.MY_COLOR = 'warning'
-                }
                 sh './gradlew clean check'
-                script {
-                    env.MY_COLOR = 'good'
-                }
             }
         }
     }
@@ -26,10 +20,17 @@ pipeline {
     post {
         always {
             junit '**/build/test-results/**/TEST-*.xml'
+        }
 
+        changed {
             // For global vars see /jenkins/pipeline-syntax/globals
-            slackSend color: "${env.MY_COLOR}",
-                    message: "${currentBuild.fullDisplayName}: ${currentBuild.result}\n${env.BUILD_URL}"
+            slackSend message: "Changed ${currentBuild.currentResult}: ${currentBuild.fullDisplayName}\n${env.BUILD_URL}"
+        }
+
+        failure {
+            // For global vars see /jenkins/pipeline-syntax/globals
+            slackSend color: "warning",
+                    message: "Failed: ${currentBuild.fullDisplayName}\n${env.BUILD_URL}"
         }
     }
 }
