@@ -13,9 +13,9 @@ pipeline {
     post {
         always {
             junit '**/build/test-results/**/TEST-*.xml'
-        /*}
+        //}
 
-        failure {*/
+        //failure {
             echo "Sending notification to $emailToNotify"
             mail to: emailToNotify,
                 subject: "Build failed: ${currentBuild.fullDisplayName}",
