@@ -2,15 +2,9 @@ pipeline {
     agent any // { docker 'openjdk:8-jdk' }
 
     stages {
-
         stage('config') {
             steps {
-                sh 'cp /var/my-gradle-files/gradle.properties .'
-                script {
-                    def props = readProperties file: 'gradle.properties'
-                    env.emailToNotify = props['emailToNotify']
-                }
-                echo "Email for notifications: ${env.emailToNotify}"
+                sh 'cp /var/my-private-files/private.properties ./gradle.properties'
                 //sh 'chmod +x gradlew'
                 sh 'printenv'
             }
@@ -26,12 +20,8 @@ pipeline {
     post {
         always {
             junit '**/build/test-results/**/TEST-*.xml'
-
-            echo "Sending notification to ${env.emailToNotify}"
-            mail to: env.emailToNotify,
-                subject: "Build failed: ${currentBuild.fullDisplayName}",
-                body: "${env.BUILD_URL}"
-            echo "Mail sent to ${env.emailToNotify}"
+            slackSend channel: '#jenkins',
+                    message: "Pipeline ${currentBuild.fullDisplayName} completed: ${env.BUILD_URL}"
         }
     }
 }
