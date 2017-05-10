@@ -1,26 +1,15 @@
 pipeline {
     agent any // { docker 'openjdk:8-jdk' }
-    stages {
-        stage('clean') {
-            steps {
-                sh './gradlew clean'
-            }
-        }
 
-        stage('build') {
+    stages {
+        stage('everything') {
             steps {
                 sh 'cp /var/my-gradle-files/gradle.properties .'
-                sh './gradlew classes'
+                sh './gradlew clean test'
             }
         }
-
-        stage('test') {
-            steps {
-                sh './gradlew test'
-            }
-        }
-
     }
+
     post {
         always {
             junit '**/build/test-results/**/TEST-*.xml'
