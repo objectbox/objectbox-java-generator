@@ -12,7 +12,13 @@ pipeline {
 
         stage('build') {
             steps {
+                script {
+                    env.MY_COLOR = 'warning'
+                }
                 sh './gradlew clean check'
+                script {
+                    env.MY_COLOR = 'good'
+                }
             }
         }
     }
@@ -21,9 +27,7 @@ pipeline {
         always {
             junit '**/build/test-results/**/TEST-*.xml'
             // For global vars see /jenkins/pipeline-syntax/globals
-            script {
-                env.MY_COLOR=currentBuild.currentBuild.result == 'SUCCESS'? 'good': 'warning'
-            }
+
             slackSend color: "${env.MY_COLOR}",
                     message: "${currentBuild.fullDisplayName} completed: ${env.BUILD_URL}, by @${env.CHANGE_AUTHOR}"
         }
