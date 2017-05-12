@@ -5,8 +5,8 @@ pipeline {
         stage('config') {
             steps {
                 sh 'cp /var/my-private-files/private.properties ./gradle.properties'
-                //sh 'chmod +x gradlew'
-                sh 'printenv'
+                sh 'chmod +x gradlew'
+                //sh 'printenv'
             }
         }
 
@@ -24,7 +24,8 @@ pipeline {
 
         changed {
             // For global vars see /jenkins/pipeline-syntax/globals
-            slackSend message: "Changed ${currentBuild.currentResult}: ${currentBuild.fullDisplayName}\n${env.BUILD_URL}"
+            slackSend color: "good",
+                    message: "Changed to ${currentBuild.currentResult}: ${currentBuild.fullDisplayName}\n${env.BUILD_URL}"
         }
 
         failure {
