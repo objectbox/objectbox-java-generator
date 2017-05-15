@@ -1,6 +1,7 @@
 package io.objectbox.processor
 
 import com.google.common.truth.Truth.assertThat
+import com.google.testing.compile.Compilation
 import com.google.testing.compile.CompilationSubject
 import com.google.testing.compile.Compiler.javac
 import com.google.testing.compile.JavaFileObjects
@@ -29,16 +30,11 @@ class ObjectBoxProcessorTest {
                 .hadNoteContaining("Processing @Entity annotation.")
                 .inFile(file)
 
-        // assert generated files
-        CompilationSubject.assertThat(compilation)
-                .generatedSourceFile("io.objectbox.processor.test.MyObjectBox")
-                .isNotNull()
-        CompilationSubject.assertThat(compilation)
-                .generatedSourceFile("io.objectbox.processor.test.SimpleEntity_")
-                .isNotNull()
-        CompilationSubject.assertThat(compilation)
-                .generatedSourceFile("io.objectbox.processor.test.SimpleEntityCursor")
-                .isNotNull()
+        // assert generated files source trees
+        assertGeneratedSourceMatches(compilation, "io.objectbox.processor.test.MyObjectBox", "MyObjectBox.java")
+        assertGeneratedSourceMatches(compilation, "io.objectbox.processor.test.SimpleEntity_", "SimpleEntity_.java")
+        assertGeneratedSourceMatches(compilation, "io.objectbox.processor.test.SimpleEntityCursor",
+                "SimpleEntityCursor.java")
 
         // assert schema
         val schema = processor.schema
@@ -109,6 +105,12 @@ class ObjectBoxProcessorTest {
                 else -> fail("Found stray field '${prop.propertyName}' in schema.")
             }
         }
+    }
+
+    private fun assertGeneratedSourceMatches(compilation: Compilation?, qualifiedName: String, fileName: String) {
+        val generatedFile = CompilationSubject.assertThat(compilation).generatedSourceFile(qualifiedName)
+        generatedFile.isNotNull()
+        generatedFile.hasSourceEquivalentTo(JavaFileObjects.forResource(fileName))
     }
 
     private fun assertPrimitiveType(prop: Property, type: PropertyType) {
