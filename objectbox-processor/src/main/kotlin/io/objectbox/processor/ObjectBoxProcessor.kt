@@ -7,6 +7,7 @@ import io.objectbox.annotation.Index
 import io.objectbox.annotation.NameInDb
 import io.objectbox.annotation.Transient
 import io.objectbox.annotation.Uid
+import io.objectbox.generator.BoxGenerator
 import io.objectbox.generator.idsync.IdSync
 import io.objectbox.generator.model.Property
 import io.objectbox.generator.model.Property.PropertyBuilder
@@ -93,18 +94,17 @@ open class ObjectBoxProcessor : AbstractProcessor() {
 
         this.schema = schema // make processed schema accessible for testing
 
-        // probably only works in real environment: when running through test wants to use mem: URL (in-memory)
-//        val fileProbe = filer!!.createSourceFile("ObjectBoxProbe")
-//        val pathGeneratedSources = Paths.get(fileProbe.toUri())
-//        try {
-//            BoxGenerator(false).generateAll(schema, pathGeneratedSources.toFile().path)
-//        } catch (e: Exception) {
-//            printMessage(Diagnostic.Kind.ERROR, "Code generation failed: ${e.message}")
-//        }
+        try {
+            BoxGenerator(false).generateAll(schema, filer)
+        } catch (e: Exception) {
+            printMessage(Diagnostic.Kind.ERROR, "Code generation failed: ${e.message}")
+        }
     }
 
     private fun parseEntity(schema: Schema, idSync: IdSync, entity: Element) {
         val entityModel = schema.addEntity(entity.simpleName.toString())
+        // processor should not generate duplicate entity source files
+        entityModel.isSkipGeneration = true
 
         // @NameInDb
         val nameInDbAnnotation = entity.getAnnotation(NameInDb::class.java)

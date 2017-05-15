@@ -69,7 +69,7 @@ public class SimpleEntity {
         }
     }
 
-    public class SimpleEnumConverter implements PropertyConverter<SimpleEnum, Integer> {
+    public static class SimpleEnumConverter implements PropertyConverter<SimpleEnum, Integer> {
         @Override
         public SimpleEnum convertToEntityProperty(Integer databaseValue) {
             if (databaseValue == null) {

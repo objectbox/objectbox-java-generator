@@ -29,6 +29,17 @@ class ObjectBoxProcessorTest {
                 .hadNoteContaining("Processing @Entity annotation.")
                 .inFile(file)
 
+        // assert generated files
+        CompilationSubject.assertThat(compilation)
+                .generatedSourceFile("io.objectbox.processor.test.MyObjectBox")
+                .isNotNull()
+        CompilationSubject.assertThat(compilation)
+                .generatedSourceFile("io.objectbox.processor.test.SimpleEntity_")
+                .isNotNull()
+        CompilationSubject.assertThat(compilation)
+                .generatedSourceFile("io.objectbox.processor.test.SimpleEntityCursor")
+                .isNotNull()
+
         // assert schema
         val schema = processor.schema
         assertThat(schema).isNotNull()
