@@ -14,6 +14,7 @@ import io.objectbox.generator.model.Property.PropertyBuilder
 import io.objectbox.generator.model.PropertyType
 import io.objectbox.generator.model.Schema
 import java.io.File
+import java.io.FileNotFoundException
 import java.util.*
 import javax.annotation.processing.AbstractProcessor
 import javax.annotation.processing.Filer
@@ -35,26 +36,43 @@ import javax.tools.Diagnostic
 
 open class ObjectBoxProcessor : AbstractProcessor() {
 
+    companion object {
+        val OPTION_MODEL_PATH: String = "objectbox.modelPath"
+    }
+
     // make processed schema accessible for testing
     var schema: Schema? = null
 
     private var elementUtils: Elements? = null
     private var typeUtils: Types? = null
     private var filer: Filer? = null
+    private var projectRoot: File? = null
+    private var customModelPath: String? = null
 
     @Synchronized override fun init(env: ProcessingEnvironment) {
         super.init(env)
 
-        // TODO ut: remove unused utils
         elementUtils = env.elementUtils
         typeUtils = env.typeUtils
         filer = env.filer
+
+        customModelPath = env.options.get(OPTION_MODEL_PATH)
+
+        try {
+            projectRoot = findProjectRoot(env.filer)
+        } catch (e: FileNotFoundException) {
+            throw FileNotFoundException("Could not find project root: ${e.message}")
+        }
     }
 
     override fun getSupportedAnnotationTypes(): Set<String> {
         val types = LinkedHashSet<String>()
         types.add(Entity::class.java.canonicalName)
         return types
+    }
+
+    override fun getSupportedOptions(): MutableSet<String> {
+        return Collections.singleton(OPTION_MODEL_PATH)
     }
 
     override fun getSupportedSourceVersion(): SourceVersion {
@@ -69,8 +87,12 @@ open class ObjectBoxProcessor : AbstractProcessor() {
     private fun findAndParse(env: RoundEnvironment) {
         var schema: Schema? = null
 
-        // TODO ut: get the correct model file path relative to the module root
-        val modelFile = File(File("src/test/resources/objectbox-models"), "default.json")
+        val modelFilePath = if (customModelPath.isNullOrEmpty()) "objectbox-models/default.json" else customModelPath
+        val modelFile = File(projectRoot, modelFilePath)
+        if (!modelFile.isFile) {
+            printMessage(Diagnostic.Kind.ERROR, "Could not find model file at '${modelFile.absolutePath}'.")
+            return
+        }
         val idSync = IdSync(modelFile)
 
         for (element in env.getElementsAnnotatedWith(Entity::class.java)) {

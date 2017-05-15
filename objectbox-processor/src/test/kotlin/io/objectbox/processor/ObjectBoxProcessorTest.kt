@@ -24,6 +24,7 @@ class ObjectBoxProcessorTest {
 
         val compilation = javac()
                 .withProcessors(processor)
+                .withOptions("-A${ObjectBoxProcessor.OPTION_MODEL_PATH}=src/test/resources/objectbox-models/default.json")
                 .compile(file)
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
         CompilationSubject.assertThat(compilation)
