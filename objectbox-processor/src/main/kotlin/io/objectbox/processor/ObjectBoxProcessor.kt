@@ -35,11 +35,14 @@ import javax.lang.model.util.ElementFilter
 import javax.lang.model.util.Elements
 import javax.lang.model.util.Types
 import javax.tools.Diagnostic
+import kotlin.collections.LinkedHashSet
 
 open class ObjectBoxProcessor : AbstractProcessor() {
 
     companion object {
         val OPTION_MODEL_PATH: String = "objectbox.modelPath"
+        val OPTION_DAO_COMPAT: String = "objectbox.daoCompat"
+        val OPTION_DAO_PACKAGE: String = "objectbox.daoPackage"
     }
 
     // make processed schema accessible for testing
@@ -50,6 +53,8 @@ open class ObjectBoxProcessor : AbstractProcessor() {
     private var filer: Filer? = null
     private var projectRoot: File? = null
     private var customModelPath: String? = null
+    private var daoCompat: Boolean = false
+    private var daoCompatPackage: String? = null
 
     @Synchronized override fun init(env: ProcessingEnvironment) {
         super.init(env)
@@ -59,6 +64,8 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         filer = env.filer
 
         customModelPath = env.options.get(OPTION_MODEL_PATH)
+        daoCompat = "true" == env.options.get(OPTION_DAO_COMPAT)
+        daoCompatPackage = env.options.get(OPTION_DAO_PACKAGE)
 
         try {
             projectRoot = findProjectRoot(env.filer)
@@ -74,7 +81,10 @@ open class ObjectBoxProcessor : AbstractProcessor() {
     }
 
     override fun getSupportedOptions(): MutableSet<String> {
-        return Collections.singleton(OPTION_MODEL_PATH)
+        val options = LinkedHashSet<String>()
+        options.add(OPTION_MODEL_PATH)
+        options.add(OPTION_DAO_PACKAGE)
+        return options
     }
 
     override fun getSupportedSourceVersion(): SourceVersion {
@@ -89,16 +99,20 @@ open class ObjectBoxProcessor : AbstractProcessor() {
     private fun findAndParse(env: RoundEnvironment) {
         var schema: Schema? = null
 
-        for (element in env.getElementsAnnotatedWith(Entity::class.java)) {
-            note(element, "Processing @Entity annotation.")
+        for (entity in env.getElementsAnnotatedWith(Entity::class.java)) {
+            note(entity, "Processing @Entity annotation.")
 
             if (schema == null) {
-                val elementPackage = elementUtils!!.getPackageOf(element)
-                val packageName = elementPackage.qualifiedName
-                schema = Schema(1, packageName.toString())
+                val defaultJavaPackage = if (daoCompat && daoCompatPackage != null) {
+                    daoCompatPackage
+                } else {
+                    val elementPackage = elementUtils!!.getPackageOf(entity)
+                    elementPackage.qualifiedName.toString()
+                }
+                schema = Schema("default", 1, defaultJavaPackage)
             }
 
-            parseEntity(schema, element)
+            parseEntity(schema, entity)
         }
 
         if (schema == null) {
@@ -112,7 +126,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         this.schema = schema // make processed schema accessible for testing
 
         try {
-            BoxGenerator(false).generateAll(schema, filer)
+            BoxGenerator(daoCompat).generateAll(schema, filer)
         } catch (e: Exception) {
             printMessage(Diagnostic.Kind.ERROR, "Code generation failed: ${e.message}")
         }
@@ -120,8 +134,12 @@ open class ObjectBoxProcessor : AbstractProcessor() {
 
     private fun parseEntity(schema: Schema, entity: Element) {
         val entityModel = schema.addEntity(entity.simpleName.toString())
-        // processor should not generate duplicate entity source files
-        entityModel.isSkipGeneration = true
+        entityModel.isSkipGeneration = true // processor may not generate duplicate entity source files
+        entityModel.isConstructors = true // has no effect as isSkipGeneration = true
+        entityModel.isSkipCreationInDb = false
+        entityModel.javaPackage = elementUtils!!.getPackageOf(entity).qualifiedName.toString()
+        entityModel.javaPackageDao = daoCompatPackage ?: entityModel.javaPackage
+        entityModel.javaPackageTest = entityModel.javaPackageDao // has no effect as tests can not be generated
 
         // @NameInDb
         val nameInDbAnnotation = entity.getAnnotation(NameInDb::class.java)
@@ -136,6 +154,9 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         if (uidAnnotation != null && uidAnnotation.value != 0L) {
             entityModel.modelUid = uidAnnotation.value
         }
+
+        // TODO ut: add missing entity build steps
+        // compare with io.objectbox.codemodifier.GreendaoModelTranslator.convertEntities
 
         val fields = ElementFilter.fieldsIn(entity.enclosedElements)
         for (field in fields) {

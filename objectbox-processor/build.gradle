@@ -24,5 +24,6 @@ dependencies {
     testCompile 'com.google.truth:truth:0.32'
     testCompile 'com.google.testing.compile:compile-testing:0.11'
     // generated files during test need objectbox dependencies to compile
-    testCompile 'io.objectbox:objectbox-android:0.9.12'
+    testCompile 'io.objectbox:objectbox-java:0.9.12'
+    testCompile 'io.objectbox:objectbox-daocompat:0.9.12'
 }

@@ -24,7 +24,11 @@ class ObjectBoxProcessorTest {
 
         val compilation = javac()
                 .withProcessors(processor)
-                .withOptions("-A${ObjectBoxProcessor.OPTION_MODEL_PATH}=src/test/resources/objectbox-models/default.json")
+                .withOptions(
+                        "-A${ObjectBoxProcessor.OPTION_MODEL_PATH}=src/test/resources/objectbox-models/default.json"
+                        // disabled as compat DAO currently requires entity property getters/setters
+//                        "-A${ObjectBoxProcessor.OPTION_DAO_COMPAT}=true"
+                )
                 .compile(file)
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
         CompilationSubject.assertThat(compilation)
