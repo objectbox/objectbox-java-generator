@@ -14,7 +14,7 @@ dependencies {
     
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     compile "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
-    compile "io.objectbox:objectbox-java-api:${project.version}"
+    compile "io.objectbox:objectbox-java-api:0.9.12"
     // auto-service generates service configuration
     compileOnly 'com.google.auto.service:auto-service:1.0-rc2'
 
@@ -26,4 +26,35 @@ dependencies {
     // generated files during test need objectbox dependencies to compile
     testCompile 'io.objectbox:objectbox-java:0.9.12'
     testCompile 'io.objectbox:objectbox-daocompat:0.9.12'
+}
+
+task sourcesJar(type: Jar) {
+    from sourceSets.main.allSource
+    classifier = 'sources'
+}
+
+artifacts {
+    archives jar
+    archives sourcesJar
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            // Basic definitions are defined in root project
+            pom.project {
+                name 'ObjectBox Processor'
+                description 'Annotation processor for ObjectBox (NoSQL for Objects)'
+
+                licenses {
+                    license {
+                        name 'GNU General Public License, Version 3'
+                        url 'http://www.gnu.org/licenses/gpl.txt'
+                        distribution 'repo'
+                    }
+                }
+
+            }
+        }
+    }
 }
