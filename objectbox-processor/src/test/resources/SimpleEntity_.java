@@ -36,27 +36,27 @@ public final class SimpleEntity_ implements EntityInfo<SimpleEntity> {
     @Internal
     static final SimpleEntityIdGetter __ID_GETTER = new SimpleEntityIdGetter();
 
-    public final static Property id = new Property(0, 0, long.class, "id", true, "_id");
-    public final static Property simpleShortPrimitive = new Property(1, 0, short.class, "simpleShortPrimitive");
-    public final static Property simpleShort = new Property(2, 0, Short.class, "simpleShort");
-    public final static Property simpleIntPrimitive = new Property(3, 0, int.class, "simpleIntPrimitive");
-    public final static Property simpleInt = new Property(4, 0, Integer.class, "simpleInt");
-    public final static Property simpleLongPrimitive = new Property(5, 0, long.class, "simpleLongPrimitive");
-    public final static Property simpleLong = new Property(6, 0, Long.class, "simpleLong");
-    public final static Property simpleFloatPrimitive = new Property(7, 0, float.class, "simpleFloatPrimitive");
-    public final static Property simpleFloat = new Property(8, 0, Float.class, "simpleFloat");
-    public final static Property simpleDoublePrimitive = new Property(9, 0, double.class, "simpleDoublePrimitive");
-    public final static Property simpleDouble = new Property(10, 0, Double.class, "simpleDouble");
-    public final static Property simpleBooleanPrimitive = new Property(11, 0, boolean.class, "simpleBooleanPrimitive");
-    public final static Property simpleBoolean = new Property(12, 0, Boolean.class, "simpleBoolean");
-    public final static Property simpleBytePrimitive = new Property(13, 0, byte.class, "simpleBytePrimitive");
-    public final static Property simpleByte = new Property(14, 0, Byte.class, "simpleByte");
-    public final static Property simpleDate = new Property(15, 0, java.util.Date.class, "simpleDate");
-    public final static Property simpleString = new Property(16, 0, String.class, "simpleString");
-    public final static Property simpleByteArray = new Property(17, 0, byte[].class, "simpleByteArray");
-    public final static Property indexedProperty = new Property(18, 0, Integer.class, "indexedProperty");
-    public final static Property namedProperty = new Property(19, 0, String.class, "namedProperty", false, "B");
-    public final static Property customType = new Property(20, 0, int.class, "customType", false, "customType", SimpleEnumConverter.class, SimpleEnum.class);
+    public final static Property id = new Property(0, 1, long.class, "id", true, "_id");
+    public final static Property simpleShortPrimitive = new Property(1, 2, short.class, "simpleShortPrimitive");
+    public final static Property simpleShort = new Property(2, 3, Short.class, "simpleShort");
+    public final static Property simpleIntPrimitive = new Property(3, 4, int.class, "simpleIntPrimitive");
+    public final static Property simpleInt = new Property(4, 5, Integer.class, "simpleInt");
+    public final static Property simpleLongPrimitive = new Property(5, 6, long.class, "simpleLongPrimitive");
+    public final static Property simpleLong = new Property(6, 7, Long.class, "simpleLong");
+    public final static Property simpleFloatPrimitive = new Property(7, 8, float.class, "simpleFloatPrimitive");
+    public final static Property simpleFloat = new Property(8, 9, Float.class, "simpleFloat");
+    public final static Property simpleDoublePrimitive = new Property(9, 10, double.class, "simpleDoublePrimitive");
+    public final static Property simpleDouble = new Property(10, 11, Double.class, "simpleDouble");
+    public final static Property simpleBooleanPrimitive = new Property(11, 12, boolean.class, "simpleBooleanPrimitive");
+    public final static Property simpleBoolean = new Property(12, 13, Boolean.class, "simpleBoolean");
+    public final static Property simpleBytePrimitive = new Property(13, 14, byte.class, "simpleBytePrimitive");
+    public final static Property simpleByte = new Property(14, 15, Byte.class, "simpleByte");
+    public final static Property simpleDate = new Property(15, 16, java.util.Date.class, "simpleDate");
+    public final static Property simpleString = new Property(16, 17, String.class, "simpleString");
+    public final static Property simpleByteArray = new Property(17, 18, byte[].class, "simpleByteArray");
+    public final static Property indexedProperty = new Property(18, 19, Integer.class, "indexedProperty");
+    public final static Property namedProperty = new Property(19, 20, String.class, "namedProperty", false, "B");
+    public final static Property customType = new Property(20, 21, int.class, "customType", false, "customType", SimpleEnumConverter.class, SimpleEnum.class);
 
     public final static Property[] __ALL_PROPERTIES = {
             id,

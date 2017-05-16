@@ -280,8 +280,16 @@ public class Property implements HasParsedElement {
         return modelId;
     }
 
+    public void setModelId(IdUid modelId) {
+        this.modelId = modelId;
+    }
+
     public IdUid getModelIndexId() {
         return modelIndexId;
+    }
+
+    public void setModelIndexId(IdUid modelIndexId) {
+        this.modelIndexId = modelIndexId;
     }
 
     public String getDbName() {

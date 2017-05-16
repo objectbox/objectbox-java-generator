@@ -319,10 +319,9 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
                 indexId = sourceIndexId?.clone()
         )
 
-        // TODO ut: schema property uid and index uid not writable
         // update schema property
-//        schemaProperty.modelId = property.id
-//        schemaProperty.modelIndexId = property.indexId
+        schemaProperty.modelId = property.id
+        schemaProperty.modelIndexId = property.indexId
         
         val collision = propertiesBySchemaProperty.put(schemaProperty, property)
         if (collision != null) {
