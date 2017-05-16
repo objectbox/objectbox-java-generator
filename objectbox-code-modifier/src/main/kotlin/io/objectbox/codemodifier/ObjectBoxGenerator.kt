@@ -124,7 +124,6 @@ class ObjectBoxGenerator(val formattingOptions: FormattingOptions? = null,
 
         // add everything (fields, constructors, methods) in reverse as transformer writes in reverse direction
         if (entity.active) {
-            transformer.ensureImport("io.objectbox.Box")
             transformer.ensureImport("io.objectbox.BoxStore")
 
             generateToManyRelations(entity, transformer)

@@ -8,11 +8,11 @@ import org.junit.Test
 /**
  * Tests if types are properly recognized.
  */
-class VisitorImportsTest : VisitorTestBase() {
+class ParseImportsTest : ParseTestBase() {
 
     @Test(expected = RuntimeException::class)
     fun ambigousImport() {
-        visit(
+        parse(
                 //language=java
                 """
         package com.example;
@@ -35,7 +35,7 @@ class VisitorImportsTest : VisitorTestBase() {
     @Test
     @Ignore("Feature not yet available")
     fun resolveQualifiedNameInSamePackage() {
-        val entity = visit(
+        val entity = parse(
                 //language=java
                 """
         package com.example;
@@ -60,7 +60,7 @@ class VisitorImportsTest : VisitorTestBase() {
     @Test
     @Ignore("Feature not yet available")
     fun resolveInternalClassInSamePackage() {
-        val entity = visit(
+        val entity = parse(
                 //language=java
                 """
         package com.example;
@@ -85,7 +85,7 @@ class VisitorImportsTest : VisitorTestBase() {
     @Test
     @Ignore("Feature not yet available")
     fun resolveFullyQualifiedNameIternalPackage() {
-        val entity = visit(
+        val entity = parse(
                 //language=java
                 """
         package com.example2;
@@ -111,7 +111,7 @@ class VisitorImportsTest : VisitorTestBase() {
     @Test
     @Ignore("Feature not yet available")
     fun resolveFullyQualifiedName() {
-        val entity = visit(
+        val entity = parse(
                 //language=java
                 """
         package com.example2;

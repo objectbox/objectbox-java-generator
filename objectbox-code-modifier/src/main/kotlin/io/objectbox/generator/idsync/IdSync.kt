@@ -373,6 +373,9 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
      * Just reads the model without changing any state of this object. Nice for testing also.
      */
     fun justRead(file: File = jsonFile): IdSyncModel? {
+        if(!jsonFile.exists() || jsonFile.length() == 0L) { // Temp files have a 0 bytes length
+            return null
+        }
         var source: Source? = null
         try {
             source = Okio.source(file)

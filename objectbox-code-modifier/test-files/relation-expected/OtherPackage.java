@@ -5,14 +5,12 @@ import io.objectbox.annotation.Generated;
 import io.objectbox.annotation.Id;
 import io.objectbox.annotation.Backlink;
 import io.objectbox.annotation.Relation;
-import java.util.List;
+import io.objectbox.relation.ToMany;
 
 import io.objectbox.codemodifier.test.Customer;
 import io.objectbox.codemodifier.test.Order;
 import io.objectbox.annotation.apihint.Internal;
-import io.objectbox.Box;
 import io.objectbox.BoxStore;
-import io.objectbox.relation.ToMany;
 import io.objectbox.codemodifier.test.one.OnePackage_;
 import io.objectbox.relation.ToOne;
 
@@ -28,7 +26,7 @@ public class OtherPackage {
     Customer customer;
 
     @Backlink(to = "other")
-    List<OnePackage> ones = new ToMany<>(this, OtherPackage_.ones);
+    ToMany<OnePackage> ones = new ToMany<>(this, OtherPackage_.ones);
 
     /** Used to resolve relations */
     @Internal

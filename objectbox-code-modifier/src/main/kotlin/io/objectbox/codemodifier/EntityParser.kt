@@ -95,7 +95,7 @@ class EntityParser(val jdtOptions: Hashtable<String, String>, val encoding: Stri
                         " (ID: ${problem.id}; error: ${problem.isError})")
             }
             val first = problems[0]
-            throw RuntimeException("Found ${problems.size} problem(s) parsing \"${javaFile}\". First problem: " +
+            throw ParseException("Found ${problems.size} problem(s) parsing \"${javaFile}\". First problem: " +
                     first + " (${first.id} at line ${first.sourceLineNumber}).\n" +
                     "Run gradle with --info for more details.")
         }

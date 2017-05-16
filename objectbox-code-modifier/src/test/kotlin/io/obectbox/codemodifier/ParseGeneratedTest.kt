@@ -10,12 +10,12 @@ import org.junit.Test
 /**
  * Tests if @Generated and @Keep annotations are properly recognized and if generated code modifications are detected.
  */
-class VisitorGeneratedTest : VisitorTestBase() {
+class ParseGeneratedTest : ParseTestBase() {
 
     @Test
     fun fieldGeneratorHint() {
         val cityHash = CodeCompare.codeHash("@Transient String city;")
-        val entity = visit(
+        val entity = parse(
                 """
         import io.objectbox.annotation.*;
 
@@ -45,7 +45,7 @@ class VisitorGeneratedTest : VisitorTestBase() {
                 "Foobar(String name, int age){}"
         )
 
-        val entity = visit(
+        val entity = parse(
                 //language=java
                 """
         import io.objectbox.annotation.*;
@@ -79,7 +79,7 @@ class VisitorGeneratedTest : VisitorTestBase() {
 
     @Test
     fun methodGeneratorHint() {
-        val entity = visit(
+        val entity = parse(
                 //language=java
                 """
         import io.objectbox.annotation.*;
@@ -108,7 +108,7 @@ class VisitorGeneratedTest : VisitorTestBase() {
 
     @Test(expected = RuntimeException::class)
     fun throwIfGeneratedFieldChanged() {
-        visit(
+        parse(
                 //language=java
                 """
         import io.objectbox.annotation.*;
@@ -123,7 +123,7 @@ class VisitorGeneratedTest : VisitorTestBase() {
 
     @Test(expected = RuntimeException::class)
     fun throwIfGeneratedConstructorChanged() {
-        visit(
+        parse(
                 //language=java
                 """
         import io.objectbox.annotation.*;
@@ -140,7 +140,7 @@ class VisitorGeneratedTest : VisitorTestBase() {
 
     @Test(expected = RuntimeException::class)
     fun throwIfGeneratedMethodChanged() {
-        visit(
+        parse(
                 //language=java
                 """
         import io.objectbox.annotation.*;

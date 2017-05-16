@@ -119,7 +119,7 @@ object AnnotationProxy {
             }
         }
 
-        throw RuntimeException("Value for $methodName should be of type ${expected.simpleName} " +
+        throw ParseException("Value for $methodName should be of type ${expected.simpleName} " +
                 "(could not convert from ${this.javaClass}). Note: only inline constants are supported.")
     }
 }

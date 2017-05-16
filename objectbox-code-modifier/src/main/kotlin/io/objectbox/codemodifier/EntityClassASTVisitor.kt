@@ -9,7 +9,6 @@ import kotlin.reflect.KClass
 /**
  * Visits compilation unit, find if it is an Entity and reads all the required information about it
  */
-// TODO unify error info (gather line number etc.) see #throwWithLocation
 class EntityClassASTVisitor(val source: String, val classesInPackage: List<String> = emptyList()) : LazyVisitor() {
     // TODO do we need all those members (vs. parsed model)?
 
@@ -89,7 +88,7 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
                                 // TODO remove this requirement (the following is just a workaround to fill
                                 // protobufEntity.dbName):
                                 // explicitly require table name so the user is aware where both DAOs store their data
-                                throw RuntimeException("Set nameInDb in the ${parent.name} @Entity annotation. " +
+                                throw ParseException("Set nameInDb in the ${parent.name} @Entity annotation. " +
                                         "An explicit table name is required when specifying a protobuf class.")
                             }
                         }
@@ -121,9 +120,7 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
 
     override fun endVisit(node: FieldDeclaration) {
         // There can be multiple variables defined like "int a, b, c" and thus we need to operate on lists here.
-        val variableNames = node.fragments()
-                .filter { it is VariableDeclarationFragment }
-                .map { (it as VariableDeclarationFragment).name }
+        val variableNames = variableNames(node)
         val variableType = node.type.toVariableType()
 
         // check how the field(s) should be treated
@@ -159,15 +156,24 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
         lastField = node
     }
 
+    /** There can be multiple variables defined like "int a, b, c" */
+    private fun variableNames(node: FieldDeclaration): List<SimpleName> {
+        val variableNames = node.fragments()
+                .filter { it is VariableDeclarationFragment }
+                .map { (it as VariableDeclarationFragment).name }
+        return variableNames
+    }
+
     private fun parseNonTransientField(node: FieldDeclaration, annotations: MutableList<Annotation>,
                                        variableType: VariableType, variableName: SimpleName) {
         if (variableType.name == "io.objectbox.relation.ToOne" && !has<Generated>(fieldAnnotations)) {
             if (Modifier.isPrivate(node.modifiers)) {
-                throwWithLocation("Currently, ToOne's may not be private, change it to package visible: " +
+                throw exceptionWithLocation("Currently, ToOne's may not be private, change it to package visible: " +
                         variableName.identifier, node)
             }
             oneRelations += parseRelationToOne(annotations, variableName, variableType, node, true)
-        } else if (variableType.name == "java.util.List" || variableType.name == "io.objectbox.relation.ToMany") {
+        } else if (!has<Convert>(annotations) &&
+                (variableType.name == "java.util.List" || variableType.name == "io.objectbox.relation.ToMany")) {
             manyRelations += parseRelationToMany(annotations, variableName, variableType, node)
         } else if (has<Relation>(annotations)) {
             oneRelations += parseRelationToOne(annotations, variableName, variableType, node, false)
@@ -176,10 +182,13 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
         }
     }
 
-    private fun throwWithLocation(msg: String, node: ASTNode) {
-        val additionalInfo = if (node is FieldDeclaration) node.type.typeName + " in " else ""
-        // TODO grab field name if available
-        throw RuntimeException(msg + " ($additionalInfo${typeDeclaration?.name?.identifier}:${node.lineNumber})")
+    private fun exceptionWithLocation(msg: String, node: ASTNode): ParseException {
+        var additionalInfo = if (node is FieldDeclaration) {
+            val variableNames = variableNames(node).joinToString()
+            "${node.type.typeName} $variableNames in "
+        } else ""
+
+        return ParseException(msg + " ($additionalInfo${typeDeclaration?.name?.identifier}:${node.lineNumber})")
     }
 
     private fun ASTNode.checkUntouched(hint: GeneratorHint.Generated) {
@@ -230,7 +239,7 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
 
         val targetType = if (plainToOne) {
             variableType.typeArguments?.singleOrNull()
-                    ?: throw RuntimeException("You must specify a type argument for ToOne: " + fieldName)
+                    ?: throw exceptionWithLocation("You must specify a type argument for ToOne", node)
         } else variableType
 
         return ToOneRelation(
@@ -249,14 +258,13 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
     private fun parseRelationToMany(fa: MutableList<Annotation>, fieldName: SimpleName, variableType: VariableType,
                                     node: FieldDeclaration): ToManyRelation {
         val backlink = fa.proxy<Backlink>()
-        if (backlink == null) {
-            throwWithLocation("For now, all ToMany relations must be backlinks" +
-                    "(annotate with @Backlink with a ToOne counterpart in the target entity)", node)
-        }
-//        val orderByAnnotation = fa.proxy<OrderBy>()
+                ?: throw exceptionWithLocation("For now, all ToMany relations must be backlinks" +
+                "(annotate with @Backlink with a ToOne counterpart in the target entity)", node)
+
+        //        val orderByAnnotation = fa.proxy<OrderBy>()
         return ToManyRelation(
                 variable = Variable(variableType, fieldName.toString()),
-                backlinkName = backlink?.to?.nullIfBlank(),
+                backlinkName = backlink.to.nullIfBlank(),
                 astNode = node
 //                ,joinOnProperties = proxy.joinProperties.map { JoinOnProperty(it.name, it.referencedName) },
 //                order = orderByAnnotation?.let {
@@ -275,38 +283,35 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
         )
     }
 
-    private fun parseProperty(astNode: FieldDeclaration, fa: MutableList<Annotation>,
+    private fun parseProperty(astNode: FieldDeclaration, annotations: MutableList<Annotation>,
                               variableType: VariableType, fieldName: SimpleName): ParsedProperty {
-        val nameInDb = fa.proxy<NameInDb>()
-        val index = fa.proxy<Index>()
-        val id = fa.proxy<Id>()
-        val uid = fa.proxy<Uid>()
+        val nameInDb = annotations.proxy<NameInDb>()
+        val index = annotations.proxy<Index>()
+        val id = annotations.proxy<Id>()
+        val uid = annotations.proxy<Uid>()
 
         return ParsedProperty(
                 variable = Variable(variableType, fieldName.toString()),
                 astNode = astNode,
                 idParams = id?.let { EntityIdParams(false /*it.monotonic*/, it.assignable) },
                 index = index?.let { PropertyIndex(null, false /* TODO indexAnnotation.unique*/) },
-                isNotNull = astNode.type.isPrimitiveType || hasNotNull(fa),
+                isNotNull = astNode.type.isPrimitiveType || hasNotNull(annotations),
                 dbName = nameInDb?.value?.nullIfBlank(),
                 uid = if (uid?.value != 0L) uid?.value else null,
-                customType = findConvert(fieldName, fa),
+                customType = findConvert(astNode, fieldName, annotations),
                 fieldAccessible = !Modifier.isPrivate(astNode.modifiers)
         )
     }
 
-    private fun findConvert(fieldName: SimpleName, fa: MutableList<Annotation>): CustomType? {
-        val convert: Annotation? = fa.find { it.hasType(Convert::class) }
-        if (convert !is NormalAnnotation) {
-            return null
-        }
-
-        val converterClassName = (convert["converter"] as? TypeLiteral)?.type?.typeName
-        val columnType = (convert["dbType"] as? TypeLiteral)?.type
+    private fun findConvert(astNode: FieldDeclaration, fieldName: SimpleName,
+                            annotations: MutableList<Annotation>): CustomType? {
+        val convertAnnotation: Annotation = annotations.find { it.hasType(Convert::class) } ?: return null
+        val convert = convertAnnotation as? NormalAnnotation
+        val converterClassName = (convert?.get("converter") as? TypeLiteral)?.type?.typeName
+        val columnType = (convert?.get("dbType") as? TypeLiteral)?.type
         if (converterClassName == null || columnType == null) {
-            throw RuntimeException(
-                    "@Convert attributes absent for field '$fieldName' in ${typeDeclaration?.name?.identifier}:" +
-                            convert.lineNumber + ". Example: @Convert(converter=\"..\", dbType=\"..\")")
+            throw exceptionWithLocation("@Convert attributes absent for field '$fieldName'. Example: " +
+                    "@Convert(converter=\"..\", dbType=\"..\")", astNode)
         }
         return CustomType(converterClassName, columnType.toVariableType())
     }
