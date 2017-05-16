@@ -8,7 +8,9 @@ import io.objectbox.annotation.NameInDb
 import io.objectbox.annotation.Transient
 import io.objectbox.annotation.Uid
 import io.objectbox.generator.BoxGenerator
+import io.objectbox.generator.IdUid
 import io.objectbox.generator.idsync.IdSync
+import io.objectbox.generator.idsync.IdSyncException
 import io.objectbox.generator.model.Property
 import io.objectbox.generator.model.Property.PropertyBuilder
 import io.objectbox.generator.model.PropertyType
@@ -206,6 +208,13 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         val indexAnnotation = field.getAnnotation(Index::class.java)
         if (indexAnnotation != null) {
             propertyBuilder.indexAsc(null, false)
+        }
+
+        // @Uid
+        val uidAnnotation = field.getAnnotation(Uid::class.java)
+        if (uidAnnotation != null && uidAnnotation.value != 0L) {
+            // just storing uid, id model sync will replace with correct id+uid
+            propertyBuilder.modelId(IdUid(0, uidAnnotation.value))
         }
 
         // TODO ut: add remaining property build steps

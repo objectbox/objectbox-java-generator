@@ -285,18 +285,16 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
     private fun syncProperty(existingEntity: Entity?, schemaEntity: io.objectbox.generator.model.Entity,
                              schemaProperty: io.objectbox.generator.model.Property, lastPropertyId: IdUid): Property {
         val name = schemaProperty.dbName ?: schemaProperty.propertyName
-        // TODO ut: property generator model does not have uid property of type Long
-        // not sure it will be relevant to get Uid from annotation though
-        val shouldGenerateNewIdUid = schemaEntity.modelUid == -1L //|| schemaProperty.uid == -1L
+        val propertyRefId = schemaProperty.modelId?.uid
+        val shouldGenerateNewIdUid = schemaEntity.modelUid == -1L || propertyRefId == -1L
         var existingProperty: Property? = null
         if (existingEntity != null) {
-//            val propertyRefId = schemaProperty.uid
-//            if (propertyRefId != null && !shouldGenerateNewIdUid && !parsedRefIds.add(propertyRefId)) {
-//                throw IdSyncException("Non-unique refId $propertyRefId in parsed entity ${schemaEntity.name} " +
-//                        "and property ${schemaProperty.variable.name} in file " +
-//                        schemaEntity.sourceFile.absolutePath)
-//            }
-            existingProperty = findProperty(existingEntity, name, null)
+            if (propertyRefId != null && !shouldGenerateNewIdUid && !parsedRefIds.add(propertyRefId)) {
+                throw IdSyncException("Non-unique refId $propertyRefId in parsed entity " +
+                        "${schemaEntity.javaPackage}.${schemaEntity.className} " +
+                        "for property ${schemaProperty.propertyName}")
+            }
+            existingProperty = findProperty(existingEntity, name, propertyRefId)
         }
 
         var sourceIndexId: IdUid? = null

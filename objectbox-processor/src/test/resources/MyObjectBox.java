@@ -26,7 +26,7 @@ public class MyObjectBox {
         EntityBuilder entityBuilder;
 
         entityBuilder = modelBuilder.entity("A");
-        entityBuilder.id(1, 4858050548069557694L).lastPropertyId(21, 8133069888579241668L);
+        entityBuilder.id(1, 4858050548069557694L).lastPropertyId(22, 8133069888579241668L);
         entityBuilder.property("_id", PropertyType.Long).id(1, 8303367770402050741L)
                 .flags(PropertyFlags.ID | PropertyFlags.ID_SELF_ASSIGNABLE | PropertyFlags.NOT_NULL);
         entityBuilder.property("simpleShortPrimitive", PropertyType.Short).id(2, 2547454299149596320L)
@@ -63,7 +63,9 @@ public class MyObjectBox {
         entityBuilder.property("indexedProperty", PropertyType.Int).id(19, 267919077724297667L)
                 .flags(PropertyFlags.NON_PRIMITIVE_TYPE | PropertyFlags.INDEXED);
         entityBuilder.property("B", PropertyType.String).id(20, 8754346312277232208L);
-        entityBuilder.property("customType", PropertyType.Int).id(21, 8133069888579241668L)
+        entityBuilder.property("uidProperty", PropertyType.Long).id(21, 3817914863709111804L)
+                .flags(PropertyFlags.NON_PRIMITIVE_TYPE);
+        entityBuilder.property("customType", PropertyType.Int).id(22, 8133069888579241668L)
                 .flags(PropertyFlags.NON_PRIMITIVE_TYPE);
         entityBuilder.entityDone();
 

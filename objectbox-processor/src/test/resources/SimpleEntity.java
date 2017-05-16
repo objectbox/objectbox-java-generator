@@ -56,6 +56,9 @@ public class SimpleEntity {
     @NameInDb("B")
     String namedProperty;
 
+    @Uid(3817914863709111804L)
+    Long uidProperty;
+
     @Convert(converter = SimpleEnumConverter.class, dbType = Integer.class)
     SimpleEnum customType;
 

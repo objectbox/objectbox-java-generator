@@ -52,7 +52,7 @@ class ObjectBoxProcessorTest {
         assertThat(entity.dbName).isEqualTo("A")
         assertThat(entity.modelId).isEqualTo(1)
         assertThat(entity.modelUid).isEqualTo(4858050548069557694)
-        assertThat(entity.lastPropertyId).isEqualTo(IdUid(21, 8133069888579241668))
+        assertThat(entity.lastPropertyId).isEqualTo(IdUid(22, 8133069888579241668))
 
         // assert index
         for (index in entity.indexes) {
@@ -97,6 +97,10 @@ class ObjectBoxProcessorTest {
                 "namedProperty" -> {
                     assertThat(prop.dbName).isEqualTo("B")
                     assertType(prop, PropertyType.String)
+                }
+                "uidProperty" -> {
+                    assertThat(prop.modelId.uid).isEqualTo(3817914863709111804)
+                    assertType(prop, PropertyType.Long)
                 }
                 "customType" -> {
                     assertThat(prop.customType).isEqualTo("io.objectbox.processor.test.SimpleEntity.SimpleEnum")
