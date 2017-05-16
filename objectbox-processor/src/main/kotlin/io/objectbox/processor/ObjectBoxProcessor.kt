@@ -5,6 +5,7 @@ import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Id
 import io.objectbox.annotation.Index
 import io.objectbox.annotation.NameInDb
+import io.objectbox.annotation.Relation
 import io.objectbox.annotation.Transient
 import io.objectbox.annotation.Uid
 import io.objectbox.generator.BoxGenerator
@@ -29,6 +30,7 @@ import javax.lang.model.element.Modifier
 import javax.lang.model.element.TypeElement
 import javax.lang.model.element.VariableElement
 import javax.lang.model.type.ArrayType
+import javax.lang.model.type.DeclaredType
 import javax.lang.model.type.TypeKind
 import javax.lang.model.type.TypeMirror
 import javax.lang.model.util.ElementFilter
@@ -98,6 +100,8 @@ open class ObjectBoxProcessor : AbstractProcessor() {
 
     private fun findAndParse(env: RoundEnvironment) {
         var schema: Schema? = null
+        val toOneByEntity: MutableMap<io.objectbox.generator.model.Entity, MutableList<ToOneRelation>>
+                = mutableMapOf()
 
         for (entity in env.getElementsAnnotatedWith(Entity::class.java)) {
             note(entity, "Processing @Entity annotation.")
@@ -112,11 +116,19 @@ open class ObjectBoxProcessor : AbstractProcessor() {
                 schema = Schema("default", 1, defaultJavaPackage)
             }
 
-            parseEntity(schema, entity)
+            parseEntity(schema, toOneByEntity, entity)
         }
 
         if (schema == null) {
             return  // no entities found
+        }
+
+        for (entity in schema.entities) {
+            for (toOne in toOneByEntity[entity]!!) {
+                if (!resolveToOne(schema, entity, toOne)) {
+                    return // resolving to-one failed
+                }
+            }
         }
 
         if (!syncIdModel(schema)) {
@@ -132,7 +144,9 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         }
     }
 
-    private fun parseEntity(schema: Schema, entity: Element) {
+    private fun parseEntity(schema: Schema,
+            toOneByEntity: MutableMap<io.objectbox.generator.model.Entity, MutableList<ToOneRelation>>,
+            entity: Element) {
         val entityModel = schema.addEntity(entity.simpleName.toString())
         entityModel.isSkipGeneration = true // processor may not generate duplicate entity source files
         entityModel.isConstructors = true // has no effect as isSkipGeneration = true
@@ -158,10 +172,51 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         // TODO ut: add missing entity build steps
         // compare with io.objectbox.codemodifier.GreendaoModelTranslator.convertEntities
 
+        // parse properties
+        val toOnes = mutableListOf<ToOneRelation>()
+        toOneByEntity.put(entityModel, toOnes)
+
         val fields = ElementFilter.fieldsIn(entity.enclosedElements)
         for (field in fields) {
-            parseProperty(entityModel, field)
+            val relationAnnotation = field.getAnnotation(Relation::class.java)
+            if (relationAnnotation != null) {
+                // @Relation property
+                val toOne = parseRelation(field, relationAnnotation)
+                toOnes.add(toOne)
+            } else {
+                // regular property
+                parseProperty(entityModel, field)
+            }
         }
+
+        // add missing foreign key properties and indexes for to-one relations
+        for (toOne in toOnes) {
+            ensureForeignKeys(entityModel, toOne)
+        }
+    }
+
+    private fun parseRelation(field: VariableElement, relationAnnotation: Relation): ToOneRelation {
+        // get simple name for type
+        val typeElement = elementUtils!!.getTypeElement(field.asType().toString())
+        val targetEntityName = typeElement.simpleName
+
+        val targetIdName = if (relationAnnotation.idProperty.isBlank()) null else relationAnnotation.idProperty
+
+        val nameInDbAnnotation = field.getAnnotation(NameInDb::class.java)
+        val targetIdDbName = if (nameInDbAnnotation != null && nameInDbAnnotation.value.isNotEmpty())
+            nameInDbAnnotation.value else null
+
+        val uidAnnotation = field.getAnnotation(Uid::class.java)
+        val targetIdUid = if (uidAnnotation != null && uidAnnotation.value != 0L) uidAnnotation.value else null
+
+        return ToOneRelation(
+                propertyName = field.simpleName.toString(),
+                targetEntityName = targetEntityName.toString(),
+                targetIdName = targetIdName,
+                targetIdDbName = targetIdDbName,
+                targetIdUid = targetIdUid,
+                variableIsToOne = false
+        )
     }
 
     private fun parseProperty(entity: io.objectbox.generator.model.Entity, field: VariableElement) {
@@ -242,7 +297,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
     }
 
     private fun parseCustomProperty(entity: io.objectbox.generator.model.Entity,
-                                    field: VariableElement, enclosingElement: TypeElement): Property.PropertyBuilder? {
+            field: VariableElement, enclosingElement: TypeElement): Property.PropertyBuilder? {
         // extract @Convert annotation member values
         // as they are types, need to access them via annotation mirrors
         val annotationMirror = getAnnotationMirror(field, Convert::class.java) ?: return null // did not find @Convert mirror
@@ -274,7 +329,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
     }
 
     private fun parseSupportedProperty(entity: io.objectbox.generator.model.Entity, field: VariableElement,
-                                       enclosingElement: TypeElement): PropertyBuilder? {
+            enclosingElement: TypeElement): PropertyBuilder? {
         val typeMirror = field.asType()
         val propertyType = getPropertyType(typeMirror)
         if (propertyType == null) {
@@ -295,6 +350,63 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         }
 
         return propertyBuilder
+    }
+
+    private fun ensureForeignKeys(entityModel: io.objectbox.generator.model.Entity, toOne: ToOneRelation) {
+        if (toOne.targetIdName == null) {
+            toOne.targetIdName = "${toOne.propertyName}Id"
+        }
+
+        val foreignKeyProperty = entityModel.findPropertyByName(toOne.targetIdName)
+        if (foreignKeyProperty == null) {
+            // foreign key property not explicitly defined in entity, create a virtual one
+
+            val propertyBuilder = entityModel.addProperty(PropertyType.Long, toOne.targetIdName)
+            propertyBuilder.notNull()
+            propertyBuilder.fieldAccessible()
+            propertyBuilder.dbName(toOne.targetIdDbName)
+            // just storing uid, id model sync will replace with correct id+uid
+            if (toOne.targetIdUid != null) {
+                propertyBuilder.modelId(IdUid(0, toOne.targetIdUid))
+            }
+            // TODO mj: ensure generator's ToOne uses the same targetName (ToOne.nameToOne)
+            val targetName = if (toOne.variableIsToOne) toOne.propertyName else "${toOne.propertyName}ToOne"
+            propertyBuilder.virtualTargetName(targetName)
+        }
+
+        // ensure there is an index on the foreign key property
+        val indexForProperty = entityModel.indexes.find {
+            // matching for the property is enough as none other than single property ASC indexes are supported
+            it.properties.singleOrNull { it.propertyName == toOne.targetIdName } != null
+        }
+        if (indexForProperty == null) {
+            val index = io.objectbox.generator.model.Index()
+            index.addPropertyAsc(foreignKeyProperty)
+            entityModel.addIndex(index)
+        }
+    }
+
+    private fun resolveToOne(schema: Schema, entity: io.objectbox.generator.model.Entity, toOne: ToOneRelation): Boolean {
+        val targetEntity = schema.entities.singleOrNull {
+            it.className == toOne.targetEntityName
+        }
+        if (targetEntity == null) {
+            error("Relation target class ${toOne.targetEntityName} " +
+                    "defined in class ${entity.className} could not be found (is it an @Entity?)")
+            return false
+        }
+
+        val targetIdProperty = entity.findPropertyByName(toOne.targetIdName)
+        if (targetIdProperty == null) {
+            error("Could not find property ${toOne.targetIdName} in ${entity.className}.")
+            return false
+        }
+
+        val name = toOne.propertyName
+        val nameToOne = if (toOne.variableIsToOne) name else null
+
+        entity.addToOne(targetEntity, targetIdProperty, name, nameToOne)
+        return true
     }
 
     private fun syncIdModel(schema: Schema): Boolean {
@@ -388,6 +500,10 @@ open class ObjectBoxProcessor : AbstractProcessor() {
 
     private fun isTypeEqual(typeMirror: TypeMirror, otherType: String): Boolean {
         return otherType == typeMirror.toString()
+    }
+
+    private fun error(message: String, vararg args: Any) {
+        printMessage(Diagnostic.Kind.ERROR, message, args)
     }
 
     private fun error(element: Element, message: String, vararg args: Any) {

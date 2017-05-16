@@ -15,10 +15,8 @@ class ObjectBoxProcessorTest {
 
     @Test
     fun testProcessor() {
-        val file = JavaFileObjects.forResource("SimpleEntity.java")
-        //        JavaFileObject file = JavaFileObjects.forSourceString("HelloWorld",
-        //                "final class HelloWorld {}"
-        //        );
+        val entitySimple = JavaFileObjects.forResource("SimpleEntity.java")
+        val entityRelated = JavaFileObjects.forResource("RelatedEntity.java")
 
         val processor = ObjectBoxProcessorShim()
 
@@ -29,11 +27,11 @@ class ObjectBoxProcessorTest {
                         // disabled as compat DAO currently requires entity property getters/setters
 //                        "-A${ObjectBoxProcessor.OPTION_DAO_COMPAT}=true"
                 )
-                .compile(file)
+                .compile(entitySimple, entityRelated)
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
         CompilationSubject.assertThat(compilation)
                 .hadNoteContaining("Processing @Entity annotation.")
-                .inFile(file)
+                .inFile(entitySimple)
 
         // assert generated files source trees
         assertGeneratedSourceMatches(compilation, "io.objectbox.processor.test.MyObjectBox", "MyObjectBox.java")
