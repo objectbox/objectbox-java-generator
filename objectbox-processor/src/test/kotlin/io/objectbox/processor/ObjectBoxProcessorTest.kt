@@ -52,7 +52,7 @@ class ObjectBoxProcessorTest {
         assertThat(entity.dbName).isEqualTo("A")
         assertThat(entity.modelId).isEqualTo(1)
         assertThat(entity.modelUid).isEqualTo(4858050548069557694)
-        assertThat(entity.lastPropertyId).isEqualTo(IdUid(1, 8303367770402050741))
+        assertThat(entity.lastPropertyId).isEqualTo(IdUid(21, 8133069888579241668))
 
         // assert index
         for (index in entity.indexes) {

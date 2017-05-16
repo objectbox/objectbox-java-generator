@@ -26,7 +26,7 @@ public class MyObjectBox {
         EntityBuilder entityBuilder;
 
         entityBuilder = modelBuilder.entity("A");
-        entityBuilder.id(1, 4858050548069557694L).lastPropertyId(1, 8303367770402050741L);
+        entityBuilder.id(1, 4858050548069557694L).lastPropertyId(21, 8133069888579241668L);
         entityBuilder.property("_id", PropertyType.Long)
                 .flags(PropertyFlags.ID | PropertyFlags.ID_SELF_ASSIGNABLE | PropertyFlags.NOT_NULL);
         entityBuilder.property("simpleShortPrimitive", PropertyType.Short)

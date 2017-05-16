@@ -87,14 +87,6 @@ open class ObjectBoxProcessor : AbstractProcessor() {
     private fun findAndParse(env: RoundEnvironment) {
         var schema: Schema? = null
 
-        val modelFilePath = if (customModelPath.isNullOrEmpty()) "objectbox-models/default.json" else customModelPath
-        val modelFile = File(projectRoot, modelFilePath)
-        if (!modelFile.isFile) {
-            printMessage(Diagnostic.Kind.ERROR, "Could not find model file at '${modelFile.absolutePath}'.")
-            return
-        }
-        val idSync = IdSync(modelFile)
-
         for (element in env.getElementsAnnotatedWith(Entity::class.java)) {
             note(element, "Processing @Entity annotation.")
 
@@ -104,15 +96,16 @@ open class ObjectBoxProcessor : AbstractProcessor() {
                 schema = Schema(1, packageName.toString())
             }
 
-            parseEntity(schema, idSync, element)
+            parseEntity(schema, element)
         }
 
         if (schema == null) {
             return  // no entities found
         }
 
-        schema.lastEntityId = idSync.lastEntityId
-        schema.lastIndexId = idSync.lastIndexId
+        if (!syncIdModel(schema)) {
+            return // id model sync failed
+        }
 
         this.schema = schema // make processed schema accessible for testing
 
@@ -123,7 +116,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         }
     }
 
-    private fun parseEntity(schema: Schema, idSync: IdSync, entity: Element) {
+    private fun parseEntity(schema: Schema, entity: Element) {
         val entityModel = schema.addEntity(entity.simpleName.toString())
         // processor should not generate duplicate entity source files
         entityModel.isSkipGeneration = true
@@ -137,25 +130,9 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         }
 
         // @Uid
-        var uid: Long? = null
         val uidAnnotation = entity.getAnnotation(Uid::class.java)
-        if (uidAnnotation != null) {
-            uid = uidAnnotation.value
-            if (uid == 0L) {
-                uid = null
-            }
-        }
-
-        // TODO ut: update ID sync model: add new entities + properties, remove old ones
-        val entityName = if (entityModel.dbName != null) entityModel.dbName else entityModel.className
-        val idSyncEntity = idSync.findEntity(entityName, uid)
-        if (idSyncEntity == null) {
-            // TODO ut: add new sync model entity + properties
-            // something like idSync.addEntity(...) and idSync.addProperty(entity, ...)
-        } else {
-            entityModel.modelUid = idSyncEntity.uid
-            entityModel.modelId = idSyncEntity.modelId
-            entityModel.lastPropertyId = idSyncEntity.lastPropertyId
+        if (uidAnnotation != null && uidAnnotation.value != 0L) {
+            entityModel.modelUid = uidAnnotation.value
         }
 
         val fields = ElementFilter.fieldsIn(entity.enclosedElements)
@@ -288,6 +265,23 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         }
 
         return propertyBuilder
+    }
+
+    private fun syncIdModel(schema: Schema): Boolean {
+        val modelFilePath = if (customModelPath.isNullOrEmpty()) "objectbox-models/default.json" else customModelPath
+        val modelFile = File(projectRoot, modelFilePath)
+        if (!modelFile.isFile) {
+            printMessage(Diagnostic.Kind.ERROR, "Could not find model file at '${modelFile.absolutePath}'.")
+            return false
+        }
+
+        val idSync = IdSync(modelFile)
+        idSync.sync(schema)
+
+        schema.lastEntityId = idSync.lastEntityId
+        schema.lastIndexId = idSync.lastIndexId
+
+        return true
     }
 
     private fun getAnnotationMirror(element: Element, annotationClass: Class<*>): AnnotationMirror? {

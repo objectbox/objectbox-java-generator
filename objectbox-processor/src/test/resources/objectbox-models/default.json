@@ -1,13 +1,96 @@
 {
+  "_note1": "KEEP THIS FILE! Check it into a version control system (VCS) like git.",
+  "_note2": "ObjectBox manages crucial IDs for your object model. See docs for details.",
+  "_note3": "If you have VCS merge conflicts, you must resolve them according to ObjectBox docs.",
   "entities": [
     {
       "id": "1:4858050548069557694",
-      "lastPropertyId": "1:8303367770402050741",
+      "lastPropertyId": "21:8133069888579241668",
       "name": "A",
       "properties": [
         {
           "id": "1:8303367770402050741",
-          "name": "id"
+          "name": "_id"
+        },
+        {
+          "id": "2:2547454299149596320",
+          "name": "simpleShortPrimitive"
+        },
+        {
+          "id": "3:1065398153566608274",
+          "name": "simpleShort"
+        },
+        {
+          "id": "4:7019841740086346212",
+          "name": "simpleIntPrimitive"
+        },
+        {
+          "id": "5:2149606992334875025",
+          "name": "simpleInt"
+        },
+        {
+          "id": "6:3870774530785480176",
+          "name": "simpleLongPrimitive"
+        },
+        {
+          "id": "7:6076934711032013633",
+          "name": "simpleLong"
+        },
+        {
+          "id": "8:1005325329902505869",
+          "name": "simpleFloatPrimitive"
+        },
+        {
+          "id": "9:6013849627054382655",
+          "name": "simpleFloat"
+        },
+        {
+          "id": "10:1714793024529017564",
+          "name": "simpleDoublePrimitive"
+        },
+        {
+          "id": "11:1265968316355477242",
+          "name": "simpleDouble"
+        },
+        {
+          "id": "12:4472277657621006188",
+          "name": "simpleBooleanPrimitive"
+        },
+        {
+          "id": "13:7658102659822256293",
+          "name": "simpleBoolean"
+        },
+        {
+          "id": "14:4560729911540009437",
+          "name": "simpleBytePrimitive"
+        },
+        {
+          "id": "15:1331388668561714029",
+          "name": "simpleByte"
+        },
+        {
+          "id": "16:3711768428068804965",
+          "name": "simpleDate"
+        },
+        {
+          "id": "17:6798801512033870238",
+          "name": "simpleString"
+        },
+        {
+          "id": "18:5561205097618864485",
+          "name": "simpleByteArray"
+        },
+        {
+          "id": "19:267919077724297667",
+          "name": "indexedProperty"
+        },
+        {
+          "id": "20:8754346312277232208",
+          "name": "B"
+        },
+        {
+          "id": "21:8133069888579241668",
+          "name": "customType"
         }
       ]
     }

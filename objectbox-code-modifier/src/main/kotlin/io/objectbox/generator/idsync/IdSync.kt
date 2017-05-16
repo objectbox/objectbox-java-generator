@@ -15,6 +15,7 @@ import java.util.*
 import com.squareup.moshi.FromJson
 import com.squareup.moshi.ToJson
 import io.objectbox.generator.IdUid
+import io.objectbox.generator.model.Schema
 
 class IdSync(val jsonFile: File = File("objectmodel.json")) {
     private val noteSeeDocs = "Please read the docs how to resolve this."
@@ -47,9 +48,11 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
 
     // Use IdentityHashMap here to avoid collisions (e.g. same name)
     private val entitiesByParsedEntity = IdentityHashMap<ParsedEntity, Entity>()
+    private val entitiesBySchemaEntity = IdentityHashMap<io.objectbox.generator.model.Entity, Entity>()
 
     // Use IdentityHashMap here to avoid collisions (e.g. same name)
     private val propertiesByParsedProperty = IdentityHashMap<ParsedProperty, Property>()
+    private val propertiesBySchemaProperty = IdentityHashMap<io.objectbox.generator.model.Property, Property>()
 
     class ModelIdAdapter {
         // Writing [0:0] for empty "last ID" values is OK, null would confuse Kotlin with its non-null types
@@ -162,6 +165,84 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
         }
     }
 
+    fun sync(schema: Schema) {
+        if (entitiesBySchemaEntity.isNotEmpty() || propertiesBySchemaProperty.isNotEmpty()) {
+            throw IllegalStateException("May be called only once")
+        }
+
+        val schemaEntities = schema.entities
+        try {
+            val entities = schemaEntities.map { syncEntity(it) }.sortedBy { it.id.id }
+            updateRetiredRefIds(entities)
+            val model = IdSyncModel(
+                    version = 1,
+                    modelVersion = 2,
+                    lastEntityId = lastEntityId,
+                    lastIndexId = lastIndexId,
+                    lastSequenceId = lastSequenceId,
+                    entities = entities,
+                    retiredEntityUids = retiredEntityUids,
+                    retiredPropertyUids = retiredPropertyUids,
+                    retiredIndexUids = retiredIndexUids)
+            writeModel(model)
+            // Paranoia check, that synced model is OK (do this after writing because that's what the user sees)
+            validateIds(model)
+        } catch (e: Throwable) {
+            // Repeat e.message so it shows up in gradle right away
+            val message = "Could not sync parsed model with ID model file \"${jsonFile.absolutePath}\": ${e.message}"
+            throw IdSyncException(message, e)
+        }
+
+        // update schema with new IDs
+        schema.lastEntityId = lastEntityId
+        schema.lastIndexId = lastIndexId
+    }
+
+    private fun syncEntity(schemaEntity: io.objectbox.generator.model.Entity): Entity {
+        val entityName = schemaEntity.dbName ?: schemaEntity.className
+        val entityRefId = schemaEntity.modelUid
+        val shouldGenerateNewIdUid = entityRefId == -1L
+        if (entityRefId != null && !shouldGenerateNewIdUid && !parsedRefIds.add(entityRefId)) {
+            throw IdSyncException("Non-unique refId $entityRefId in parsed entity " +
+                    "${schemaEntity.javaPackage}.${schemaEntity.className}")
+        }
+        val existingEntity: Entity? = findEntity(entityName, entityRefId)
+        val lastPropertyId = if (existingEntity?.lastPropertyId == null || shouldGenerateNewIdUid) {
+            IdUid() // create empty id + uid
+        } else {
+            existingEntity.lastPropertyId.clone() // use existing id + uid
+        }
+        val properties = ArrayList<Property>()
+        for (parsedProperty in schemaEntity.properties) {
+            val property = syncProperty(existingEntity, schemaEntity, parsedProperty, lastPropertyId)
+            if (property.modelId > lastPropertyId.id) {
+                lastPropertyId.set(property.id)
+            }
+            properties.add(property)
+        }
+        properties.sortBy { it.id.id }
+
+        val sourceId = if (existingEntity?.id == null || shouldGenerateNewIdUid) {
+            lastEntityId.incId(uidHelper.create()) // create new id + uid
+        } else {
+            existingEntity.id // use existing id + uid
+        }
+        val entity = Entity(
+                name = entityName,
+                id = sourceId.clone(),
+                properties = properties,
+                lastPropertyId = lastPropertyId
+        )
+
+        // update schema entity
+        schemaEntity.modelUid = entity.id.uid
+        schemaEntity.modelId = entity.id.id
+        schemaEntity.lastPropertyId = entity.lastPropertyId
+
+        entitiesBySchemaEntity[schemaEntity] = entity
+        return entity
+    }
+
     private fun syncEntity(parsedEntity: ParsedEntity): Entity {
         val entityName = parsedEntity.dbName ?: parsedEntity.name
         val entityRefId = parsedEntity.uid
@@ -199,6 +280,55 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
         )
         entitiesByParsedEntity[parsedEntity] = entity
         return entity
+    }
+
+    private fun syncProperty(existingEntity: Entity?, schemaEntity: io.objectbox.generator.model.Entity,
+                             schemaProperty: io.objectbox.generator.model.Property, lastPropertyId: IdUid): Property {
+        val name = schemaProperty.dbName ?: schemaProperty.propertyName
+        // TODO ut: property generator model does not have uid property of type Long
+        // not sure it will be relevant to get Uid from annotation though
+        val shouldGenerateNewIdUid = schemaEntity.modelUid == -1L //|| schemaProperty.uid == -1L
+        var existingProperty: Property? = null
+        if (existingEntity != null) {
+//            val propertyRefId = schemaProperty.uid
+//            if (propertyRefId != null && !shouldGenerateNewIdUid && !parsedRefIds.add(propertyRefId)) {
+//                throw IdSyncException("Non-unique refId $propertyRefId in parsed entity ${schemaEntity.name} " +
+//                        "and property ${schemaProperty.variable.name} in file " +
+//                        schemaEntity.sourceFile.absolutePath)
+//            }
+            existingProperty = findProperty(existingEntity, name, null)
+        }
+
+        var sourceIndexId: IdUid? = null
+        if (schemaProperty.index != null) {
+            if (shouldGenerateNewIdUid) {
+                sourceIndexId = lastIndexId.incId(uidHelper.create())
+            } else {
+                sourceIndexId = existingProperty?.indexId ?: lastIndexId.incId(uidHelper.create())
+            }
+        }
+
+        val sourceId = if (existingProperty?.id == null || shouldGenerateNewIdUid) {
+            lastPropertyId.incId(uidHelper.create()) // create a new id + uid
+        } else {
+            existingProperty.id // use existing id + uid
+        }
+        val property = Property(
+                name = name,
+                id = sourceId.clone(),
+                indexId = sourceIndexId?.clone()
+        )
+
+        // TODO ut: schema property uid and index uid not writable
+        // update schema property
+//        schemaProperty.modelId = property.id
+//        schemaProperty.modelIndexId = property.indexId
+        
+        val collision = propertiesBySchemaProperty.put(schemaProperty, property)
+        if (collision != null) {
+            throw IllegalStateException("Property collision: $schemaProperty vs. $collision")
+        }
+        return property
     }
 
     private fun syncProperty(existingEntity: Entity?, parsedEntity: ParsedEntity, parsedProperty: ParsedProperty,
