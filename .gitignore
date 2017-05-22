@@ -15,4 +15,4 @@ gradle-app.setting
 gradle.properties
 
 # objectbox-models/
-default.json.bak
+*.json.bak
