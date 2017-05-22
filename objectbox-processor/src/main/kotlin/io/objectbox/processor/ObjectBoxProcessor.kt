@@ -140,6 +140,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
             BoxGenerator(daoCompat).generateAll(schema, filer)
         } catch (e: Exception) {
             printMessage(Diagnostic.Kind.ERROR, "Code generation failed: ${e.message}")
+            e.printStackTrace() // TODO ut: might want to include in above error message in the future
         }
     }
 
