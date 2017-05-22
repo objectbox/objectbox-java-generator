@@ -30,7 +30,6 @@ import javax.lang.model.element.Modifier
 import javax.lang.model.element.TypeElement
 import javax.lang.model.element.VariableElement
 import javax.lang.model.type.ArrayType
-import javax.lang.model.type.DeclaredType
 import javax.lang.model.type.TypeKind
 import javax.lang.model.type.TypeMirror
 import javax.lang.model.util.ElementFilter
@@ -104,7 +103,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
                 = mutableMapOf()
 
         for (entity in env.getElementsAnnotatedWith(Entity::class.java)) {
-            note(entity, "Processing @Entity annotation.")
+            note("Processing @Entity annotation.", entity)
 
             if (schema == null) {
                 val defaultJavaPackage = if (daoCompat && daoCompatPackage != null) {
@@ -232,13 +231,13 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         if (modifiers.contains(Modifier.STATIC)
                 || modifiers.contains(Modifier.TRANSIENT)
                 || field.getAnnotation(Transient::class.java) != null) {
-            note(field, "Ignoring transient field. (%s.%s)", enclosingElement.qualifiedName, fieldName)
+            note("Ignoring transient field. (${enclosingElement.qualifiedName}.$fieldName)", field)
             return
         }
 
         // verify field is accessible
         if (modifiers.contains(Modifier.PRIVATE)) {
-            error(field, "Field must not be private. (%s.%s)", enclosingElement.qualifiedName, fieldName)
+            error("Field must not be private. (${enclosingElement.qualifiedName}.$fieldName)", field)
             return
         }
 
@@ -304,21 +303,21 @@ open class ObjectBoxProcessor : AbstractProcessor() {
 
         val converter = getAnnotationValueType(annotationMirror, "converter")
         if (converter == null) {
-            error(field, "@Convert requires a value for converter. (%s.%s)",
-                    enclosingElement.qualifiedName, field.simpleName)
+            error("@Convert requires a value for converter. (${enclosingElement.qualifiedName}.${field.simpleName})",
+                    field)
             return null
         }
 
         val dbType = getAnnotationValueType(annotationMirror, "dbType")
         if (dbType == null) {
-            error(field, "@Convert requires a value for dbType. (%s.%s)",
-                    enclosingElement.qualifiedName, field.simpleName)
+            error("@Convert requires a value for dbType. (${enclosingElement.qualifiedName}.${field.simpleName})",
+                    field)
             return null
         }
         val propertyType = getPropertyType(dbType)
         if (propertyType == null) {
-            error(field, "@Convert dbType type is not supported. (%s.%s)",
-                    enclosingElement.qualifiedName, field.simpleName)
+            error("@Convert dbType type is not supported. (${enclosingElement.qualifiedName}.${field.simpleName})",
+                    field)
             return null
         }
 
@@ -333,8 +332,8 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         val typeMirror = field.asType()
         val propertyType = getPropertyType(typeMirror)
         if (propertyType == null) {
-            error(field, "Field type is not supported, maybe add @Convert. (%s.%s)",
-                    enclosingElement.qualifiedName, field.simpleName)
+            error("Field type is not supported, maybe add @Convert." +
+                    " (${enclosingElement.qualifiedName}.${field.simpleName})", field)
             return null
         }
 
@@ -502,25 +501,19 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         return otherType == typeMirror.toString()
     }
 
-    private fun error(message: String, vararg args: Any) {
-        printMessage(Diagnostic.Kind.ERROR, message, args)
+    private fun error(message: String, element: Element? = null) {
+        printMessage(Diagnostic.Kind.ERROR, message, element)
     }
 
-    private fun error(element: Element, message: String, vararg args: Any) {
-        printMessage(Diagnostic.Kind.ERROR, message, element, args)
+    private fun note(message: String, element: Element? = null) {
+        printMessage(Diagnostic.Kind.NOTE, message, element)
     }
 
-    private fun note(element: Element, message: String, vararg args: Any) {
-        printMessage(Diagnostic.Kind.NOTE, message, element, args)
-    }
-
-    private fun printMessage(kind: Diagnostic.Kind, message: String, vararg args: Any) {
-        val finalMessage = if (args.isNotEmpty()) String.format(message, args) else message
-        processingEnv.messager.printMessage(kind, finalMessage)
-    }
-
-    private fun printMessage(kind: Diagnostic.Kind, message: String, element: Element, args: Array<out Any>) {
-        val finalMessage = if (args.isNotEmpty()) String.format(message, *args) else message
-        processingEnv.messager.printMessage(kind, finalMessage, element)
+    private fun printMessage(kind: Diagnostic.Kind, message: String, element: Element? = null) {
+        if (element != null) {
+            processingEnv.messager.printMessage(kind, message, element)
+        } else {
+            processingEnv.messager.printMessage(kind, message)
+        }
     }
 }
