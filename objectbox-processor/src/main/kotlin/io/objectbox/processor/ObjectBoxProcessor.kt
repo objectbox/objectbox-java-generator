@@ -182,7 +182,9 @@ open class ObjectBoxProcessor : AbstractProcessor() {
             if (relationAnnotation != null) {
                 // @Relation property
                 val toOne = parseRelation(field, relationAnnotation)
-                toOnes.add(toOne)
+                if (toOne != null) {
+                    toOnes.add(toOne)
+                }
             } else {
                 // regular property
                 parseProperty(entityModel, field)
@@ -195,9 +197,13 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         }
     }
 
-    private fun parseRelation(field: VariableElement, relationAnnotation: Relation): ToOneRelation {
+    private fun parseRelation(field: VariableElement, relationAnnotation: Relation): ToOneRelation? {
         // get simple name for type
         val typeElement = elementUtils!!.getTypeElement(field.asType().toString())
+        if (typeElement == null) {
+            error("Can not find entity type ${field.asType()}.")
+            return null
+        }
         val targetEntityName = typeElement.simpleName
 
         val targetIdName = if (relationAnnotation.idProperty.isBlank()) null else relationAnnotation.idProperty
