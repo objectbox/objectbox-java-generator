@@ -114,34 +114,34 @@ class ObjectBoxProcessorTest {
     }
 
     @Test
-    fun testRelationToOne() {
-        val entityParent = JavaFileObjects.forResource("ToOneParentEntity.java")
-        val entityRelated = JavaFileObjects.forResource("ToOneChildEntity.java")
+    fun testRelation() {
+        val entityParent = JavaFileObjects.forResource("RelationParentEntity.java")
+        val entityRelated = JavaFileObjects.forResource("RelationChildEntity.java")
 
         val processor = ObjectBoxProcessorShim()
 
         val compilation = javac()
                 .withProcessors(processor)
                 .withOptions(
-                        "-A${ObjectBoxProcessor.OPTION_MODEL_PATH}=src/test/resources/objectbox-models/to-one.json"
+                        "-A${ObjectBoxProcessor.OPTION_MODEL_PATH}=src/test/resources/objectbox-models/relation.json"
                 )
                 .compile(entityParent, entityRelated)
         // FIXME ut: wait until cursor code for .getTargetId is fixed
 //        CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
 //
 //        // assert generated files source trees
-//        assertGeneratedSourceMatches(compilation, "io.objectbox.processor.test.ToOneParentEntity_",
-//                "ToOneParentEntity_.java")
-//        assertGeneratedSourceMatches(compilation, "io.objectbox.processor.test.ToOneParentEntityCursor",
-//                "ToOneParentEntityCursor.java")
+//        assertGeneratedSourceMatches(compilation, "io.objectbox.processor.test.RelationParentEntity_",
+//                "RelationParentEntity_.java")
+//        assertGeneratedSourceMatches(compilation, "io.objectbox.processor.test.RelationParentEntityCursor",
+//                "RelationParentEntityCursor.java")
 
         // assert schema
         val schema = processor.schema
         assertThat(schema!!.entities).hasSize(2)
 
         // assert entity
-        val parent = schema.entities.single { it.className == "ToOneParentEntity" }
-        val child = schema.entities.single { it.className == "ToOneChildEntity" }
+        val parent = schema.entities.single { it.className == "RelationParentEntity" }
+        val child = schema.entities.single { it.className == "RelationChildEntity" }
 
         // assert index
         assertThat(parent.indexes).hasSize(1)

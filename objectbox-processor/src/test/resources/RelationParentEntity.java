@@ -9,15 +9,15 @@ import io.objectbox.annotation.Relation;
 import io.objectbox.relation.ToOne;
 
 @Entity
-public class ToOneParentEntity {
+public class RelationParentEntity {
 
     @Id long id;
 
     @Relation
-    ToOneChildEntity child;
+    RelationChildEntity child;
 
     // need to add manually, as processor can not modify entity
     transient BoxStore __boxStore;
-    transient ToOne<ToOneChildEntity> childToOne = new ToOne<>(this, ToOneParentEntity_.child);
+    transient ToOne<RelationChildEntity> childToOne = new ToOne<>(this, RelationParentEntity_.child);
 
 }
