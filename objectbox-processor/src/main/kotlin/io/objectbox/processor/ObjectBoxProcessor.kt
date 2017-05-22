@@ -373,17 +373,6 @@ open class ObjectBoxProcessor : AbstractProcessor() {
             val targetName = if (toOne.variableIsToOne) toOne.propertyName else "${toOne.propertyName}ToOne"
             propertyBuilder.virtualTargetName(targetName)
         }
-
-        // ensure there is an index on the foreign key property
-        val indexForProperty = entityModel.indexes.find {
-            // matching for the property is enough as none other than single property ASC indexes are supported
-            it.properties.singleOrNull { it.propertyName == toOne.targetIdName } != null
-        }
-        if (indexForProperty == null) {
-            val index = io.objectbox.generator.model.Index()
-            index.addPropertyAsc(foreignKeyProperty)
-            entityModel.addIndex(index)
-        }
     }
 
     private fun resolveToOne(schema: Schema, entity: io.objectbox.generator.model.Entity, toOne: ToOneRelation): Boolean {
