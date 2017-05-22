@@ -16,7 +16,6 @@ class ObjectBoxProcessorTest {
     @Test
     fun testProcessor() {
         val entitySimple = JavaFileObjects.forResource("SimpleEntity.java")
-        val entityRelated = JavaFileObjects.forResource("RelatedEntity.java")
 
         val processor = ObjectBoxProcessorShim()
 
@@ -27,7 +26,7 @@ class ObjectBoxProcessorTest {
                         // disabled as compat DAO currently requires entity property getters/setters
 //                        "-A${ObjectBoxProcessor.OPTION_DAO_COMPAT}=true"
                 )
-                .compile(entitySimple, entityRelated)
+                .compile(entitySimple)
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
         CompilationSubject.assertThat(compilation)
                 .hadNoteContaining("Processing @Entity annotation.")
@@ -112,6 +111,24 @@ class ObjectBoxProcessorTest {
                 else -> fail("Found stray field '${prop.propertyName}' in schema.")
             }
         }
+    }
+
+    @Test
+    fun testRelationToOne() {
+        val entityParent = JavaFileObjects.forResource("ToOneParentEntity.java")
+        val entityRelated = JavaFileObjects.forResource("ToOneChildEntity.java")
+
+        val processor = ObjectBoxProcessorShim()
+
+        val compilation = javac()
+                .withProcessors(processor)
+                .withOptions(
+                        "-A${ObjectBoxProcessor.OPTION_MODEL_PATH}=src/test/resources/objectbox-models/to-one.json"
+                )
+                .compile(entityParent, entityRelated)
+        CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
+
+        // TODO ut: assert schema
     }
 
     private fun assertGeneratedSourceMatches(compilation: Compilation?, qualifiedName: String, fileName: String) {
