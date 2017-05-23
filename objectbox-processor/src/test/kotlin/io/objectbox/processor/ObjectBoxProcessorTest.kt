@@ -62,8 +62,8 @@ class ObjectBoxProcessorTest {
         for (index in entity.indexes) {
             when (index.orderSpec) {
                 "indexedProperty ASC" -> {
-                    assertThat(!index.isUnique)
-                    assertThat(!index.isNonDefaultName)
+                    assertThat(index.isUnique).isFalse()
+                    assertThat(index.isNonDefaultName).isFalse()
                 }
                 else -> fail("Found stray index '${index.orderSpec}' in schema.")
             }
@@ -73,8 +73,8 @@ class ObjectBoxProcessorTest {
         for (prop in entity.properties) {
             when (prop.propertyName) {
                 "id" -> {
-                    assertThat(prop.isPrimaryKey)
-                    assertThat(prop.isIdAssignable)
+                    assertThat(prop.isPrimaryKey).isTrue()
+                    assertThat(prop.isIdAssignable).isTrue()
                     assertThat(prop.dbName).isEqualTo("_id")
                     assertPrimitiveType(prop, PropertyType.Long)
                 }
@@ -149,8 +149,8 @@ class ObjectBoxProcessorTest {
         for (prop in parent.properties) {
             when (prop.propertyName) {
                 "id" -> {
-                    assertThat(prop.isPrimaryKey)
-                    assertThat(prop.isIdAssignable)
+                    assertThat(prop.isPrimaryKey).isTrue()
+                    assertThat(prop.isIdAssignable).isFalse()
                     assertThat(prop.dbName).isEqualTo("_id")
                     assertPrimitiveType(prop, PropertyType.Long)
                 }
@@ -198,8 +198,8 @@ class ObjectBoxProcessorTest {
         for (prop in parent.properties) {
             when (prop.propertyName) {
                 "id" -> {
-                    assertThat(prop.isPrimaryKey)
-                    assertThat(prop.isIdAssignable)
+                    assertThat(prop.isPrimaryKey).isTrue()
+                    assertThat(prop.isIdAssignable).isFalse()
                     assertThat(prop.dbName).isEqualTo("_id")
                     assertPrimitiveType(prop, PropertyType.Long)
                 }
@@ -242,14 +242,14 @@ class ObjectBoxProcessorTest {
 
     private fun assertPrimitiveType(prop: Property, type: PropertyType) {
         assertThat(prop.propertyType).isEqualTo(type)
-        assertThat(prop.isNotNull)
-        assertThat(!prop.isNonPrimitiveType)
+        assertThat(prop.isNotNull).isTrue()
+        assertThat(prop.isNonPrimitiveType).isFalse()
     }
 
     private fun assertType(prop: Property, type: PropertyType) {
         assertThat(prop.propertyType).isEqualTo(type)
-        assertThat(!prop.isNotNull)
-        assertThat(prop.isNonPrimitiveType)
+        assertThat(prop.isNotNull).isFalse()
+        assertThat(prop.isNonPrimitiveType).isTrue()
     }
 
 }
