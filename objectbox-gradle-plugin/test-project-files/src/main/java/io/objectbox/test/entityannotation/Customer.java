@@ -26,7 +26,7 @@ public class Customer {
     @Index
     String name;
 
-    @Backlink
+    @Backlink(to="customerId")
     List<Order> orders = new ToMany<>(this, Customer_.orders);
 
     /** Used to resolve relations */

@@ -62,9 +62,9 @@ public class Order {
     }
 
     /** To-one relationship, resolved on first access. */
-    @Generated(982764858)
+    @Generated(1126283078)
     public Customer getCustomer() {
-        customer = customerToOne.getTarget(this.customerId);
+        customer = customerToOne.getTarget(customerId);
         return customer;
     }
 

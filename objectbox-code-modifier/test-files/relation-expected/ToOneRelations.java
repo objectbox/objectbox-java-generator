@@ -76,9 +76,9 @@ public class ToOneRelations {
     transient ToOne<Customer> customer3ToOne = new ToOne<>(this, ToOneRelations_.customer3);
 
     /** To-one relationship, resolved on first access. */
-    @Generated(547953048)
+    @Generated(1243563142)
     public Customer getCustomer1() {
-        customer1 = customer1ToOne.getTarget(this.customer1Id);
+        customer1 = customer1ToOne.getTarget(customer1Id);
         return customer1;
     }
 
@@ -90,9 +90,9 @@ public class ToOneRelations {
     }
 
     /** To-one relationship, resolved on first access. */
-    @Generated(1437778746)
+    @Generated(315172560)
     public Customer getCustomer2() {
-        customer2 = customer2ToOne.getTarget(this.customer2Id);
+        customer2 = customer2ToOne.getTarget();
         return customer2;
     }
 
@@ -104,9 +104,9 @@ public class ToOneRelations {
     }
 
     /** To-one relationship, resolved on first access. */
-    @Generated(1033235195)
+    @Generated(767263746)
     public Customer getCustomer3() {
-        customer3 = customer3ToOne.getTarget(this.customerCustomId3);
+        customer3 = customer3ToOne.getTarget(customerCustomId3);
         return customer3;
     }
 

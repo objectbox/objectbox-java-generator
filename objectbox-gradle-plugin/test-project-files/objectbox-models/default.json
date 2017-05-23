@@ -64,7 +64,7 @@
     },
     {
       "id": "3:3306142177953176653",
-      "lastPropertyId": "5:8463859708429819626",
+      "lastPropertyId": "8:8854538631871791850",
       "name": "ORDERS",
       "properties": [
         {
@@ -83,6 +83,16 @@
         {
           "id": "5:8463859708429819626",
           "name": "text"
+        },
+        {
+          "id": "7:2407887336223928850",
+          "indexId": "4:7919636098085710544",
+          "name": "customerWithoutIdPropertyId"
+        },
+        {
+          "id": "8:8854538631871791850",
+          "indexId": "5:2785489903477144595",
+          "name": "customerToOneWithoutIdPropertyId"
         }
       ]
     },
@@ -107,7 +117,7 @@
     }
   ],
   "lastEntityId": "4:8695088169092463920",
-  "lastIndexId": "2:1595932237717424963",
+  "lastIndexId": "5:2785489903477144595",
   "lastSequenceId": "0:0",
   "modelVersion": 2,
   "retiredEntityUids": [],
