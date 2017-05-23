@@ -10,7 +10,7 @@ import io.objectbox.processor.test.SimpleEntity.SimpleEnum;
 import io.objectbox.processor.test.SimpleEntity.SimpleEnumConverter;
 
 //////
-// NOTE: this is the EXPECTED SimpleEntityCursor generated source.
+// NOTE: this is the EXPECTED generated source.
 //////
 
 /**

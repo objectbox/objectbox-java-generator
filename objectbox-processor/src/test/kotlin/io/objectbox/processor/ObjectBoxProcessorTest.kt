@@ -34,10 +34,12 @@ class ObjectBoxProcessorTest {
                 .inFile(entitySimple)
 
         // assert generated files source trees
-        assertGeneratedSourceMatches(compilation, "io.objectbox.processor.test.MyObjectBox", "MyObjectBox.java")
-        assertGeneratedSourceMatches(compilation, "io.objectbox.processor.test.SimpleEntity_", "SimpleEntity_.java")
+        assertGeneratedSourceMatches(compilation, "io.objectbox.processor.test.MyObjectBox",
+                "expected-source/MyObjectBox.java")
+        assertGeneratedSourceMatches(compilation, "io.objectbox.processor.test.SimpleEntity_",
+                "expected-source/SimpleEntity_.java")
         assertGeneratedSourceMatches(compilation, "io.objectbox.processor.test.SimpleEntityCursor",
-                "SimpleEntityCursor.java")
+                "expected-source/SimpleEntityCursor.java")
 
         // assert schema
         val schema = processor.schema
@@ -131,9 +133,9 @@ class ObjectBoxProcessorTest {
 
         // assert generated files source trees
         assertGeneratedSourceMatches(compilation, "io.objectbox.processor.test.RelationParentEntity_",
-                "RelationParentEntity_.java")
+                "expected-source/RelationParentEntity_.java")
         assertGeneratedSourceMatches(compilation, "io.objectbox.processor.test.RelationParentEntityCursor",
-                "RelationParentEntityCursor.java")
+                "expected-source/RelationParentEntityCursor.java")
 
         // assert schema
         val schema = processor.schema!!
@@ -181,9 +183,9 @@ class ObjectBoxProcessorTest {
 //
 //        // assert generated files source trees
 //        assertGeneratedSourceMatches(compilation, "io.objectbox.processor.test.ToOneParentEntity_",
-//                "ToOneParentEntity_.java")
+//                "expected-source/ToOneParentEntity_.java")
 //        assertGeneratedSourceMatches(compilation, "io.objectbox.processor.test.ToOneParentEntityCursor",
-//                "ToOneParentEntityCursor.java")
+//                "expected-source/ToOneParentEntityCursor.java")
 
         // assert schema
         val schema = processor.schema

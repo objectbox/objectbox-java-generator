@@ -8,8 +8,9 @@ import io.objectbox.model.PropertyFlags;
 import io.objectbox.model.PropertyType;
 
 //////
-// NOTE: this is the EXPECTED MyObjectBox generated source.
+// NOTE: this is the EXPECTED generated source.
 //////
+
 public class MyObjectBox {
 
     public static BoxStoreBuilder builder() {

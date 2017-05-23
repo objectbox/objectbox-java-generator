@@ -13,7 +13,7 @@ import io.objectbox.processor.test.SimpleEntity.SimpleEnum;
 import io.objectbox.processor.test.SimpleEntity.SimpleEnumConverter;
 
 //////
-// NOTE: this is the EXPECTED SimpleEntity_ generated source.
+// NOTE: this is the EXPECTED generated source.
 //////
 
 /**
