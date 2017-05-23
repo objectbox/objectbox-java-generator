@@ -6,6 +6,7 @@ import com.google.testing.compile.CompilationSubject
 import com.google.testing.compile.Compiler.javac
 import com.google.testing.compile.JavaFileObjects
 import io.objectbox.generator.IdUid
+import io.objectbox.generator.model.Entity
 import io.objectbox.generator.model.Property
 import io.objectbox.generator.model.PropertyType
 import org.junit.Assert.fail
@@ -136,47 +137,14 @@ class ObjectBoxProcessorTest {
 //                "RelationParentEntityCursor.java")
 
         // assert schema
-        val schema = processor.schema
-        assertThat(schema!!.entities).hasSize(2)
+        val schema = processor.schema!!
+        assertThat(schema.entities).hasSize(2)
 
         // assert entity
         val parent = schema.entities.single { it.className == "RelationParentEntity" }
         val child = schema.entities.single { it.className == "RelationChildEntity" }
 
-        // assert index
-        assertThat(parent.indexes).hasSize(1)
-        val foreignKeyIndex = parent.indexes[0]
-        assertThat(foreignKeyIndex.properties[0].propertyName).isEqualTo("childId")
-
-        // assert properties
-        for (prop in parent.properties) {
-            when (prop.propertyName) {
-                "id" -> {
-                    assertThat(prop.isPrimaryKey)
-                    assertThat(prop.isIdAssignable)
-                    assertThat(prop.dbName).isEqualTo("_id")
-                    assertPrimitiveType(prop, PropertyType.Long)
-                }
-                "childId" -> {
-                    assertThat(prop.dbName).isEqualTo("childId")
-                    assertThat(prop.virtualTargetName).isEqualTo("childToOne")
-                    assertPrimitiveType(prop, PropertyType.RelationId)
-                }
-                else -> fail("Found stray field '${prop.propertyName}' in schema.")
-            }
-        }
-
-        val foreignKeyProperty = parent.properties.single { it.propertyName == "childId" }
-        for (toOneRelation in parent.toOneRelations) {
-            when (toOneRelation.name) {
-                "child" -> {
-                    assertThat(toOneRelation.targetEntity).isEqualTo(child)
-                    assertThat(toOneRelation.targetIdProperty).isEqualTo(foreignKeyProperty)
-                    assertThat(toOneRelation.nameToOne).isEqualTo("${toOneRelation.name}ToOne")
-                }
-                else -> fail("Found stray toOneRelation '${toOneRelation.name}' in schema.")
-            }
-        }
+        assertToOne(parent, child, "childToOne")
     }
 
     @Test
@@ -209,11 +177,10 @@ class ObjectBoxProcessorTest {
         val parent = schema.entities.single { it.className == "ToOneParentEntity" }
         val child = schema.entities.single { it.className == "ToOneChildEntity" }
 
-        // assert index
-        assertThat(parent.indexes).hasSize(1)
-        val foreignKeyIndex = parent.indexes[0]
-        assertThat(foreignKeyIndex.properties[0].propertyName).isEqualTo("childId")
+        assertToOne(parent, child, "child")
+    }
 
+    private fun assertToOne(parent: Entity, child: Entity, toOneName: String) {
         // assert properties
         for (prop in parent.properties) {
             when (prop.propertyName) {
@@ -224,21 +191,31 @@ class ObjectBoxProcessorTest {
                     assertPrimitiveType(prop, PropertyType.Long)
                 }
                 "childId" -> {
-                    assertThat(prop.dbName).isEqualTo("childId")
-                    assertThat(prop.virtualTargetName).isEqualTo("childToOne")
+                    assertThat(prop.dbName).isEqualTo(prop.propertyName)
+                    assertThat(prop.virtualTargetName).isEqualTo(toOneName)
                     assertPrimitiveType(prop, PropertyType.RelationId)
+
+                    assertToOneIndexAndRelation(parent, child, prop)
                 }
-                else -> fail("Found stray field '${prop.propertyName}' in schema.")
+                else -> fail("Found stray property '${prop.propertyName}' in schema.")
             }
         }
+    }
 
-        val foreignKeyProperty = parent.properties.single { it.propertyName == "childId" }
+    private fun assertToOneIndexAndRelation(parent: Entity, child: Entity, prop: Property) {
+        // assert index
+        assertThat(parent.indexes).hasSize(1)
+        val foreignKeyIndex = parent.indexes[0]
+        assertThat(foreignKeyIndex.properties[0]).isEqualTo(prop)
+
+        // assert to one relation
+        assertThat(parent.toOneRelations).hasSize(1)
         for (toOneRelation in parent.toOneRelations) {
             when (toOneRelation.name) {
                 "child" -> {
                     assertThat(toOneRelation.targetEntity).isEqualTo(child)
-                    assertThat(toOneRelation.targetIdProperty).isEqualTo(foreignKeyProperty)
-                    assertThat(toOneRelation.nameToOne).isEqualTo("${toOneRelation.name}ToOne")
+                    assertThat(toOneRelation.targetIdProperty).isEqualTo(prop)
+                    assertThat(toOneRelation.nameToOne).isEqualTo(prop.virtualTargetName)
                 }
                 else -> fail("Found stray toOneRelation '${toOneRelation.name}' in schema.")
             }

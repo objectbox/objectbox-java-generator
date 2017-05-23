@@ -16,6 +16,7 @@ import io.objectbox.generator.model.Property
 import io.objectbox.generator.model.Property.PropertyBuilder
 import io.objectbox.generator.model.PropertyType
 import io.objectbox.generator.model.Schema
+import io.objectbox.relation.ToOne
 import java.io.File
 import java.io.FileNotFoundException
 import java.util.*
@@ -30,6 +31,7 @@ import javax.lang.model.element.Modifier
 import javax.lang.model.element.TypeElement
 import javax.lang.model.element.VariableElement
 import javax.lang.model.type.ArrayType
+import javax.lang.model.type.DeclaredType
 import javax.lang.model.type.TypeKind
 import javax.lang.model.type.TypeMirror
 import javax.lang.model.util.ElementFilter
@@ -178,17 +180,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
 
         val fields = ElementFilter.fieldsIn(entity.enclosedElements)
         for (field in fields) {
-            val relationAnnotation = field.getAnnotation(Relation::class.java)
-            if (relationAnnotation != null) {
-                // @Relation property
-                val toOne = parseRelation(field, relationAnnotation)
-                if (toOne != null) {
-                    toOnes.add(toOne)
-                }
-            } else {
-                // regular property
-                parseProperty(entityModel, field)
-            }
+            parseField(entityModel, toOnes, field)
         }
 
         // add missing foreign key properties and indexes for to-one relations
@@ -197,39 +189,8 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         }
     }
 
-    private fun parseRelation(field: VariableElement, relationAnnotation: Relation): ToOneRelation? {
-        // get simple name for type
-        val typeElement = elementUtils!!.getTypeElement(field.asType().toString())
-        if (typeElement == null) {
-            error("Can not find entity type ${field.asType()}.")
-            return null
-        }
-        val targetEntityName = typeElement.simpleName
-
-        val targetIdName = if (relationAnnotation.idProperty.isBlank()) null else relationAnnotation.idProperty
-
-        val nameInDbAnnotation = field.getAnnotation(NameInDb::class.java)
-        val targetIdDbName = if (nameInDbAnnotation != null && nameInDbAnnotation.value.isNotEmpty())
-            nameInDbAnnotation.value else null
-
-        val uidAnnotation = field.getAnnotation(Uid::class.java)
-        val targetIdUid = if (uidAnnotation != null && uidAnnotation.value != 0L) uidAnnotation.value else null
-
-        return ToOneRelation(
-                propertyName = field.simpleName.toString(),
-                targetEntityName = targetEntityName.toString(),
-                targetIdName = targetIdName,
-                targetIdDbName = targetIdDbName,
-                targetIdUid = targetIdUid,
-                variableIsToOne = false
-        )
-    }
-
-    private fun parseProperty(entity: io.objectbox.generator.model.Entity, field: VariableElement) {
-
-        // Compare with EntityClassASTVisitor.endVisit()
-        // and GreendaoModelTranslator.convertProperty()
-
+    private fun parseField(entityModel: io.objectbox.generator.model.Entity,
+            toOnes: MutableList<ToOneRelation>, field: VariableElement) {
         val enclosingElement = field.enclosingElement as TypeElement
         val fieldName = field.simpleName
 
@@ -248,6 +209,63 @@ open class ObjectBoxProcessor : AbstractProcessor() {
             return
         }
 
+        val relationAnnotation = field.getAnnotation(Relation::class.java)
+        if (relationAnnotation != null) {
+            // @Relation property
+            val toOne = parseRelation(field, relationAnnotation)
+            toOnes.add(toOne)
+        } else if (isTypeEqual(field.asType(), ToOne::class.java.name, true)) {
+            // ToOne<TARGET> property
+            val toOne = parseToOne(field)
+            toOnes.add(toOne)
+        } else {
+            // regular property
+            parseProperty(entityModel, field)
+        }
+    }
+
+    private fun parseRelation(field: VariableElement, relationAnnotation: Relation): ToOneRelation {
+        val targetTypeMirror = field.asType() as DeclaredType
+        val targetIdName = if (relationAnnotation.idProperty.isBlank()) null else relationAnnotation.idProperty
+        return buildToOneRelation(field, targetTypeMirror, targetIdName, false)
+    }
+
+    private fun parseToOne(field: VariableElement): ToOneRelation {
+        // assuming ToOne<TargetType>
+        val toOneTypeMirror = field.asType() as DeclaredType
+        val targetTypeMirror = toOneTypeMirror.typeArguments[0] as DeclaredType
+        return buildToOneRelation(field, targetTypeMirror, null, true)
+    }
+
+    private fun buildToOneRelation(field: VariableElement, targetType: DeclaredType, targetIdName: String?,
+            isExplicitToOne: Boolean) : ToOneRelation {
+        // can simply get as element as code would not have compiled if target type is not known
+        val targetElement = targetType.asElement()
+        val targetEntityName = targetElement.simpleName
+
+        val nameInDbAnnotation = field.getAnnotation(NameInDb::class.java)
+        val targetIdDbName = if (nameInDbAnnotation != null && nameInDbAnnotation.value.isNotEmpty())
+            nameInDbAnnotation.value else null
+
+        val uidAnnotation = field.getAnnotation(Uid::class.java)
+        val targetIdUid = if (uidAnnotation != null && uidAnnotation.value != 0L) uidAnnotation.value else null
+
+        return ToOneRelation(
+                propertyName = field.simpleName.toString(),
+                targetEntityName = targetEntityName.toString(),
+                targetIdName = targetIdName,
+                targetIdDbName = targetIdDbName,
+                targetIdUid = targetIdUid,
+                variableIsToOne = isExplicitToOne
+        )
+    }
+
+    private fun parseProperty(entity: io.objectbox.generator.model.Entity, field: VariableElement) {
+
+        // Compare with EntityClassASTVisitor.endVisit()
+        // and GreendaoModelTranslator.convertProperty()
+
+        val enclosingElement = field.enclosingElement as TypeElement
         val propertyBuilder: Property.PropertyBuilder?
 
         val convertAnnotation = field.getAnnotation(Convert::class.java)
@@ -493,8 +511,16 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         return null
     }
 
-    private fun isTypeEqual(typeMirror: TypeMirror, otherType: String): Boolean {
-        return otherType == typeMirror.toString()
+    /**
+     * @param eraseTypeParameters Set to true to erase type parameters of a generic type, such as ToOne&lt;A&gt;
+     *     before comparison.
+     */
+    private fun isTypeEqual(typeMirror: TypeMirror, otherType: String, eraseTypeParameters: Boolean = false): Boolean {
+        if (eraseTypeParameters) {
+            return otherType == typeUtils!!.erasure(typeMirror).toString()
+        } else {
+            return otherType == typeMirror.toString()
+        }
     }
 
     private fun error(message: String, element: Element? = null) {
