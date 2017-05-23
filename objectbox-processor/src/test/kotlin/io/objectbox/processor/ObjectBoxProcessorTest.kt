@@ -178,14 +178,13 @@ class ObjectBoxProcessorTest {
                         "-A${ObjectBoxProcessor.OPTION_MODEL_PATH}=src/test/resources/objectbox-models/to-one.json"
                 )
                 .compile(entityParent, entityRelated)
-        // FIXME ut: wait until cursor code for .getTargetId is fixed
-//        CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
-//
-//        // assert generated files source trees
-//        assertGeneratedSourceMatches(compilation, "io.objectbox.processor.test.ToOneParentEntity_",
-//                "expected-source/ToOneParentEntity_.java")
-//        assertGeneratedSourceMatches(compilation, "io.objectbox.processor.test.ToOneParentEntityCursor",
-//                "expected-source/ToOneParentEntityCursor.java")
+        CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
+
+        // assert generated files source trees
+        assertGeneratedSourceMatches(compilation, "io.objectbox.processor.test.ToOneParentEntity_",
+                "expected-source/ToOneParentEntity_.java")
+        assertGeneratedSourceMatches(compilation, "io.objectbox.processor.test.ToOneParentEntityCursor",
+                "expected-source/ToOneParentEntityCursor.java")
 
         // assert schema
         val schema = processor.schema
