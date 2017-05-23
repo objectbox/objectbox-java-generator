@@ -30,7 +30,7 @@ pipeline {
 
         failure {
             // For global vars see /jenkins/pipeline-syntax/globals
-            slackSend color: "warning",
+            slackSend color: "danger",
                     message: "Failed: ${currentBuild.fullDisplayName}\n${env.BUILD_URL}"
         }
     }

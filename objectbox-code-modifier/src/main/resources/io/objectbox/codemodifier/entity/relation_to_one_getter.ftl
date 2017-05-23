@@ -3,6 +3,6 @@
 /** To-one relationship, resolved on first access. */
 @Generated(GENERATED_HASH_STUB)
 public ${toOne.targetEntity.className} get${toOne.name?cap_first}() {
-    ${toOne.name} = ${toOne.nameToOne}.getTarget(this.${toOne.targetIdProperty.propertyName});
+    ${toOne.name} = ${toOne.nameToOne}.getTarget(<#if !toOne.targetIdProperty.virtual> ${toOne.targetIdProperty.propertyName}</#if>);
     return ${toOne.name};
 }

@@ -41,9 +41,9 @@ public class Address {
     transient ToOne<Customer> customerToOne = new ToOne<>(this, Address_.customer);
 
     /** To-one relationship, resolved on first access. */
-    @Generated(982764858)
+    @Generated(2032617804)
     public Customer getCustomer() {
-        customer = customerToOne.getTarget(this.customerId);
+        customer = customerToOne.getTarget();
         return customer;
     }
 
