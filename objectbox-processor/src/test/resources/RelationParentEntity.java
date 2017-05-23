@@ -13,6 +13,8 @@ public class RelationParentEntity {
 
     @Id long id;
 
+    long childId;
+
     @Relation
     RelationChildEntity child;
 

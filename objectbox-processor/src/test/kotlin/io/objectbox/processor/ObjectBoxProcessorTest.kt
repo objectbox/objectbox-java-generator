@@ -127,14 +127,13 @@ class ObjectBoxProcessorTest {
                         "-A${ObjectBoxProcessor.OPTION_MODEL_PATH}=src/test/resources/objectbox-models/relation.json"
                 )
                 .compile(entityParent, entityRelated)
-        // FIXME ut: wait until cursor code for .getTargetId is fixed
-//        CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
-//
-//        // assert generated files source trees
-//        assertGeneratedSourceMatches(compilation, "io.objectbox.processor.test.RelationParentEntity_",
-//                "RelationParentEntity_.java")
-//        assertGeneratedSourceMatches(compilation, "io.objectbox.processor.test.RelationParentEntityCursor",
-//                "RelationParentEntityCursor.java")
+        CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
+
+        // assert generated files source trees
+        assertGeneratedSourceMatches(compilation, "io.objectbox.processor.test.RelationParentEntity_",
+                "RelationParentEntity_.java")
+        assertGeneratedSourceMatches(compilation, "io.objectbox.processor.test.RelationParentEntityCursor",
+                "RelationParentEntityCursor.java")
 
         // assert schema
         val schema = processor.schema!!
@@ -144,7 +143,24 @@ class ObjectBoxProcessorTest {
         val parent = schema.entities.single { it.className == "RelationParentEntity" }
         val child = schema.entities.single { it.className == "RelationChildEntity" }
 
-        assertToOne(parent, child, "childToOne")
+        // assert properties
+        for (prop in parent.properties) {
+            when (prop.propertyName) {
+                "id" -> {
+                    assertThat(prop.isPrimaryKey)
+                    assertThat(prop.isIdAssignable)
+                    assertThat(prop.dbName).isEqualTo("_id")
+                    assertPrimitiveType(prop, PropertyType.Long)
+                }
+                "childId" -> {
+                    assertThat(prop.dbName).isEqualTo(prop.propertyName)
+                    assertThat(prop.virtualTargetName).isNull()
+                    assertPrimitiveType(prop, PropertyType.RelationId)
+                    assertToOneIndexAndRelation(parent, child, prop, "childToOne")
+                }
+                else -> fail("Found stray property '${prop.propertyName}' in schema.")
+            }
+        }
     }
 
     @Test
@@ -177,10 +193,6 @@ class ObjectBoxProcessorTest {
         val parent = schema.entities.single { it.className == "ToOneParentEntity" }
         val child = schema.entities.single { it.className == "ToOneChildEntity" }
 
-        assertToOne(parent, child, "child")
-    }
-
-    private fun assertToOne(parent: Entity, child: Entity, toOneName: String) {
         // assert properties
         for (prop in parent.properties) {
             when (prop.propertyName) {
@@ -192,17 +204,16 @@ class ObjectBoxProcessorTest {
                 }
                 "childId" -> {
                     assertThat(prop.dbName).isEqualTo(prop.propertyName)
-                    assertThat(prop.virtualTargetName).isEqualTo(toOneName)
+                    assertThat(prop.virtualTargetName).isEqualTo("child")
                     assertPrimitiveType(prop, PropertyType.RelationId)
-
-                    assertToOneIndexAndRelation(parent, child, prop)
+                    assertToOneIndexAndRelation(parent, child, prop, "child")
                 }
                 else -> fail("Found stray property '${prop.propertyName}' in schema.")
             }
         }
     }
 
-    private fun assertToOneIndexAndRelation(parent: Entity, child: Entity, prop: Property) {
+    private fun assertToOneIndexAndRelation(parent: Entity, child: Entity, prop: Property, toOneName: String) {
         // assert index
         assertThat(parent.indexes).hasSize(1)
         val foreignKeyIndex = parent.indexes[0]
@@ -215,7 +226,7 @@ class ObjectBoxProcessorTest {
                 "child" -> {
                     assertThat(toOneRelation.targetEntity).isEqualTo(child)
                     assertThat(toOneRelation.targetIdProperty).isEqualTo(prop)
-                    assertThat(toOneRelation.nameToOne).isEqualTo(prop.virtualTargetName)
+                    assertThat(toOneRelation.nameToOne).isEqualTo(toOneName)
                 }
                 else -> fail("Found stray toOneRelation '${toOneRelation.name}' in schema.")
             }
