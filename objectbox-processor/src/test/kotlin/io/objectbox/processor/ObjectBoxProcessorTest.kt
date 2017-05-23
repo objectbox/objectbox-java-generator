@@ -138,8 +138,9 @@ class ObjectBoxProcessorTest {
                 "expected-source/RelationParentEntityCursor.java")
 
         // assert schema
-        val schema = processor.schema!!
-        assertThat(schema.entities).hasSize(2)
+        val schema = processor.schema
+        assertThat(schema).isNotNull()
+        assertThat(schema!!.entities).hasSize(2)
 
         // assert entity
         val parent = schema.entities.single { it.className == "RelationParentEntity" }
@@ -188,6 +189,7 @@ class ObjectBoxProcessorTest {
 
         // assert schema
         val schema = processor.schema
+        assertThat(schema).isNotNull()
         assertThat(schema!!.entities).hasSize(2)
 
         // assert entity
