@@ -1,7 +1,5 @@
 package io.objectbox.processor.test;
 
-import java.util.Date;
-
 import io.objectbox.BoxStore;
 import io.objectbox.annotation.Entity;
 import io.objectbox.annotation.Id;
