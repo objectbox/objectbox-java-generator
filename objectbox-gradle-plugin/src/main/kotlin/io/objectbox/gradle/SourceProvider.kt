@@ -24,25 +24,27 @@ interface SourceProvider {
     fun addGeneratorTask(generatorTask: Task, targetGenDir: File, writeToBuildFolder: Boolean)
 }
 
-val ANDROID_PLUGINS = listOf(
-    "android", "android-library", "com.android.application", "com.android.library"
-)
-
-class AndroidPluginSourceProvider(val project: Project): SourceProvider {
-    val androidExtension = project.extensions.getByType(AndroidConfig::class.java)
-    init {
-        require(androidExtension != null) {
-            "There is no android plugin applied to the project"
-        }
-    }
+class AndroidPluginSourceProvider(val project: Project) : SourceProvider {
+    val androidExtension = project.extensions.getByType(AndroidConfig::class.java)!!
 
     override fun sourceFiles(): Sequence<FileTree> =
-        androidExtension.sourceSets.asSequence().map { it.java.sourceFiles }
+            androidExtension.sourceSets.asSequence().map { it.java.sourceFiles }
 
     override val encoding: String?
         get() = androidExtension.compileOptions.encoding
 
     override fun addGeneratorTask(generatorTask: Task, targetGenDir: File, writeToBuildFolder: Boolean) {
+// Futile attempt to mimik the workaround of this in build.gradle:
+// android.sourceSets.main.java.srcDirs += 'build/generated/source/objectbox'
+//        if (project.plugins.hasPlugin("kotlin-android")) {
+//            // Workaround for Kotlin Android plugin: depending on the order of plugin definitions,
+//            // this helps to make generated classes available to Kotlin:
+//            val javaSourceSet = androidExtension.sourceSets.findByName("main").java
+//            val newJavaSrcDirs = javaSourceSet.srcDirs.toMutableList()
+//            newJavaSrcDirs += targetGenDir
+//            javaSourceSet.setSrcDirs(newJavaSrcDirs)
+//        }
+
         project.plugins.all {
             when (it) {
                 is AppPlugin -> applyPlugin(project.extensions[AppExtension::class].applicationVariants,
@@ -54,7 +56,7 @@ class AndroidPluginSourceProvider(val project: Project): SourceProvider {
     }
 
     private fun applyPlugin(variants: DomainObjectSet<out BaseVariant>, objectboxTask: Task, targetGenDir: File,
-            writeToBuildFolder: Boolean) {
+                            writeToBuildFolder: Boolean) {
         variants.all { variant ->
             if (writeToBuildFolder) {
                 variant.registerJavaGeneratingTask(objectboxTask, targetGenDir)
@@ -71,22 +73,16 @@ class AndroidPluginSourceProvider(val project: Project): SourceProvider {
 
 }
 
-class JavaPluginSourceProvider(val project: Project): SourceProvider {
-    val javaPluginConvention = project.convention.getPlugin(JavaPluginConvention::class.java)
-    init {
-        require(javaPluginConvention != null) {
-            "There is no java plugin applied to the project"
-        }
-    }
+class JavaPluginSourceProvider(val project: Project) : SourceProvider {
+    val javaPlugin = project.convention.getPlugin(JavaPluginConvention::class.java)!!
 
     override fun sourceFiles(): Sequence<FileTree> =
-        javaPluginConvention.sourceSets.asSequence().map { it.allJava.asFileTree }
+            javaPlugin.sourceSets.asSequence().map { it.allJava.asFileTree }
 
     override val encoding: String?
         get() = project.tasks.withType(JavaCompile::class.java).firstOrNull()?.options?.encoding
 
     override fun addGeneratorTask(generatorTask: Task, targetGenDir: File, writeToBuildFolder: Boolean) {
-        val javaPlugin = project.convention.getPlugin(JavaPluginConvention::class.java)
         // for the main source set...
         val mainSourceSet = javaPlugin.sourceSets.maybeCreate("main")
         // ...make the compile task depend on the objectbox task
@@ -100,14 +96,3 @@ class JavaPluginSourceProvider(val project: Project): SourceProvider {
         }
     }
 }
-
-/** @throws RuntimeException if no supported plugins applied */
-val Project.sourceProvider: SourceProvider
-    get() = when {
-        project.plugins.hasPlugin("java") -> JavaPluginSourceProvider(project)
-
-        ANDROID_PLUGINS.any { project.plugins.hasPlugin(it) } -> AndroidPluginSourceProvider(project)
-
-        else -> throw RuntimeException("ObjectBox supports only Java and Android projects. " +
-            "None of the corresponding plugins have been applied to the project.")
-    }

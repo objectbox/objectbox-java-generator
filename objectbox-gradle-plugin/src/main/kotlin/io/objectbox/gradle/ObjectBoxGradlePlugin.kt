@@ -25,7 +25,7 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
             val version = getVersion()
             project.logger.debug("$name plugin $version preparing tasks...")
             val candidatesFile = project.file("build/cache/$name-candidates.list")
-            val sourceProvider = project.sourceProvider
+            val sourceProvider = getSourceProvider(project)
             val encoding = sourceProvider.encoding ?: "UTF-8"
 
             val taskArgs = mapOf("type" to DetectEntityCandidatesTask::class.java)
@@ -138,5 +138,22 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
         }.associateTo(schemaOptions, { it.name to it })
         return schemaOptions
     }
+
+    val ANDROID_PLUGINS = listOf(
+            "android", "android-library", "com.android.application", "com.android.library"
+    )
+
+    /** @throws RuntimeException if no supported plugins applied */
+    private fun getSourceProvider(project: Project): SourceProvider {
+        when {
+            project.plugins.hasPlugin("java") -> return JavaPluginSourceProvider(project)
+
+            ANDROID_PLUGINS.any { project.plugins.hasPlugin(it) } -> return AndroidPluginSourceProvider(project)
+
+            else -> throw RuntimeException("ObjectBox supports only Java and Android projects. " +
+                    "None of the corresponding plugins have been applied to the project.")
+        }
+    }
+
 
 }

@@ -1,0 +1,53 @@
+// Plugins must be in (test) classpath of objectbox-gradle-plugin
+plugins {
+    id 'com.android.application'
+    id 'kotlin-android'
+    id 'io.objectbox'
+}
+
+targetCompatibility = '1.7'
+sourceCompatibility = '1.7'
+
+uploadArchives.enabled = false
+
+objectbox {
+}
+
+android.sourceSets.main.java.srcDirs += 'build/generated/source/objectbox'
+
+android {
+    compileSdkVersion 25
+    buildToolsVersion "25.0.3"
+
+    defaultConfig {
+        applicationId "io.objectbox.testgradleproject.kotlinandroid"
+        minSdkVersion 15
+        targetSdkVersion 25
+        versionCode 1
+        versionName "1.0"
+    }
+}
+
+dependencies {
+    compile 'io.objectbox:objectbox-android:0.9.12'
+    //compile "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
+    testCompile 'junit:junit:4.12'
+    testCompile 'org.mockito:mockito-core:2.7.22'
+}
+
+
+repositories {
+    // Adding maven repo with custom credentials does not seem to work (user properties could not be read)
+
+    // Ensure to have the correct ObjectBox version deployed here
+    mavenLocal()
+
+    // Not the most current, but OK for now for Jenkins
+    maven {
+        url "http://objectbox.net/beta-repo/"
+    }
+
+    // For essentials
+    mavenCentral()
+
+}
