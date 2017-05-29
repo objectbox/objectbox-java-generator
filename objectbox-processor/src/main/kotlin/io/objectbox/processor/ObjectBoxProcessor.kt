@@ -196,7 +196,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         val modifiers = field.modifiers
         if (modifiers.contains(Modifier.STATIC)
                 || modifiers.contains(Modifier.TRANSIENT)
-                || field.getAnnotation(Transient::class.java) != null) {
+                || field.hasAnnotation(Transient::class.java)) {
             note("Ignoring transient field. (${field.qualifiedName})", field)
             return
         }
@@ -207,10 +207,9 @@ open class ObjectBoxProcessor : AbstractProcessor() {
             return
         }
 
-        val relationAnnotation = field.getAnnotation(Relation::class.java)
-        if (relationAnnotation != null) {
+        if (field.hasAnnotation(Relation::class.java)) {
             // @Relation property
-            val toOne = parseRelation(field, relationAnnotation)
+            val toOne = parseRelation(field)
             toOnes.add(toOne)
         } else if (isTypeEqual(field.asType(), ToOne::class.java.name, true)) {
             // ToOne<TARGET> property
@@ -222,8 +221,9 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         }
     }
 
-    private fun parseRelation(field: VariableElement, relationAnnotation: Relation): ToOneRelation {
+    private fun parseRelation(field: VariableElement): ToOneRelation {
         val targetTypeMirror = field.asType() as DeclaredType
+        val relationAnnotation = field.getAnnotation(Relation::class.java)
         val targetIdName = if (relationAnnotation.idProperty.isBlank()) null else relationAnnotation.idProperty
         return buildToOneRelation(field, targetTypeMirror, targetIdName, false)
     }
@@ -265,8 +265,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
 
         val propertyBuilder: Property.PropertyBuilder?
 
-        val convertAnnotation = field.getAnnotation(Convert::class.java)
-        if (convertAnnotation != null) {
+        if (field.hasAnnotation(Convert::class.java)) {
             // verify @Convert custom type
             propertyBuilder = parseCustomProperty(entity, field)
         } else {
@@ -302,8 +301,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         }
 
         // @Index
-        val indexAnnotation = field.getAnnotation(Index::class.java)
-        if (indexAnnotation != null) {
+        if (field.hasAnnotation(Index::class.java)) {
             propertyBuilder.indexAsc(null, false)
         }
 
@@ -539,4 +537,9 @@ open class ObjectBoxProcessor : AbstractProcessor() {
             val fieldName = simpleName
             return "${enclosingElement.qualifiedName}.$fieldName"
         }
+
+    fun <A : Annotation> Element.hasAnnotation(annotationType: Class<A>): Boolean {
+        return getAnnotation(annotationType) != null
+    }
+
 }
