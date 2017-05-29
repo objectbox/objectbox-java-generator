@@ -192,21 +192,18 @@ open class ObjectBoxProcessor : AbstractProcessor() {
 
     private fun parseField(entityModel: io.objectbox.generator.model.Entity,
             toOnes: MutableList<ToOneRelation>, field: VariableElement) {
-        val enclosingElement = field.enclosingElement as TypeElement
-        val fieldName = field.simpleName
-
         // ignore static, transient or @Transient fields
         val modifiers = field.modifiers
         if (modifiers.contains(Modifier.STATIC)
                 || modifiers.contains(Modifier.TRANSIENT)
                 || field.getAnnotation(Transient::class.java) != null) {
-            note("Ignoring transient field. (${enclosingElement.qualifiedName}.$fieldName)", field)
+            note("Ignoring transient field. (${field.qualifiedName})", field)
             return
         }
 
         // verify field is accessible
         if (modifiers.contains(Modifier.PRIVATE)) {
-            error("Field must not be private. (${enclosingElement.qualifiedName}.$fieldName)", field)
+            error("Field must not be private. (${field.qualifiedName})", field)
             return
         }
 
@@ -239,7 +236,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
     }
 
     private fun buildToOneRelation(field: VariableElement, targetType: DeclaredType, targetIdName: String?,
-            isExplicitToOne: Boolean) : ToOneRelation {
+            isExplicitToOne: Boolean): ToOneRelation {
         // can simply get as element as code would not have compiled if target type is not known
         val targetElement = targetType.asElement()
         val targetEntityName = targetElement.simpleName
@@ -266,16 +263,15 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         // Compare with EntityClassASTVisitor.endVisit()
         // and GreendaoModelTranslator.convertProperty()
 
-        val enclosingElement = field.enclosingElement as TypeElement
         val propertyBuilder: Property.PropertyBuilder?
 
         val convertAnnotation = field.getAnnotation(Convert::class.java)
         if (convertAnnotation != null) {
             // verify @Convert custom type
-            propertyBuilder = parseCustomProperty(entity, field, enclosingElement)
+            propertyBuilder = parseCustomProperty(entity, field)
         } else {
             // verify that supported type is used
-            propertyBuilder = parseSupportedProperty(entity, field, enclosingElement)
+            propertyBuilder = parseSupportedProperty(entity, field)
         }
         if (propertyBuilder == null) {
             return
@@ -321,28 +317,27 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         // TODO ut: add remaining property build steps
     }
 
-    private fun parseCustomProperty(entity: io.objectbox.generator.model.Entity,
-            field: VariableElement, enclosingElement: TypeElement): Property.PropertyBuilder? {
+    private fun parseCustomProperty(entity: io.objectbox.generator.model.Entity, field: VariableElement): Property.PropertyBuilder? {
         // extract @Convert annotation member values
         // as they are types, need to access them via annotation mirrors
         val annotationMirror = getAnnotationMirror(field, Convert::class.java) ?: return null // did not find @Convert mirror
 
         val converter = getAnnotationValueType(annotationMirror, "converter")
         if (converter == null) {
-            error("@Convert requires a value for converter. (${enclosingElement.qualifiedName}.${field.simpleName})",
+            error("@Convert requires a value for converter. (${field.qualifiedName})",
                     field)
             return null
         }
 
         val dbType = getAnnotationValueType(annotationMirror, "dbType")
         if (dbType == null) {
-            error("@Convert requires a value for dbType. (${enclosingElement.qualifiedName}.${field.simpleName})",
+            error("@Convert requires a value for dbType. (${field.qualifiedName})",
                     field)
             return null
         }
         val propertyType = getPropertyType(dbType)
         if (propertyType == null) {
-            error("@Convert dbType type is not supported. (${enclosingElement.qualifiedName}.${field.simpleName})",
+            error("@Convert dbType type is not supported. (${field.qualifiedName})",
                     field)
             return null
         }
@@ -353,13 +348,11 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         return propertyBuilder
     }
 
-    private fun parseSupportedProperty(entity: io.objectbox.generator.model.Entity, field: VariableElement,
-            enclosingElement: TypeElement): PropertyBuilder? {
+    private fun parseSupportedProperty(entity: io.objectbox.generator.model.Entity, field: VariableElement): PropertyBuilder? {
         val typeMirror = field.asType()
         val propertyType = getPropertyType(typeMirror)
         if (propertyType == null) {
-            error("Field type is not supported, maybe add @Convert." +
-                    " (${enclosingElement.qualifiedName}.${field.simpleName})", field)
+            error("Field type is not supported, maybe add @Convert. (${field.qualifiedName})", field)
             return null
         }
 
@@ -539,4 +532,11 @@ open class ObjectBoxProcessor : AbstractProcessor() {
             processingEnv.messager.printMessage(kind, message)
         }
     }
+
+    val VariableElement.qualifiedName: String
+        get() {
+            val enclosingElement = enclosingElement as TypeElement
+            val fieldName = simpleName
+            return "${enclosingElement.qualifiedName}.$fieldName"
+        }
 }
