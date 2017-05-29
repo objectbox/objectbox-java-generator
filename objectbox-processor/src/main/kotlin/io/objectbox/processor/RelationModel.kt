@@ -8,3 +8,9 @@ data class ToOneRelation(
         val targetIdUid: Long? = null,
         val variableIsToOne: Boolean = false
 )
+
+data class ToManyRelation(
+        val propertyName: String,
+        val targetEntityName: String,
+        var targetIdName: String? = null
+)

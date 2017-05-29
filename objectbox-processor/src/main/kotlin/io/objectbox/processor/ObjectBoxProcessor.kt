@@ -1,5 +1,6 @@
 package io.objectbox.processor
 
+import io.objectbox.annotation.Backlink
 import io.objectbox.annotation.Convert
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Id
@@ -8,6 +9,7 @@ import io.objectbox.annotation.NameInDb
 import io.objectbox.annotation.Relation
 import io.objectbox.annotation.Transient
 import io.objectbox.annotation.Uid
+import io.objectbox.codemodifier.nullIfBlank
 import io.objectbox.generator.BoxGenerator
 import io.objectbox.generator.IdUid
 import io.objectbox.generator.idsync.IdSync
@@ -16,6 +18,7 @@ import io.objectbox.generator.model.Property
 import io.objectbox.generator.model.Property.PropertyBuilder
 import io.objectbox.generator.model.PropertyType
 import io.objectbox.generator.model.Schema
+import io.objectbox.relation.ToMany
 import io.objectbox.relation.ToOne
 import java.io.File
 import java.io.FileNotFoundException
@@ -102,8 +105,8 @@ open class ObjectBoxProcessor : AbstractProcessor() {
 
     private fun findAndParse(env: RoundEnvironment) {
         var schema: Schema? = null
-        val toOneByEntity: MutableMap<io.objectbox.generator.model.Entity, MutableList<ToOneRelation>>
-                = mutableMapOf()
+        val toOneByEntity: MutableMap<io.objectbox.generator.model.Entity, MutableList<ToOneRelation>> = mutableMapOf()
+        val toManyByEntity: MutableMap<io.objectbox.generator.model.Entity, MutableList<ToManyRelation>> = mutableMapOf()
 
         for (entity in env.getElementsAnnotatedWith(Entity::class.java)) {
             note("Processing @Entity annotation.", entity)
@@ -118,17 +121,26 @@ open class ObjectBoxProcessor : AbstractProcessor() {
                 schema = Schema("default", 1, defaultJavaPackage)
             }
 
-            parseEntity(schema, toOneByEntity, entity)
+            parseEntity(schema, toOneByEntity, toManyByEntity, entity)
         }
 
         if (schema == null) {
             return  // no entities found
         }
 
+        // resolve to-one relations
         for (entity in schema.entities) {
             for (toOne in toOneByEntity[entity]!!) {
                 if (!resolveToOne(schema, entity, toOne)) {
                     return // resolving to-one failed
+                }
+            }
+        }
+        // then resolve to-many relations which depend on to-one relations being resolved
+        for (entity in schema.entities) {
+            for (toMany in toManyByEntity[entity]!!) {
+                if (!resolveToMany(schema, entity, toMany)) {
+                    return // resolving to-many failed
                 }
             }
         }
@@ -149,6 +161,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
 
     private fun parseEntity(schema: Schema,
             toOneByEntity: MutableMap<io.objectbox.generator.model.Entity, MutableList<ToOneRelation>>,
+            toManyByEntity: MutableMap<io.objectbox.generator.model.Entity, MutableList<ToManyRelation>>,
             entity: Element) {
         val entityModel = schema.addEntity(entity.simpleName.toString())
         entityModel.isSkipGeneration = true // processor may not generate duplicate entity source files
@@ -178,10 +191,12 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         // parse properties
         val toOnes = mutableListOf<ToOneRelation>()
         toOneByEntity.put(entityModel, toOnes)
+        val toManys = mutableListOf<ToManyRelation>()
+        toManyByEntity.put(entityModel, toManys)
 
         val fields = ElementFilter.fieldsIn(entity.enclosedElements)
         for (field in fields) {
-            parseField(entityModel, toOnes, field)
+            parseField(entityModel, toOnes, toManys, field)
         }
 
         // add missing foreign key properties and indexes for to-one relations
@@ -191,7 +206,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
     }
 
     private fun parseField(entityModel: io.objectbox.generator.model.Entity,
-            toOnes: MutableList<ToOneRelation>, field: VariableElement) {
+            toOnes: MutableList<ToOneRelation>, toManys: MutableList<ToManyRelation>, field: VariableElement) {
         // ignore static, transient or @Transient fields
         val modifiers = field.modifiers
         if (modifiers.contains(Modifier.STATIC)
@@ -211,14 +226,39 @@ open class ObjectBoxProcessor : AbstractProcessor() {
             // @Relation property
             val toOne = parseRelation(field)
             toOnes.add(toOne)
-        } else if (isTypeEqual(field.asType(), ToOne::class.java.name, true)) {
+        } else if (isTypeEqual(field.asType(), ToOne::class.java.name, eraseTypeParameters = true)) {
             // ToOne<TARGET> property
             val toOne = parseToOne(field)
             toOnes.add(toOne)
+        } else if ((!field.hasAnnotation(Convert::class.java)
+                && isTypeEqual(field.asType(), List::class.java.name, eraseTypeParameters = true))
+                || isTypeEqual(field.asType(), ToMany::class.java.name, eraseTypeParameters = true)) {
+            // List<TARGET> or ToMany<TARGET> property
+            val toMany = parseToMany(field)
+            toManys.add(toMany)
         } else {
             // regular property
             parseProperty(entityModel, field)
         }
+    }
+
+    private fun parseToMany(field: VariableElement): ToManyRelation {
+        val backlinkAnnotation = field.getAnnotation(Backlink::class.java)
+        if (backlinkAnnotation == null) {
+            error("ToMany field must be annotated with @Backlink. (${field.qualifiedName})", field)
+        }
+
+        // assuming List<TargetType> or ToMany<TargetType>
+        val toManyTypeMirror = field.asType() as DeclaredType
+        val targetTypeMirror = toManyTypeMirror.typeArguments[0] as DeclaredType
+        // can simply get as element as code would not have compiled if target type is not known
+        val targetEntityName = targetTypeMirror.asElement().simpleName
+
+        return ToManyRelation(
+                propertyName = field.simpleName.toString(),
+                targetEntityName = targetEntityName.toString(),
+                targetIdName = backlinkAnnotation.to.nullIfBlank()
+        )
     }
 
     private fun parseRelation(field: VariableElement): ToOneRelation {
@@ -411,6 +451,47 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         val nameToOne = if (toOne.variableIsToOne) name else null
 
         entity.addToOne(targetEntity, targetIdProperty, name, nameToOne)
+        return true
+    }
+
+    private fun resolveToMany(schema: Schema, entity: io.objectbox.generator.model.Entity, toMany: ToManyRelation): Boolean {
+        val targetEntity = schema.entities.singleOrNull {
+            it.className == toMany.targetEntityName
+        }
+        if (targetEntity == null) {
+            error("ToMany target class '${toMany.targetEntityName}' " +
+                    "defined in class '${entity.className}' could not be found (is it an @Entity?)")
+            return false
+        }
+
+        val targetToOne = if (toMany.targetIdName.isNullOrEmpty()) {
+            // no explicit target name: just ensure a single to-one relation, then use that
+            val targetToOne = targetEntity.toOneRelations.filter {
+                it.targetEntity == entity
+            }
+            if (targetToOne.isEmpty()) {
+                error("A to-one relation must be added to '${targetEntity.className}' to create the to-many relation " +
+                        "'${toMany.propertyName}' in '${entity.className}'.")
+                return false
+            } else if (targetToOne.size > 1) {
+                error("Set name of one to-one relation of '${targetEntity.className}' as @Backlink 'to' value to " +
+                        "create the to-many relation '${toMany.propertyName}' in '${entity.className}'.")
+                return false
+            }
+            targetToOne[0]
+        } else {
+            // explicit target name: find the related to-one relation
+            val targetToOne = targetEntity.toOneRelations.singleOrNull {
+                it.targetEntity == entity && it.name == toMany.targetIdName
+            }
+            if (targetToOne == null) {
+                error("Could not find property '${toMany.targetIdName}' in '${entity.className}'.")
+                return false
+            }
+            targetToOne
+        }
+
+        entity.addToMany(targetEntity, targetToOne.targetIdProperty, toMany.propertyName)
         return true
     }
 
