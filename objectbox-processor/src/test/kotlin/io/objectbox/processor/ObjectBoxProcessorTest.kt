@@ -14,16 +14,20 @@ import org.junit.Test
 
 class ObjectBoxProcessorTest {
 
+    val modelFilesBaseBath = "src/test/resources/objectbox-models/"
+    val processorOptionBasePath = "-A${ObjectBoxProcessor.OPTION_MODEL_PATH}=$modelFilesBaseBath"
+
     @Test
     fun testProcessor() {
         val entitySimple = JavaFileObjects.forResource("SimpleEntity.java")
 
         val processor = ObjectBoxProcessorShim()
 
+        val modelFile = "default.json"
         val compilation = javac()
                 .withProcessors(processor)
                 .withOptions(
-                        "-A${ObjectBoxProcessor.OPTION_MODEL_PATH}=src/test/resources/objectbox-models/default.json"
+                        "$processorOptionBasePath$modelFile"
                         // disabled as compat DAO currently requires entity property getters/setters
 //                        "-A${ObjectBoxProcessor.OPTION_DAO_COMPAT}=true"
                 )
@@ -51,7 +55,7 @@ class ObjectBoxProcessorTest {
         assertThat(schema.entities).hasSize(1)
 
         // assert entity
-        val entity = schema.entities.get(0)
+        val entity = schema.entities[0]
         assertThat(entity.className).isEqualTo("SimpleEntity")
         assertThat(entity.dbName).isEqualTo("A")
         assertThat(entity.modelId).isEqualTo(1)
@@ -123,11 +127,10 @@ class ObjectBoxProcessorTest {
 
         val processor = ObjectBoxProcessorShim()
 
+        val modelFile = "relation.json"
         val compilation = javac()
                 .withProcessors(processor)
-                .withOptions(
-                        "-A${ObjectBoxProcessor.OPTION_MODEL_PATH}=src/test/resources/objectbox-models/relation.json"
-                )
+                .withOptions("$processorOptionBasePath$modelFile")
                 .compile(entityParent, entityRelated)
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
 
@@ -173,11 +176,10 @@ class ObjectBoxProcessorTest {
 
         val processor = ObjectBoxProcessorShim()
 
+        val modelFile = "to-one.json"
         val compilation = javac()
                 .withProcessors(processor)
-                .withOptions(
-                        "-A${ObjectBoxProcessor.OPTION_MODEL_PATH}=src/test/resources/objectbox-models/to-one.json"
-                )
+                .withOptions("$processorOptionBasePath$modelFile")
                 .compile(entityParent, entityRelated)
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
 
@@ -210,6 +212,65 @@ class ObjectBoxProcessorTest {
                     assertThat(prop.virtualTargetName).isEqualTo("child")
                     assertPrimitiveType(prop, PropertyType.RelationId)
                     assertToOneIndexAndRelation(parent, child, prop, "child")
+                }
+                else -> fail("Found stray property '${prop.propertyName}' in schema.")
+            }
+        }
+    }
+
+    @Test
+    fun testBacklinkList() {
+        val parentName = "BacklinkListParentEntity"
+        val childName = "BacklinkListChildEntity"
+        val entityParent = JavaFileObjects.forResource("$parentName.java")
+        val entityChild = JavaFileObjects.forResource("$childName.java")
+
+        val processor = ObjectBoxProcessorShim()
+
+        val modelFile = "backlink.json"
+        val compilation = javac()
+                .withProcessors(processor)
+                .withOptions("$processorOptionBasePath$modelFile")
+                .compile(entityParent, entityChild)
+        CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
+
+        // TODO ut: assert generated files source trees
+
+        // assert schema
+        val schema = processor.schema
+        assertThat(schema).isNotNull()
+        assertThat(schema!!.entities).hasSize(2)
+
+        // assert entity
+        val parent = schema.entities.single { it.className == parentName }
+        val child = schema.entities.single { it.className == childName }
+
+        // TODO ut: assert properties
+        for (prop in parent.properties) {
+            when (prop.propertyName) {
+                "id" -> {
+                    assertThat(prop.isPrimaryKey).isTrue()
+                    assertThat(prop.isIdAssignable).isFalse()
+                    assertThat(prop.dbName).isEqualTo("_id")
+                    assertPrimitiveType(prop, PropertyType.Long)
+                }
+                else -> fail("Found stray property '${prop.propertyName}' in schema.")
+            }
+        }
+
+        for (prop in child.properties) {
+            when (prop.propertyName) {
+                "id" -> {
+                    assertThat(prop.isPrimaryKey).isTrue()
+                    assertThat(prop.isIdAssignable).isFalse()
+                    assertThat(prop.dbName).isEqualTo("_id")
+                    assertPrimitiveType(prop, PropertyType.Long)
+                }
+                "parentId" -> {
+                    assertThat(prop.dbName).isEqualTo(prop.propertyName)
+                    assertThat(prop.virtualTargetName).isNull()
+                    assertPrimitiveType(prop, PropertyType.RelationId)
+                    assertToOneIndexAndRelation(child, parent, prop, "parentToOne")
                 }
                 else -> fail("Found stray property '${prop.propertyName}' in schema.")
             }
