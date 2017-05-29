@@ -39,6 +39,7 @@ import javax.lang.model.util.Elements
 import javax.lang.model.util.Types
 import javax.tools.Diagnostic
 import kotlin.collections.LinkedHashSet
+import kotlin.properties.Delegates
 
 open class ObjectBoxProcessor : AbstractProcessor() {
 
@@ -51,9 +52,9 @@ open class ObjectBoxProcessor : AbstractProcessor() {
     // make processed schema accessible for testing
     var schema: Schema? = null
 
-    private var elementUtils: Elements? = null
-    private var typeUtils: Types? = null
-    private var filer: Filer? = null
+    private var elementUtils: Elements by Delegates.notNull()
+    private var typeUtils: Types by Delegates.notNull()
+    private var filer: Filer by Delegates.notNull()
     private var projectRoot: File? = null
     private var customModelPath: String? = null
     private var daoCompat: Boolean = false
@@ -111,7 +112,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
                 val defaultJavaPackage = if (daoCompat && daoCompatPackage != null) {
                     daoCompatPackage
                 } else {
-                    val elementPackage = elementUtils!!.getPackageOf(entity)
+                    val elementPackage = elementUtils.getPackageOf(entity)
                     elementPackage.qualifiedName.toString()
                 }
                 schema = Schema("default", 1, defaultJavaPackage)
@@ -153,7 +154,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         entityModel.isSkipGeneration = true // processor may not generate duplicate entity source files
         entityModel.isConstructors = true // has no effect as isSkipGeneration = true
         entityModel.isSkipCreationInDb = false
-        entityModel.javaPackage = elementUtils!!.getPackageOf(entity).qualifiedName.toString()
+        entityModel.javaPackage = elementUtils.getPackageOf(entity).qualifiedName.toString()
         entityModel.javaPackageDao = daoCompatPackage ?: entityModel.javaPackage
         entityModel.javaPackageTest = entityModel.javaPackageDao // has no effect as tests can not be generated
 
@@ -449,8 +450,8 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         val annotationMirrors = element.annotationMirrors
         for (annotationMirror in annotationMirrors) {
             val annotationType = annotationMirror.annotationType
-            val convertType = elementUtils!!.getTypeElement(annotationClass.canonicalName).asType()
-            if (typeUtils!!.isSameType(annotationType, convertType)) {
+            val convertType = elementUtils.getTypeElement(annotationClass.canonicalName).asType()
+            if (typeUtils.isSameType(annotationType, convertType)) {
                 return annotationMirror
             }
         }
@@ -517,7 +518,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
      */
     private fun isTypeEqual(typeMirror: TypeMirror, otherType: String, eraseTypeParameters: Boolean = false): Boolean {
         if (eraseTypeParameters) {
-            return otherType == typeUtils!!.erasure(typeMirror).toString()
+            return otherType == typeUtils.erasure(typeMirror).toString()
         } else {
             return otherType == typeMirror.toString()
         }
