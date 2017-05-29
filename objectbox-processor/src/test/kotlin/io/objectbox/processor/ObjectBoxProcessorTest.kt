@@ -227,7 +227,66 @@ class ObjectBoxProcessorTest {
 
         val processor = ObjectBoxProcessorShim()
 
-        val modelFile = "backlink.json"
+        val modelFile = "backlink-list.json"
+        val compilation = javac()
+                .withProcessors(processor)
+                .withOptions("$processorOptionBasePath$modelFile")
+                .compile(entityParent, entityChild)
+        CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
+
+        // TODO ut: assert generated files source trees
+
+        // assert schema
+        val schema = processor.schema
+        assertThat(schema).isNotNull()
+        assertThat(schema!!.entities).hasSize(2)
+
+        // assert entity
+        val parent = schema.entities.single { it.className == parentName }
+        val child = schema.entities.single { it.className == childName }
+
+        // TODO ut: assert properties
+        for (prop in parent.properties) {
+            when (prop.propertyName) {
+                "id" -> {
+                    assertThat(prop.isPrimaryKey).isTrue()
+                    assertThat(prop.isIdAssignable).isFalse()
+                    assertThat(prop.dbName).isEqualTo("_id")
+                    assertPrimitiveType(prop, PropertyType.Long)
+                }
+                else -> fail("Found stray property '${prop.propertyName}' in schema.")
+            }
+        }
+
+        for (prop in child.properties) {
+            when (prop.propertyName) {
+                "id" -> {
+                    assertThat(prop.isPrimaryKey).isTrue()
+                    assertThat(prop.isIdAssignable).isFalse()
+                    assertThat(prop.dbName).isEqualTo("_id")
+                    assertPrimitiveType(prop, PropertyType.Long)
+                }
+                "parentId" -> {
+                    assertThat(prop.dbName).isEqualTo(prop.propertyName)
+                    assertThat(prop.virtualTargetName).isNull()
+                    assertPrimitiveType(prop, PropertyType.RelationId)
+                    assertToOneIndexAndRelation(child, parent, prop, "parentToOne")
+                }
+                else -> fail("Found stray property '${prop.propertyName}' in schema.")
+            }
+        }
+    }
+
+    @Test
+    fun testBacklinkToMany() {
+        val parentName = "BacklinkToManyParentEntity"
+        val childName = "BacklinkToManyChildEntity"
+        val entityParent = JavaFileObjects.forResource("$parentName.java")
+        val entityChild = JavaFileObjects.forResource("$childName.java")
+
+        val processor = ObjectBoxProcessorShim()
+
+        val modelFile = "backlink-to-many.json"
         val compilation = javac()
                 .withProcessors(processor)
                 .withOptions("$processorOptionBasePath$modelFile")
