@@ -1,3 +1,4 @@
+// Plugins must be in (test) classpath of objectbox-gradle-plugin
 plugins {
     id 'io.objectbox'
     id 'java'

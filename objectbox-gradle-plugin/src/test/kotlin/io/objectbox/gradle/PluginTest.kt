@@ -1,15 +1,11 @@
 package io.objectbox.gradle
 
-import org.junit.Assert.*
-import org.junit.Test
-
-import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
-import java.io.File
-import org.gradle.testkit.runner.TaskOutcome.*
 import org.greenrobot.essentials.StringUtils
 import org.greenrobot.essentials.io.IoUtils
-import org.junit.Ignore
+import org.junit.Assert.*
+import org.junit.Test
+import java.io.File
 import java.io.FileInputStream
 
 /**
@@ -17,11 +13,24 @@ import java.io.FileInputStream
  * See https://docs.gradle.org/current/javadoc/org/gradle/testkit/runner/GradleRunner.html
  */
 class PluginTest {
+
     @Test
-    fun buildTestProject() {
-        var dir = File("test-project-files/")
+    fun buildTestProjectJava() {
+        val args = listOf("--stacktrace", "clean", "build")
+        buildTestProject("java", args, "io/objectbox/test/entityannotation")
+    }
+
+    @Test
+    fun buildTestProjectKotlinAndroid() {
+        // Disable Lint, fails with kotlin-android
+        val args = listOf("--stacktrace", "clean", "build", "-xlint")
+        buildTestProject("kotlin-android", args, "io/objectbox/test/kotlin")
+    }
+
+    fun buildTestProject(name: String, args: List<String>, expectedPackageDir: String) {
+        var dir = File("test-gradle-projects/" + name)
         if (!dir.exists()) {
-            dir = File("objectbox-gradle-plugin/test-project-files/")
+            dir = File("objectbox-gradle-plugin/test-gradle-projects/" + name)
         }
         assertTrue(dir.absolutePath, dir.exists())
 
@@ -32,7 +41,7 @@ class PluginTest {
 
         val classpathContent = IoUtils.readAllChars(classpathFileIn.bufferedReader()).replace("\\", "\\\\")
         val classpath = StringUtils.splitLines(classpathContent, true).map(::File)
-        classpath.forEach { assertTrue(it.absolutePath, it.exists()) }
+        classpath.forEach { assertTrue(it.absolutePath, it.name.endsWith("test") || it.exists()) }
 
         val result = GradleRunner.create()
                 .withProjectDir(dir)
@@ -40,7 +49,7 @@ class PluginTest {
 //                .withPluginClasspath()
                 .withPluginClasspath(classpath)
                 // Note: args must be passed all at once, or they will overwrite each other
-                .withArguments("--stacktrace", "clean", "objectbox", "build")
+                .withArguments(args)
                 .forwardOutput()
                 .withDebug(true)
                 .build()
@@ -50,7 +59,7 @@ class PluginTest {
         val genSourceDir = File(dir, "build/generated/source/objectbox/")
         assertTrue(genSourceDir.exists())
 
-        val packageDir = File(genSourceDir, "io/objectbox/test/entityannotation")
+        val packageDir = File(genSourceDir, expectedPackageDir)
         assertTrue(packageDir.exists())
 
         assertEquals(9, packageDir.list().filter { it.endsWith(".java") }.size)

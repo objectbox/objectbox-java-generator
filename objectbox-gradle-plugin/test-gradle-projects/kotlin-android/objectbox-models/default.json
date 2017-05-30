@@ -1,0 +1,130 @@
+{
+  "_note1": "KEEP THIS FILE! Check it into a version control system (VCS) like git.",
+  "_note2": "ObjectBox manages crucial IDs for your object model. See docs for details.",
+  "_note3": "If you have VCS merge conflicts, you must resolve them according to ObjectBox docs.",
+  "entities": [
+    {
+      "id": "1:2459614224328836143",
+      "lastPropertyId": "3:5411584653682746256",
+      "name": "Customer",
+      "properties": [
+        {
+          "id": "1:2667403812014364714",
+          "name": "id"
+        },
+        {
+          "id": "2:5673606587789242750",
+          "indexId": "1:3804728111052687536",
+          "name": "name"
+        }
+      ]
+    },
+    {
+      "id": "2:4510416485782104784",
+      "lastPropertyId": "9:3833880841800023540",
+      "name": "NotNullThing",
+      "properties": [
+        {
+          "id": "1:8952966872306652835",
+          "name": "id"
+        },
+        {
+          "id": "2:8066902907239714836",
+          "name": "nullableBoolean"
+        },
+        {
+          "id": "3:4173476435780733433",
+          "name": "nullableInteger"
+        },
+        {
+          "id": "4:7159371670447763455",
+          "name": "nullableWrappedBoolean"
+        },
+        {
+          "id": "5:5774225850612903890",
+          "name": "nullableWrappedInteger"
+        },
+        {
+          "id": "6:2709800425792435202",
+          "name": "notNullBoolean"
+        },
+        {
+          "id": "7:4386361358329294790",
+          "name": "notNullInteger"
+        },
+        {
+          "id": "8:8671118946579048336",
+          "name": "notNullWrappedBoolean"
+        },
+        {
+          "id": "9:3833880841800023540",
+          "name": "notNullWrappedInteger"
+        }
+      ]
+    },
+    {
+      "id": "3:3306142177953176653",
+      "lastPropertyId": "8:8854538631871791850",
+      "name": "ORDERS",
+      "properties": [
+        {
+          "id": "1:5510498998875210375",
+          "name": "id"
+        },
+        {
+          "id": "2:4691463267258575176",
+          "name": "date"
+        },
+        {
+          "id": "3:242372658768077568",
+          "indexId": "2:1595932237717424963",
+          "name": "customerId"
+        },
+        {
+          "id": "5:8463859708429819626",
+          "name": "text"
+        },
+        {
+          "id": "7:2407887336223928850",
+          "indexId": "4:7919636098085710544",
+          "name": "customerWithoutIdPropertyId"
+        },
+        {
+          "id": "8:8854538631871791850",
+          "indexId": "5:2785489903477144595",
+          "name": "customerToOneWithoutIdPropertyId"
+        }
+      ]
+    },
+    {
+      "id": "4:8695088169092463920",
+      "lastPropertyId": "3:428869642980707627",
+      "name": "TypesInInnerClass",
+      "properties": [
+        {
+          "id": "1:4231907698765117458",
+          "name": "id"
+        },
+        {
+          "id": "2:3772783641868189041",
+          "name": "type"
+        },
+        {
+          "id": "3:428869642980707627",
+          "name": "dummy"
+        }
+      ]
+    }
+  ],
+  "lastEntityId": "4:8695088169092463920",
+  "lastIndexId": "5:2785489903477144595",
+  "lastSequenceId": "0:0",
+  "modelVersion": 2,
+  "retiredEntityUids": [],
+  "retiredIndexUids": [],
+  "retiredPropertyUids": [
+    6220740626055615719,
+    5411584653682746256
+  ],
+  "version": 1
+}

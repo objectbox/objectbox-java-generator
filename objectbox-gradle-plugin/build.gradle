@@ -22,7 +22,12 @@ sourceSets {
 dependencies {
     compile gradleApi()
     compile project(':objectbox-code-modifier')
-    compileOnly 'com.android.tools.build:gradle:2.3.1'
+    def androidVersion = '2.3.2'
+    compileOnly "com.android.tools.build:gradle:$androidVersion"
+
+    // For Gradle test projects (dir "test-gradle-projects")
+    testCompile "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    testCompile "com.android.tools.build:gradle:$androidVersion"
 
     testCompile 'junit:junit:4.12'
     testCompile 'org.mockito:mockito-core:2.7.22'
@@ -85,13 +90,14 @@ uploadArchives {
 // Write the plugin's classpath to a file to share with the tests
 task createClasspathManifest {
     def outputDir = file("$buildDir/$name")
+    def files = sourceSets.test.runtimeClasspath
 
-    inputs.files sourceSets.main.runtimeClasspath
+    inputs.files files
     outputs.dir outputDir
 
     doLast {
         outputDir.mkdirs()
-        file("$outputDir/plugin-classpath.txt").text = sourceSets.main.runtimeClasspath.join("\n")
+        file("$outputDir/plugin-classpath.txt").text = files.join("\n")
     }
 }
 

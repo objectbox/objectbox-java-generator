@@ -73,6 +73,9 @@ public class MyObjectBox {
         entityBuilder.id(${entity.modelId?c}, ${entity.modelUid?c}L)<#if
             entity.lastPropertyId??>.lastPropertyId(${entity.lastPropertyId.id?c}, ${entity.lastPropertyId.uid?c}L)</#if>;
 </#if>
+    <#if !entity.constructors>
+        entityBuilder.flags(io.objectbox.model.EntityFlags.USE_NO_ARG_CONSTRUCTOR);
+    </#if>
 <#list entity.propertiesColumns as property>
 <#assign flags = []>
 <#if property.primaryKey><#assign flags = flags + ["PropertyFlags.ID"]></#if>
