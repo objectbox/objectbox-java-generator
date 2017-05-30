@@ -366,22 +366,13 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         // as they are types, need to access them via annotation mirrors
         val annotationMirror = getAnnotationMirror(field, Convert::class.java) ?: return null // did not find @Convert mirror
 
+        // converter and dbType value existence guaranteed by compiler
         val converter = getAnnotationValueType(annotationMirror, "converter")
-        if (converter == null) {
-            error("@Convert requires a value for converter. (${field.qualifiedName})",
-                    field)
-            return null
-        }
-
         val dbType = getAnnotationValueType(annotationMirror, "dbType")
-        if (dbType == null) {
-            error("@Convert requires a value for dbType. (${field.qualifiedName})",
-                    field)
-            return null
-        }
+
         val propertyType = getPropertyType(dbType)
         if (propertyType == null) {
-            error("@Convert dbType type is not supported. (${field.qualifiedName})",
+            error("@Convert dbType type is not supported, use a Java primitive wrapper class. (${field.qualifiedName})",
                     field)
             return null
         }
@@ -550,7 +541,11 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         return null
     }
 
-    private fun getPropertyType(typeMirror: TypeMirror): PropertyType? {
+    private fun getPropertyType(typeMirror: TypeMirror?): PropertyType? {
+        if (typeMirror == null) {
+            return null
+        }
+
         // TODO ut: this only works for Java types, not Kotlin types
         if (isTypeEqual(typeMirror, java.lang.Short::class.java.name) || typeMirror.kind == TypeKind.SHORT) {
             return PropertyType.Short
