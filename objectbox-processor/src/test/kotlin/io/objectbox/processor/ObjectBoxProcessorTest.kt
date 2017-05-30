@@ -221,8 +221,8 @@ class ObjectBoxProcessorTest {
 
     @Test
     fun testBacklinkList() {
-        val parentName = "BacklinkListParentEntity"
-        val childName = "BacklinkListChildEntity"
+        val parentName = "BacklinkListParent"
+        val childName = "BacklinkListChild"
         val entityParent = JavaFileObjects.forResource("$parentName.java")
         val entityChild = JavaFileObjects.forResource("$childName.java")
 
@@ -242,8 +242,8 @@ class ObjectBoxProcessorTest {
 
     @Test
     fun testBacklinkToMany() {
-        val parentName = "BacklinkToManyParentEntity"
-        val childName = "BacklinkToManyChildEntity"
+        val parentName = "BacklinkToManyParent"
+        val childName = "BacklinkToManyChild"
         val entityParent = JavaFileObjects.forResource("$parentName.java")
         val entityChild = JavaFileObjects.forResource("$childName.java")
 

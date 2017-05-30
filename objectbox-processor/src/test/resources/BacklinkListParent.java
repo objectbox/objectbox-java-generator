@@ -9,12 +9,12 @@ import io.objectbox.annotation.Id;
 import io.objectbox.relation.ToMany;
 
 @Entity
-public class BacklinkListParentEntity {
+public class BacklinkListParent {
 
     @Id long id;
 
     @Backlink
-    List<BacklinkListChildEntity> children = new ToMany<>(this, BacklinkListParentEntity_.children);
+    List<BacklinkListChild> children = new ToMany<>(this, BacklinkListParent_.children);
 
     // need to add manually, as processor can not modify entity
     transient BoxStore __boxStore;

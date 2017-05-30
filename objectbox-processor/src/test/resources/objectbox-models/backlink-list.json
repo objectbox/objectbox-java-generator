@@ -6,7 +6,7 @@
     {
       "id": "1:4031058995108974500",
       "lastPropertyId": "1:1826906556673625342",
-      "name": "BacklinkListParentEntity",
+      "name": "BacklinkListParent",
       "properties": [
         {
           "id": "1:1826906556673625342",
@@ -17,7 +17,7 @@
     {
       "id": "2:6121770550573222603",
       "lastPropertyId": "2:4383198095305772124",
-      "name": "BacklinkListChildEntity",
+      "name": "BacklinkListChild",
       "properties": [
         {
           "id": "1:3998626054824627444",
