@@ -387,7 +387,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         val typeMirror = field.asType()
         val propertyType = getPropertyType(typeMirror)
         if (propertyType == null) {
-            error("Field type is not supported, maybe add @Convert. (${field.qualifiedName})", field)
+            error("Field type is not supported, use @Convert or @Transient. (${field.qualifiedName})", field)
             return null
         }
 
