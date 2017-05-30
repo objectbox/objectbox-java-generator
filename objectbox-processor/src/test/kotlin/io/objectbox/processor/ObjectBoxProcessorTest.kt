@@ -20,7 +20,8 @@ class ObjectBoxProcessorTest {
 
     @Test
     fun testProcessor() {
-        val entitySimple = JavaFileObjects.forResource("SimpleEntity.java")
+        val entityName = "SimpleEntity"
+        val entitySimple = JavaFileObjects.forResource("$entityName.java")
 
         val processor = ObjectBoxProcessorShim()
 
@@ -39,12 +40,9 @@ class ObjectBoxProcessorTest {
                 .inFile(entitySimple)
 
         // assert generated files source trees
-        assertGeneratedSourceMatches(compilation, "io.objectbox.processor.test.MyObjectBox",
-                "expected-source/MyObjectBox.java")
-        assertGeneratedSourceMatches(compilation, "io.objectbox.processor.test.SimpleEntity_",
-                "expected-source/SimpleEntity_.java")
-        assertGeneratedSourceMatches(compilation, "io.objectbox.processor.test.SimpleEntityCursor",
-                "expected-source/SimpleEntityCursor.java")
+        assertGeneratedSourceMatches(compilation, "MyObjectBox")
+        assertGeneratedSourceMatches(compilation, "${entityName}_")
+        assertGeneratedSourceMatches(compilation, "${entityName}Cursor")
 
         // assert schema
         val schema = processor.schema
@@ -57,7 +55,7 @@ class ObjectBoxProcessorTest {
 
         // assert entity
         val entity = schema.entities[0]
-        assertThat(entity.className).isEqualTo("SimpleEntity")
+        assertThat(entity.className).isEqualTo(entityName)
         assertThat(entity.dbName).isEqualTo("A")
         assertThat(entity.modelId).isEqualTo(1)
         assertThat(entity.modelUid).isEqualTo(4858050548069557694)
@@ -123,8 +121,10 @@ class ObjectBoxProcessorTest {
 
     @Test
     fun testRelation() {
-        val entityParent = JavaFileObjects.forResource("RelationParentEntity.java")
-        val entityRelated = JavaFileObjects.forResource("RelationChildEntity.java")
+        val parentName = "RelationParent"
+        val childName = "RelationChild"
+        val entityParent = JavaFileObjects.forResource("$parentName.java")
+        val entityChild = JavaFileObjects.forResource("$childName.java")
 
         val processor = ObjectBoxProcessorShim()
 
@@ -132,14 +132,12 @@ class ObjectBoxProcessorTest {
         val compilation = javac()
                 .withProcessors(processor)
                 .withOptions("$processorOptionBasePath$modelFile")
-                .compile(entityParent, entityRelated)
+                .compile(entityParent, entityChild)
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
 
         // assert generated files source trees
-        assertGeneratedSourceMatches(compilation, "io.objectbox.processor.test.RelationParentEntity_",
-                "expected-source/RelationParentEntity_.java")
-        assertGeneratedSourceMatches(compilation, "io.objectbox.processor.test.RelationParentEntityCursor",
-                "expected-source/RelationParentEntityCursor.java")
+        assertGeneratedSourceMatches(compilation, "${childName}_")
+        assertGeneratedSourceMatches(compilation, "${childName}Cursor")
 
         // assert schema
         val schema = processor.schema
@@ -147,11 +145,11 @@ class ObjectBoxProcessorTest {
         assertThat(schema!!.entities).hasSize(2)
 
         // assert entity
-        val parent = schema.entities.single { it.className == "RelationParentEntity" }
-        val child = schema.entities.single { it.className == "RelationChildEntity" }
+        val parent = schema.entities.single { it.className == parentName }
+        val child = schema.entities.single { it.className == childName }
 
         // assert properties
-        for (prop in parent.properties) {
+        for (prop in child.properties) {
             when (prop.propertyName) {
                 "id" -> {
                     assertThat(prop.isPrimaryKey).isTrue()
@@ -159,11 +157,11 @@ class ObjectBoxProcessorTest {
                     assertThat(prop.dbName).isEqualTo("_id")
                     assertPrimitiveType(prop, PropertyType.Long)
                 }
-                "childId" -> {
+                "parentId" -> {
                     assertThat(prop.dbName).isEqualTo(prop.propertyName)
                     assertThat(prop.virtualTargetName).isNull()
                     assertPrimitiveType(prop, PropertyType.RelationId)
-                    assertToOneIndexAndRelation(parent, child, prop, toOneName = "child", toOneFieldName = "childToOne")
+                    assertToOneIndexAndRelation(child, parent, prop, toOneName = "parent", toOneFieldName = "parentToOne")
                 }
                 else -> fail("Found stray property '${prop.propertyName}' in schema.")
             }
@@ -172,8 +170,10 @@ class ObjectBoxProcessorTest {
 
     @Test
     fun testToOne() {
-        val entityParent = JavaFileObjects.forResource("ToOneParentEntity.java")
-        val entityRelated = JavaFileObjects.forResource("ToOneChildEntity.java")
+        val parentName = "ToOneParent"
+        val childName = "ToOneChild"
+        val entityParent = JavaFileObjects.forResource("$parentName.java")
+        val entityChild = JavaFileObjects.forResource("$childName.java")
 
         val processor = ObjectBoxProcessorShim()
 
@@ -181,14 +181,12 @@ class ObjectBoxProcessorTest {
         val compilation = javac()
                 .withProcessors(processor)
                 .withOptions("$processorOptionBasePath$modelFile")
-                .compile(entityParent, entityRelated)
+                .compile(entityParent, entityChild)
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
 
         // assert generated files source trees
-        assertGeneratedSourceMatches(compilation, "io.objectbox.processor.test.ToOneParentEntity_",
-                "expected-source/ToOneParentEntity_.java")
-        assertGeneratedSourceMatches(compilation, "io.objectbox.processor.test.ToOneParentEntityCursor",
-                "expected-source/ToOneParentEntityCursor.java")
+        assertGeneratedSourceMatches(compilation, "${childName}_")
+        assertGeneratedSourceMatches(compilation, "${childName}Cursor")
 
         // assert schema
         val schema = processor.schema
@@ -196,11 +194,11 @@ class ObjectBoxProcessorTest {
         assertThat(schema!!.entities).hasSize(2)
 
         // assert entity
-        val parent = schema.entities.single { it.className == "ToOneParentEntity" }
-        val child = schema.entities.single { it.className == "ToOneChildEntity" }
+        val parent = schema.entities.single { it.className == parentName }
+        val child = schema.entities.single { it.className == childName }
 
         // assert properties
-        for (prop in parent.properties) {
+        for (prop in child.properties) {
             when (prop.propertyName) {
                 "id" -> {
                     assertThat(prop.isPrimaryKey).isTrue()
@@ -208,11 +206,11 @@ class ObjectBoxProcessorTest {
                     assertThat(prop.dbName).isEqualTo("_id")
                     assertPrimitiveType(prop, PropertyType.Long)
                 }
-                "childId" -> {
+                "parentId" -> {
                     assertThat(prop.dbName).isEqualTo(prop.propertyName)
-                    assertThat(prop.virtualTargetName).isEqualTo("child")
+                    assertThat(prop.virtualTargetName).isEqualTo("parent")
                     assertPrimitiveType(prop, PropertyType.RelationId)
-                    assertToOneIndexAndRelation(parent, child, prop, toOneName = "child")
+                    assertToOneIndexAndRelation(child, parent, prop, toOneName = "parent")
                 }
                 else -> fail("Found stray property '${prop.propertyName}' in schema.")
             }
@@ -318,19 +316,19 @@ class ObjectBoxProcessorTest {
         }
     }
 
-    private fun assertToOneIndexAndRelation(parent: Entity, child: Entity, prop: Property, toOneName: String,
+    private fun assertToOneIndexAndRelation(child: Entity, parent: Entity, prop: Property, toOneName: String,
             toOneFieldName: String = toOneName) {
         // assert index
-        assertThat(parent.indexes).hasSize(1)
-        val foreignKeyIndex = parent.indexes[0]
+        assertThat(child.indexes).hasSize(1)
+        val foreignKeyIndex = child.indexes[0]
         assertThat(foreignKeyIndex.properties[0]).isEqualTo(prop)
 
         // assert to one relation
-        assertThat(parent.toOneRelations).hasSize(1)
-        for (toOneRelation in parent.toOneRelations) {
+        assertThat(child.toOneRelations).hasSize(1)
+        for (toOneRelation in child.toOneRelations) {
             when (toOneRelation.name) {
                 toOneName -> {
-                    assertThat(toOneRelation.targetEntity).isEqualTo(child)
+                    assertThat(toOneRelation.targetEntity).isEqualTo(parent)
                     assertThat(toOneRelation.targetIdProperty).isEqualTo(prop)
                     assertThat(toOneRelation.nameToOne).isEqualTo(toOneFieldName)
                 }
@@ -339,10 +337,11 @@ class ObjectBoxProcessorTest {
         }
     }
 
-    private fun assertGeneratedSourceMatches(compilation: Compilation?, qualifiedName: String, fileName: String) {
-        val generatedFile = CompilationSubject.assertThat(compilation).generatedSourceFile(qualifiedName)
+    private fun assertGeneratedSourceMatches(compilation: Compilation, simpleName: String) {
+        val generatedFile = CompilationSubject.assertThat(compilation)
+                .generatedSourceFile("io.objectbox.processor.test.${simpleName}")
         generatedFile.isNotNull()
-        generatedFile.hasSourceEquivalentTo(JavaFileObjects.forResource(fileName))
+        generatedFile.hasSourceEquivalentTo(JavaFileObjects.forResource("expected-source/${simpleName}.java"))
     }
 
     private fun assertPrimitiveType(prop: Property, type: PropertyType) {

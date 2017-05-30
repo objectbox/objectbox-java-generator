@@ -4,8 +4,8 @@ import io.objectbox.annotation.Entity;
 import io.objectbox.annotation.Id;
 
 @Entity
-public class RelationChildEntity {
+public class ToOneParent {
 
-    @Id(assignable = true)
+    @Id
     long id;
 }

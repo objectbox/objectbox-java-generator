@@ -1,6 +1,6 @@
 package io.objectbox.processor.test;
 
-import io.objectbox.processor.test.ToOneParentEntityCursor.Factory;
+import io.objectbox.processor.test.RelationChildCursor.Factory;
 
 import io.objectbox.EntityInfo;
 import io.objectbox.Property;
@@ -14,36 +14,36 @@ import io.objectbox.relation.RelationInfo;
 //////
 
 /**
- * Properties for entity "ToOneParentEntity". Can be used for QueryBuilder and for referencing DB names.
+ * Properties for entity "RelationChild". Can be used for QueryBuilder and for referencing DB names.
  */
-public final class ToOneParentEntity_ implements EntityInfo<ToOneParentEntity> {
+public final class RelationChild_ implements EntityInfo<RelationChild> {
 
     // Leading underscores for static constants to avoid naming conflicts with property names
 
-    public static final String __ENTITY_NAME = "ToOneParentEntity";
+    public static final String __ENTITY_NAME = "RelationChild";
 
     public static final int __ENTITY_ID = 1;
 
-    public static final Class<ToOneParentEntity> __ENTITY_CLASS = ToOneParentEntity.class;
+    public static final Class<RelationChild> __ENTITY_CLASS = RelationChild.class;
 
-    public static final String __DB_NAME = "ToOneParentEntity";
+    public static final String __DB_NAME = "RelationChild";
 
-    public static final CursorFactory<ToOneParentEntity> __CURSOR_FACTORY = new Factory();
+    public static final CursorFactory<RelationChild> __CURSOR_FACTORY = new Factory();
 
     @Internal
-    static final ToOneParentEntityIdGetter __ID_GETTER = new ToOneParentEntityIdGetter();
+    static final RelationChildIdGetter __ID_GETTER = new RelationChildIdGetter();
 
     public final static Property id = new Property(0, 1, long.class, "id", true, "_id");
-    public final static Property childId = new Property(1, 2, long.class, "childId");
+    public final static Property parentId = new Property(1, 2, long.class, "parentId");
 
     public final static Property[] __ALL_PROPERTIES = {
             id,
-            childId
+            parentId
     };
 
     public final static Property __ID_PROPERTY = id;
 
-    public final static ToOneParentEntity_ __INSTANCE = new ToOneParentEntity_();
+    public final static RelationChild_ __INSTANCE = new RelationChild_();
 
     @Override
     public String getEntityName() {
@@ -56,7 +56,7 @@ public final class ToOneParentEntity_ implements EntityInfo<ToOneParentEntity> {
     }
 
     @Override
-    public Class<ToOneParentEntity> getEntityClass() {
+    public Class<RelationChild> getEntityClass() {
         return __ENTITY_CLASS;
     }
 
@@ -76,23 +76,23 @@ public final class ToOneParentEntity_ implements EntityInfo<ToOneParentEntity> {
     }
 
     @Override
-    public IdGetter<ToOneParentEntity> getIdGetter() {
+    public IdGetter<RelationChild> getIdGetter() {
         return __ID_GETTER;
     }
 
     @Override
-    public CursorFactory<ToOneParentEntity> getCursorFactory() {
+    public CursorFactory<RelationChild> getCursorFactory() {
         return __CURSOR_FACTORY;
     }
 
     @Internal
-    static final class ToOneParentEntityIdGetter implements IdGetter<ToOneParentEntity> {
-        public long getId(ToOneParentEntity object) {
+    static final class RelationChildIdGetter implements IdGetter<RelationChild> {
+        public long getId(RelationChild object) {
             return object.id;
         }
     }
 
-    static final RelationInfo<ToOneChildEntity> child =
-            new RelationInfo<>(ToOneParentEntity_.__INSTANCE, ToOneChildEntity_.__INSTANCE, childId);
+    static final RelationInfo<RelationParent> parent =
+            new RelationInfo<>(RelationChild_.__INSTANCE, RelationParent_.__INSTANCE, parentId);
 
 }
