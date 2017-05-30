@@ -227,10 +227,22 @@ open class ObjectBoxProcessor : AbstractProcessor() {
             // ToOne<TARGET> property
             val toOne = parseToOne(field)
             toOnes.add(toOne)
-        } else if ((!field.hasAnnotation(Convert::class.java)
-                && isTypeEqual(field.asType(), List::class.java.name, eraseTypeParameters = true))
-                || isTypeEqual(field.asType(), ToMany::class.java.name, eraseTypeParameters = true)) {
-            // List<TARGET> or ToMany<TARGET> property
+        } else if (!field.hasAnnotation(Convert::class.java)
+                && isTypeEqual(field.asType(), List::class.java.name, eraseTypeParameters = true)) {
+            if (!field.hasAnnotation(Backlink::class.java)) {
+                error("Is this a custom type or to-many relation? Add @Convert or @Backlink. (${field.qualifiedName})",
+                        field)
+                return
+            }
+            // List<TARGET> property
+            val toMany = parseToMany(field)
+            toManys.add(toMany)
+        } else if (isTypeEqual(field.asType(), ToMany::class.java.name, eraseTypeParameters = true)) {
+            if (!field.hasAnnotation(Backlink::class.java)) {
+                error("ToMany field must be annotated with @Backlink. (${field.qualifiedName})", field)
+                return
+            }
+            // ToMany<TARGET> property
             val toMany = parseToMany(field)
             toManys.add(toMany)
         } else {
@@ -240,16 +252,13 @@ open class ObjectBoxProcessor : AbstractProcessor() {
     }
 
     private fun parseToMany(field: VariableElement): ToManyRelation {
-        val backlinkAnnotation = field.getAnnotation(Backlink::class.java)
-        if (backlinkAnnotation == null) {
-            error("ToMany field must be annotated with @Backlink. (${field.qualifiedName})", field)
-        }
-
         // assuming List<TargetType> or ToMany<TargetType>
         val toManyTypeMirror = field.asType() as DeclaredType
         val targetTypeMirror = toManyTypeMirror.typeArguments[0] as DeclaredType
         // can simply get as element as code would not have compiled if target type is not known
         val targetEntityName = targetTypeMirror.asElement().simpleName
+
+        val backlinkAnnotation = field.getAnnotation(Backlink::class.java)
 
         return ToManyRelation(
                 propertyName = field.simpleName.toString(),
