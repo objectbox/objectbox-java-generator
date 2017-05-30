@@ -377,8 +377,11 @@ open class ObjectBoxProcessor : AbstractProcessor() {
             return null
         }
 
+        // may be a parameterized type like List<CustomType>, so erase any type parameters
+        val customType = typeUtils.erasure(field.asType())
+
         val propertyBuilder = entity.addProperty(propertyType, field.simpleName.toString())
-        propertyBuilder.customType(field.asType().toString(), converter.toString())
+        propertyBuilder.customType(customType.toString(), converter.toString())
         // note: custom types are already assumed non-primitive by Property#isNonPrimitiveType()
         return propertyBuilder
     }
