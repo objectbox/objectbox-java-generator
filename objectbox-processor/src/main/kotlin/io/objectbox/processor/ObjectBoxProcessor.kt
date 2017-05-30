@@ -109,8 +109,6 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         val toManyByEntity: MutableMap<io.objectbox.generator.model.Entity, MutableList<ToManyRelation>> = mutableMapOf()
 
         for (entity in env.getElementsAnnotatedWith(Entity::class.java)) {
-            note("Processing @Entity annotation.", entity)
-
             if (schema == null) {
                 val defaultJavaPackage = if (daoCompat && daoCompatPackage != null) {
                     daoCompatPackage
@@ -154,7 +152,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         try {
             BoxGenerator(daoCompat).generateAll(schema, filer)
         } catch (e: Exception) {
-            printMessage(Diagnostic.Kind.ERROR, "Code generation failed: ${e.message}")
+            error("Code generation failed: ${e.message}")
             e.printStackTrace() // TODO ut: might want to include in above error message in the future
         }
     }
@@ -212,7 +210,6 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         if (modifiers.contains(Modifier.STATIC)
                 || modifiers.contains(Modifier.TRANSIENT)
                 || field.hasAnnotation(Transient::class.java)) {
-            note("Ignoring transient field. (${field.qualifiedName})", field)
             return
         }
 
@@ -499,7 +496,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         val modelFilePath = if (customModelPath.isNullOrEmpty()) "objectbox-models/default.json" else customModelPath
         val modelFile = File(projectRoot, modelFilePath)
         if (!modelFile.isFile) {
-            printMessage(Diagnostic.Kind.ERROR, "Could not find model file at '${modelFile.absolutePath}'.")
+            error("Could not find model file at '${modelFile.absolutePath}'.")
             return false
         }
 
@@ -508,7 +505,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
             idSync = IdSync(modelFile)
             idSync.sync(schema)
         } catch (e: IdSyncException) {
-            printMessage(Diagnostic.Kind.ERROR, e.message ?: "Could not sync id model for unknown reason.")
+            error(e.message ?: "Could not sync id model for unknown reason.")
             return false
         }
 
@@ -598,10 +595,6 @@ open class ObjectBoxProcessor : AbstractProcessor() {
 
     private fun error(message: String, element: Element? = null) {
         printMessage(Diagnostic.Kind.ERROR, message, element)
-    }
-
-    private fun note(message: String, element: Element? = null) {
-        printMessage(Diagnostic.Kind.NOTE, message, element)
     }
 
     private fun printMessage(kind: Diagnostic.Kind, message: String, element: Element? = null) {

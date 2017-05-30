@@ -35,9 +35,6 @@ class ObjectBoxProcessorTest {
                 )
                 .compile(entitySimple)
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
-        CompilationSubject.assertThat(compilation)
-                .hadNoteContaining("Processing @Entity annotation.")
-                .inFile(entitySimple)
 
         // assert generated files source trees
         assertGeneratedSourceMatches(compilation, "MyObjectBox")
