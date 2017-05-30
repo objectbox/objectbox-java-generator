@@ -1,6 +1,8 @@
 package io.objectbox.processor.test;
 
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
 import io.objectbox.annotation.Convert;
 import io.objectbox.annotation.Entity;
@@ -62,6 +64,9 @@ public class SimpleEntity {
     @Convert(converter = SimpleEnumConverter.class, dbType = Integer.class)
     SimpleEnum customType;
 
+    @Convert(converter = SimpleEnumListConverter.class, dbType = Integer.class)
+    List<SimpleEnum> customTypes;
+
     public enum SimpleEnum {
         DEFAULT(0), A(1), B(2);
 
@@ -75,20 +80,24 @@ public class SimpleEntity {
     public static class SimpleEnumConverter implements PropertyConverter<SimpleEnum, Integer> {
         @Override
         public SimpleEnum convertToEntityProperty(Integer databaseValue) {
-            if (databaseValue == null) {
-                return null;
-            }
-            for (SimpleEnum value : SimpleEnum.values()) {
-                if (value.id == databaseValue) {
-                    return value;
-                }
-            }
             return SimpleEnum.DEFAULT;
         }
 
         @Override
         public Integer convertToDatabaseValue(SimpleEnum entityProperty) {
-            return entityProperty == null ? null : entityProperty.id;
+            return SimpleEnum.DEFAULT.id;
+        }
+    }
+
+    public static class SimpleEnumListConverter implements PropertyConverter<List<SimpleEnum>, Integer> {
+        @Override
+        public List<SimpleEnum> convertToEntityProperty(Integer databaseValue) {
+            return Collections.singletonList(SimpleEnum.DEFAULT);
+        }
+
+        @Override
+        public Integer convertToDatabaseValue(List<SimpleEnum> entityProperty) {
+            return SimpleEnum.DEFAULT.id;
         }
     }
 }
