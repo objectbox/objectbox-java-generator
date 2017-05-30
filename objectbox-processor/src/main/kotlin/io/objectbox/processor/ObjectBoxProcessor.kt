@@ -603,7 +603,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         if (element != null) {
             processingEnv.messager.printMessage(kind, message, element)
         } else {
-            processingEnv.messager.printMessage(kind, message)
+            processingEnv.messager.printMessage(kind, "ObjectBox: " + message)
         }
     }
 
