@@ -121,6 +121,7 @@ class ObjectBoxProcessorTest {
 
     @Test
     fun testRelation() {
+        // tested relation: a child has a parent
         val parentName = "RelationParent"
         val childName = "RelationChild"
         val entityParent = JavaFileObjects.forResource("$parentName.java")
@@ -170,6 +171,7 @@ class ObjectBoxProcessorTest {
 
     @Test
     fun testToOne() {
+        // tested relation: a child has a parent
         val parentName = "ToOneParent"
         val childName = "ToOneChild"
         val entityParent = JavaFileObjects.forResource("$parentName.java")
@@ -219,6 +221,7 @@ class ObjectBoxProcessorTest {
 
     @Test
     fun testBacklinkList() {
+        // tested relation: a parent has children
         val parentName = "BacklinkListParent"
         val childName = "BacklinkListChild"
         val entityParent = JavaFileObjects.forResource("$parentName.java")
@@ -233,13 +236,15 @@ class ObjectBoxProcessorTest {
                 .compile(entityParent, entityChild)
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
 
-        // TODO ut: assert generated files source trees
+        assertGeneratedSourceMatches(compilation, "${parentName}_")
+        assertGeneratedSourceMatches(compilation, "${parentName}Cursor")
 
-        assertToManyEntities(processor, parentName, childName)
+        assertToManySchema(processor, parentName, childName)
     }
 
     @Test
     fun testBacklinkToMany() {
+        // tested relation: a parent has children
         val parentName = "BacklinkToManyParent"
         val childName = "BacklinkToManyChild"
         val entityParent = JavaFileObjects.forResource("$parentName.java")
@@ -254,12 +259,13 @@ class ObjectBoxProcessorTest {
                 .compile(entityParent, entityChild)
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
 
-        // TODO ut: assert generated files source trees
+        assertGeneratedSourceMatches(compilation, "${parentName}_")
+        assertGeneratedSourceMatches(compilation, "${parentName}Cursor")
 
-        assertToManyEntities(processor, parentName, childName)
+        assertToManySchema(processor, parentName, childName)
     }
 
-    private fun assertToManyEntities(processor: ObjectBoxProcessorShim, parentName: String, childName: String) {
+    private fun assertToManySchema(processor: ObjectBoxProcessorShim, parentName: String, childName: String) {
         // assert schema
         val schema = processor.schema
         assertThat(schema).isNotNull()
