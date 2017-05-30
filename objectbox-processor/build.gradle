@@ -4,10 +4,6 @@ group = 'io.objectbox'
 
 sourceCompatibility = 1.7
 
-repositories {
-    mavenCentral()
-}
-
 dependencies {
     compile project (':objectbox-code-modifier')
     compile project (':objectbox-generator')
