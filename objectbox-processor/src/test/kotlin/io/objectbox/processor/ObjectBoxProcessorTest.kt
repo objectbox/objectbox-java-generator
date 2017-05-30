@@ -267,6 +267,48 @@ class ObjectBoxProcessorTest {
         assertToManySchema(processor, parentName, childName)
     }
 
+    @Test
+    fun testKotlinByteCode() {
+        val entityName = "SimpleKotlinEntity"
+        val entitySimple = JavaFileObjects.forResource("$entityName.java")
+
+        val processor = ObjectBoxProcessorShim()
+
+        val modelFile = "kotlin.json"
+        val compilation = javac()
+                .withProcessors(processor)
+                .withOptions("$processorOptionBasePath$modelFile")
+                .compile(entitySimple)
+        CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
+
+        // assert schema
+        val schema = processor.schema
+        assertThat(schema).isNotNull()
+        assertThat(schema!!.version).isEqualTo(1)
+        assertThat(schema.defaultJavaPackage).isEqualTo("io.objectbox.processor.test")
+        assertThat(schema.entities).hasSize(1)
+
+        // assert entity
+        val entity = schema.entities[0]
+        assertThat(entity.className).isEqualTo(entityName)
+
+        // assert properties
+        for (prop in entity.properties) {
+            when (prop.propertyName) {
+                "id" -> {
+                    assertThat(prop.isPrimaryKey).isTrue()
+                    assertThat(prop.isIdAssignable).isFalse()
+                    assertThat(prop.dbName).isEqualTo("_id")
+                    assertPrimitiveType(prop, PropertyType.Long)
+                }
+                "simpleShort" -> assertType(prop, PropertyType.Short)
+                "simpleInt" -> assertType(prop, PropertyType.Int)
+                "simpleLong" -> assertType(prop, PropertyType.Long)
+                else -> fail("Found stray field '${prop.propertyName}' in schema.")
+            }
+        }
+    }
+
     private fun assertToManySchema(processor: ObjectBoxProcessorShim, parentName: String, childName: String) {
         // assert schema
         val schema = processor.schema
