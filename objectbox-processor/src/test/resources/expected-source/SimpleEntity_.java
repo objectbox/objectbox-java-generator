@@ -11,6 +11,8 @@ import io.objectbox.internal.IdGetter;
 
 import io.objectbox.processor.test.SimpleEntity.SimpleEnum;
 import io.objectbox.processor.test.SimpleEntity.SimpleEnumConverter;
+import io.objectbox.processor.test.SimpleEntity.SimpleEnumListConverter;
+import java.util.List;
 
 //////
 // NOTE: this is the EXPECTED generated source.
@@ -58,6 +60,7 @@ public final class SimpleEntity_ implements EntityInfo<SimpleEntity> {
     public final static Property namedProperty = new Property(19, 20, String.class, "namedProperty", false, "B");
     public final static Property uidProperty = new Property(20, 21, Long.class, "uidProperty");
     public final static Property customType = new Property(21, 22, int.class, "customType", false, "customType", SimpleEnumConverter.class, SimpleEnum.class);
+    public final static Property customTypes = new Property(22, 23, int.class, "customTypes", false, "customTypes", SimpleEnumListConverter.class, List.class);
 
     public final static Property[] __ALL_PROPERTIES = {
             id,
@@ -81,7 +84,8 @@ public final class SimpleEntity_ implements EntityInfo<SimpleEntity> {
             indexedProperty,
             namedProperty,
             uidProperty,
-            customType
+            customType,
+            customTypes
     };
 
     public final static Property __ID_PROPERTY = id;

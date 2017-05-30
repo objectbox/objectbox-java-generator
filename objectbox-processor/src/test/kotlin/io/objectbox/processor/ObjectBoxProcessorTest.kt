@@ -56,7 +56,7 @@ class ObjectBoxProcessorTest {
         assertThat(entity.dbName).isEqualTo("A")
         assertThat(entity.modelId).isEqualTo(1)
         assertThat(entity.modelUid).isEqualTo(4858050548069557694)
-        assertThat(entity.lastPropertyId).isEqualTo(IdUid(22, 8133069888579241668))
+        assertThat(entity.lastPropertyId).isEqualTo(IdUid(23, 4772590935549770830))
 
         // assert index
         for (index in entity.indexes) {
@@ -109,6 +109,11 @@ class ObjectBoxProcessorTest {
                 "customType" -> {
                     assertThat(prop.customType).isEqualTo("io.objectbox.processor.test.SimpleEntity.SimpleEnum")
                     assertThat(prop.converter).isEqualTo("io.objectbox.processor.test.SimpleEntity.SimpleEnumConverter")
+                    assertType(prop, PropertyType.Int)
+                }
+                "customTypes" -> {
+                    assertThat(prop.customType).isEqualTo("java.util.List")
+                    assertThat(prop.converter).isEqualTo("io.objectbox.processor.test.SimpleEntity.SimpleEnumListConverter")
                     assertType(prop, PropertyType.Int)
                 }
                 else -> fail("Found stray field '${prop.propertyName}' in schema.")
