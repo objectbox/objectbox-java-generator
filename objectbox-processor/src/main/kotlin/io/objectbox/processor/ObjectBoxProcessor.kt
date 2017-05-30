@@ -213,12 +213,6 @@ open class ObjectBoxProcessor : AbstractProcessor() {
             return
         }
 
-        // verify field is accessible
-        if (modifiers.contains(Modifier.PRIVATE)) {
-            error("Field must not be private. (${field.qualifiedName})", field)
-            return
-        }
-
         if (field.hasAnnotation(Relation::class.java)) {
             // @Relation property
             val toOne = parseRelation(field)
@@ -322,8 +316,10 @@ open class ObjectBoxProcessor : AbstractProcessor() {
             return
         }
 
-        // checks above ensure field is NOT private
-        propertyBuilder.fieldAccessible()
+        // checks if field is accessible
+        if (!field.modifiers.contains(Modifier.PRIVATE)) {
+            propertyBuilder.fieldAccessible()
+        }
 
         // @Id
         val idAnnotation = field.getAnnotation(Id::class.java)
