@@ -495,8 +495,10 @@ open class ObjectBoxProcessor : AbstractProcessor() {
     private fun syncIdModel(schema: Schema): Boolean {
         val modelFilePath = if (customModelPath.isNullOrEmpty()) "objectbox-models/default.json" else customModelPath
         val modelFile = File(projectRoot, modelFilePath)
-        if (!modelFile.isFile) {
-            error("Could not find model file at '${modelFile.absolutePath}'.")
+
+        val modelFolder = modelFile.parentFile
+        if (!modelFolder.isDirectory && !modelFolder.mkdirs()) {
+            error("Could not create model folder at '${modelFolder.absolutePath}'.")
             return false
         }
 
