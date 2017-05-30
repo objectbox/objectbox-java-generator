@@ -163,7 +163,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
             entity: Element) {
         val entityModel = schema.addEntity(entity.simpleName.toString())
         entityModel.isSkipGeneration = true // processor may not generate duplicate entity source files
-        entityModel.isConstructors = true // has no effect as isSkipGeneration = true
+        entityModel.isConstructors = false // set false to signal no constructor will be available
         entityModel.isSkipCreationInDb = false
         entityModel.javaPackage = elementUtils.getPackageOf(entity).qualifiedName.toString()
         entityModel.javaPackageDao = daoCompatPackage ?: entityModel.javaPackage
