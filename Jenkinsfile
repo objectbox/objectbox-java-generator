@@ -12,7 +12,7 @@ pipeline {
 
         stage('build') {
             steps {
-                sh './gradlew clean check'
+                sh './gradlew clean check install'
             }
         }
     }
