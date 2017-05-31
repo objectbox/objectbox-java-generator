@@ -233,8 +233,6 @@ object GreendaoModelTranslator {
         }
         if (property.dbName != null) {
             propertyBuilder.dbName(property.dbName)
-        } else if (property.idParams != null && propertyType == PropertyType.Long) {
-            propertyBuilder.dbName("_id")
         }
         if (property.customType != null) {
             propertyBuilder.customType(property.variable.type.name, property.customType.converterClassName)

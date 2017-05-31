@@ -313,9 +313,6 @@ open class ObjectBoxProcessor : AbstractProcessor() {
             if (name.isNotEmpty()) {
                 propertyBuilder.dbName(name)
             }
-        } else if (idAnnotation != null && propertyBuilder.property.propertyType == PropertyType.Long) {
-            // use special name for @Id column if type is Long
-            propertyBuilder.dbName("_id")
         }
 
         // @Index

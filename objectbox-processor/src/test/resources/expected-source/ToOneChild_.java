@@ -33,7 +33,7 @@ public final class ToOneChild_ implements EntityInfo<ToOneChild> {
     @Internal
     static final ToOneChildIdGetter __ID_GETTER = new ToOneChildIdGetter();
 
-    public final static Property id = new Property(0, 1, long.class, "id", true, "_id");
+    public final static Property id = new Property(0, 1, long.class, "id", true, "id");
     public final static Property parentId = new Property(1, 2, long.class, "parentId");
 
     public final static Property[] __ALL_PROPERTIES = {

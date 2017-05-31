@@ -33,7 +33,7 @@ public final class RelationChild_ implements EntityInfo<RelationChild> {
     @Internal
     static final RelationChildIdGetter __ID_GETTER = new RelationChildIdGetter();
 
-    public final static Property id = new Property(0, 1, long.class, "id", true, "_id");
+    public final static Property id = new Property(0, 1, long.class, "id", true, "id");
     public final static Property parentId = new Property(1, 2, long.class, "parentId");
 
     public final static Property[] __ALL_PROPERTIES = {

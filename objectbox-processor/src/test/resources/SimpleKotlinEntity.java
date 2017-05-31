@@ -11,8 +11,7 @@ import org.jetbrains.annotations.Nullable;
 @Entity
 public final class SimpleKotlinEntity {
     @Id
-    @Nullable
-    private final Long _id;
+    private long id;
     @Nullable
     private final Short simpleShort;
     @Nullable
@@ -20,9 +19,12 @@ public final class SimpleKotlinEntity {
     @Nullable
     private final Long simpleLong;
 
-    @Nullable
-    public final Long get_id() {
-        return this._id;
+    public final long getId() {
+        return this.id;
+    }
+
+    public final void setId(long var1) {
+        this.id = var1;
     }
 
     @Nullable
@@ -40,32 +42,12 @@ public final class SimpleKotlinEntity {
         return this.simpleLong;
     }
 
-    public SimpleKotlinEntity(@Nullable Long _id, @Nullable Short simpleShort, @Nullable Integer simpleInt, @Nullable Long simpleLong) {
-        this._id = _id;
+    public SimpleKotlinEntity(long id, @Nullable Short simpleShort, @Nullable Integer simpleInt, @Nullable Long simpleLong) {
+        this.id = id;
         this.simpleShort = simpleShort;
         this.simpleInt = simpleInt;
         this.simpleLong = simpleLong;
     }
 
-    @Nullable
-    public final Long component1() {
-        return this._id;
-    }
-
-    @Nullable
-    public final Short component2() {
-        return this.simpleShort;
-    }
-
-    @Nullable
-    public final Integer component3() {
-        return this.simpleInt;
-    }
-
-    @Nullable
-    public final Long component4() {
-        return this.simpleLong;
-    }
-
-    // copy and equals methods left out as they do not affect us
+    // methods left out as they do not affect us: copy, equals, hashCode, component1..N
 }

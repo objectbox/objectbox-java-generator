@@ -35,7 +35,7 @@ public final class BacklinkListParent_ implements EntityInfo<BacklinkListParent>
     @Internal
     static final BacklinkListParentIdGetter __ID_GETTER = new BacklinkListParentIdGetter();
 
-    public final static Property id = new Property(0, 1, long.class, "id", true, "_id");
+    public final static Property id = new Property(0, 1, long.class, "id", true, "id");
 
     public final static Property[] __ALL_PROPERTIES = {
             id

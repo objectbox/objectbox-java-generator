@@ -35,7 +35,7 @@ public final class BacklinkToManyParent_ implements EntityInfo<BacklinkToManyPar
     @Internal
     static final BacklinkToManyParentIdGetter __ID_GETTER = new BacklinkToManyParentIdGetter();
 
-    public final static Property id = new Property(0, 1, long.class, "id", true, "_id");
+    public final static Property id = new Property(0, 1, long.class, "id", true, "id");
 
     public final static Property[] __ALL_PROPERTIES = {
             id
