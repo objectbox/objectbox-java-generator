@@ -57,6 +57,7 @@ class ObjectBoxProcessorTest {
         assertThat(entity.modelId).isEqualTo(1)
         assertThat(entity.modelUid).isEqualTo(4858050548069557694)
         assertThat(entity.lastPropertyId).isEqualTo(IdUid(23, 4772590935549770830))
+        assertThat(entity.isConstructors).isFalse()
 
         // assert index
         for (index in entity.indexes) {
@@ -291,6 +292,7 @@ class ObjectBoxProcessorTest {
         // assert entity
         val entity = schema.entities[0]
         assertThat(entity.className).isEqualTo(entityName)
+        assertThat(entity.isConstructors).isTrue()
 
         // assert properties
         for (prop in entity.properties) {

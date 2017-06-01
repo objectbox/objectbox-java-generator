@@ -146,7 +146,6 @@ open class ObjectBoxProcessor : AbstractProcessor() {
     private fun parseEntity(schema: Schema, relations: Relations, entity: Element) {
         val entityModel = schema.addEntity(entity.simpleName.toString())
         entityModel.isSkipGeneration = true // processor may not generate duplicate entity source files
-        entityModel.isConstructors = false // set false to signal no constructor will be available
         entityModel.isSkipCreationInDb = false
         entityModel.javaPackage = elementUtils.getPackageOf(entity).qualifiedName.toString()
         entityModel.javaPackageDao = daoCompatPackage ?: entityModel.javaPackage
@@ -177,14 +176,38 @@ open class ObjectBoxProcessor : AbstractProcessor() {
 
         // add missing foreign key properties and indexes for to-one relations
         relations.ensureForeignKeys(entityModel)
+
+        // Call only after all properties have been parsed
+        entityModel.isConstructors = hasAllArgsConstructor(entity, entityModel)
+    }
+
+    private fun hasAllArgsConstructor(entity: Element, entityModel: io.objectbox.generator.model.Entity): Boolean {
+        // check constructors for an valid all-args constructor
+        val constructors = ElementFilter.constructorsIn(entity.enclosedElements)
+        val properties = entityModel.properties
+        for (constructor in constructors) {
+            if (properties.size == constructor.parameters.size) {
+                var diff = false
+                for ((idx, param) in constructor.parameters.withIndex()) {
+                    val property = properties[idx].parsedElement as VariableElement
+                    if (param.asType() != property.asType() || param.simpleName != property.simpleName) {
+                        diff = true
+                        break
+                    }
+                }
+                if (!diff) {
+                    return true
+                }
+            }
+        }
+        return false
     }
 
     private fun parseField(entityModel: io.objectbox.generator.model.Entity, relations: Relations,
-            field: VariableElement) {
+                           field: VariableElement) {
         // ignore static, transient or @Transient fields
         val modifiers = field.modifiers
-        if (modifiers.contains(Modifier.STATIC)
-                || modifiers.contains(Modifier.TRANSIENT)
+        if (modifiers.contains(Modifier.STATIC) || modifiers.contains(Modifier.TRANSIENT)
                 || field.hasAnnotation(Transient::class.java)) {
             return
         }
@@ -252,7 +275,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
     }
 
     private fun buildToOneRelation(field: VariableElement, targetType: DeclaredType, targetIdName: String?,
-            isExplicitToOne: Boolean): ToOneRelation {
+                                   isExplicitToOne: Boolean): ToOneRelation {
         // can simply get as element as code would not have compiled if target type is not known
         val targetElement = targetType.asElement()
         val targetEntityName = targetElement.simpleName
@@ -274,11 +297,12 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         )
     }
 
-    private fun parseProperty(entity: io.objectbox.generator.model.Entity, field: VariableElement) {
+    private fun parseProperty(entity: io.objectbox.generator.model.Entity, field: VariableElement): Property? {
 
         // Compare with EntityClassASTVisitor.endVisit()
         // and GreendaoModelTranslator.convertProperty()
 
+        // Why nullable? A property might not be parsed due to an error. We do not throw here.
         val propertyBuilder: Property.PropertyBuilder?
 
         if (field.hasAnnotation(Convert::class.java)) {
@@ -289,8 +313,9 @@ open class ObjectBoxProcessor : AbstractProcessor() {
             propertyBuilder = parseSupportedProperty(entity, field)
         }
         if (propertyBuilder == null) {
-            return
+            return null
         }
+        propertyBuilder.property.parsedElement = field
 
         // checks if field is accessible
         if (!field.modifiers.contains(Modifier.PRIVATE)) {
@@ -328,6 +353,8 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         }
 
         // TODO ut: add remaining property build steps
+
+        return propertyBuilder.property
     }
 
     private fun parseCustomProperty(entity: io.objectbox.generator.model.Entity, field: VariableElement): Property.PropertyBuilder? {
