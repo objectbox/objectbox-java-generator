@@ -84,7 +84,8 @@ data class ToOneRelation(
         val astNode: FieldDeclaration? = null,
         val variableIsToOne: Boolean = false,
         // TODO Only with virtual properties, add test
-        val uid: Long? = null
+        val uid: Long? = null,
+        val toOneFieldAccessible: Boolean
 )
 
 data class ToManyRelation(

@@ -224,22 +224,18 @@ public class Entity implements HasParsedElement {
      * Adds a to-one relationship to the given target entity using the given given foreign key property (which belongs
      * to this entity).
      */
-    public ToOne addToOne(Entity target, Property targetIdProperty) {
+    public ToOne addToOne(Entity target, Property targetIdProperty, String name, String nameToOne,
+                          boolean toOneFieldAccessible) {
         if (protobuf) {
             throw new IllegalStateException("Protobuf entities do not support realtions, currently");
         }
 
         targetIdProperty.convertToRelationId(target);
         ToOne toOne = new ToOne(schema, this, target, targetIdProperty, true);
-        toOneRelations.add(toOne);
-        return toOne;
-    }
-
-    /** Convenience for {@link #addToOne(Entity, Property)} with a subsequent call to {@link ToOne#setName(String)}. */
-    public ToOne addToOne(Entity target, Property fkProperty, String name, String nameToOne) {
-        ToOne toOne = addToOne(target, fkProperty);
         toOne.setName(name);
         toOne.setNameToOne(nameToOne);
+        toOne.setToOneFieldAccessible(toOneFieldAccessible);
+        toOneRelations.add(toOne);
         return toOne;
     }
 

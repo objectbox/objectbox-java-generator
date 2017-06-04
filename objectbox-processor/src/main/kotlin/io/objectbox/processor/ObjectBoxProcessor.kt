@@ -276,24 +276,15 @@ open class ObjectBoxProcessor : AbstractProcessor() {
 
     private fun buildToOneRelation(field: VariableElement, targetType: DeclaredType, targetIdName: String?,
                                    isExplicitToOne: Boolean): ToOneRelation {
-        // can simply get as element as code would not have compiled if target type is not known
-        val targetElement = targetType.asElement()
-        val targetEntityName = targetElement.simpleName
-
-        val nameInDbAnnotation = field.getAnnotation(NameInDb::class.java)
-        val targetIdDbName = if (nameInDbAnnotation != null && nameInDbAnnotation.value.isNotEmpty())
-            nameInDbAnnotation.value else null
-
-        val uidAnnotation = field.getAnnotation(Uid::class.java)
-        val targetIdUid = if (uidAnnotation != null && uidAnnotation.value != 0L) uidAnnotation.value else null
-
         return ToOneRelation(
                 propertyName = field.simpleName.toString(),
-                targetEntityName = targetEntityName.toString(),
+                // can simply get as element as code would not have compiled if target type is not known
+                targetEntityName = targetType.asElement().simpleName.toString(),
                 targetIdName = targetIdName,
-                targetIdDbName = targetIdDbName,
-                targetIdUid = targetIdUid,
-                variableIsToOne = isExplicitToOne
+                targetIdDbName = field.getAnnotation(NameInDb::class.java)?.value?.nullIfBlank(),
+                targetIdUid = field.getAnnotation(Uid::class.java)?.value?.let { if(it == 0L) null else it },
+                variableIsToOne = isExplicitToOne,
+                variableFieldAccessible = !field.modifiers.contains(Modifier.PRIVATE)
         )
     }
 

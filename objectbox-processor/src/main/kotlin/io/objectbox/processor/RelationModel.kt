@@ -13,7 +13,8 @@ data class ToOneRelation(
         var targetIdName: String? = null,
         val targetIdDbName: String? = null,
         val targetIdUid: Long? = null,
-        val variableIsToOne: Boolean = false
+        val variableIsToOne: Boolean = false,
+        val variableFieldAccessible: Boolean
 )
 
 data class ToManyRelation(
@@ -123,7 +124,7 @@ class Relations(private val messager: Messager) {
         val name = toOne.propertyName
         val nameToOne = if (toOne.variableIsToOne) name else null
 
-        entity.addToOne(targetEntity, targetIdProperty, name, nameToOne)
+        entity.addToOne(targetEntity, targetIdProperty, name, nameToOne, toOne.variableFieldAccessible)
         return true
     }
 

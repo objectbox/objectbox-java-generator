@@ -100,7 +100,7 @@ object GreendaoModelTranslator {
         val targetIdProperty: Property = entity.findPropertyByNameOrThrow(toOne.targetIdName)!!
         val name = toOne.variable.name
         val nameToOne = if (toOne.variableIsToOne) name else null
-        toOneConverted = entity.addToOne(targetEntity, targetIdProperty, name, nameToOne)
+        toOneConverted = entity.addToOne(targetEntity, targetIdProperty, name, nameToOne, toOne.toOneFieldAccessible)
 
         toOneConverted.parsedElement = toOne.astNode
     }

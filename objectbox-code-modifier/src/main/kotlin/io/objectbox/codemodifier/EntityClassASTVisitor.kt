@@ -233,6 +233,11 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
     }
 
 
+    /**
+     * @param plainToOne if there is a ToOne without a relation property of the target type
+     * @param variableType either ToOne (plainToOne) or the target entity property
+     * @param node either ToOne (plainToOne) or the target entity property
+     */
     private fun parseRelationToOne(annotations: MutableList<Annotation>, fieldName: SimpleName,
                                    variableType: VariableType, node: FieldDeclaration, plainToOne: Boolean)
             : ToOneRelation {
@@ -251,7 +256,9 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
                 isNotNull = hasNotNull(annotations),
                 variableIsToOne = plainToOne,
                 astNode = node,
-                unique = false //fa.has<Unique>()
+                unique = false, //fa.has<Unique>()
+                // If field is not a (plain) to-one, we generate to to-one field in an accessible way
+                toOneFieldAccessible = !plainToOne || !Modifier.isPrivate(node.modifiers)
         )
     }
 

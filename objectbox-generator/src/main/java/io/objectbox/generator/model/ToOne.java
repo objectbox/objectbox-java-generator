@@ -32,6 +32,7 @@ public class ToOne implements HasParsedElement {
     private String nameToOne;
     private final boolean useFkProperty;
     private Object parsedElement;
+    private boolean toOneFieldAccessible;
 
     public ToOne(Schema schema, Entity sourceEntity, Entity targetEntity, Property targetIdProperty, boolean useFkProperty) {
         this.schema = schema;
@@ -83,6 +84,14 @@ public class ToOne implements HasParsedElement {
 
     public void setNameToOne(String nameToOne) {
         this.nameToOne = nameToOne;
+    }
+
+    public void setToOneFieldAccessible(boolean toOneFieldAccessible) {
+        this.toOneFieldAccessible = toOneFieldAccessible;
+    }
+
+    public boolean isToOneFieldAccessible() {
+        return toOneFieldAccessible;
     }
 
     /** Represented as just a ToOne property without a property of the target type. */
