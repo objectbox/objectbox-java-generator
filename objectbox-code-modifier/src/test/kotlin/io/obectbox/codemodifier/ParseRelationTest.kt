@@ -36,6 +36,27 @@ class ParseRelationTest : ParseTestBase() {
         assertEquals(toOneRelation.targetType, BarType)
         assertNull(toOneRelation.targetIdName)
         assertTrue(toOneRelation.variableIsToOne)
+        assertTrue(toOneRelation.toOneFieldAccessible)
+    }
+
+    @Test
+    fun toOneInaccessible() {
+        val entity = parse(
+                //language=java
+                """
+        package com.example;
+
+        import io.objectbox.annotation.Entity;
+        import io.objectbox.relation.ToOne;
+
+        @Entity
+        class Foobar {
+            String name;
+
+            private ToOne<Bar> bar;
+        }
+        """, listOf("Bar"))!!
+        assertFalse(entity.toOneRelations[0].toOneFieldAccessible)
     }
 
     @Test

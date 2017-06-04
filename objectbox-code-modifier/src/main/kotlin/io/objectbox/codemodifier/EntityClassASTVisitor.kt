@@ -167,10 +167,6 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
     private fun parseNonTransientField(node: FieldDeclaration, annotations: MutableList<Annotation>,
                                        variableType: VariableType, variableName: SimpleName) {
         if (variableType.name == "io.objectbox.relation.ToOne" && !has<Generated>(fieldAnnotations)) {
-            if (Modifier.isPrivate(node.modifiers)) {
-                throw exceptionWithLocation("Currently, ToOne's may not be private, change it to package visible: " +
-                        variableName.identifier, node)
-            }
             oneRelations += parseRelationToOne(annotations, variableName, variableType, node, true)
         } else if (!has<Convert>(annotations) &&
                 (variableType.name == "java.util.List" || variableType.name == "io.objectbox.relation.ToMany")) {
