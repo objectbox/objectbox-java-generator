@@ -223,6 +223,32 @@ class ObjectBoxProcessorTest {
     }
 
     @Test
+    fun testToOneNoBoxStoreField() {
+        // tested relation: a child has a parent
+        val parentName = "ToOneParent"
+        val childName = "ToOneNoBoxStore"
+        val entityParent = JavaFileObjects.forResource("$parentName.java")
+        val entityChild = JavaFileObjects.forResource("$childName.java")
+
+        val processor = ObjectBoxProcessorShim()
+
+        val modelFile = "to-one-no-boxstore.json"
+        val compilation = javac()
+                .withProcessors(processor)
+                .withOptions("$processorOptionBasePath$modelFile")
+                .compile(entityParent, entityChild)
+        CompilationSubject.assertThat(compilation).failed()
+        assertThat(processor.errorCount).isEqualTo(1)
+        val firstError = compilation.diagnostics()[0]
+        assertThat(firstError.source.name).endsWith("/ToOneNoBoxStore.java")
+        // Not nice to check the message but how to check it was the Processor
+        assertThat(firstError.getMessage(null)).isEqualTo(
+                "Entity ToOneNoBoxStore has relations and thus must have a field \"__boxStore\" of typeBoxStore;" +
+                        " please add it manually");
+
+    }
+
+    @Test
     fun testBacklinkList() {
         // tested relation: a parent has children
         val parentName = "BacklinkListParent"
@@ -369,7 +395,7 @@ class ObjectBoxProcessorTest {
     }
 
     private fun assertToOneIndexAndRelation(child: Entity, parent: Entity, prop: Property, toOneName: String,
-            toOneFieldName: String = toOneName) {
+                                            toOneFieldName: String = toOneName) {
         // assert index
         assertThat(child.indexes).hasSize(1)
         val foreignKeyIndex = child.indexes[0]

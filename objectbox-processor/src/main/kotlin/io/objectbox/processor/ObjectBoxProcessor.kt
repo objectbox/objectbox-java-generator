@@ -62,6 +62,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
     private var customModelPath: String? = null
     private var daoCompat: Boolean = false
     private var daoCompatPackage: String? = null
+    var errorCount = 0
 
     @Synchronized override fun init(env: ProcessingEnvironment) {
         super.init(env)
@@ -120,6 +121,9 @@ open class ObjectBoxProcessor : AbstractProcessor() {
 
             parseEntity(schema, relations, entity)
         }
+        if (errorCount > 0) {
+            return
+        }
 
         if (schema == null) {
             return  // no entities found
@@ -170,8 +174,15 @@ open class ObjectBoxProcessor : AbstractProcessor() {
 
         // parse properties
         val fields = ElementFilter.fieldsIn(entity.enclosedElements)
+        var hasBoxStore = false
         for (field in fields) {
             parseField(entityModel, relations, field)
+            hasBoxStore = hasBoxStore || (field.simpleName.toString() == "__boxStore")
+        }
+        if (!hasBoxStore && relations.hasRelations()) {
+            error("Entity ${entityModel.className} has relations and thus must have a field \"__boxStore\" of type" +
+                    "BoxStore; please add it manually", entity)
+            return
         }
 
         // add missing foreign key properties and indexes for to-one relations
@@ -282,7 +293,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
                 targetEntityName = targetType.asElement().simpleName.toString(),
                 targetIdName = targetIdName,
                 targetIdDbName = field.getAnnotation(NameInDb::class.java)?.value?.nullIfBlank(),
-                targetIdUid = field.getAnnotation(Uid::class.java)?.value?.let { if(it == 0L) null else it },
+                targetIdUid = field.getAnnotation(Uid::class.java)?.value?.let { if (it == 0L) null else it },
                 variableIsToOne = isExplicitToOne,
                 variableFieldAccessible = !field.modifiers.contains(Modifier.PRIVATE)
         )
@@ -503,6 +514,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
     }
 
     private fun error(message: String, element: Element? = null) {
+        errorCount++
         printMessage(Diagnostic.Kind.ERROR, message, element)
     }
 
