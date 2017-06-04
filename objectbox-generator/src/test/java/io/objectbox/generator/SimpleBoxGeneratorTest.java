@@ -191,7 +191,7 @@ public class SimpleBoxGeneratorTest {
         order.addIdProperty().modelId(new IdUid(1, 1004)).getProperty();
         Property customerId = order.addLongProperty("customerId").modelId(new IdUid(2, 1005))
                 .modelIndexId(new IdUid(1, 1100)).getProperty();
-        order.addToOne(customer, customerId, "customer", null);
+        order.addToOne(customer, customerId, "customer", null, false);
 
         File outputDir = new File("build/test-out");
         outputDir.mkdirs();
