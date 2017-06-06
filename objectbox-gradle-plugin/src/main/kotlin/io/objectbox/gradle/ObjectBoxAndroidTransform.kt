@@ -68,11 +68,11 @@ class ObjectBoxAndroidTransform(val project: Project) : Transform() {
         }
 
         for (classFile in allClassFiles) {
-            transform(classFile)
+            transformClasses(info, classFile)
         }
     }
 
-    private fun transform(file: File) {
+    private fun transformClasses(info: TransformInvocation, file: File) {
         val entityAnnotationName = Entity::class.qualifiedName
         DataInputStream(BufferedInputStream(file.inputStream())).use {
             val classFile = ClassFile(it)
@@ -84,7 +84,7 @@ class ObjectBoxAndroidTransform(val project: Project) : Transform() {
                     annotation = annotationsAttribute?.getAnnotation(entityAnnotationName)
                 }
                 if (annotation != null) {
-                    transformEntity(classFile)
+                    transformEntity(classFile, info.outputProvider.getContentLocation())
                 }
             }
         }
@@ -94,6 +94,9 @@ class ObjectBoxAndroidTransform(val project: Project) : Transform() {
         val hasBoxStore = (classFile.fields as List<FieldInfo>).any { it.name == "__boxStore" }
         if (hasRelations(classFile) && !hasBoxStore) {
             project.logger.warn("${classFile.name} IDed")
+            val fieldInfo = FieldInfo(classFile.constPool, "__boxStore", "Lio.objectbox.BoxStore;")
+            // accessFlags are package by default
+            classFile.addField(fieldInfo)
         }
     }
 
