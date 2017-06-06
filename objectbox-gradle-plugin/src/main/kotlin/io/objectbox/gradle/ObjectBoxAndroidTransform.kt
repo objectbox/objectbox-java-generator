@@ -1,5 +1,6 @@
 package io.objectbox.gradle
 
+import com.android.build.api.transform.Format
 import com.android.build.api.transform.QualifiedContent
 import com.android.build.api.transform.Transform
 import com.android.build.api.transform.TransformInvocation
@@ -17,6 +18,7 @@ import javassist.bytecode.FieldInfo
 import org.gradle.api.Project
 import java.io.BufferedInputStream
 import java.io.DataInputStream
+import java.io.DataOutputStream
 import java.io.File
 
 
@@ -74,6 +76,9 @@ class ObjectBoxAndroidTransform(val project: Project) : Transform() {
 
     private fun transformClasses(info: TransformInvocation, file: File) {
         val entityAnnotationName = Entity::class.qualifiedName
+        val outDir: File by lazy {
+            info.outputProvider.getContentLocation("objectbox", inputTypes, scopes, Format.DIRECTORY)
+        }
         DataInputStream(BufferedInputStream(file.inputStream())).use {
             val classFile = ClassFile(it)
             if (!classFile.isAbstract) {
@@ -84,13 +89,13 @@ class ObjectBoxAndroidTransform(val project: Project) : Transform() {
                     annotation = annotationsAttribute?.getAnnotation(entityAnnotationName)
                 }
                 if (annotation != null) {
-                    transformEntity(classFile, info.outputProvider.getContentLocation())
+                    transformEntity(classFile, outDir)
                 }
             }
         }
     }
 
-    private fun transformEntity(classFile: ClassFile) {
+    private fun transformEntity(classFile: ClassFile, outDir: File) {
         val hasBoxStore = (classFile.fields as List<FieldInfo>).any { it.name == "__boxStore" }
         if (hasRelations(classFile) && !hasBoxStore) {
             project.logger.warn("${classFile.name} IDed")
