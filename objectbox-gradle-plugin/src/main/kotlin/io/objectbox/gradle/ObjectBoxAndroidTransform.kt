@@ -91,16 +91,22 @@ class ObjectBoxAndroidTransform(val project: Project) : Transform() {
     }
 
     private fun transformEntity(classFile: ClassFile) {
-        var hasBoxStore = false
-        var hasRelations = false
-        for (field in classFile.fields as List<FieldInfo>) {
-            hasBoxStore = hasBoxStore || field.name == "__boxStore"
-            hasRelations = hasRelations || field.descriptor == "Lio/objectbox/relation/ToOne;" ||
-                    field.descriptor == "Lio/objectbox/relation/ToMany;"
-            project.logger.warn("${classFile.name}.${field.name}")
-        }
-        if(hasRelations && !hasBoxStore) {
+        val hasBoxStore = (classFile.fields as List<FieldInfo>).any { it.name == "__boxStore" }
+        if (hasRelations(classFile) && !hasBoxStore) {
             project.logger.warn("${classFile.name} IDed")
         }
+    }
+
+    private fun hasRelations(classFile: ClassFile): Boolean {
+        val toOne = "io/objectbox/relation/ToOne"
+        val toOneDescriptor = "L$toOne;"
+        val toMany = "io/objectbox/relation/ToMany"
+        val toManyDescriptor = "L$toMany;"
+        // Fields may be of type List, so also check class names (was OK for Customer test entity at least)
+        val hasRelations = classFile.constPool.classNames.any { it is String && (it == toOne || it == toMany) } ||
+                (classFile.fields as List<FieldInfo>).any {
+                    it.descriptor == toOneDescriptor || it.descriptor == toManyDescriptor
+                }
+        return hasRelations
     }
 }
