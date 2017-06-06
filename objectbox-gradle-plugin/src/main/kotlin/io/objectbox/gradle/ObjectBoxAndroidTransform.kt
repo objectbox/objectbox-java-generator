@@ -15,14 +15,27 @@ import io.objectbox.annotation.Entity
 import javassist.bytecode.AnnotationsAttribute
 import javassist.bytecode.ClassFile
 import javassist.bytecode.FieldInfo
+import javassist.bytecode.annotation.Annotation
 import org.gradle.api.Project
 import java.io.BufferedInputStream
 import java.io.DataInputStream
-import java.io.DataOutputStream
 import java.io.File
 
 
 class ObjectBoxAndroidTransform(val project: Project) : Transform() {
+    object Const {
+        val entityAnnotationName = Entity::class.qualifiedName
+
+        val toOne = "io/objectbox/relation/ToOne"
+        val toOneDescriptor = "L$toOne;"
+
+        val toMany = "io/objectbox/relation/ToMany"
+        val toManyDescriptor = "L$toMany;"
+
+        val boxStoreFieldName = "__boxStore"
+        val boxStoreDescriptor = "Lio.objectbox.BoxStore;"
+    }
+
     object Registration {
         fun to(project: Project) {
             val transform = ObjectBoxAndroidTransform(project)
@@ -69,52 +82,45 @@ class ObjectBoxAndroidTransform(val project: Project) : Transform() {
             }
         }
 
-        for (classFile in allClassFiles) {
-            transformClasses(info, classFile)
-        }
-    }
-
-    private fun transformClasses(info: TransformInvocation, file: File) {
-        val entityAnnotationName = Entity::class.qualifiedName
+        val probedEntities = allClassFiles.map { probeClassAsEntity(it) }.filterNotNull()
         val outDir: File by lazy {
             info.outputProvider.getContentLocation("objectbox", inputTypes, scopes, Format.DIRECTORY)
         }
+    }
+
+    internal fun probeClassAsEntity(file: File): ProbedEntity? {
         DataInputStream(BufferedInputStream(file.inputStream())).use {
             val classFile = ClassFile(it)
             if (!classFile.isAbstract) {
-                var annotationsAttribute = classFile.getAttribute(AnnotationsAttribute.visibleTag) as AnnotationsAttribute?
-                var annotation = annotationsAttribute?.getAnnotation(entityAnnotationName)
-                if (annotation == null) {
-                    annotationsAttribute = classFile.getAttribute(AnnotationsAttribute.invisibleTag) as AnnotationsAttribute?
-                    annotation = annotationsAttribute?.getAnnotation(entityAnnotationName)
-                }
+                var annotation = getEntityAnnotation(classFile)
                 if (annotation != null) {
-                    transformEntity(classFile, outDir)
+                    val fields = classFile.fields as List<FieldInfo>
+                    return ProbedEntity(
+                            file = file,
+                            name = classFile.name,
+                            hasBoxStoreField = fields.any { it.name == Const.boxStoreFieldName },
+                            hasToOne = hasClassRef(classFile, Const.toOne, Const.toOneDescriptor),
+                            hasToMany = hasClassRef(classFile, Const.toMany, Const.toManyDescriptor)
+                    )
                 }
             }
         }
+        return null
     }
 
-    private fun transformEntity(classFile: ClassFile, outDir: File) {
-        val hasBoxStore = (classFile.fields as List<FieldInfo>).any { it.name == "__boxStore" }
-        if (hasRelations(classFile) && !hasBoxStore) {
-            project.logger.warn("${classFile.name} IDed")
-            val fieldInfo = FieldInfo(classFile.constPool, "__boxStore", "Lio.objectbox.BoxStore;")
-            // accessFlags are package by default
-            classFile.addField(fieldInfo)
+    private fun getEntityAnnotation(classFile: ClassFile): Annotation? {
+        var annotationsAttribute = classFile.getAttribute(AnnotationsAttribute.visibleTag) as AnnotationsAttribute?
+        var annotation = annotationsAttribute?.getAnnotation(Const.entityAnnotationName)
+        if (annotation == null) {
+            annotationsAttribute = classFile.getAttribute(AnnotationsAttribute.invisibleTag) as AnnotationsAttribute?
+            annotation = annotationsAttribute?.getAnnotation(Const.entityAnnotationName)
         }
+        return annotation
     }
 
-    private fun hasRelations(classFile: ClassFile): Boolean {
-        val toOne = "io/objectbox/relation/ToOne"
-        val toOneDescriptor = "L$toOne;"
-        val toMany = "io/objectbox/relation/ToMany"
-        val toManyDescriptor = "L$toMany;"
+    private fun hasClassRef(classFile: ClassFile, className: String, classDescriptorName: String): Boolean {
         // Fields may be of type List, so also check class names (was OK for Customer test entity at least)
-        val hasRelations = classFile.constPool.classNames.any { it is String && (it == toOne || it == toMany) } ||
-                (classFile.fields as List<FieldInfo>).any {
-                    it.descriptor == toOneDescriptor || it.descriptor == toManyDescriptor
-                }
-        return hasRelations
+        return classFile.constPool.classNames.any { it is String && it == className }
+                || (classFile.fields as List<FieldInfo>).any { it.descriptor == classDescriptorName }
     }
 }
