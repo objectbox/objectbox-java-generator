@@ -74,12 +74,10 @@ class ObjectBoxAndroidTransform(val project: Project) : Transform() {
     override fun transform(info: TransformInvocation) {
         super.transform(info)
         val allClassFiles = mutableSetOf<File>()
-        for (input in info.inputs) {
-            for (directoryInput in input.directoryInputs) {
-                // TODO incremental: directoryInput.changedFiles
+        info.inputs.flatMap { it.directoryInputs }.forEach { directoryInput ->
+            // TODO incremental: directoryInput.changedFiles
 
-                allClassFiles.addAll(directoryInput.file.walk().filter { it.isFile })
-            }
+            allClassFiles.addAll(directoryInput.file.walk().filter { it.isFile })
         }
 
         val probedEntities = allClassFiles.map { probeClassAsEntity(it) }.filterNotNull()
