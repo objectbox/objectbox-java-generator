@@ -24,6 +24,7 @@ dependencies {
     compile project(':objectbox-code-modifier')
     def androidVersion = '2.3.2'
     compileOnly "com.android.tools.build:gradle:$androidVersion"
+    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 
     // For Gradle test projects (dir "test-gradle-projects")
     testCompile "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"

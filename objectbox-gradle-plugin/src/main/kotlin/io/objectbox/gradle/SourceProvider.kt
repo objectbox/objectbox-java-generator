@@ -22,6 +22,7 @@ interface SourceProvider {
     fun sourceTree(): FileTree = sourceFiles().reduce { a, b -> a + b }
     val encoding: String? get
     fun addGeneratorTask(generatorTask: Task, targetGenDir: File, writeToBuildFolder: Boolean)
+    fun registerTransform()
 }
 
 class AndroidPluginSourceProvider(val project: Project) : SourceProvider {
@@ -71,6 +72,10 @@ class AndroidPluginSourceProvider(val project: Project) : SourceProvider {
         return getByType(type.java)!!
     }
 
+    override fun registerTransform() {
+        ObjectBoxAndroidTransform.Registration.to(project)
+    }
+
 }
 
 class JavaPluginSourceProvider(val project: Project) : SourceProvider {
@@ -94,5 +99,9 @@ class JavaPluginSourceProvider(val project: Project) : SourceProvider {
             // ...ensure the compile task has them on the classpath
             compileJavaTask.setSource(compileJavaTask.source + generatorTask.outputs.files)
         }
+    }
+
+    override fun registerTransform() {
+        project.logger.info("No transformer for Java projects")
     }
 }

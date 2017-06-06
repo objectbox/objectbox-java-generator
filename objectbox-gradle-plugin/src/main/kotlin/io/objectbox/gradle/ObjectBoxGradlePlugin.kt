@@ -1,12 +1,12 @@
 package io.objectbox.gradle
 
+import io.objectbox.codemodifier.ObjectBoxGenerator
+import io.objectbox.codemodifier.SchemaOptions
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.logging.LogLevel
 import org.gradle.api.tasks.util.PatternFilterable
-import io.objectbox.codemodifier.ObjectBoxGenerator
-import io.objectbox.codemodifier.SchemaOptions
 import java.io.File
 import java.io.IOException
 import java.util.Properties
@@ -20,35 +20,35 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
         project.logger.debug("$name plugin starting...")
         project.extensions.create(name, ObjectBoxOptions::class.java, project)
 
-        // Use afterEvaluate so order of applying the plugins in consumer projects does not matter
-        project.afterEvaluate {
-            val version = getVersion()
-            project.logger.debug("$name plugin $version preparing tasks...")
-            val candidatesFile = project.file("build/cache/$name-candidates.list")
-            val sourceProvider = getSourceProvider(project)
-            val encoding = sourceProvider.encoding ?: "UTF-8"
+        val version = getVersion()
+        project.logger.debug("$name plugin $version preparing tasks...")
+        val candidatesFile = project.file("build/cache/$name-candidates.list")
+        val sourceProvider = getSourceProvider(project)
+        val encoding = sourceProvider.encoding ?: "UTF-8"
 
-            val taskArgs = mapOf("type" to DetectEntityCandidatesTask::class.java)
-            val prepareTask = project.task(taskArgs, "${name}Prepare") as DetectEntityCandidatesTask
-            prepareTask.sourceFiles = sourceProvider.sourceTree().matching(Closure { pf: PatternFilterable ->
-                pf.include("**/*.java")
-            })
-            prepareTask.candidatesListFile = candidatesFile
-            prepareTask.version = version
-            prepareTask.charset = encoding
-            prepareTask.group = name
-            prepareTask.description = "Finds entity source files for $name"
+        val taskArgs = mapOf("type" to DetectEntityCandidatesTask::class.java)
+        val prepareTask = project.task(taskArgs, "${name}Prepare") as DetectEntityCandidatesTask
+        prepareTask.sourceFiles = sourceProvider.sourceTree().matching(Closure { pf: PatternFilterable ->
+            pf.include("**/*.java")
+        })
+        prepareTask.candidatesListFile = candidatesFile
+        prepareTask.version = version
+        prepareTask.charset = encoding
+        prepareTask.group = name
+        prepareTask.description = "Finds entity source files for $name"
 
-            val options = project.extensions.getByType(ObjectBoxOptions::class.java)
-            val writeToBuildFolder = options.targetGenDir == null
-            val targetGenDir = if (writeToBuildFolder)
-                File(project.buildDir, "generated/source/$name") else options.targetGenDir!!
+        val options = project.extensions.getByType(ObjectBoxOptions::class.java)
+        val writeToBuildFolder = options.targetGenDir == null
+        val targetGenDir = if (writeToBuildFolder)
+            File(project.buildDir, "generated/source/$name") else options.targetGenDir!!
 
-            val objectboxTask = createObjectBoxTask(project, candidatesFile, options, targetGenDir, encoding, version)
-            objectboxTask.dependsOn(prepareTask)
+        val objectboxTask = createObjectBoxTask(project, candidatesFile, options, targetGenDir, encoding, version)
+        objectboxTask.dependsOn(prepareTask)
 
-            sourceProvider.addGeneratorTask(objectboxTask, targetGenDir, writeToBuildFolder)
-        }
+        sourceProvider.addGeneratorTask(objectboxTask, targetGenDir, writeToBuildFolder)
+
+        // Cannot use afterEvaluate to register transform, thus out plugin must be applied after Android
+        sourceProvider.registerTransform()
     }
 
     private fun createObjectBoxTask(project: Project, candidatesFile: File, options: ObjectBoxOptions,
