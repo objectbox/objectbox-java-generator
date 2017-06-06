@@ -10,7 +10,14 @@ import com.android.build.gradle.LibraryExtension
 import com.android.build.gradle.LibraryPlugin
 import com.android.build.gradle.TestExtension
 import com.android.build.gradle.TestPlugin
+import io.objectbox.annotation.Entity
+import javassist.bytecode.AnnotationsAttribute
+import javassist.bytecode.ClassFile
+import javassist.bytecode.FieldInfo
 import org.gradle.api.Project
+import java.io.BufferedInputStream
+import java.io.DataInputStream
+import java.io.File
 
 
 class ObjectBoxAndroidTransform(val project: Project) : Transform() {
@@ -51,15 +58,49 @@ class ObjectBoxAndroidTransform(val project: Project) : Transform() {
 
     override fun transform(info: TransformInvocation) {
         super.transform(info)
-
+        val allClassFiles = mutableSetOf<File>()
         for (input in info.inputs) {
             for (directoryInput in input.directoryInputs) {
                 // TODO incremental: directoryInput.changedFiles
 
-                for (file in directoryInput.file.walk().filter { it.isFile }) {
-                    //project.logger.error("ObjectBox Transforming ${file}")
+                allClassFiles.addAll(directoryInput.file.walk().filter { it.isFile })
+            }
+        }
+
+        for (classFile in allClassFiles) {
+            transform(classFile)
+        }
+    }
+
+    private fun transform(file: File) {
+        val entityAnnotationName = Entity::class.qualifiedName
+        DataInputStream(BufferedInputStream(file.inputStream())).use {
+            val classFile = ClassFile(it)
+            if (!classFile.isAbstract) {
+                var annotationsAttribute = classFile.getAttribute(AnnotationsAttribute.visibleTag) as AnnotationsAttribute?
+                var annotation = annotationsAttribute?.getAnnotation(entityAnnotationName)
+                if (annotation == null) {
+                    annotationsAttribute = classFile.getAttribute(AnnotationsAttribute.invisibleTag) as AnnotationsAttribute?
+                    annotation = annotationsAttribute?.getAnnotation(entityAnnotationName)
+                }
+                if (annotation != null) {
+                    transformEntity(classFile)
                 }
             }
+        }
+    }
+
+    private fun transformEntity(classFile: ClassFile) {
+        var hasBoxStore = false
+        var hasRelations = false
+        for (field in classFile.fields as List<FieldInfo>) {
+            hasBoxStore = hasBoxStore || field.name == "__boxStore"
+            hasRelations = hasRelations || field.descriptor == "Lio/objectbox/relation/ToOne;" ||
+                    field.descriptor == "Lio/objectbox/relation/ToMany;"
+            project.logger.warn("${classFile.name}.${field.name}")
+        }
+        if(hasRelations && !hasBoxStore) {
+            project.logger.warn("${classFile.name} IDed")
         }
     }
 }
