@@ -1,6 +1,7 @@
 package io.objectbox.gradle
 
 import io.objectbox.annotation.Entity
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
@@ -46,6 +47,21 @@ class EntityTransformerTest {
     fun testProbeEntityBoxStoreField() {
         val entity = probeClass(EntityBoxStoreField::class)!!
         assertTrue(entity.hasBoxStoreField)
+    }
+
+    @Test
+    fun testTransform() {
+        val entity = probeClass(EntityEmpty::class)!!
+        val tempDir = File.createTempFile(this.javaClass.name, "")
+        tempDir.delete()
+        assertTrue(tempDir.mkdir())
+        try {
+            transformer.transformEntities(listOf(entity), tempDir)
+            val createdFiles = tempDir.walkBottomUp().toList()
+            assertEquals(1, createdFiles.filter { it.isFile }.size)
+        } finally {
+            tempDir.deleteRecursively()
+        }
     }
 
     private fun probeClass(kclass: KClass<*>): ProbedEntity? {

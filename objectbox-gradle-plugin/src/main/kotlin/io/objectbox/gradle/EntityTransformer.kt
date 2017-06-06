@@ -1,6 +1,8 @@
 package io.objectbox.gradle
 
 import io.objectbox.annotation.Entity
+import javassist.ClassPool
+import javassist.CtField
 import javassist.bytecode.AnnotationsAttribute
 import javassist.bytecode.ClassFile
 import javassist.bytecode.FieldInfo
@@ -21,6 +23,7 @@ class EntityTransformer() {
         val toManyDescriptor = "L$toMany;"
 
         val boxStoreFieldName = "__boxStore"
+        val boxStoreClass = "io.objectbox.BoxStore"
         val boxStoreDescriptor = "Lio.objectbox.BoxStore;"
     }
 
@@ -59,4 +62,23 @@ class EntityTransformer() {
         return classFile.constPool.classNames.any { it is String && it == className }
                 || (classFile.fields as List<FieldInfo>).any { it.descriptor == classDescriptorName }
     }
+
+    fun transformEntities(probedEntities: List<ProbedEntity>, outDir: File) {
+        val classPool = ClassPool(null)
+        classPool.makeClass(Const.boxStoreClass)
+        for (entity in probedEntities) {
+//            if(!entity.hasBoxStoreField && (entity.hasToOne || entity.hasToMany)) {
+                entity.file.inputStream().use {
+                    val ctClass = classPool.makeClass(it)
+                    var boxStoreField = ctClass.declaredFields.find { it.name == "__boxStore" }
+                    if(boxStoreField == null) {
+                        boxStoreField = CtField.make("${Const.boxStoreClass} ${Const.boxStoreFieldName};", ctClass)
+                        ctClass.addField(boxStoreField)
+                        ctClass.writeFile(outDir.absolutePath)
+                    }
+                }
+//            }
+        }
+    }
+
 }
