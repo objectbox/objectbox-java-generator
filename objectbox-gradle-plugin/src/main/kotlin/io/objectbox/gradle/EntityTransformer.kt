@@ -7,6 +7,7 @@ import javassist.CtField
 import javassist.bytecode.AnnotationsAttribute
 import javassist.bytecode.ClassFile
 import javassist.bytecode.FieldInfo
+import javassist.bytecode.SignatureAttribute
 import javassist.bytecode.annotation.Annotation
 import java.io.BufferedInputStream
 import java.io.DataInputStream
@@ -26,26 +27,33 @@ class EntityTransformer() {
         val boxStoreFieldName = "__boxStore"
         val boxStoreClass = "io.objectbox.BoxStore"
         val boxStoreDescriptor = "Lio.objectbox.BoxStore;"
+
+        val genericSignatureT =
+                SignatureAttribute.ClassSignature(arrayOf(SignatureAttribute.TypeParameter("T"))).encode()!!
     }
 
-    fun probeClassAsEntity(file: File): ProbedEntity? {
+    fun probeClass(file: File): ProbedClass {
         DataInputStream(BufferedInputStream(file.inputStream())).use {
             val classFile = ClassFile(it)
+            val name = classFile.name
+            val javaPackage = name.substringBeforeLast('.', "")
             if (!classFile.isAbstract) {
                 var annotation = getEntityAnnotation(classFile)
                 if (annotation != null) {
                     val fields = classFile.fields as List<FieldInfo>
-                    return ProbedEntity(
+                    return ProbedClass(
                             file = file,
-                            name = classFile.name,
+                            name = name,
+                            javaPackage = javaPackage,
+                            isEntity = annotation != null,
                             hasBoxStoreField = fields.any { it.name == Const.boxStoreFieldName },
                             hasToOne = hasClassRef(classFile, Const.toOne, Const.toOneDescriptor),
                             hasToMany = hasClassRef(classFile, Const.toMany, Const.toManyDescriptor)
                     )
                 }
             }
+            return return ProbedClass(file = file, name = name, javaPackage = javaPackage)
         }
-        return null
     }
 
     private fun getEntityAnnotation(classFile: ClassFile): Annotation? {
@@ -64,20 +72,26 @@ class EntityTransformer() {
                 || (classFile.fields as List<FieldInfo>).any { it.descriptor == classDescriptorName }
     }
 
-    fun transformEntities(probedEntities: List<ProbedEntity>, outDir: File) {
+    fun transformEntities(probedClasses: List<ProbedClass>, outDir: File) {
         val classPool = ClassPool(null)
         classPool.makeClass(Const.boxStoreClass)
-        for (entity in probedEntities) {
+        classPool.makeClass(Const.toOne).genericSignature = Const.genericSignatureT
+        classPool.makeClass(Const.toMany).genericSignature = Const.genericSignatureT
+        for (entity in probedClasses) {
+            var transformed = false
             if (entity.hasToOne || entity.hasToMany) {
                 entity.file.inputStream().use {
                     val ctClass = classPool.makeClass(it)
-                    transformRelationEntity(ctClass, outDir)
+                    transformed = transformRelationEntity(ctClass, outDir)
                 }
+            }
+            if (!transformed) {
+                // TODO entity.file.copyTo()
             }
         }
     }
 
-    private fun transformRelationEntity(ctClass: CtClass, outDir: File) {
+    private fun transformRelationEntity(ctClass: CtClass, outDir: File): Boolean {
         var changed = false
         var boxStoreField = ctClass.declaredFields.find { it.name == "__boxStore" }
         if (boxStoreField == null) {
@@ -85,9 +99,13 @@ class EntityTransformer() {
             ctClass.addField(boxStoreField)
             changed = true
         }
+//        ctClass.declaredFields.filter { it.type.name == Const.toOne }.forEach { toOneField ->
+//            val x=  toOneField.genericSignature
+//        }
         if (changed) {
             ctClass.writeFile(outDir.absolutePath)
         }
+        return changed
     }
 
 }

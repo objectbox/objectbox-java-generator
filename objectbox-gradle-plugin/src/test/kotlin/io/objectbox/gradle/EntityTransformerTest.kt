@@ -43,16 +43,19 @@ class EntityTransformerTest {
 
     @Test
     fun testProbeNoEntity() {
-        assertNull(probeClass(this.javaClass.kotlin))
+        assertFalse(probeClass(this.javaClass.kotlin).isEntity)
     }
 
     @Test
     fun testProbeEntity() {
         val entity = probeClass(EntityEmpty::class)!!
         assertNotNull(entity)
+        assertTrue(entity.isEntity)
         assertFalse(entity.hasToMany)
         assertFalse(entity.hasToOne)
         assertFalse(entity.hasBoxStoreField)
+        assertEquals(EntityEmpty::class.java.`package`.name, entity.javaPackage)
+        assertEquals(EntityEmpty::class.java.name, entity.name)
     }
 
     @Test
@@ -69,13 +72,13 @@ class EntityTransformerTest {
 
     @Test
     fun testProbeEntityToMany() {
-        val entity = probeClass(EntityToMany::class)!!
+        val entity = probeClass(EntityToMany::class)
         assertTrue(entity.hasToMany)
     }
 
     @Test
     fun testTransform() {
-        val entity = probeClass(EntityToOne::class)!!
+        val entity = probeClass(EntityToOne::class)
         val tempDir = File.createTempFile(this.javaClass.name, "")
         tempDir.delete()
         assertTrue(tempDir.mkdir())
@@ -88,10 +91,10 @@ class EntityTransformerTest {
         }
     }
 
-    private fun probeClass(kclass: KClass<*>): ProbedEntity? {
+    private fun probeClass(kclass: KClass<*>): ProbedClass {
         val file = File(classDir, kclass.qualifiedName!!.replace('.', '/') + ".class")
         assertTrue(file.exists())
-        return transformer.probeClassAsEntity(file)
+        return transformer.probeClass(file)
     }
 
 }
