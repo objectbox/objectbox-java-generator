@@ -2,6 +2,7 @@ package io.objectbox.gradle
 
 import io.objectbox.annotation.Entity
 import javassist.ClassPool
+import javassist.CtClass
 import javassist.CtField
 import javassist.bytecode.AnnotationsAttribute
 import javassist.bytecode.ClassFile
@@ -67,17 +68,25 @@ class EntityTransformer() {
         val classPool = ClassPool(null)
         classPool.makeClass(Const.boxStoreClass)
         for (entity in probedEntities) {
-//            if(!entity.hasBoxStoreField && (entity.hasToOne || entity.hasToMany)) {
+            if (entity.hasToOne || entity.hasToMany) {
                 entity.file.inputStream().use {
                     val ctClass = classPool.makeClass(it)
-                    var boxStoreField = ctClass.declaredFields.find { it.name == "__boxStore" }
-                    if(boxStoreField == null) {
-                        boxStoreField = CtField.make("${Const.boxStoreClass} ${Const.boxStoreFieldName};", ctClass)
-                        ctClass.addField(boxStoreField)
-                        ctClass.writeFile(outDir.absolutePath)
-                    }
+                    transformRelationEntity(ctClass, outDir)
                 }
-//            }
+            }
+        }
+    }
+
+    private fun transformRelationEntity(ctClass: CtClass, outDir: File) {
+        var changed = false
+        var boxStoreField = ctClass.declaredFields.find { it.name == "__boxStore" }
+        if (boxStoreField == null) {
+            boxStoreField = CtField.make("transient ${Const.boxStoreClass} ${Const.boxStoreFieldName};", ctClass)
+            ctClass.addField(boxStoreField)
+            changed = true
+        }
+        if (changed) {
+            ctClass.writeFile(outDir.absolutePath)
         }
     }
 

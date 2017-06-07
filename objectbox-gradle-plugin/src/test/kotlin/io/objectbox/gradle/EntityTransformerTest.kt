@@ -1,6 +1,8 @@
 package io.objectbox.gradle
 
 import io.objectbox.annotation.Entity
+import io.objectbox.relation.ToMany
+import io.objectbox.relation.ToOne
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
@@ -16,6 +18,16 @@ class EntityEmpty
 @Entity
 class EntityBoxStoreField {
     val __boxStore = Object()
+}
+
+@Entity
+class EntityToOne {
+    val entityEmpty = ToOne<EntityEmpty>()
+}
+
+@Entity
+class EntityToMany {
+    val entityEmpty = ToMany<EntityEmpty>()
 }
 
 class EntityTransformerTest {
@@ -50,8 +62,20 @@ class EntityTransformerTest {
     }
 
     @Test
+    fun testProbeEntityToOne() {
+        val entity = probeClass(EntityToOne::class)!!
+        assertTrue(entity.hasToOne)
+    }
+
+    @Test
+    fun testProbeEntityToMany() {
+        val entity = probeClass(EntityToMany::class)!!
+        assertTrue(entity.hasToMany)
+    }
+
+    @Test
     fun testTransform() {
-        val entity = probeClass(EntityEmpty::class)!!
+        val entity = probeClass(EntityToOne::class)!!
         val tempDir = File.createTempFile(this.javaClass.name, "")
         tempDir.delete()
         assertTrue(tempDir.mkdir())
