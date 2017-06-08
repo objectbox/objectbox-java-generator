@@ -2,37 +2,59 @@ package io.objectbox.gradle
 
 import io.objectbox.codemodifier.ObjectBoxGenerator
 import io.objectbox.codemodifier.SchemaOptions
+import io.objectbox.gradle.ProjectEnv.Const.name
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.logging.LogLevel
 import org.gradle.api.tasks.util.PatternFilterable
 import java.io.File
-import java.io.IOException
-import java.util.Properties
 
 class ObjectBoxGradlePlugin : Plugin<Project> {
 
-    val name: String = "objectbox"
-    val packageName: String = "io/objectbox"
 
     override fun apply(project: Project) {
-        project.logger.debug("$name plugin starting...")
+        val env= ProjectEnv(project)
+        env.logDebug("$name plugin starting...")
         project.extensions.create(name, ObjectBoxOptions::class.java, project)
 
-        val version = getVersion()
+        val version = env.objectBoxVersion
         project.logger.debug("$name plugin $version preparing tasks...")
-        val candidatesFile = project.file("build/cache/$name-candidates.list")
-        val sourceProvider = getSourceProvider(project)
-        val encoding = sourceProvider.encoding ?: "UTF-8"
 
+        if (env.hasKotlinAndroidPlugin) {
+            project.dependencies.add("kapt", "io.objectbox:objectbox-processor:$version")
+            project.dependencies.add("kaptAndroidTest", "io.objectbox:objectbox-processor:$version")
+        } else if (env.hasKotlinPlugin) {
+            project.dependencies.add("kapt", "io.objectbox:objectbox-processor:$version")
+
+            project.logger.warn("ObjectBox: NO TRANSFORM SUPPORT for plain Kotlin projects yet. " +
+                    "Limited support only!! Especially relations are NOT supported.")
+        } else {
+            addJavaModifierTasks(env)
+        }
+
+        if(env.hasAndroidPlugin) {
+            // Cannot use afterEvaluate to register transform, thus out plugin must be applied after Android
+            ObjectBoxAndroidTransform.Registration.to(project)
+        }
+    }
+
+    private fun addJavaModifierTasks(env: ProjectEnv) {
+        val project = env.project
+        val sourceProvider =  when {
+            env.hasJavaPlugin -> JavaPluginSourceProvider(project)
+            env.hasAndroidPlugin -> AndroidPluginSourceProvider(project)
+            else -> throw RuntimeException("No Java/Android plugin found. Apply ObjectBox plugin AFTER those.")
+        }
         val taskArgs = mapOf("type" to DetectEntityCandidatesTask::class.java)
         val prepareTask = project.task(taskArgs, "${name}Prepare") as DetectEntityCandidatesTask
         prepareTask.sourceFiles = sourceProvider.sourceTree().matching(Closure { pf: PatternFilterable ->
             pf.include("**/*.java")
         })
+        val candidatesFile = project.file("build/cache/$name-candidates.list")
+        val encoding = sourceProvider.encoding ?: "UTF-8"
         prepareTask.candidatesListFile = candidatesFile
-        prepareTask.version = version
+        prepareTask.version = env.objectBoxVersion
         prepareTask.charset = encoding
         prepareTask.group = name
         prepareTask.description = "Finds entity source files for $name"
@@ -42,22 +64,20 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
         val targetGenDir = if (writeToBuildFolder)
             File(project.buildDir, "generated/source/$name") else options.targetGenDir!!
 
-        val objectboxTask = createObjectBoxTask(project, candidatesFile, options, targetGenDir, encoding, version)
+        val objectboxTask = createObjectBoxTask(env, candidatesFile, options, targetGenDir, encoding)
         objectboxTask.dependsOn(prepareTask)
 
         sourceProvider.addGeneratorTask(objectboxTask, targetGenDir, writeToBuildFolder)
-
-        // Cannot use afterEvaluate to register transform, thus out plugin must be applied after Android
-        sourceProvider.registerTransform()
     }
 
-    private fun createObjectBoxTask(project: Project, candidatesFile: File, options: ObjectBoxOptions,
-                                    targetGenDir: File, encoding: String, version: String): Task {
+    private fun createObjectBoxTask(env: ProjectEnv, candidatesFile: File, options: ObjectBoxOptions,
+                                    targetGenDir: File, encoding: String): Task {
+        val project = env.project
         val generateTask = project.task(name).apply {
             logging.captureStandardOutput(LogLevel.INFO)
 
             inputs.file(candidatesFile)
-            inputs.property("plugin-version", version)
+            inputs.property("plugin-version", env.objectBoxVersion)
             inputs.property("source-encoding", encoding)
 
             val schemaOptions = collectSchemaOptions(project, targetGenDir, options)
@@ -96,19 +116,6 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
         return generateTask
     }
 
-    private fun getVersion(): String {
-        val properties = Properties()
-        val stream = javaClass.getResourceAsStream("/$packageName/gradle/version.properties")
-        stream?.use {
-            try {
-                properties.load(it)
-            } catch (e: IOException) {
-                e.printStackTrace()
-            }
-        }
-        return properties.getProperty("version") ?: "Unknown (bad build)"
-    }
-
     private fun collectSchemaOptions(project: Project, genSrcDir: File, options: ObjectBoxOptions)
             : MutableMap<String, SchemaOptions> {
         val idModelDir = project.mkdir("objectbox-models")
@@ -138,22 +145,5 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
         }.associateTo(schemaOptions, { it.name to it })
         return schemaOptions
     }
-
-    val ANDROID_PLUGINS = listOf(
-            "android", "android-library", "com.android.application", "com.android.library"
-    )
-
-    /** @throws RuntimeException if no supported plugins applied */
-    private fun getSourceProvider(project: Project): SourceProvider {
-        when {
-            project.plugins.hasPlugin("java") -> return JavaPluginSourceProvider(project)
-
-            ANDROID_PLUGINS.any { project.plugins.hasPlugin(it) } -> return AndroidPluginSourceProvider(project)
-
-            else -> throw RuntimeException("ObjectBox supports only Java and Android projects. " +
-                    "None of the corresponding plugins have been applied to the project.")
-        }
-    }
-
 
 }
