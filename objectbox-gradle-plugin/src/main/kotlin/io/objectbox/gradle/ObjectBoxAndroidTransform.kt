@@ -66,7 +66,7 @@ class ObjectBoxAndroidTransform(val project: Project) : Transform() {
         val probedEntities = allClassFiles.map { entityTransformer.probeClass(it) }.filterNotNull()
         val outDir = info.outputProvider.getContentLocation("objectbox", inputTypes, scopes, Format.DIRECTORY)
 
-        entityTransformer.transformEntities(probedEntities, outDir)
+        entityTransformer.transformOrCopyClasses(probedEntities, outDir)
     }
 
 }

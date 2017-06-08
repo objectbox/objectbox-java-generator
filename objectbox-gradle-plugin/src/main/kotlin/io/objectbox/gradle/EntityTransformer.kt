@@ -45,7 +45,7 @@ class EntityTransformer() {
                             file = file,
                             name = name,
                             javaPackage = javaPackage,
-                            isEntity = annotation != null,
+                            isEntity = true,
                             hasBoxStoreField = fields.any { it.name == Const.boxStoreFieldName },
                             hasToOne = hasClassRef(classFile, Const.toOne, Const.toOneDescriptor),
                             hasToMany = hasClassRef(classFile, Const.toMany, Const.toManyDescriptor)
@@ -72,23 +72,32 @@ class EntityTransformer() {
                 || (classFile.fields as List<FieldInfo>).any { it.descriptor == classDescriptorName }
     }
 
-    fun transformEntities(probedClasses: List<ProbedClass>, outDir: File) {
+    fun transformOrCopyClasses(probedClasses: List<ProbedClass>, outDir: File) {
+        val startTime = System.currentTimeMillis()
+        var countTransformed=0
+        var countCopied=0
         val classPool = ClassPool(null)
         classPool.makeClass(Const.boxStoreClass)
         classPool.makeClass(Const.toOne).genericSignature = Const.genericSignatureT
         classPool.makeClass(Const.toMany).genericSignature = Const.genericSignatureT
-        for (entity in probedClasses) {
+        for (probedClass in probedClasses) {
             var transformed = false
-            if (entity.hasToOne || entity.hasToMany) {
-                entity.file.inputStream().use {
+            if (probedClass.hasToOne || probedClass.hasToMany) {
+                probedClass.file.inputStream().use {
                     val ctClass = classPool.makeClass(it)
                     transformed = transformRelationEntity(ctClass, outDir)
                 }
             }
-            if (!transformed) {
-                // TODO entity.file.copyTo()
+            if (transformed) {
+                countTransformed++;
+            } else {
+                val targetFile = File(outDir, probedClass.name.replace('.', '/'))
+                probedClass.file.copyTo(targetFile)
+                countCopied++;
             }
         }
+        val time = System.currentTimeMillis() - startTime
+        System.out.println("Transformed $countTransformed entities and copied $countCopied classes in $time ms")
     }
 
     private fun transformRelationEntity(ctClass: CtClass, outDir: File): Boolean {
