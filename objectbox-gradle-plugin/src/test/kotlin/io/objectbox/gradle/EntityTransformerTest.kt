@@ -6,7 +6,6 @@ import io.objectbox.relation.ToOne
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
@@ -48,7 +47,7 @@ class EntityTransformerTest {
 
     @Test
     fun testProbeEntity() {
-        val entity = probeClass(EntityEmpty::class)!!
+        val entity = probeClass(EntityEmpty::class)
         assertNotNull(entity)
         assertTrue(entity.isEntity)
         assertFalse(entity.hasToMany)
@@ -60,13 +59,13 @@ class EntityTransformerTest {
 
     @Test
     fun testProbeEntityBoxStoreField() {
-        val entity = probeClass(EntityBoxStoreField::class)!!
+        val entity = probeClass(EntityBoxStoreField::class)
         assertTrue(entity.hasBoxStoreField)
     }
 
     @Test
     fun testProbeEntityToOne() {
-        val entity = probeClass(EntityToOne::class)!!
+        val entity = probeClass(EntityToOne::class)
         assertTrue(entity.hasToOne)
     }
 
@@ -83,7 +82,7 @@ class EntityTransformerTest {
         tempDir.delete()
         assertTrue(tempDir.mkdir())
         try {
-            transformer.transformEntities(listOf(entity), tempDir)
+            transformer.transformOrCopyClasses(listOf(entity), tempDir)
             val createdFiles = tempDir.walkBottomUp().toList()
             assertEquals(1, createdFiles.filter { it.isFile }.size)
         } finally {
