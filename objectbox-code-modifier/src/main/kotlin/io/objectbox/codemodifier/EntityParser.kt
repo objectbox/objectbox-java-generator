@@ -19,6 +19,7 @@ class EntityParser(val jdtOptions: Hashtable<String, String>, val encoding: Stri
                 IProblem.UndefinedName, // 50, external class refs, like TextUtils
                 IProblem.UndefinedField, // 70
                 IProblem.UnresolvedVariable, // 83
+                IProblem.MissingSerialVersion, // 96 serializable class does not declare static final serialVersionUID
                 IProblem.UndefinedMethod, // 100 entities with super class
                 IProblem.MissingTypeInMethod, // 120
                 IProblem.MissingTypeInConstructor, // 129
