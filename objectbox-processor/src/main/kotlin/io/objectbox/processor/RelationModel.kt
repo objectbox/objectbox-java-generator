@@ -2,9 +2,11 @@ package io.objectbox.processor
 
 import io.objectbox.generator.IdUid
 import io.objectbox.generator.model.Entity
+import io.objectbox.generator.model.HasParsedElement
 import io.objectbox.generator.model.PropertyType
 import io.objectbox.generator.model.Schema
 import javax.annotation.processing.Messager
+import javax.lang.model.element.Element
 import javax.tools.Diagnostic
 
 data class ToOneRelation(
@@ -113,13 +115,13 @@ class Relations(private val messager: Messager) {
         }
         if (targetEntity == null) {
             error("Relation target class ${toOne.targetEntityName} " +
-                    "defined in class ${entity.className} could not be found (is it an @Entity?)")
+                    "defined in class ${entity.className} could not be found (is it an @Entity?)", entity)
             return false
         }
 
         val targetIdProperty = entity.findPropertyByName(toOne.targetIdName)
         if (targetIdProperty == null) {
-            error("Could not find property ${toOne.targetIdName} in ${entity.className}.")
+            error("Could not find property ${toOne.targetIdName} in ${entity.className}.", entity)
             return false
         }
 
@@ -137,7 +139,7 @@ class Relations(private val messager: Messager) {
         }
         if (targetEntity == null) {
             error("ToMany target class '${toMany.targetEntityName}' " +
-                    "defined in class '${entity.className}' could not be found (is it an @Entity?)")
+                    "defined in class '${entity.className}' could not be found (is it an @Entity?)", entity)
             return false
         }
 
@@ -148,11 +150,11 @@ class Relations(private val messager: Messager) {
             }
             if (targetToOne.isEmpty()) {
                 error("A to-one relation must be added to '${targetEntity.className}' to create the to-many relation " +
-                        "'${toMany.propertyName}' in '${entity.className}'.")
+                        "'${toMany.propertyName}' in '${entity.className}'.", entity)
                 return false
             } else if (targetToOne.size > 1) {
                 error("Set name of one to-one relation of '${targetEntity.className}' as @Backlink 'to' value to " +
-                        "create the to-many relation '${toMany.propertyName}' in '${entity.className}'.")
+                        "create the to-many relation '${toMany.propertyName}' in '${entity.className}'.", entity)
                 return false
             }
             targetToOne[0]
@@ -162,7 +164,7 @@ class Relations(private val messager: Messager) {
                 it.targetEntity == entity && it.name == toMany.targetIdName
             }
             if (targetToOne == null) {
-                error("Could not find property '${toMany.targetIdName}' in '${entity.className}'.")
+                error("Could not find property '${toMany.targetIdName}' in '${entity.className}'.", entity)
                 return false
             }
             targetToOne
@@ -172,8 +174,9 @@ class Relations(private val messager: Messager) {
         return true
     }
 
-    private fun error(message: String) {
-        messager.printMessage(Diagnostic.Kind.ERROR, "ObjectBox: " + message)
+    private fun error(message: String, elementHolder: HasParsedElement? = null) {
+        val element: Element? = if (elementHolder?.parsedElement is Element) elementHolder.parsedElement as Element else null
+        messager.printMessage(Diagnostic.Kind.ERROR, "ObjectBox processor: " + message, element)
     }
 
 }
