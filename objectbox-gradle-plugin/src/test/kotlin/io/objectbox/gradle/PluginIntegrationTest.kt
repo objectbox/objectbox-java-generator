@@ -4,6 +4,7 @@ import org.gradle.testkit.runner.GradleRunner
 import org.greenrobot.essentials.StringUtils
 import org.greenrobot.essentials.io.IoUtils
 import org.junit.Assert.*
+import org.junit.Ignore
 import org.junit.Test
 import java.io.File
 import java.io.FileInputStream
@@ -12,7 +13,7 @@ import java.io.FileInputStream
  * See https://docs.gradle.org/current/userguide/test_kit.html
  * See https://docs.gradle.org/current/javadoc/org/gradle/testkit/runner/GradleRunner.html
  */
-class PluginTest {
+class PluginIntegrationTest {
 
     @Test
     fun buildTestProjectJava() {
@@ -21,11 +22,19 @@ class PluginTest {
     }
 
     @Test
-    fun buildTestProjectKotlinAndroid() {
+    fun buildTestProjectKotlinJavaEntitiesAndroid() {
         // Disable Lint, fails with kotlin-android
         val args = listOf("--stacktrace", "clean", "build", "-xlint")
-        buildTestProject("kotlin-android", args, "io/objectbox/test/kotlin")
+        buildTestProject("kotlin-java-entities-android", args, "io/objectbox/test/kotlin")
     }
+
+//    @Test
+//    @Ignore("FIXME")
+//    fun buildTestProjectKotlinAndroid() {
+//        // Disable Lint, fails with kotlin-android
+//        val args = listOf("--stacktrace", "--refresh-dependencies", "clean", "build", "-xlint")
+//        buildTestProject("kotlin-android", args, "io/objectbox/test/kotlin")
+//    }
 
     fun buildTestProject(name: String, args: List<String>, expectedPackageDir: String) {
         var dir = File("test-gradle-projects/" + name)

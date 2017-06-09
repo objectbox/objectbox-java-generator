@@ -13,14 +13,9 @@ import java.io.File
  * NOTE class should be opened because gradle inherits from it
  */
 open class ObjectBoxOptions(val project: Project) {
-    /**
-     * Package name for generated DAOs, DaoMaster, and DaoSession.
-     * The value is optional, by default package name is taken from source entities.
-     */
-    var daoPackage: String? = null
 
     /**
-     * Base directory where generated DAO classes should be put (default: ${buildDir}/generated/source/greendao).
+     * Base directory where generated DAO classes should be put (default: ${buildDir}/generated/source/objectbox).
      * Note that this must be configured to be a src directory. When the default (no-value) is used, the dir is added
      * as a src folder automatically.
      *
@@ -62,6 +57,8 @@ open class ObjectBoxOptions(val project: Project) {
 
     var daoCompat = false
 
+    var allowApt = false
+
     internal val formatting = FormattingExtension()
     internal val schemas = SchemasExtension(project)
 
@@ -90,17 +87,12 @@ open class ObjectBoxOptions(val project: Project) {
         this.schemaVersion = version
     }
 
-    /** @see daoPackage */
-    fun daoPackage(pkg: String) {
-        this.daoPackage = pkg
-    }
-
     /**
      * Configures formatting with closure for the code generated inside @Entity annotated classes.
      *
      * Example:
      * ```
-     * greendao {
+     * objectbox {
      *   // ...
      *   formatting {
      *      tabulation space:4
@@ -130,7 +122,6 @@ open class ObjectBoxOptions(val project: Project) {
      * 2. Describe schemas like this:
      * ```
      * objectbox {
-     *    daoPackage "com.example.myapp.defaultdao" // configures default daoPackage
      *    schemaVersion 124
      *    genSrcDir "src/greendao-gen-src/java"
      *
@@ -172,6 +163,7 @@ open class ObjectBoxOptions(val project: Project) {
     fun daoCompat(value: Boolean) {
         this.daoCompat = value
     }
+
 }
 
 class FormattingExtension {
@@ -191,8 +183,8 @@ class FormattingExtension {
         if (spec.size > 0) {
             val key = spec.entries.first().key
             val size = spec[key] as Int
-            require(size > 0) { "ObjectBox formatting: tabulation size should be greater than 0"}
-            data.tabulation = when(key.toLowerCase()) {
+            require(size > 0) { "ObjectBox formatting: tabulation size should be greater than 0" }
+            data.tabulation = when (key.toLowerCase()) {
                 "tab" -> Tabulation('\t', size)
                 "space" -> Tabulation(' ', size)
                 else -> throw IllegalArgumentException("ObjectBox formatting: Unsupported tab char. Use 'space' or 'tab'")

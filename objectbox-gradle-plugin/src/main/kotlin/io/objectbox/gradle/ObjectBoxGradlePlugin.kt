@@ -14,17 +14,18 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
 
 
     override fun apply(project: Project) {
-        val env= ProjectEnv(project)
+        val env = ProjectEnv(project)
         env.logDebug("$name plugin starting...")
-        project.extensions.create(name, ObjectBoxOptions::class.java, project)
 
         val version = env.objectBoxVersion
         project.logger.debug("$name plugin $version preparing tasks...")
 
-        if (env.hasKotlinAndroidPlugin) {
+        val allowApt = env.options.allowApt
+        env.logDebug("objectbox.allowApt: $allowApt")
+        if (allowApt && env.hasKotlinAndroidPlugin) {
             project.dependencies.add("kapt", "io.objectbox:objectbox-processor:$version")
             project.dependencies.add("kaptAndroidTest", "io.objectbox:objectbox-processor:$version")
-        } else if (env.hasKotlinPlugin) {
+        } else if (allowApt && env.hasKotlinPlugin) {
             project.dependencies.add("kapt", "io.objectbox:objectbox-processor:$version")
 
             project.logger.warn("ObjectBox: NO TRANSFORM SUPPORT for plain Kotlin projects yet. " +
@@ -33,7 +34,7 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
             addJavaModifierTasks(env)
         }
 
-        if(env.hasAndroidPlugin) {
+        if (env.hasAndroidPlugin) {
             // Cannot use afterEvaluate to register transform, thus out plugin must be applied after Android
             ObjectBoxAndroidTransform.Registration.to(project)
         }
@@ -41,7 +42,7 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
 
     private fun addJavaModifierTasks(env: ProjectEnv) {
         val project = env.project
-        val sourceProvider =  when {
+        val sourceProvider = when {
             env.hasJavaPlugin -> JavaPluginSourceProvider(project)
             env.hasAndroidPlugin -> AndroidPluginSourceProvider(project)
             else -> throw RuntimeException("No Java/Android plugin found. Apply ObjectBox plugin AFTER those.")
@@ -59,19 +60,17 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
         prepareTask.group = name
         prepareTask.description = "Finds entity source files for $name"
 
-        val options = project.extensions.getByType(ObjectBoxOptions::class.java)
-        val writeToBuildFolder = options.targetGenDir == null
+        val writeToBuildFolder = env.options.targetGenDir == null
         val targetGenDir = if (writeToBuildFolder)
-            File(project.buildDir, "generated/source/$name") else options.targetGenDir!!
+            File(project.buildDir, "generated/source/$name") else env.options.targetGenDir!!
 
-        val objectboxTask = createObjectBoxTask(env, candidatesFile, options, targetGenDir, encoding)
+        val objectboxTask = createObjectBoxTask(env, candidatesFile, targetGenDir, encoding)
         objectboxTask.dependsOn(prepareTask)
 
         sourceProvider.addGeneratorTask(objectboxTask, targetGenDir, writeToBuildFolder)
     }
 
-    private fun createObjectBoxTask(env: ProjectEnv, candidatesFile: File, options: ObjectBoxOptions,
-                                    targetGenDir: File, encoding: String): Task {
+    private fun createObjectBoxTask(env: ProjectEnv, candidatesFile: File, targetGenDir: File, encoding: String): Task {
         val project = env.project
         val generateTask = project.task(name).apply {
             logging.captureStandardOutput(LogLevel.INFO)
@@ -80,7 +79,7 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
             inputs.property("plugin-version", env.objectBoxVersion)
             inputs.property("source-encoding", encoding)
 
-            val schemaOptions = collectSchemaOptions(project, targetGenDir, options)
+            val schemaOptions = collectSchemaOptions(project, targetGenDir, env.options)
 
             schemaOptions.forEach { e ->
                 inputs.property("schema-${e.key}", e.value.toString())
@@ -91,8 +90,8 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
             })
             outputs.files(outputFileTree)
 
-            if (options.generateTests) {
-                outputs.dir(options.targetGenDirTests)
+            if (env.options.generateTests) {
+                outputs.dir(env.options.targetGenDirTests)
             }
 
             doLast {
@@ -104,9 +103,9 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
                 val candidatesFiles = candidatesFile.readLines().asSequence().drop(1).map { File(it) }.asIterable()
 
                 ObjectBoxGenerator(
-                        options.formatting.data,
-                        options.skipTestGeneration,
-                        options.daoCompat,
+                        env.options.formatting.data,
+                        env.options.skipTestGeneration,
+                        env.options.daoCompat,
                         encoding
                 ).run(candidatesFiles, schemaOptions)
             }
@@ -122,7 +121,7 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
         val defaultOptions = SchemaOptions(
                 name = "default",
                 version = options.schemaVersion,
-                daoPackage = options.daoPackage,
+                daoPackage = null, // TODO remove completely
                 outputDir = genSrcDir,
                 testsOutputDir = if (options.generateTests) options.targetGenDirTests else null,
                 idModelFile = File(idModelDir, "default.json")

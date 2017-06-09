@@ -10,6 +10,9 @@ class ProjectEnv(val project: Project) {
         const val packageName: String = "io/objectbox"
     }
 
+    // FIXME options do not pick up values!!
+    val options = project.extensions.create(Const.name, ObjectBoxOptions::class.java, project)!!
+
     val hasAndroidPlugin = listOf("android", "android-library", "com.android.application", "com.android.library")
             .any { project.plugins.hasPlugin(it) }
 
@@ -29,4 +32,5 @@ class ProjectEnv(val project: Project) {
 
     fun logDebug(msg: String) = project.logger.debug(msg)
     fun logInfo(msg: String) = project.logger.info(msg)
+    fun logWarn(msg: String) = project.logger.warn(msg)
 }
