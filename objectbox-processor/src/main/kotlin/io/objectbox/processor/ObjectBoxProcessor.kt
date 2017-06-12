@@ -95,7 +95,9 @@ open class ObjectBoxProcessor : AbstractProcessor() {
     override fun getSupportedOptions(): MutableSet<String> {
         val options = LinkedHashSet<String>()
         options.add(OPTION_MODEL_PATH)
+        options.add(OPTION_DAO_COMPAT)
         options.add(OPTION_DAO_PACKAGE)
+        options.add(OPTION_TRANSFORMATION_ENABLED)
         return options
     }
 
