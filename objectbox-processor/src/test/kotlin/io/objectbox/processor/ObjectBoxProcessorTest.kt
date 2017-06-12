@@ -241,10 +241,8 @@ class ObjectBoxProcessorTest {
         assertThat(processor.errorCount).isEqualTo(1)
         val firstError = compilation.diagnostics()[0]
         assertThat(firstError.source.name).endsWith("/ToOneNoBoxStore.java")
-        // Not nice to check the message but how to check it was the Processor
-        assertThat(firstError.getMessage(null)).isEqualTo(
-                "Entity ToOneNoBoxStore has relations and thus must have a field \"__boxStore\" of typeBoxStore;" +
-                        " please add it manually");
+        // Not nice to check the message but how to verify it was raised by the processor?
+        assertThat(firstError.getMessage(null)).contains("__boxStore")
 
     }
 
