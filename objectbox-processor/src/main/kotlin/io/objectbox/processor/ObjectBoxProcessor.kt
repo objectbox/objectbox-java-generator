@@ -50,6 +50,8 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         val OPTION_MODEL_PATH: String = "objectbox.modelPath"
         val OPTION_DAO_COMPAT: String = "objectbox.daoCompat"
         val OPTION_DAO_PACKAGE: String = "objectbox.daoPackage"
+        /** Set by ObjectBox plugin */
+        val OPTION_TRANSFORMATION_ENABLED: String = "objectbox.transformationEnabled"
     }
 
     // make processed schema accessible for testing
@@ -61,6 +63,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
     private var projectRoot: File? = null
     private var customModelPath: String? = null
     private var daoCompat: Boolean = false
+    private var transformationEnabled: Boolean = false
     private var daoCompatPackage: String? = null
     var errorCount = 0
 
@@ -71,9 +74,10 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         typeUtils = env.typeUtils
         filer = env.filer
 
-        customModelPath = env.options.get(OPTION_MODEL_PATH)
-        daoCompat = "true" == env.options.get(OPTION_DAO_COMPAT)
-        daoCompatPackage = env.options.get(OPTION_DAO_PACKAGE)
+        customModelPath = env.options[OPTION_MODEL_PATH]
+        daoCompat = "true" == env.options[OPTION_DAO_COMPAT]
+        daoCompatPackage = env.options[OPTION_DAO_PACKAGE]
+        transformationEnabled = "true" == env.options[OPTION_TRANSFORMATION_ENABLED]
 
         try {
             projectRoot = findProjectRoot(env.filer)
@@ -179,7 +183,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
             parseField(entityModel, relations, field)
             hasBoxStore = hasBoxStore || (field.simpleName.toString() == "__boxStore")
         }
-        if (!hasBoxStore && relations.hasRelations()) {
+        if (!transformationEnabled && !hasBoxStore && relations.hasRelations()) {
             error("Entity ${entityModel.className} has relations and thus must have a field \"__boxStore\" of type" +
                     "BoxStore; please add it manually", entity)
             return
