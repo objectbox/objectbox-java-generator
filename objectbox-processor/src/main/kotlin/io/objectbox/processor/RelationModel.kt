@@ -30,7 +30,8 @@ class Relations(private val messager: Messager) {
     val toOneByEntity: MutableMap<io.objectbox.generator.model.Entity, MutableList<ToOneRelation>> = mutableMapOf()
     val toManyByEntity: MutableMap<io.objectbox.generator.model.Entity, MutableList<ToManyRelation>> = mutableMapOf()
 
-    fun hasRelations() = toOneByEntity.isNotEmpty() || toManyByEntity.isNotEmpty()
+    fun hasRelations(entity: Entity) =
+            (toOneByEntity[entity]?.isNotEmpty() ?: false) || (toManyByEntity[entity]?.isNotEmpty() ?: false)
 
     fun collectToOne(entity: Entity, toOne: ToOneRelation) {
         var toOnes = toOneByEntity[entity]

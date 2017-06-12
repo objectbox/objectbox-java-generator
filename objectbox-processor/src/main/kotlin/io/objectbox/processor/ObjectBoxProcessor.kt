@@ -185,7 +185,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
             parseField(entityModel, relations, field)
             hasBoxStore = hasBoxStore || (field.simpleName.toString() == "__boxStore")
         }
-        if (!transformationEnabled && !hasBoxStore && relations.hasRelations()) {
+        if (!transformationEnabled && !hasBoxStore && relations.hasRelations(entityModel)) {
             error("Entity ${entityModel.className} has relations and thus must have a field \"__boxStore\" of type" +
                     "BoxStore; please add it manually", entity)
             return
