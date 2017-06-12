@@ -115,14 +115,14 @@ class Relations(private val messager: Messager) {
             it.className == toOne.targetEntityName
         }
         if (targetEntity == null) {
-            error("Relation target class ${toOne.targetEntityName} " +
-                    "defined in class ${entity.className} could not be found (is it an @Entity?)", entity)
+            error("Relation target class '${toOne.targetEntityName}' " +
+                    "defined in class '${entity.className}' could not be found (is it an @Entity?)", entity)
             return false
         }
 
         val targetIdProperty = entity.findPropertyByName(toOne.targetIdName)
         if (targetIdProperty == null) {
-            error("Could not find property ${toOne.targetIdName} in ${entity.className}.", entity)
+            error("Could not find property '${toOne.targetIdName}' in '${entity.className}'.", entity)
             return false
         }
 
@@ -176,8 +176,10 @@ class Relations(private val messager: Messager) {
     }
 
     private fun error(message: String, elementHolder: HasParsedElement? = null) {
-        val element: Element? = if (elementHolder?.parsedElement is Element) elementHolder.parsedElement as Element else null
-        messager.printMessage(Diagnostic.Kind.ERROR, "ObjectBox processor: " + message, element)
+        val element: Element? = if (elementHolder?.parsedElement is Element) {
+            elementHolder.parsedElement as Element
+        } else null
+        messager.printMessage(Diagnostic.Kind.ERROR, "ObjectBox: " + message, element)
     }
 
 }
