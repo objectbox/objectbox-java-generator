@@ -149,7 +149,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
             BoxGenerator(daoCompat).generateAll(schema, filer)
         } catch (e: Exception) {
             error("Code generation failed: ${e.message}")
-            e.printStackTrace() // TODO ut: might want to include in above error message in the future
+            e.printStackTrace()
         }
     }
 
@@ -174,9 +174,6 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         if (uidAnnotation != null && uidAnnotation.value != 0L) {
             entityModel.modelUid = uidAnnotation.value
         }
-
-        // TODO ut: add missing entity build steps
-        // compare with io.objectbox.codemodifier.GreendaoModelTranslator.convertEntities
 
         // parse properties
         val fields = ElementFilter.fieldsIn(entity.enclosedElements)
@@ -305,11 +302,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         )
     }
 
-    private fun parseProperty(entity: io.objectbox.generator.model.Entity, field: VariableElement): Property? {
-
-        // Compare with EntityClassASTVisitor.endVisit()
-        // and GreendaoModelTranslator.convertProperty()
-
+    private fun parseProperty(entity: io.objectbox.generator.model.Entity, field: VariableElement) {
         // Why nullable? A property might not be parsed due to an error. We do not throw here.
         val propertyBuilder: Property.PropertyBuilder?
 
@@ -321,7 +314,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
             propertyBuilder = parseSupportedProperty(entity, field)
         }
         if (propertyBuilder == null) {
-            return null
+            return
         }
         propertyBuilder.property.parsedElement = field
 
@@ -359,10 +352,6 @@ open class ObjectBoxProcessor : AbstractProcessor() {
             // just storing uid, id model sync will replace with correct id+uid
             propertyBuilder.modelId(IdUid(0, uidAnnotation.value))
         }
-
-        // TODO ut: add remaining property build steps
-
-        return propertyBuilder.property
     }
 
     private fun parseCustomProperty(entity: io.objectbox.generator.model.Entity, field: VariableElement): Property.PropertyBuilder? {
@@ -466,7 +455,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
             return null
         }
 
-        // TODO ut: this only works for Java types, not Kotlin types
+        // also handles Kotlin types as they are mapped to Java primitive (wrapper) types at compile time
         if (isTypeEqual(typeMirror, java.lang.Short::class.java.name) || typeMirror.kind == TypeKind.SHORT) {
             return PropertyType.Short
         }
