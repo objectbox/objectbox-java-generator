@@ -296,6 +296,20 @@ class ObjectBoxProcessorTest {
     }
 
     @Test
+    fun testBacklinkMissing() {
+        // test if missing @Backlink on ToMany field is detected
+        val parentName = "BacklinkMissingParent"
+        val childName = "IdEntity"
+
+        val environment = TestEnvironment()
+
+        val compilation = environment.compile("backlink-missing.json", parentName, childName)
+        CompilationSubject.assertThat(compilation).failed()
+
+        CompilationSubject.assertThat(compilation).hadErrorContaining("ToMany field must be annotated with @Backlink")
+    }
+
+    @Test
     fun testKotlinByteCode() {
         val entityName = "SimpleKotlinEntity"
 
