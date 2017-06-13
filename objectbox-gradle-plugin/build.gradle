@@ -22,14 +22,13 @@ sourceSets {
 dependencies {
     compile gradleApi()
     compile project(':objectbox-code-modifier')
-    def androidVersion = '2.3.2'
-    compileOnly "com.android.tools.build:gradle:$androidVersion"
+    compileOnly "com.android.tools.build:gradle:$android_version"
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     compile 'org.javassist:javassist:3.21.0-GA'
 
     // For Gradle test projects (dir "test-gradle-projects")
     testCompile "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-    testCompile "com.android.tools.build:gradle:$androidVersion"
+    testCompile "com.android.tools.build:gradle:$android_version"
 
     testCompile 'junit:junit:4.12'
     testCompile 'org.mockito:mockito-core:2.7.22'
