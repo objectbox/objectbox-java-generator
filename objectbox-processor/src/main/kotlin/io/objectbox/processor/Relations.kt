@@ -1,5 +1,10 @@
 package io.objectbox.processor
 
+import io.objectbox.annotation.Backlink
+import io.objectbox.annotation.NameInDb
+import io.objectbox.annotation.Relation
+import io.objectbox.annotation.Uid
+import io.objectbox.codemodifier.nullIfBlank
 import io.objectbox.generator.IdUid
 import io.objectbox.generator.model.Entity
 import io.objectbox.generator.model.HasParsedElement
@@ -7,7 +12,9 @@ import io.objectbox.generator.model.PropertyType
 import io.objectbox.generator.model.Schema
 import javax.annotation.processing.Messager
 import javax.lang.model.element.Element
-import javax.tools.Diagnostic
+import javax.lang.model.element.Modifier
+import javax.lang.model.element.VariableElement
+import javax.lang.model.type.DeclaredType
 
 data class ToOneRelation(
         val propertyName: String,
@@ -25,15 +32,68 @@ data class ToManyRelation(
         var targetIdName: String? = null
 )
 
+/**
+ * Parses and keeps records of to-one and to-many relations of all parsed entities.
+ */
 class Relations(private val messager: Messager) {
 
-    val toOneByEntity: MutableMap<io.objectbox.generator.model.Entity, MutableList<ToOneRelation>> = mutableMapOf()
-    val toManyByEntity: MutableMap<io.objectbox.generator.model.Entity, MutableList<ToManyRelation>> = mutableMapOf()
+    val toOneByEntity: MutableMap<Entity, MutableList<ToOneRelation>> = mutableMapOf()
+    val toManyByEntity: MutableMap<Entity, MutableList<ToManyRelation>> = mutableMapOf()
 
     fun hasRelations(entity: Entity) =
             (toOneByEntity[entity]?.isNotEmpty() ?: false) || (toManyByEntity[entity]?.isNotEmpty() ?: false)
 
-    fun collectToOne(entity: Entity, toOne: ToOneRelation) {
+    fun parseToMany(entityModel: Entity, field: VariableElement) {
+        // assuming List<TargetType> or ToMany<TargetType>
+        val toManyTypeMirror = field.asType() as DeclaredType
+        val targetTypeMirror = toManyTypeMirror.typeArguments[0] as DeclaredType
+        // can simply get as element as code would not have compiled if target type is not known
+        val targetEntityName = targetTypeMirror.asElement().simpleName
+
+        val backlinkAnnotation = field.getAnnotation(Backlink::class.java)
+
+        val toMany = ToManyRelation(
+                propertyName = field.simpleName.toString(),
+                targetEntityName = targetEntityName.toString(),
+                targetIdName = backlinkAnnotation.to.nullIfBlank()
+        )
+
+        collectToMany(entityModel, toMany)
+    }
+
+    fun parseRelation(entityModel: Entity, field: VariableElement) {
+        val targetTypeMirror = field.asType() as DeclaredType
+        val relationAnnotation = field.getAnnotation(Relation::class.java)
+        val targetIdName = if (relationAnnotation.idProperty.isBlank()) null else relationAnnotation.idProperty
+        val toOne = buildToOneRelation(field, targetTypeMirror, targetIdName, false)
+
+        collectToOne(entityModel, toOne)
+    }
+
+    fun parseToOne(entityModel: Entity, field: VariableElement) {
+        // assuming ToOne<TargetType>
+        val toOneTypeMirror = field.asType() as DeclaredType
+        val targetTypeMirror = toOneTypeMirror.typeArguments[0] as DeclaredType
+        val toOne = buildToOneRelation(field, targetTypeMirror, null, true)
+
+        collectToOne(entityModel, toOne)
+    }
+
+    private fun buildToOneRelation(field: VariableElement, targetType: DeclaredType, targetIdName: String?,
+                                   isExplicitToOne: Boolean): ToOneRelation {
+        return ToOneRelation(
+                propertyName = field.simpleName.toString(),
+                // can simply get as element as code would not have compiled if target type is not known
+                targetEntityName = targetType.asElement().simpleName.toString(),
+                targetIdName = targetIdName,
+                targetIdDbName = field.getAnnotation(NameInDb::class.java)?.value?.nullIfBlank(),
+                targetIdUid = field.getAnnotation(Uid::class.java)?.value?.let { if (it == 0L) null else it },
+                variableIsToOne = isExplicitToOne,
+                variableFieldAccessible = !field.modifiers.contains(Modifier.PRIVATE)
+        )
+    }
+
+    private fun collectToOne(entity: Entity, toOne: ToOneRelation) {
         var toOnes = toOneByEntity[entity]
         if (toOnes == null) {
             toOnes = mutableListOf<ToOneRelation>()
@@ -42,7 +102,7 @@ class Relations(private val messager: Messager) {
         toOnes.add(toOne)
     }
 
-    fun collectToMany(entity: Entity, toMany: ToManyRelation) {
+    private fun collectToMany(entity: Entity, toMany: ToManyRelation) {
         var toManys = toManyByEntity[entity]
         if (toManys == null) {
             toManys = mutableListOf<ToManyRelation>()
@@ -179,7 +239,7 @@ class Relations(private val messager: Messager) {
         val element: Element? = if (elementHolder?.parsedElement is Element) {
             elementHolder.parsedElement as Element
         } else null
-        messager.printMessage(Diagnostic.Kind.ERROR, "ObjectBox: " + message, element)
+        messager.printCustomError(message, element)
     }
 
 }
