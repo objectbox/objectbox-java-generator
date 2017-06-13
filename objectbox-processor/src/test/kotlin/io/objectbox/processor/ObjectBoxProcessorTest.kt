@@ -223,6 +223,29 @@ class ObjectBoxProcessorTest {
     }
 
     @Test
+    fun testToOneAllArgsConstructor() {
+        // tests if constructor with param for virtual property is recognized
+        // implicitly tests if all-args-constructor check can handle virtual properties
+        val parentName = "ToOneParent"
+        val childName = "ToOneAllArgs"
+        val entityParent = JavaFileObjects.forResource("$parentName.java")
+        val entityChild = JavaFileObjects.forResource("$childName.java")
+
+        val processor = ObjectBoxProcessorShim()
+
+        val modelFile = "to-one-all-args.json"
+        val compilation = javac()
+                .withProcessors(processor)
+                .withOptions("$processorOptionBasePath$modelFile")
+                .compile(entityParent, entityChild)
+        CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
+
+        val schema = processor.schema!!
+        val child = schema.entities.single { it.className == childName }
+        assertThat(child.isConstructors).isTrue()
+    }
+
+    @Test
     fun testToOneNoBoxStoreField() {
         // tested relation: a child has a parent
         val parentName = "ToOneParent"
@@ -243,7 +266,6 @@ class ObjectBoxProcessorTest {
         assertThat(firstError.source.name).endsWith("/ToOneNoBoxStore.java")
         // Not nice to check the message but how to verify it was raised by the processor?
         assertThat(firstError.getMessage(null)).contains("__boxStore")
-
     }
 
     @Test

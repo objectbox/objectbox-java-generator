@@ -11,17 +11,13 @@ import io.objectbox.annotation.Uid
 import io.objectbox.generator.IdUid
 import io.objectbox.generator.model.Entity
 import io.objectbox.generator.model.Property
-import io.objectbox.generator.model.PropertyType
 import io.objectbox.relation.ToMany
 import io.objectbox.relation.ToOne
-import java.util.*
 import javax.annotation.processing.Messager
 import javax.lang.model.element.AnnotationMirror
 import javax.lang.model.element.Element
 import javax.lang.model.element.Modifier
 import javax.lang.model.element.VariableElement
-import javax.lang.model.type.ArrayType
-import javax.lang.model.type.TypeKind
 import javax.lang.model.type.TypeMirror
 import javax.lang.model.util.ElementFilter
 import javax.lang.model.util.Elements
@@ -56,11 +52,11 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messager:
         if (field.hasAnnotation(Relation::class.java)) {
             // @Relation property
             relations.parseRelation(entityModel, field)
-        } else if (isTypeEqual(field.asType(), ToOne::class.java.name, eraseTypeParameters = true)) {
+        } else if (field.asType().isTypeEqualTo(typeUtils, ToOne::class.java.name, eraseTypeParameters = true)) {
             // ToOne<TARGET> property
             relations.parseToOne(entityModel, field)
         } else if (!field.hasAnnotation(Convert::class.java)
-                && isTypeEqual(field.asType(), List::class.java.name, eraseTypeParameters = true)) {
+                && field.asType().isTypeEqualTo(typeUtils, List::class.java.name, eraseTypeParameters = true)) {
             if (!field.hasAnnotation(Backlink::class.java)) {
                 error("Is this a custom type or to-many relation? Add @Convert or @Backlink. (${field.qualifiedName})",
                         field)
@@ -68,7 +64,7 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messager:
             }
             // List<TARGET> property
             relations.parseToMany(entityModel, field)
-        } else if (isTypeEqual(field.asType(), ToMany::class.java.name, eraseTypeParameters = true)) {
+        } else if (field.asType().isTypeEqualTo(typeUtils, ToMany::class.java.name, eraseTypeParameters = true)) {
             if (!field.hasAnnotation(Backlink::class.java)) {
                 error("ToMany field must be annotated with @Backlink. (${field.qualifiedName})", field)
                 return
@@ -142,7 +138,7 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messager:
         val converter = getAnnotationValueType(annotationMirror, "converter")
         val dbType = getAnnotationValueType(annotationMirror, "dbType")
 
-        val propertyType = getPropertyType(dbType)
+        val propertyType = dbType?.getPropertyType(typeUtils)
         if (propertyType == null) {
             error("@Convert dbType type is not supported, use a Java primitive wrapper class. (${field.qualifiedName})",
                     field)
@@ -160,7 +156,7 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messager:
 
     private fun parseSupportedProperty(field: VariableElement): Property.PropertyBuilder? {
         val typeMirror = field.asType()
-        val propertyType = getPropertyType(typeMirror)
+        val propertyType = typeMirror.getPropertyType(typeUtils)
         if (propertyType == null) {
             error("Field type is not supported, use @Convert or @Transient. (${field.qualifiedName})", field)
             return null
@@ -202,64 +198,6 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messager:
             }
         }
         return null
-    }
-
-    private fun getPropertyType(typeMirror: TypeMirror?): PropertyType? {
-        if (typeMirror == null) {
-            return null
-        }
-
-        // also handles Kotlin types as they are mapped to Java primitive (wrapper) types at compile time
-        if (isTypeEqual(typeMirror, java.lang.Short::class.java.name) || typeMirror.kind == TypeKind.SHORT) {
-            return PropertyType.Short
-        }
-        if (isTypeEqual(typeMirror, java.lang.Integer::class.java.name) || typeMirror.kind == TypeKind.INT) {
-            return PropertyType.Int
-        }
-        if (isTypeEqual(typeMirror, java.lang.Long::class.java.name) || typeMirror.kind == TypeKind.LONG) {
-            return PropertyType.Long
-        }
-
-        if (isTypeEqual(typeMirror, java.lang.Float::class.java.name) || typeMirror.kind == TypeKind.FLOAT) {
-            return PropertyType.Float
-        }
-        if (isTypeEqual(typeMirror, java.lang.Double::class.java.name) || typeMirror.kind == TypeKind.DOUBLE) {
-            return PropertyType.Double
-        }
-
-        if (isTypeEqual(typeMirror, java.lang.Boolean::class.java.name) || typeMirror.kind == TypeKind.BOOLEAN) {
-            return PropertyType.Boolean
-        }
-        if (isTypeEqual(typeMirror, java.lang.Byte::class.java.name) || typeMirror.kind == TypeKind.BYTE) {
-            return PropertyType.Byte
-        }
-        if (isTypeEqual(typeMirror, Date::class.java.name)) {
-            return PropertyType.Date
-        }
-        if (isTypeEqual(typeMirror, java.lang.String::class.java.name)) {
-            return PropertyType.String
-        }
-
-        if (typeMirror.kind == TypeKind.ARRAY) {
-            val arrayType = typeMirror as ArrayType
-            if (arrayType.componentType.kind == TypeKind.BYTE) {
-                return PropertyType.ByteArray
-            }
-        }
-
-        return null
-    }
-
-    /**
-     * @param eraseTypeParameters Set to true to erase type parameters of a generic type, such as ToOne&lt;A&gt;
-     *     before comparison.
-     */
-    private fun isTypeEqual(typeMirror: TypeMirror, otherType: String, eraseTypeParameters: Boolean = false): Boolean {
-        if (eraseTypeParameters) {
-            return otherType == typeUtils.erasure(typeMirror).toString()
-        } else {
-            return otherType == typeMirror.toString()
-        }
     }
 
     private fun error(message: String, element: Element? = null) {

@@ -6,6 +6,7 @@ import io.objectbox.annotation.Uid
 import io.objectbox.generator.BoxGenerator
 import io.objectbox.generator.idsync.IdSync
 import io.objectbox.generator.idsync.IdSyncException
+import io.objectbox.generator.model.Property
 import io.objectbox.generator.model.Schema
 import java.io.File
 import java.io.FileNotFoundException
@@ -169,30 +170,45 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         // add missing foreign key properties and indexes for to-one relations
         relations.ensureForeignKeys(entityModel)
 
-        // Call only after all properties have been parsed
+        // signal if a constructor will be available
         entityModel.isConstructors = hasAllArgsConstructor(entity, entityModel)
     }
 
+    /**
+     * Returns true if the entity has a constructor where param types, names and order matches the properties of the
+     * given entity model.
+     */
     private fun hasAllArgsConstructor(entity: Element, entityModel: io.objectbox.generator.model.Entity): Boolean {
-        // check constructors for an valid all-args constructor
         val constructors = ElementFilter.constructorsIn(entity.enclosedElements)
         val properties = entityModel.properties
         for (constructor in constructors) {
-            if (properties.size == constructor.parameters.size) {
-                var diff = false
-                for ((idx, param) in constructor.parameters.withIndex()) {
-                    val property = properties[idx].parsedElement as VariableElement
-                    if (param.asType() != property.asType() || param.simpleName != property.simpleName) {
-                        diff = true
-                        break
-                    }
-                }
-                if (!diff) {
-                    return true
-                }
+            val parameters = constructor.parameters
+            if (parameters.size == properties.size && parametersMatchProperties(parameters, properties)) {
+                return true
             }
         }
         return false
+    }
+
+    private fun parametersMatchProperties(parameters: MutableList<out VariableElement>,
+                                          properties: MutableList<Property>): Boolean {
+        for ((idx, param) in parameters.withIndex()) {
+            val property = properties[idx]
+            if (property.parsedElement != null) {
+                val parsedElement = property.parsedElement as VariableElement
+                if (param.asType() != parsedElement.asType() || param.simpleName != parsedElement.simpleName) {
+                    return false
+                }
+            } else {
+                // special case: virtual property (to-one target id) that has no matching field
+                val paramPropertyType = param.asType().getPropertyType(typeUtils)
+                if (paramPropertyType != property.propertyType
+                        || param.simpleName.toString() != property.propertyName) {
+                    return false
+                }
+            }
+        }
+        return true
     }
 
     private fun syncIdModel(schema: Schema): Boolean {
