@@ -9,31 +9,50 @@ import io.objectbox.generator.IdUid
 import io.objectbox.generator.model.Entity
 import io.objectbox.generator.model.Property
 import io.objectbox.generator.model.PropertyType
+import io.objectbox.generator.model.Schema
 import io.objectbox.generator.model.ToMany
 import org.junit.Assert.fail
 import org.junit.Test
 
 class ObjectBoxProcessorTest {
 
-    val modelFilesBaseBath = "src/test/resources/objectbox-models/"
-    val processorOptionBasePath = "-A${ObjectBoxProcessor.OPTION_MODEL_PATH}=$modelFilesBaseBath"
+    class TestEnvironment {
+        val modelFilesBaseBath = "src/test/resources/objectbox-models/"
+        val processorOptionBasePath = "-A${ObjectBoxProcessor.OPTION_MODEL_PATH}=$modelFilesBaseBath"
+
+        val processor = ObjectBoxProcessorShim()
+
+        val schema: Schema
+                get() = processor.schema!!
+
+        fun compile(modelFile: String, vararg files: String): Compilation {
+            val fileObjects = files.map { JavaFileObjects.forResource("$it.java") }
+            return javac()
+                    .withProcessors(processor)
+                    .withOptions("$processorOptionBasePath$modelFile")
+                    .compile(fileObjects)
+        }
+
+        fun compileDaoCompat(modelFile: String, vararg files: String): Compilation {
+            val fileObjects = files.map { JavaFileObjects.forResource("$it.java") }
+            return javac()
+                    .withProcessors(processor)
+                    .withOptions(
+                            "$processorOptionBasePath$modelFile"
+                            // disabled as compat DAO currently requires entity property getters/setters
+//                        "-A${ObjectBoxProcessor.OPTION_DAO_COMPAT}=true"
+                    )
+                    .compile(fileObjects)
+        }
+    }
 
     @Test
     fun testProcessor() {
         val entityName = "SimpleEntity"
-        val entitySimple = JavaFileObjects.forResource("$entityName.java")
 
-        val processor = ObjectBoxProcessorShim()
+        val environment = TestEnvironment()
 
-        val modelFile = "default.json"
-        val compilation = javac()
-                .withProcessors(processor)
-                .withOptions(
-                        "$processorOptionBasePath$modelFile"
-                        // disabled as compat DAO currently requires entity property getters/setters
-//                        "-A${ObjectBoxProcessor.OPTION_DAO_COMPAT}=true"
-                )
-                .compile(entitySimple)
+        val compilation = environment.compileDaoCompat("default.json", entityName)
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
 
         // assert generated files source trees
@@ -42,9 +61,9 @@ class ObjectBoxProcessorTest {
         assertGeneratedSourceMatches(compilation, "${entityName}Cursor")
 
         // assert schema
-        val schema = processor.schema
+        val schema = environment.schema
         assertThat(schema).isNotNull()
-        assertThat(schema!!.version).isEqualTo(1)
+        assertThat(schema.version).isEqualTo(1)
         assertThat(schema.defaultJavaPackage).isEqualTo("io.objectbox.processor.test")
         assertThat(schema.lastEntityId).isEqualTo(IdUid(1, 4858050548069557694))
         assertThat(schema.lastIndexId).isEqualTo(IdUid(0, 0))
@@ -127,16 +146,10 @@ class ObjectBoxProcessorTest {
         // tested relation: a child has a parent
         val parentName = "RelationParent"
         val childName = "RelationChild"
-        val entityParent = JavaFileObjects.forResource("$parentName.java")
-        val entityChild = JavaFileObjects.forResource("$childName.java")
 
-        val processor = ObjectBoxProcessorShim()
+        val environment = TestEnvironment()
 
-        val modelFile = "relation.json"
-        val compilation = javac()
-                .withProcessors(processor)
-                .withOptions("$processorOptionBasePath$modelFile")
-                .compile(entityParent, entityChild)
+        val compilation = environment.compile("relation.json", parentName, childName)
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
 
         // assert generated files source trees
@@ -144,9 +157,9 @@ class ObjectBoxProcessorTest {
         assertGeneratedSourceMatches(compilation, "${childName}Cursor")
 
         // assert schema
-        val schema = processor.schema
+        val schema = environment.schema
         assertThat(schema).isNotNull()
-        assertThat(schema!!.entities).hasSize(2)
+        assertThat(schema.entities).hasSize(2)
 
         // assert entity
         val parent = schema.entities.single { it.className == parentName }
@@ -177,16 +190,10 @@ class ObjectBoxProcessorTest {
         // tested relation: a child has a parent
         val parentName = "ToOneParent"
         val childName = "ToOneChild"
-        val entityParent = JavaFileObjects.forResource("$parentName.java")
-        val entityChild = JavaFileObjects.forResource("$childName.java")
 
-        val processor = ObjectBoxProcessorShim()
+        val environment = TestEnvironment()
 
-        val modelFile = "to-one.json"
-        val compilation = javac()
-                .withProcessors(processor)
-                .withOptions("$processorOptionBasePath$modelFile")
-                .compile(entityParent, entityChild)
+        val compilation = environment.compile("to-one.json", parentName, childName)
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
 
         // assert generated files source trees
@@ -194,9 +201,9 @@ class ObjectBoxProcessorTest {
         assertGeneratedSourceMatches(compilation, "${childName}Cursor")
 
         // assert schema
-        val schema = processor.schema
+        val schema = environment.schema
         assertThat(schema).isNotNull()
-        assertThat(schema!!.entities).hasSize(2)
+        assertThat(schema.entities).hasSize(2)
 
         // assert entity
         val parent = schema.entities.single { it.className == parentName }
@@ -228,19 +235,13 @@ class ObjectBoxProcessorTest {
         // implicitly tests if all-args-constructor check can handle virtual properties
         val parentName = "ToOneParent"
         val childName = "ToOneAllArgs"
-        val entityParent = JavaFileObjects.forResource("$parentName.java")
-        val entityChild = JavaFileObjects.forResource("$childName.java")
 
-        val processor = ObjectBoxProcessorShim()
+        val environment = TestEnvironment()
 
-        val modelFile = "to-one-all-args.json"
-        val compilation = javac()
-                .withProcessors(processor)
-                .withOptions("$processorOptionBasePath$modelFile")
-                .compile(entityParent, entityChild)
+        val compilation = environment.compile("to-one-all-args.json", parentName, childName)
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
 
-        val schema = processor.schema!!
+        val schema = environment.schema
         val child = schema.entities.single { it.className == childName }
         assertThat(child.isConstructors).isTrue()
     }
@@ -250,22 +251,14 @@ class ObjectBoxProcessorTest {
         // tested relation: a child has a parent
         val parentName = "ToOneParent"
         val childName = "ToOneNoBoxStore"
-        val entityParent = JavaFileObjects.forResource("$parentName.java")
-        val entityChild = JavaFileObjects.forResource("$childName.java")
 
-        val processor = ObjectBoxProcessorShim()
+        val environment = TestEnvironment()
 
-        val modelFile = "to-one-no-boxstore.json"
-        val compilation = javac()
-                .withProcessors(processor)
-                .withOptions("$processorOptionBasePath$modelFile")
-                .compile(entityParent, entityChild)
+        val compilation = environment.compile("to-one-no-boxstore.json", parentName, childName)
         CompilationSubject.assertThat(compilation).failed()
-        assertThat(processor.errorCount).isEqualTo(1)
-        val firstError = compilation.diagnostics()[0]
-        assertThat(firstError.source.name).endsWith("/ToOneNoBoxStore.java")
-        // Not nice to check the message but how to verify it was raised by the processor?
-        assertThat(firstError.getMessage(null)).contains("__boxStore")
+
+        CompilationSubject.assertThat(compilation).hadErrorCount(1)
+        CompilationSubject.assertThat(compilation).hadErrorContainingMatch("in '$childName' add a field '__boxStore'")
     }
 
     @Test
@@ -273,22 +266,16 @@ class ObjectBoxProcessorTest {
         // tested relation: a parent has children
         val parentName = "BacklinkListParent"
         val childName = "BacklinkListChild"
-        val entityParent = JavaFileObjects.forResource("$parentName.java")
-        val entityChild = JavaFileObjects.forResource("$childName.java")
 
-        val processor = ObjectBoxProcessorShim()
+        val environment = TestEnvironment()
 
-        val modelFile = "backlink-list.json"
-        val compilation = javac()
-                .withProcessors(processor)
-                .withOptions("$processorOptionBasePath$modelFile")
-                .compile(entityParent, entityChild)
+        val compilation = environment.compile("backlink-list.json", parentName, childName)
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
 
         assertGeneratedSourceMatches(compilation, "${parentName}_")
         assertGeneratedSourceMatches(compilation, "${parentName}Cursor")
 
-        assertToManySchema(processor, parentName, childName)
+        assertToManySchema(environment.schema, parentName, childName)
     }
 
     @Test
@@ -296,42 +283,31 @@ class ObjectBoxProcessorTest {
         // tested relation: a parent has children
         val parentName = "BacklinkToManyParent"
         val childName = "BacklinkToManyChild"
-        val entityParent = JavaFileObjects.forResource("$parentName.java")
-        val entityChild = JavaFileObjects.forResource("$childName.java")
 
-        val processor = ObjectBoxProcessorShim()
+        val environment = TestEnvironment()
 
-        val modelFile = "backlink-to-many.json"
-        val compilation = javac()
-                .withProcessors(processor)
-                .withOptions("$processorOptionBasePath$modelFile")
-                .compile(entityParent, entityChild)
+        val compilation = environment.compile("backlink-to-many.json", parentName, childName)
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
 
         assertGeneratedSourceMatches(compilation, "${parentName}_")
         assertGeneratedSourceMatches(compilation, "${parentName}Cursor")
 
-        assertToManySchema(processor, parentName, childName)
+        assertToManySchema(environment.schema, parentName, childName)
     }
 
     @Test
     fun testKotlinByteCode() {
         val entityName = "SimpleKotlinEntity"
-        val entitySimple = JavaFileObjects.forResource("$entityName.java")
 
-        val processor = ObjectBoxProcessorShim()
+        val environment = TestEnvironment()
 
-        val modelFile = "kotlin.json"
-        val compilation = javac()
-                .withProcessors(processor)
-                .withOptions("$processorOptionBasePath$modelFile")
-                .compile(entitySimple)
+        val compilation = environment.compile("kotlin.json", entityName)
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
 
         // assert schema
-        val schema = processor.schema
+        val schema = environment.schema
         assertThat(schema).isNotNull()
-        assertThat(schema!!.version).isEqualTo(1)
+        assertThat(schema.version).isEqualTo(1)
         assertThat(schema.defaultJavaPackage).isEqualTo("io.objectbox.processor.test")
         assertThat(schema.entities).hasSize(1)
 
@@ -357,11 +333,10 @@ class ObjectBoxProcessorTest {
         }
     }
 
-    private fun assertToManySchema(processor: ObjectBoxProcessorShim, parentName: String, childName: String) {
+    private fun assertToManySchema(schema: Schema, parentName: String, childName: String) {
         // assert schema
-        val schema = processor.schema
         assertThat(schema).isNotNull()
-        assertThat(schema!!.entities).hasSize(2)
+        assertThat(schema.entities).hasSize(2)
 
         // assert parent properties
         val parent = schema.entities.single { it.className == parentName }
