@@ -310,6 +310,20 @@ class ObjectBoxProcessorTest {
     }
 
     @Test
+    fun testBacklinkMultiple() {
+        // test if multiple to-one fields for one @Backlink (without 'to' value) are detected
+        val parentName = "BacklinkMultipleParent"
+        val childName = "BacklinkMultipleChild"
+
+        val environment = TestEnvironment()
+
+        val compilation = environment.compile("backlink-multiple.json", parentName, childName)
+        CompilationSubject.assertThat(compilation).failed()
+
+        CompilationSubject.assertThat(compilation).hadErrorContaining("Set name of one to-one relation of '$childName'")
+    }
+
+    @Test
     fun testKotlinByteCode() {
         val entityName = "SimpleKotlinEntity"
 
