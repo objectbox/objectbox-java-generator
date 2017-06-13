@@ -28,12 +28,12 @@ import javax.lang.model.util.Elements
 import javax.lang.model.util.Types
 
 /**
- * Parses properties from field for a given entity and adds them to the entity model.
+ * Parses properties from fields for a given entity and adds them to the entity model.
  */
 class Properties(val elementUtils: Elements, val typeUtils: Types, val messager: Messager,
                  val relations: Relations, val entityModel: Entity, entityElement: Element) {
 
-    val fields = ElementFilter.fieldsIn(entityElement.enclosedElements)
+    val fields: List<VariableElement> = ElementFilter.fieldsIn(entityElement.enclosedElements)
 
     fun hasBoxStoreField(): Boolean {
         return fields.find { it.simpleName.toString() == "__boxStore" } != null
