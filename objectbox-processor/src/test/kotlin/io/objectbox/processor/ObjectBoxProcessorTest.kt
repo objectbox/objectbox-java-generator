@@ -23,7 +23,7 @@ class ObjectBoxProcessorTest {
         val processor = ObjectBoxProcessorShim()
 
         val schema: Schema
-                get() = processor.schema!!
+            get() = processor.schema!!
 
         fun compile(modelFile: String, vararg files: String): Compilation {
             val fileObjects = files.map { JavaFileObjects.forResource("$it.java") }
@@ -96,7 +96,7 @@ class ObjectBoxProcessorTest {
                     assertThat(prop.isPrimaryKey).isTrue()
                     assertThat(prop.isIdAssignable).isTrue()
                     assertThat(prop.dbName).isEqualTo("id")
-                    assertPrimitiveType(prop, PropertyType.Long)
+                    assertType(prop, PropertyType.Long)
                 }
                 "simpleShortPrimitive" -> assertPrimitiveType(prop, PropertyType.Short)
                 "simpleShort" -> assertType(prop, PropertyType.Short)
@@ -172,7 +172,7 @@ class ObjectBoxProcessorTest {
                     assertThat(prop.isPrimaryKey).isTrue()
                     assertThat(prop.isIdAssignable).isFalse()
                     assertThat(prop.dbName).isEqualTo("id")
-                    assertPrimitiveType(prop, PropertyType.Long)
+                    assertType(prop, PropertyType.Long)
                 }
                 "parentId" -> {
                     assertThat(prop.dbName).isEqualTo(prop.propertyName)
@@ -216,7 +216,7 @@ class ObjectBoxProcessorTest {
                     assertThat(prop.isPrimaryKey).isTrue()
                     assertThat(prop.isIdAssignable).isFalse()
                     assertThat(prop.dbName).isEqualTo("id")
-                    assertPrimitiveType(prop, PropertyType.Long)
+                    assertType(prop, PropertyType.Long)
                 }
                 "parentId" -> {
                     assertThat(prop.dbName).isEqualTo(prop.propertyName)
@@ -374,7 +374,7 @@ class ObjectBoxProcessorTest {
                     assertThat(prop.isPrimaryKey).isTrue()
                     assertThat(prop.isIdAssignable).isFalse()
                     assertThat(prop.dbName).isEqualTo("id")
-                    assertPrimitiveType(prop, PropertyType.Long)
+                    assertType(prop, PropertyType.Long)
                 }
                 else -> fail("Found stray property '${prop.propertyName}' in schema.")
             }
@@ -387,7 +387,7 @@ class ObjectBoxProcessorTest {
                     assertThat(prop.isPrimaryKey).isTrue()
                     assertThat(prop.isIdAssignable).isFalse()
                     assertThat(prop.dbName).isEqualTo("id")
-                    assertPrimitiveType(prop, PropertyType.Long)
+                    assertType(prop, PropertyType.Long)
                 }
                 "parentId" -> {
                     assertThat(prop.dbName).isEqualTo(prop.propertyName)

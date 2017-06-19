@@ -51,7 +51,8 @@ public final class RelationChildCursor extends Cursor<RelationChild> {
                 targetCursor.close();
             }
         }
-        long __assignedId = collect313311(cursor, entity.id, PUT_FLAG_FIRST | PUT_FLAG_COMPLETE,
+        Long id = entity.id;
+        long __assignedId = collect313311(cursor, id != null ? id: 0, PUT_FLAG_FIRST | PUT_FLAG_COMPLETE,
                 0, null, 0, null,
                 0, null, 0, null,
                 __ID_parentId, entity.parentId, 0, 0,

@@ -7,5 +7,5 @@ import io.objectbox.annotation.Id;
 public class RelationParent {
 
     @Id
-    long id;
+    Long id;
 }

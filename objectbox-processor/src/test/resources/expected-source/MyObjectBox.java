@@ -30,7 +30,7 @@ public class MyObjectBox {
         entityBuilder.id(1, 4858050548069557694L).lastPropertyId(23, 4772590935549770830L);
         entityBuilder.flags(io.objectbox.model.EntityFlags.USE_NO_ARG_CONSTRUCTOR);
         entityBuilder.property("id", PropertyType.Long).id(1, 8303367770402050741L)
-                .flags(PropertyFlags.ID | PropertyFlags.ID_SELF_ASSIGNABLE | PropertyFlags.NOT_NULL);
+                .flags(PropertyFlags.ID | PropertyFlags.ID_SELF_ASSIGNABLE | PropertyFlags.NON_PRIMITIVE_TYPE);
         entityBuilder.property("simpleShortPrimitive", PropertyType.Short).id(2, 2547454299149596320L)
                 .flags(PropertyFlags.NOT_NULL);
         entityBuilder.property("simpleShort", PropertyType.Short).id(3, 1065398153566608274L)

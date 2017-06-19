@@ -8,7 +8,8 @@ import io.objectbox.relation.ToOne;
 @Entity
 public class ToOneNoBoxStore {
 
-    @Id long id;
+    @Id
+    Long id;
 
     ToOne<ToOneParent> toOne = new ToOne<>(this, ToOneNoBoxStore_.toOne);
 

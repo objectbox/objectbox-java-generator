@@ -38,7 +38,7 @@ public final class SimpleEntity_ implements EntityInfo<SimpleEntity> {
     @Internal
     static final SimpleEntityIdGetter __ID_GETTER = new SimpleEntityIdGetter();
 
-    public final static Property id = new Property(0, 1, long.class, "id", true, "id");
+    public final static Property id = new Property(0, 1, Long.class, "id", true, "id");
     public final static Property simpleShortPrimitive = new Property(1, 2, short.class, "simpleShortPrimitive");
     public final static Property simpleShort = new Property(2, 3, Short.class, "simpleShort");
     public final static Property simpleIntPrimitive = new Property(3, 4, int.class, "simpleIntPrimitive");
@@ -135,7 +135,8 @@ public final class SimpleEntity_ implements EntityInfo<SimpleEntity> {
     @Internal
     static final class SimpleEntityIdGetter implements IdGetter<SimpleEntity> {
         public long getId(SimpleEntity object) {
-            return object.id;
+            Long id = object.id;
+            return id != null? id : 0;
         }
     }
 

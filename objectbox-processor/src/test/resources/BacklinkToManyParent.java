@@ -9,7 +9,8 @@ import io.objectbox.relation.ToMany;
 @Entity
 public class BacklinkToManyParent {
 
-    @Id long id;
+    @Id
+    Long id;
 
     @Backlink
     ToMany<BacklinkToManyChild> children = new ToMany<>(this, BacklinkToManyParent_.children);

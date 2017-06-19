@@ -51,7 +51,8 @@ public final class ToOneChildCursor extends Cursor<ToOneChild> {
                 targetCursor.close();
             }
         }
-        long __assignedId = collect313311(cursor, entity.id, PUT_FLAG_FIRST | PUT_FLAG_COMPLETE,
+        Long id = entity.id;
+        long __assignedId = collect313311(cursor, id != null ? id: 0, PUT_FLAG_FIRST | PUT_FLAG_COMPLETE,
                 0, null, 0, null,
                 0, null, 0, null,
                 __ID_parentId, entity.parent.getTargetId(), 0, 0,

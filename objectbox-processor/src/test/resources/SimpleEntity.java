@@ -19,7 +19,7 @@ import io.objectbox.converter.PropertyConverter;
 public class SimpleEntity {
 
     @Id(assignable = true)
-    long id;
+    Long id;
 
     short simpleShortPrimitive;
     Short simpleShort;

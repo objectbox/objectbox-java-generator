@@ -9,7 +9,8 @@ import io.objectbox.relation.ToOne;
 @Entity
 public class RelationChild {
 
-    @Id long id;
+    @Id
+    Long id;
 
     long parentId;
 

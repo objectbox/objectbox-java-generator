@@ -8,7 +8,8 @@ import io.objectbox.relation.ToOne;
 @Entity
 public class BacklinkMultipleChild {
 
-    @Id long id;
+    @Id
+    Long id;
 
     ToOne<BacklinkMultipleParent> parentA = new ToOne<>(this, BacklinkMultipleChild_.parentA);
 

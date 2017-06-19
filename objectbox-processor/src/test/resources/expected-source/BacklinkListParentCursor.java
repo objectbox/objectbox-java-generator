@@ -43,7 +43,8 @@ public final class BacklinkListParentCursor extends Cursor<BacklinkListParent> {
      */
     @Override
     public final long put(BacklinkListParent entity) {
-        long __assignedId = collect004000(cursor, entity.id, PUT_FLAG_FIRST | PUT_FLAG_COMPLETE,
+        Long id = entity.id;
+        long __assignedId = collect004000(cursor, id != null ? id: 0, PUT_FLAG_FIRST | PUT_FLAG_COMPLETE,
                 0, 0, 0, 0,
                 0, 0, 0, 0);
 

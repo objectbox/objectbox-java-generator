@@ -33,7 +33,7 @@ public final class ToOneChild_ implements EntityInfo<ToOneChild> {
     @Internal
     static final ToOneChildIdGetter __ID_GETTER = new ToOneChildIdGetter();
 
-    public final static Property id = new Property(0, 1, long.class, "id", true, "id");
+    public final static Property id = new Property(0, 1, Long.class, "id", true, "id");
     public final static Property parentId = new Property(1, 2, long.class, "parentId");
 
     public final static Property[] __ALL_PROPERTIES = {
@@ -88,7 +88,8 @@ public final class ToOneChild_ implements EntityInfo<ToOneChild> {
     @Internal
     static final class ToOneChildIdGetter implements IdGetter<ToOneChild> {
         public long getId(ToOneChild object) {
-            return object.id;
+            Long id = object.id;
+            return id != null? id : 0;
         }
     }
 
