@@ -21,7 +21,6 @@ import javax.lang.model.element.VariableElement
 import javax.lang.model.util.ElementFilter
 import javax.lang.model.util.Elements
 import javax.lang.model.util.Types
-import kotlin.properties.Delegates
 
 open class ObjectBoxProcessor : AbstractProcessor() {
 
@@ -36,11 +35,11 @@ open class ObjectBoxProcessor : AbstractProcessor() {
     // make processed schema accessible for testing
     var schema: Schema? = null
 
-    private var elementUtils: Elements by Delegates.notNull()
-    private var typeUtils: Types by Delegates.notNull()
-    private var filer: Filer by Delegates.notNull()
+    private lateinit var elementUtils: Elements
+    private lateinit var typeUtils: Types
+    private lateinit var filer: Filer
     private lateinit var messages: Messages
-    private var projectRoot: File? = null
+    private lateinit var projectRoot: File
     private var customModelPath: String? = null
     private var daoCompat: Boolean = false
     private var transformationEnabled: Boolean = false
