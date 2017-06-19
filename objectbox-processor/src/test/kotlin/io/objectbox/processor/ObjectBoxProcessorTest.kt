@@ -324,6 +324,53 @@ class ObjectBoxProcessorTest {
     }
 
     @Test
+    fun testBacklinkWithTo() {
+        // test if correct to-one of @Backlink (with 'to' value) is detected
+        val parentName = "BacklinkWithToParent"
+        val childName = "BacklinkWithToChild"
+
+        val environment = TestEnvironment()
+
+        val compilation = environment.compile("backlink-with-to.json", parentName, childName)
+        CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
+
+        val schema = environment.schema
+
+        val parent = schema.entities.single { it.className == parentName }
+        val child = schema.entities.single { it.className == childName }
+
+        for (prop in child.properties) {
+            when (prop.propertyName) {
+                "parentId" -> {
+                    assertThat(prop.dbName).isEqualTo(prop.propertyName)
+                    assertThat(prop.virtualTargetName).isEqualTo("parent")
+                    assertPrimitiveType(prop, PropertyType.RelationId)
+                    assertToManyRelation(parent, child, prop)
+                }
+                "id", "parentOtherId" -> {
+                    // just ensure its exists
+                }
+                else -> fail("Found stray property '${prop.propertyName}' in schema.")
+            }
+        }
+    }
+
+    @Test
+    fun testBacklinkWrongTo() {
+        // test if correct to-one of @Backlink (with 'to' value) is detected
+        val parentName = "BacklinkWrongToParent"
+        val childName = "BacklinkWrongToChild"
+
+        val environment = TestEnvironment()
+
+        val compilation = environment.compile("backlink-wrong-to.json", parentName, childName)
+        CompilationSubject.assertThat(compilation).failed()
+
+        CompilationSubject.assertThat(compilation)
+                .hadErrorContaining("Could not find target property 'wrongParentId' in '$childName'")
+    }
+
+    @Test
     fun testKotlinByteCode() {
         val entityName = "SimpleKotlinEntity"
 

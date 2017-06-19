@@ -222,10 +222,11 @@ class Relations(private val messager: Messager) {
         } else {
             // explicit target name: find the related to-one relation
             val targetToOne = targetEntity.toOneRelations.singleOrNull {
-                it.targetEntity == entity && it.name == toMany.targetIdName
+                it.targetEntity == entity && it.targetIdProperty.propertyName == toMany.targetIdName
             }
             if (targetToOne == null) {
-                error("Could not find property '${toMany.targetIdName}' in '${entity.className}'.", entity)
+                error("Could not find target property '${toMany.targetIdName}' in '${targetEntity.className}' " +
+                        "of @Backlink in '${entity.className}'.", entity)
                 return false
             }
             targetToOne
