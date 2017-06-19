@@ -169,6 +169,46 @@ class ObjectBoxProcessorTest {
     }
 
     @Test
+    fun testMultipleAnnotations() {
+        // test multiple (non-conflicting) annotations on a single property
+        val className = "MultipleEntity"
+
+        val environment = TestEnvironment()
+
+        val compilation = environment.compile("multiple-annotations.json", className)
+        CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
+
+        val entity = environment.schema.entities.single { it.className == className }
+
+        // assert index
+        assertThat(entity.indexes).hasSize(1)
+        for (index in entity.indexes) {
+            when (index.orderSpec) {
+                "someString ASC" -> {
+                    // just ensure it exists
+                }
+                else -> fail("Found stray index '${index.orderSpec}' in schema.")
+            }
+        }
+
+        // assert property
+        for (property in entity.properties) {
+            when (property.propertyName) {
+                "id" -> {}
+                "someString" -> {
+                    assertThat(property.dbName).isEqualTo("A")
+                    assertThat(property.modelId.uid).isEqualTo(167962951075785953)
+                    assertThat(property.customType).isEqualTo("io.objectbox.processor.test.$className.SimpleEnum")
+                    assertThat(property.converter)
+                            .isEqualTo("io.objectbox.processor.test.$className.SimpleEnumConverter")
+                    assertType(property, PropertyType.String)
+                }
+                else -> fail("Found stray field '${property.propertyName}' in schema.")
+            }
+        }
+    }
+
+    @Test
     fun testRelation() {
         // tested relation: a child has a parent
         val parentName = "RelationParent"
