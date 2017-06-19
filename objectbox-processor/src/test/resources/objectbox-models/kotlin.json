@@ -33,9 +33,6 @@
   "modelVersion": 2,
   "retiredEntityUids": [],
   "retiredIndexUids": [],
-  "retiredPropertyUids": [
-    7324049591905510040,
-    7715100600266235516
-  ],
+  "retiredPropertyUids": [],
   "version": 1
 }
