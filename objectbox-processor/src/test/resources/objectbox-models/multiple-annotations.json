@@ -14,13 +14,14 @@
         },
         {
           "id": "2:167962951075785953",
+          "indexId": "1:473742723475921156",
           "name": "A"
         }
       ]
     }
   ],
   "lastEntityId": "1:859236676292067153",
-  "lastIndexId": "0:0",
+  "lastIndexId": "1:473742723475921156",
   "lastSequenceId": "0:0",
   "modelVersion": 2,
   "retiredEntityUids": [],

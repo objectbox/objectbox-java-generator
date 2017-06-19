@@ -71,7 +71,7 @@ class ObjectBoxProcessorTest {
         assertThat(schema.version).isEqualTo(1)
         assertThat(schema.defaultJavaPackage).isEqualTo("io.objectbox.processor.test")
         assertThat(schema.lastEntityId).isEqualTo(IdUid(1, 4858050548069557694))
-        assertThat(schema.lastIndexId).isEqualTo(IdUid(0, 0))
+        assertThat(schema.lastIndexId).isEqualTo(IdUid(1, 4551328960004588074))
         assertThat(schema.entities).hasSize(1)
 
         // assert entity
@@ -123,7 +123,10 @@ class ObjectBoxProcessorTest {
                 "simpleByteArray" -> assertType(prop, PropertyType.ByteArray)
                 "transientField", "transientField2", "transientField3" ->
                     fail("Transient field should not be added to schema.")
-                "indexedProperty" -> assertType(prop, PropertyType.Int)
+                "indexedProperty" -> {
+                    assertType(prop, PropertyType.Int)
+                    assertThat(prop.index).isEqualTo(entity.indexes[0])
+                }
                 "namedProperty" -> {
                     assertThat(prop.dbName).isEqualTo("B")
                     assertType(prop, PropertyType.String)
@@ -195,9 +198,11 @@ class ObjectBoxProcessorTest {
         // assert property
         for (property in entity.properties) {
             when (property.propertyName) {
-                "id" -> {}
+                "id" -> {
+                }
                 "someString" -> {
                     assertThat(property.dbName).isEqualTo("A")
+                    assertThat(property.index).isEqualTo(entity.indexes[0])
                     assertThat(property.modelId.uid).isEqualTo(167962951075785953)
                     assertThat(property.customType).isEqualTo("io.objectbox.processor.test.$className.SimpleEnum")
                     assertThat(property.converter)

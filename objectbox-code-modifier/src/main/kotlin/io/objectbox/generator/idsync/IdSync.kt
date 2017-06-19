@@ -298,7 +298,9 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
         }
 
         var sourceIndexId: IdUid? = null
-        if (schemaProperty.index != null) {
+        // check entity for index as Property.index is only auto-set for to-ones
+        val index = schemaEntity.indexes.find { it.properties.size == 1 && it.properties[0] == schemaProperty }
+        if (index != null) {
             if (shouldGenerateNewIdUid) {
                 sourceIndexId = lastIndexId.incId(uidHelper.create())
             } else {

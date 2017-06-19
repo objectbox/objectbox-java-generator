@@ -22,8 +22,7 @@ public class MyObjectBox {
     private static byte[] getModel() {
         ModelBuilder modelBuilder = new ModelBuilder();
         modelBuilder.lastEntityId(1, 4858050548069557694L);
-        modelBuilder.lastIndexId(0, 0L);
-
+        modelBuilder.lastIndexId(1, 4551328960004588074L);
         EntityBuilder entityBuilder;
 
         entityBuilder = modelBuilder.entity("A");
@@ -63,7 +62,7 @@ public class MyObjectBox {
         entityBuilder.property("simpleString", PropertyType.String).id(17, 6798801512033870238L);
         entityBuilder.property("simpleByteArray", PropertyType.ByteVector).id(18, 5561205097618864485L);
         entityBuilder.property("indexedProperty", PropertyType.Int).id(19, 267919077724297667L)
-                .flags(PropertyFlags.NON_PRIMITIVE_TYPE | PropertyFlags.INDEXED);
+                .flags(PropertyFlags.NON_PRIMITIVE_TYPE | PropertyFlags.INDEXED).indexId(1, 4551328960004588074L);
         entityBuilder.property("B", PropertyType.String).id(20, 8754346312277232208L);
         entityBuilder.property("uidProperty", PropertyType.Long).id(21, 3817914863709111804L)
                 .flags(PropertyFlags.NON_PRIMITIVE_TYPE);
