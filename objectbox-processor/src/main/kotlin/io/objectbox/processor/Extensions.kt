@@ -23,14 +23,6 @@ fun <A : Annotation> Element.hasAnnotation(annotationType: Class<A>): Boolean {
     return getAnnotation(annotationType) != null
 }
 
-fun Messager.printCustomError(message: String, element: Element? = null) {
-    if (element != null) {
-        printMessage(Diagnostic.Kind.ERROR, message, element)
-    } else {
-        printMessage(Diagnostic.Kind.ERROR, "ObjectBox: " + message)
-    }
-}
-
 /**
  * Checks if the type name is equal to the given type name.
  */

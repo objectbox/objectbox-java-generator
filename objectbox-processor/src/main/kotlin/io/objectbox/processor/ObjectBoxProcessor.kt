@@ -12,7 +12,6 @@ import java.io.File
 import java.io.FileNotFoundException
 import javax.annotation.processing.AbstractProcessor
 import javax.annotation.processing.Filer
-import javax.annotation.processing.Messager
 import javax.annotation.processing.ProcessingEnvironment
 import javax.annotation.processing.RoundEnvironment
 import javax.lang.model.SourceVersion
@@ -40,13 +39,12 @@ open class ObjectBoxProcessor : AbstractProcessor() {
     private var elementUtils: Elements by Delegates.notNull()
     private var typeUtils: Types by Delegates.notNull()
     private var filer: Filer by Delegates.notNull()
-    private var messager: Messager by Delegates.notNull()
+    private lateinit var messages: Messages
     private var projectRoot: File? = null
     private var customModelPath: String? = null
     private var daoCompat: Boolean = false
     private var transformationEnabled: Boolean = false
     private var daoCompatPackage: String? = null
-    var errorCount = 0
 
     @Synchronized override fun init(env: ProcessingEnvironment) {
         super.init(env)
@@ -54,7 +52,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         elementUtils = env.elementUtils
         typeUtils = env.typeUtils
         filer = env.filer
-        messager = env.messager
+        messages = Messages(env.messager)
 
         customModelPath = env.options[OPTION_MODEL_PATH]
         daoCompat = "true" == env.options[OPTION_DAO_COMPAT]
@@ -94,7 +92,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
 
     private fun findAndParse(env: RoundEnvironment) {
         var schema: Schema? = null
-        val relations = Relations(messager)
+        val relations = Relations(messages)
 
         for (entity in env.getElementsAnnotatedWith(Entity::class.java)) {
             if (schema == null) {
@@ -109,9 +107,6 @@ open class ObjectBoxProcessor : AbstractProcessor() {
 
             parseEntity(schema, relations, entity)
         }
-        if (errorCount > 0) {
-            return
-        }
 
         if (schema == null) {
             return  // no entities found
@@ -119,6 +114,10 @@ open class ObjectBoxProcessor : AbstractProcessor() {
 
         if (!relations.resolve(schema)) {
             return // resolving relations failed
+        }
+
+        if (messages.errorRaised) {
+            return // avoid changing files (model file, generated source)
         }
 
         if (!syncIdModel(schema)) {
@@ -130,7 +129,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         try {
             BoxGenerator(daoCompat).generateAll(schema, filer)
         } catch (e: Exception) {
-            error("Code generation failed: ${e.message}")
+            messages.error("Code generation failed: ${e.message}")
             e.printStackTrace()
         }
     }
@@ -158,13 +157,13 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         }
 
         // parse properties
-        val properties = Properties(elementUtils, typeUtils, messager, relations, entityModel, entity)
+        val properties = Properties(elementUtils, typeUtils, messages, relations, entityModel, entity)
         properties.parseFields()
 
         // if not added automatically and relations are used, ensure there is a box store field
         if (!transformationEnabled && relations.hasRelations(entityModel) && !properties.hasBoxStoreField()) {
-            error("To use relations in '${entityModel.className}' add a field '__boxStore' of type 'BoxStore'.", entity)
-            return
+            messages.error("To use relations in '${entityModel.className}' " +
+                    "add a field '__boxStore' of type 'BoxStore'.", entity)
         }
 
         // add missing foreign key properties and indexes for to-one relations
@@ -217,7 +216,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
 
         val modelFolder = modelFile.parentFile
         if (!modelFolder.isDirectory && !modelFolder.mkdirs()) {
-            error("Could not create model folder at '${modelFolder.absolutePath}'.")
+            messages.error("Could not create model folder at '${modelFolder.absolutePath}'.")
             return false
         }
 
@@ -226,7 +225,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
             idSync = IdSync(modelFile)
             idSync.sync(schema)
         } catch (e: IdSyncException) {
-            error(e.message ?: "Could not sync id model for unknown reason.")
+            messages.error(e.message ?: "Could not sync id model for unknown reason.")
             return false
         }
 
@@ -234,11 +233,6 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         schema.lastIndexId = idSync.lastIndexId
 
         return true
-    }
-
-    private fun error(message: String, element: Element? = null) {
-        errorCount++
-        messager.printCustomError(message, element)
     }
 
 }

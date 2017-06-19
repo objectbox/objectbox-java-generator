@@ -7,11 +7,8 @@ import io.objectbox.annotation.Uid
 import io.objectbox.codemodifier.nullIfBlank
 import io.objectbox.generator.IdUid
 import io.objectbox.generator.model.Entity
-import io.objectbox.generator.model.HasParsedElement
 import io.objectbox.generator.model.PropertyType
 import io.objectbox.generator.model.Schema
-import javax.annotation.processing.Messager
-import javax.lang.model.element.Element
 import javax.lang.model.element.Modifier
 import javax.lang.model.element.VariableElement
 import javax.lang.model.type.DeclaredType
@@ -35,7 +32,7 @@ data class ToManyRelation(
 /**
  * Parses and keeps records of to-one and to-many relations of all parsed entities.
  */
-class Relations(private val messager: Messager) {
+class Relations(private val messages: Messages) {
 
     val toOneByEntity: MutableMap<Entity, MutableList<ToOneRelation>> = mutableMapOf()
     val toManyByEntity: MutableMap<Entity, MutableList<ToManyRelation>> = mutableMapOf()
@@ -175,14 +172,14 @@ class Relations(private val messager: Messager) {
             it.className == toOne.targetEntityName
         }
         if (targetEntity == null) {
-            error("Relation target class '${toOne.targetEntityName}' " +
+            messages.error("Relation target class '${toOne.targetEntityName}' " +
                     "defined in class '${entity.className}' could not be found (is it an @Entity?)", entity)
             return false
         }
 
         val targetIdProperty = entity.findPropertyByName(toOne.targetIdName)
         if (targetIdProperty == null) {
-            error("Could not find property '${toOne.targetIdName}' in '${entity.className}'.", entity)
+            messages.error("Could not find property '${toOne.targetIdName}' in '${entity.className}'.", entity)
             return false
         }
 
@@ -199,7 +196,7 @@ class Relations(private val messager: Messager) {
             it.className == toMany.targetEntityName
         }
         if (targetEntity == null) {
-            error("ToMany target class '${toMany.targetEntityName}' " +
+            messages.error("ToMany target class '${toMany.targetEntityName}' " +
                     "defined in class '${entity.className}' could not be found (is it an @Entity?)", entity)
             return false
         }
@@ -210,12 +207,13 @@ class Relations(private val messager: Messager) {
                 it.targetEntity == entity
             }
             if (targetToOne.isEmpty()) {
-                error("A to-one relation must be added to '${targetEntity.className}' to create the to-many relation " +
-                        "'${toMany.propertyName}' in '${entity.className}'.", entity)
+                messages.error("A to-one relation must be added to '${targetEntity.className}' to create the to-many " +
+                        "relation '${toMany.propertyName}' in '${entity.className}'.", entity)
                 return false
             } else if (targetToOne.size > 1) {
-                error("Set name of one to-one relation of '${targetEntity.className}' as @Backlink 'to' value to " +
-                        "create the to-many relation '${toMany.propertyName}' in '${entity.className}'.", entity)
+                messages.error("Set name of one to-one relation of '${targetEntity.className}' as @Backlink 'to' " +
+                        "value to create the to-many relation '${toMany.propertyName}' in '${entity.className}'.",
+                        entity)
                 return false
             }
             targetToOne[0]
@@ -225,8 +223,8 @@ class Relations(private val messager: Messager) {
                 it.targetEntity == entity && it.targetIdProperty.propertyName == toMany.targetIdName
             }
             if (targetToOne == null) {
-                error("Could not find target property '${toMany.targetIdName}' in '${targetEntity.className}' " +
-                        "of @Backlink in '${entity.className}'.", entity)
+                messages.error("Could not find target property '${toMany.targetIdName}' in " +
+                        "'${targetEntity.className}' of @Backlink in '${entity.className}'.", entity)
                 return false
             }
             targetToOne
@@ -234,13 +232,6 @@ class Relations(private val messager: Messager) {
 
         entity.addToMany(targetEntity, targetToOne.targetIdProperty, toMany.propertyName)
         return true
-    }
-
-    private fun error(message: String, elementHolder: HasParsedElement? = null) {
-        val element: Element? = if (elementHolder?.parsedElement is Element) {
-            elementHolder.parsedElement as Element
-        } else null
-        messager.printCustomError(message, element)
     }
 
 }

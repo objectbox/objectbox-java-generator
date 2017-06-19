@@ -162,7 +162,7 @@ class ObjectBoxProcessorTest {
 
         val environment = TestEnvironment()
 
-        val compilation = environment.compile("notlong.json", listOf(javaFileObject))
+        val compilation = environment.compile("not-generated.json", listOf(javaFileObject))
         CompilationSubject.assertThat(compilation).failed()
 
         CompilationSubject.assertThat(compilation).hadErrorContaining("An @Id property has to be of type Long")
@@ -281,7 +281,7 @@ class ObjectBoxProcessorTest {
 
         val environment = TestEnvironment()
 
-        val compilation = environment.compile("to-one-no-boxstore.json", parentName, childName)
+        val compilation = environment.compile("not-generated.json", parentName, childName)
         CompilationSubject.assertThat(compilation).failed()
 
         CompilationSubject.assertThat(compilation).hadErrorCount(1)
@@ -330,7 +330,7 @@ class ObjectBoxProcessorTest {
 
         val environment = TestEnvironment()
 
-        val compilation = environment.compile("backlink-missing.json", parentName, childName)
+        val compilation = environment.compile("not-generated.json", parentName, childName)
         CompilationSubject.assertThat(compilation).failed()
 
         CompilationSubject.assertThat(compilation).hadErrorContaining("ToMany field must be annotated with @Backlink")
@@ -344,7 +344,7 @@ class ObjectBoxProcessorTest {
 
         val environment = TestEnvironment()
 
-        val compilation = environment.compile("backlink-multiple.json", parentName, childName)
+        val compilation = environment.compile("not-generated.json", parentName, childName)
         CompilationSubject.assertThat(compilation).failed()
 
         CompilationSubject.assertThat(compilation).hadErrorContaining("Set name of one to-one relation of '$childName'")
@@ -390,7 +390,7 @@ class ObjectBoxProcessorTest {
 
         val environment = TestEnvironment()
 
-        val compilation = environment.compile("backlink-wrong-to.json", parentName, childName)
+        val compilation = environment.compile("not-generated.json", parentName, childName)
         CompilationSubject.assertThat(compilation).failed()
 
         CompilationSubject.assertThat(compilation)

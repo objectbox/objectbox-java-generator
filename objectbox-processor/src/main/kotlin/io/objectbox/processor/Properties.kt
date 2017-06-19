@@ -14,7 +14,6 @@ import io.objectbox.generator.model.Property
 import io.objectbox.generator.model.PropertyType
 import io.objectbox.relation.ToMany
 import io.objectbox.relation.ToOne
-import javax.annotation.processing.Messager
 import javax.lang.model.element.AnnotationMirror
 import javax.lang.model.element.Element
 import javax.lang.model.element.Modifier
@@ -27,7 +26,7 @@ import javax.lang.model.util.Types
 /**
  * Parses properties from fields for a given entity and adds them to the entity model.
  */
-class Properties(val elementUtils: Elements, val typeUtils: Types, val messager: Messager,
+class Properties(val elementUtils: Elements, val typeUtils: Types, val messages: Messages,
                  val relations: Relations, val entityModel: Entity, entityElement: Element) {
 
     val fields: List<VariableElement> = ElementFilter.fieldsIn(entityElement.enclosedElements)
@@ -59,14 +58,14 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messager:
         } else if (!field.hasAnnotation(Convert::class.java)
                 && field.asType().isTypeEqualTo(typeUtils, List::class.java.name, eraseTypeParameters = true)) {
             if (!field.hasAnnotation(Backlink::class.java)) {
-                error("Is this a custom type or to-many relation? Add @Convert or @Backlink.", field)
+                messages.error("Is this a custom type or to-many relation? Add @Convert or @Backlink.", field)
                 return
             }
             // List<TARGET> property
             relations.parseToMany(entityModel, field)
         } else if (field.asType().isTypeEqualTo(typeUtils, ToMany::class.java.name, eraseTypeParameters = true)) {
             if (!field.hasAnnotation(Backlink::class.java)) {
-                error("ToMany field must be annotated with @Backlink.", field)
+                messages.error("ToMany field must be annotated with @Backlink.", field)
                 return
             }
             // ToMany<TARGET> property
@@ -102,7 +101,7 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messager:
         val idAnnotation = field.getAnnotation(Id::class.java)
         if (idAnnotation != null) {
             if (propertyBuilder.property.propertyType != PropertyType.Long) {
-                error("An @Id property has to be of type Long", field)
+                messages.error("An @Id property has to be of type Long", field)
             }
             propertyBuilder.primaryKey()
             if (idAnnotation.assignable) {
@@ -143,7 +142,7 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messager:
 
         val propertyType = dbType?.getPropertyType(typeUtils)
         if (propertyType == null) {
-            error("@Convert dbType type is not supported, use a Java primitive wrapper class.", field)
+            messages.error("@Convert dbType type is not supported, use a Java primitive wrapper class.", field)
             return null
         }
 
@@ -160,7 +159,7 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messager:
         val typeMirror = field.asType()
         val propertyType = typeMirror.getPropertyType(typeUtils)
         if (propertyType == null) {
-            error("Field type is not supported, use @Convert or @Transient.", field)
+            messages.error("Field type is not supported, use @Convert or @Transient.", field)
             return null
         }
 
@@ -200,10 +199,6 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messager:
             }
         }
         return null
-    }
-
-    private fun error(message: String, field: VariableElement) {
-        messager.printCustomError(message + " (${field.qualifiedName})", field)
     }
 
 }
