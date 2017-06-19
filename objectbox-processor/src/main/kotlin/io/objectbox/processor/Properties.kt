@@ -11,6 +11,7 @@ import io.objectbox.annotation.Uid
 import io.objectbox.generator.IdUid
 import io.objectbox.generator.model.Entity
 import io.objectbox.generator.model.Property
+import io.objectbox.generator.model.PropertyType
 import io.objectbox.relation.ToMany
 import io.objectbox.relation.ToOne
 import javax.annotation.processing.Messager
@@ -101,6 +102,9 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messager:
         // @Id
         val idAnnotation = field.getAnnotation(Id::class.java)
         if (idAnnotation != null) {
+            if (propertyBuilder.property.propertyType != PropertyType.Long) {
+                error("An @Id property has to be of type Long (${field.qualifiedName})", field)
+            }
             propertyBuilder.primaryKey()
             if (idAnnotation.assignable) {
                 propertyBuilder.idAssignable()

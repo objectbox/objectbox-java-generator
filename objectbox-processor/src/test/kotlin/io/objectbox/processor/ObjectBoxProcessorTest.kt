@@ -13,6 +13,7 @@ import io.objectbox.generator.model.Schema
 import io.objectbox.generator.model.ToMany
 import org.junit.Assert.fail
 import org.junit.Test
+import javax.tools.JavaFileObject
 
 class ObjectBoxProcessorTest {
 
@@ -27,10 +28,14 @@ class ObjectBoxProcessorTest {
 
         fun compile(modelFile: String, vararg files: String): Compilation {
             val fileObjects = files.map { JavaFileObjects.forResource("$it.java") }
+            return compile(modelFile, fileObjects)
+        }
+
+        fun compile(modelFile: String, files: List<JavaFileObject>): Compilation {
             return javac()
                     .withProcessors(processor)
                     .withOptions("$processorOptionBasePath$modelFile")
-                    .compile(fileObjects)
+                    .compile(files)
         }
 
         fun compileDaoCompat(modelFile: String, vararg files: String): Compilation {
@@ -139,6 +144,28 @@ class ObjectBoxProcessorTest {
                 else -> fail("Found stray field '${prop.propertyName}' in schema.")
             }
         }
+    }
+
+    @Test
+    fun testIdNotLong() {
+        // test that instead of just failing compilation, processor warns if @Id is not Long
+        val source = """
+        package io.objectbox.processor.test;
+        import io.objectbox.annotation.Entity; import io.objectbox.annotation.Id;
+
+        @Entity
+        public class NotLongEntity {
+            @Id String id;
+        }
+        """
+        val javaFileObject = JavaFileObjects.forSourceString("io.objectbox.processor.test.NotLongEntity", source)
+
+        val environment = TestEnvironment()
+
+        val compilation = environment.compile("notlong.json", listOf(javaFileObject))
+        CompilationSubject.assertThat(compilation).failed()
+
+        CompilationSubject.assertThat(compilation).hadErrorContaining("An @Id property has to be of type Long")
     }
 
     @Test
