@@ -84,6 +84,7 @@ class ObjectBoxProcessorTest {
         assertThat(entity.isConstructors).isFalse()
 
         // assert index
+        assertThat(entity.indexes.size).isAtLeast(1)
         for (index in entity.indexes) {
             when (index.orderSpec) {
                 "indexedProperty ASC" -> {
@@ -181,7 +182,7 @@ class ObjectBoxProcessorTest {
         val entity = environment.schema.entities.single { it.className == className }
 
         // assert index
-        assertThat(entity.indexes).hasSize(1)
+        assertThat(entity.indexes.size).isAtLeast(1)
         for (index in entity.indexes) {
             when (index.orderSpec) {
                 "someString ASC" -> {
