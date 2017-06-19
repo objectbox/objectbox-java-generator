@@ -118,7 +118,7 @@ class Relations(private val messages: Messages) {
         }
     }
 
-    private fun ensureForeignKeys(entityModel: io.objectbox.generator.model.Entity, toOne: ToOneRelation) {
+    private fun ensureForeignKeys(entityModel: Entity, toOne: ToOneRelation) {
         if (toOne.targetIdName == null) {
             toOne.targetIdName = "${toOne.propertyName}Id"
         }
@@ -167,7 +167,7 @@ class Relations(private val messages: Messages) {
         return true
     }
 
-    private fun resolveToOne(schema: Schema, entity: io.objectbox.generator.model.Entity, toOne: ToOneRelation): Boolean {
+    private fun resolveToOne(schema: Schema, entity: Entity, toOne: ToOneRelation): Boolean {
         val targetEntity = schema.entities.singleOrNull {
             it.className == toOne.targetEntityName
         }
@@ -190,7 +190,7 @@ class Relations(private val messages: Messages) {
         return true
     }
 
-    private fun resolveToMany(schema: Schema, entity: io.objectbox.generator.model.Entity, toMany: ToManyRelation):
+    private fun resolveToMany(schema: Schema, entity: Entity, toMany: ToManyRelation):
             Boolean {
         val targetEntity = schema.entities.singleOrNull {
             it.className == toMany.targetEntityName
