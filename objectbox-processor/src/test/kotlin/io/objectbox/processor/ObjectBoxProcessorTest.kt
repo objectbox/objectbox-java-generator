@@ -1,11 +1,13 @@
 package io.objectbox.processor
 
 import com.google.common.truth.Truth.assertThat
+import com.google.common.truth.Truth.assertWithMessage
 import com.google.testing.compile.Compilation
 import com.google.testing.compile.CompilationSubject
 import com.google.testing.compile.Compiler.javac
 import com.google.testing.compile.JavaFileObjects
 import io.objectbox.generator.IdUid
+import io.objectbox.generator.idsync.IdSync
 import io.objectbox.generator.model.Entity
 import io.objectbox.generator.model.Property
 import io.objectbox.generator.model.PropertyType
@@ -13,37 +15,38 @@ import io.objectbox.generator.model.Schema
 import io.objectbox.generator.model.ToMany
 import org.junit.Assert.fail
 import org.junit.Test
+import java.io.File
 import javax.tools.JavaFileObject
 
 class ObjectBoxProcessorTest {
 
-    class TestEnvironment {
+    class TestEnvironment(modelFile: String) {
         val modelFilesBaseBath = "src/test/resources/objectbox-models/"
-        val processorOptionBasePath = "-A${ObjectBoxProcessor.OPTION_MODEL_PATH}=$modelFilesBaseBath"
+        val modelFilePath = "$modelFilesBaseBath$modelFile"
+        val modelFileProcessorOption = "-A${ObjectBoxProcessor.OPTION_MODEL_PATH}=$modelFilePath"
 
         val processor = ObjectBoxProcessorShim()
-
         val schema: Schema
             get() = processor.schema!!
 
-        fun compile(modelFile: String, vararg files: String): Compilation {
+        fun compile(vararg files: String): Compilation {
             val fileObjects = files.map { JavaFileObjects.forResource("$it.java") }
-            return compile(modelFile, fileObjects)
+            return compile(fileObjects)
         }
 
-        fun compile(modelFile: String, files: List<JavaFileObject>): Compilation {
+        fun compile(files: List<JavaFileObject>): Compilation {
             return javac()
                     .withProcessors(processor)
-                    .withOptions("$processorOptionBasePath$modelFile")
+                    .withOptions(modelFileProcessorOption)
                     .compile(files)
         }
 
-        fun compileDaoCompat(modelFile: String, vararg files: String): Compilation {
+        fun compileDaoCompat(vararg files: String): Compilation {
             val fileObjects = files.map { JavaFileObjects.forResource("$it.java") }
             return javac()
                     .withProcessors(processor)
                     .withOptions(
-                            "$processorOptionBasePath$modelFile"
+                            modelFileProcessorOption
                             // disabled as compat DAO currently requires entity property getters/setters
 //                        "-A${ObjectBoxProcessor.OPTION_DAO_COMPAT}=true"
                     )
@@ -53,31 +56,35 @@ class ObjectBoxProcessorTest {
 
     @Test
     fun testProcessor() {
-        val entityName = "SimpleEntity"
+        val className = "SimpleEntity"
+        val modelFileName = "default.json"
 
-        val environment = TestEnvironment()
+        val environment = TestEnvironment(modelFileName)
 
-        val compilation = environment.compileDaoCompat("default.json", entityName)
+        val compilation = environment.compileDaoCompat(className)
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
 
         // assert generated files source trees
         assertGeneratedSourceMatches(compilation, "MyObjectBox")
-        assertGeneratedSourceMatches(compilation, "${entityName}_")
-        assertGeneratedSourceMatches(compilation, "${entityName}Cursor")
+        assertGeneratedSourceMatches(compilation, "${className}_")
+        assertGeneratedSourceMatches(compilation, "${className}Cursor")
 
         // assert schema
         val schema = environment.schema
         assertThat(schema).isNotNull()
         assertThat(schema.version).isEqualTo(1)
         assertThat(schema.defaultJavaPackage).isEqualTo("io.objectbox.processor.test")
-        assertThat(schema.lastEntityId).isEqualTo(IdUid(1, 4858050548069557694))
-        assertThat(schema.lastIndexId).isEqualTo(IdUid(1, 4551328960004588074))
+        val lastEntityId = IdUid(1, 4858050548069557694)
+        assertThat(schema.lastEntityId).isEqualTo(lastEntityId)
+        val lastIndexId = IdUid(1, 4551328960004588074)
+        assertThat(schema.lastIndexId).isEqualTo(lastIndexId)
         assertThat(schema.entities).hasSize(1)
 
         // assert entity
         val entity = schema.entities[0]
-        assertThat(entity.className).isEqualTo(entityName)
-        assertThat(entity.dbName).isEqualTo("A")
+        assertThat(entity.className).isEqualTo(className)
+        val dbName = "A"
+        assertThat(entity.dbName).isEqualTo(dbName)
         assertThat(entity.modelId).isEqualTo(1)
         assertThat(entity.modelUid).isEqualTo(4858050548069557694)
         assertThat(entity.lastPropertyId).isEqualTo(IdUid(23, 4772590935549770830))
@@ -148,6 +155,63 @@ class ObjectBoxProcessorTest {
                 else -> fail("Found stray field '${prop.propertyName}' in schema.")
             }
         }
+
+        // assert model file
+        val modelFile = File(environment.modelFilePath)
+        val absolutePath = modelFile.absolutePath
+        System.out.println("Model file path: $absolutePath")
+        val idSync = IdSync(modelFile)
+        assertThat(idSync.lastEntityId).isEqualTo(lastEntityId)
+        assertThat(idSync.lastIndexId).isEqualTo(lastIndexId)
+        val modelEntity = idSync.findEntity(dbName, null)
+        assertThat(modelEntity).isNotNull()
+        assertThat(modelEntity!!.properties.size).isAtLeast(1)
+
+        // assert model properties
+        val modelPropertyNames = listOf(
+                "id",
+                "simpleShortPrimitive",
+                "simpleShort",
+                "simpleIntPrimitive",
+                "simpleInt",
+                "simpleLongPrimitive",
+                "simpleLong",
+                "simpleFloatPrimitive",
+                "simpleFloat",
+                "simpleDoublePrimitive",
+                "simpleDouble",
+                "simpleBooleanPrimitive",
+                "simpleBoolean",
+                "simpleBytePrimitive",
+                "simpleByte",
+                "simpleDate",
+                "simpleString",
+                "simpleByteArray",
+                "indexedProperty",
+                "B",
+                "uidProperty",
+                "customType",
+                "customTypes"
+        )
+        modelPropertyNames.forEach { name ->
+            val property = modelEntity.properties.singleOrNull { it.name == name }
+            assertWithMessage("Property '$name' not in model file").that(property).isNotNull()
+            assertWithMessage("Property '$name' has no id").that(property!!.id).isNotNull()
+            assertWithMessage("Property '$name' id:uid is 0:0").that(property.id).isNotEqualTo(IdUid())
+
+            when (name) {
+                "indexedProperty" -> {
+                    assertThat(property.indexId).isNotNull()
+                    assertThat(property.indexId).isNotEqualTo(IdUid())
+                }
+                "uidProperty" -> assertThat(property.id.uid).isEqualTo(3817914863709111804)
+            }
+        }
+
+        // assert no other model properties exist
+        modelEntity.properties
+                .filterNot { modelPropertyNames.contains(it.name) }
+                .forEach { fail("Found stray property '${it.name}' in model file.") }
     }
 
     @Test
@@ -164,9 +228,9 @@ class ObjectBoxProcessorTest {
         """
         val javaFileObject = JavaFileObjects.forSourceString("io.objectbox.processor.test.NotLongEntity", source)
 
-        val environment = TestEnvironment()
+        val environment = TestEnvironment("not-generated.json")
 
-        val compilation = environment.compile("not-generated.json", listOf(javaFileObject))
+        val compilation = environment.compile(listOf(javaFileObject))
         CompilationSubject.assertThat(compilation).failed()
 
         CompilationSubject.assertThat(compilation).hadErrorContaining("An @Id property has to be of type Long")
@@ -177,9 +241,9 @@ class ObjectBoxProcessorTest {
         // test multiple (non-conflicting) annotations on a single property
         val className = "MultipleEntity"
 
-        val environment = TestEnvironment()
+        val environment = TestEnvironment("multiple-annotations.json")
 
-        val compilation = environment.compile("multiple-annotations.json", className)
+        val compilation = environment.compile(className)
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
 
         val entity = environment.schema.entities.single { it.className == className }
@@ -220,9 +284,9 @@ class ObjectBoxProcessorTest {
         val parentName = "RelationParent"
         val childName = "RelationChild"
 
-        val environment = TestEnvironment()
+        val environment = TestEnvironment("relation.json")
 
-        val compilation = environment.compile("relation.json", parentName, childName)
+        val compilation = environment.compile(parentName, childName)
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
 
         // assert generated files source trees
@@ -264,9 +328,9 @@ class ObjectBoxProcessorTest {
         val parentName = "ToOneParent"
         val childName = "ToOneChild"
 
-        val environment = TestEnvironment()
+        val environment = TestEnvironment("to-one.json")
 
-        val compilation = environment.compile("to-one.json", parentName, childName)
+        val compilation = environment.compile(parentName, childName)
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
 
         // assert generated files source trees
@@ -309,9 +373,9 @@ class ObjectBoxProcessorTest {
         val parentName = "ToOneParent"
         val childName = "ToOneAllArgs"
 
-        val environment = TestEnvironment()
+        val environment = TestEnvironment("to-one-all-args.json")
 
-        val compilation = environment.compile("to-one-all-args.json", parentName, childName)
+        val compilation = environment.compile(parentName, childName)
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
 
         val schema = environment.schema
@@ -325,9 +389,9 @@ class ObjectBoxProcessorTest {
         val parentName = "ToOneParent"
         val childName = "ToOneNoBoxStore"
 
-        val environment = TestEnvironment()
+        val environment = TestEnvironment("not-generated.json")
 
-        val compilation = environment.compile("not-generated.json", parentName, childName)
+        val compilation = environment.compile(parentName, childName)
         CompilationSubject.assertThat(compilation).failed()
 
         CompilationSubject.assertThat(compilation).hadErrorCount(1)
@@ -340,9 +404,9 @@ class ObjectBoxProcessorTest {
         val parentName = "BacklinkListParent"
         val childName = "BacklinkListChild"
 
-        val environment = TestEnvironment()
+        val environment = TestEnvironment("backlink-list.json")
 
-        val compilation = environment.compile("backlink-list.json", parentName, childName)
+        val compilation = environment.compile(parentName, childName)
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
 
         assertGeneratedSourceMatches(compilation, "${parentName}_")
@@ -357,9 +421,9 @@ class ObjectBoxProcessorTest {
         val parentName = "BacklinkToManyParent"
         val childName = "BacklinkToManyChild"
 
-        val environment = TestEnvironment()
+        val environment = TestEnvironment("backlink-to-many.json")
 
-        val compilation = environment.compile("backlink-to-many.json", parentName, childName)
+        val compilation = environment.compile(parentName, childName)
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
 
         assertGeneratedSourceMatches(compilation, "${parentName}_")
@@ -374,9 +438,9 @@ class ObjectBoxProcessorTest {
         val parentName = "BacklinkMissingParent"
         val childName = "IdEntity"
 
-        val environment = TestEnvironment()
+        val environment = TestEnvironment("not-generated.json")
 
-        val compilation = environment.compile("not-generated.json", parentName, childName)
+        val compilation = environment.compile(parentName, childName)
         CompilationSubject.assertThat(compilation).failed()
 
         CompilationSubject.assertThat(compilation).hadErrorContaining("ToMany field must be annotated with @Backlink")
@@ -388,9 +452,9 @@ class ObjectBoxProcessorTest {
         val parentName = "BacklinkMultipleParent"
         val childName = "BacklinkMultipleChild"
 
-        val environment = TestEnvironment()
+        val environment = TestEnvironment("not-generated.json")
 
-        val compilation = environment.compile("not-generated.json", parentName, childName)
+        val compilation = environment.compile(parentName, childName)
         CompilationSubject.assertThat(compilation).failed()
 
         CompilationSubject.assertThat(compilation).hadErrorContaining("Set name of one to-one relation of '$childName'")
@@ -402,9 +466,9 @@ class ObjectBoxProcessorTest {
         val parentName = "BacklinkWithToParent"
         val childName = "BacklinkWithToChild"
 
-        val environment = TestEnvironment()
+        val environment = TestEnvironment("backlink-with-to.json")
 
-        val compilation = environment.compile("backlink-with-to.json", parentName, childName)
+        val compilation = environment.compile(parentName, childName)
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
 
         val schema = environment.schema
@@ -434,9 +498,9 @@ class ObjectBoxProcessorTest {
         val parentName = "BacklinkWrongToParent"
         val childName = "BacklinkWrongToChild"
 
-        val environment = TestEnvironment()
+        val environment = TestEnvironment("not-generated.json")
 
-        val compilation = environment.compile("not-generated.json", parentName, childName)
+        val compilation = environment.compile(parentName, childName)
         CompilationSubject.assertThat(compilation).failed()
 
         CompilationSubject.assertThat(compilation)
@@ -447,9 +511,9 @@ class ObjectBoxProcessorTest {
     fun testKotlinByteCode() {
         val entityName = "SimpleKotlinEntity"
 
-        val environment = TestEnvironment()
+        val environment = TestEnvironment("kotlin.json")
 
-        val compilation = environment.compile("kotlin.json", entityName)
+        val compilation = environment.compile(entityName)
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
 
         // assert schema
