@@ -29,6 +29,8 @@ import javax.lang.model.util.Types
 class Properties(val elementUtils: Elements, val typeUtils: Types, val messages: Messages,
                  val relations: Relations, val entityModel: Entity, entityElement: Element) {
 
+    val typeHelper = TypeHelper(typeUtils)
+
     val fields: List<VariableElement> = ElementFilter.fieldsIn(entityElement.enclosedElements)
 
     fun hasBoxStoreField(): Boolean {
@@ -52,18 +54,18 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
         if (field.hasAnnotation(Relation::class.java)) {
             // @Relation property
             relations.parseRelation(entityModel, field)
-        } else if (field.asType().isTypeEqualTo(typeUtils, ToOne::class.java.name, eraseTypeParameters = true)) {
+        } else if (typeHelper.isTypeEqualTo(field.asType(), ToOne::class.java.name, eraseTypeParameters = true)) {
             // ToOne<TARGET> property
             relations.parseToOne(entityModel, field)
         } else if (!field.hasAnnotation(Convert::class.java)
-                && field.asType().isTypeEqualTo(typeUtils, List::class.java.name, eraseTypeParameters = true)) {
+                && typeHelper.isTypeEqualTo(field.asType(), List::class.java.name, eraseTypeParameters = true)) {
             if (!field.hasAnnotation(Backlink::class.java)) {
                 messages.error("Is this a custom type or to-many relation? Add @Convert or @Backlink.", field)
                 return
             }
             // List<TARGET> property
             relations.parseToMany(entityModel, field)
-        } else if (field.asType().isTypeEqualTo(typeUtils, ToMany::class.java.name, eraseTypeParameters = true)) {
+        } else if (typeHelper.isTypeEqualTo(field.asType(), ToMany::class.java.name, eraseTypeParameters = true)) {
             if (!field.hasAnnotation(Backlink::class.java)) {
                 messages.error("ToMany field must be annotated with @Backlink.", field)
                 return
@@ -140,7 +142,7 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
         val converter = getAnnotationValueType(annotationMirror, "converter")
         val dbType = getAnnotationValueType(annotationMirror, "dbType")
 
-        val propertyType = dbType?.getPropertyType(typeUtils)
+        val propertyType = typeHelper.getPropertyType(dbType)
         if (propertyType == null) {
             messages.error("@Convert dbType type is not supported, use a Java primitive wrapper class.", field)
             return null
@@ -157,7 +159,7 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
 
     private fun parseSupportedProperty(field: VariableElement): Property.PropertyBuilder? {
         val typeMirror = field.asType()
-        val propertyType = typeMirror.getPropertyType(typeUtils)
+        val propertyType = typeHelper.getPropertyType(typeMirror)
         if (propertyType == null) {
             messages.error("Field type is not supported, use @Convert or @Transient.", field)
             return null
@@ -199,6 +201,10 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
             }
         }
         return null
+    }
+
+    fun <A : Annotation> Element.hasAnnotation(annotationType: Class<A>): Boolean {
+        return getAnnotation(annotationType) != null
     }
 
 }

@@ -183,6 +183,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
 
     private fun parametersMatchProperties(parameters: MutableList<out VariableElement>,
                                           properties: MutableList<Property>): Boolean {
+        val typeHelper = TypeHelper(typeUtils)
         for ((idx, param) in parameters.withIndex()) {
             val property = properties[idx]
             if (property.parsedElement != null) {
@@ -192,7 +193,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
                 }
             } else {
                 // special case: virtual property (to-one target id) that has no matching field
-                val paramPropertyType = param.asType().getPropertyType(typeUtils)
+                val paramPropertyType = typeHelper.getPropertyType(param.asType())
                 if (paramPropertyType != property.propertyType
                         || param.simpleName.toString() != property.propertyName) {
                     return false

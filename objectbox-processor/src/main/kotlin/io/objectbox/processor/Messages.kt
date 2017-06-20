@@ -3,6 +3,7 @@ package io.objectbox.processor
 import io.objectbox.generator.model.HasParsedElement
 import javax.annotation.processing.Messager
 import javax.lang.model.element.Element
+import javax.lang.model.element.TypeElement
 import javax.lang.model.element.VariableElement
 import javax.tools.Diagnostic
 
@@ -25,7 +26,9 @@ class Messages(val messager: Messager) {
     }
 
     fun error(message: String, field: VariableElement) {
-        printCustomError(message + " (${field.qualifiedName})", field)
+        val enclosingElement = field.enclosingElement as TypeElement
+        val fieldName = field.simpleName
+        printCustomError(message + " (${enclosingElement.qualifiedName}.$fieldName)", field)
     }
 
     fun error(message: String, elementHolder: HasParsedElement? = null) {
