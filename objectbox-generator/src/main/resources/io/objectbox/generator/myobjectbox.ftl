@@ -89,7 +89,9 @@ public class MyObjectBox {
     <#if !uniqueFlags?seq_contains(flag)><#assign uniqueFlags = uniqueFlags + [flag]></#if>
 </#list>
         entityBuilder.property("${property.dbName}", <#--
-        --><#if property.targetEntity??>"${property.targetEntity.dbName}", </#if>PropertyType.${property.dbType})<#--
+        --><#if property.targetEntity??>"${property.targetEntity.dbName}", <#--
+            --><#if property.virtualTargetName??>"${property.virtualTargetName}", </#if></#if><#--
+        -->PropertyType.${property.dbType})<#--
         --><#if property.modelId??>.id(${property.modelId.id?c}, ${property.modelId.uid?c}L)</#if><#--
         --><#if (uniqueFlags?size > 0)>
 
