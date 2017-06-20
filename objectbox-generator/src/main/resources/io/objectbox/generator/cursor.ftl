@@ -25,7 +25,7 @@ along with ObjectBox Generator.  If not, see <http://www.gnu.org/licenses/>.
 <#assign toCursorType = {"Boolean":"Short", "Byte":"Short", "Short":"Short", "Int":"Int", "Long":"Long", "Float":"Float", "Double":"Double", "String":"String", "ByteArray":"Blob", "Date": "Long"  } />
 package ${entity.javaPackageDao};
 
-<#if entity.incomingToManyRelations?has_content>
+<#if entity.incomingToManyRelations?has_content || entity.toManyRelations?has_content>
 import java.util.List;
 </#if>
 
@@ -128,8 +128,9 @@ ${propertyCollector}
     </#if>
 </#if>
 <#list entity.toManyRelations as toMany>
-        if (entity.${toMany.name} instanceof ToMany) {
-            ToMany<${toMany.targetEntity.className}> toMany = (ToMany<${toMany.targetEntity.className}>) entity.${toMany.name};
+        List<${toMany.targetEntity.className}> ${toMany.name} = entity.${toMany.name};
+        if (${toMany.name} instanceof ToMany) {
+            ToMany<${toMany.targetEntity.className}> toMany = (ToMany<${toMany.targetEntity.className}>) ${toMany.name};
             if (toMany.internalRequiresPutTarget()) {
                 toMany.internalPutTarget(getRelationTargetCursor(${toMany.targetEntity.className}.class));
             }

@@ -1,5 +1,7 @@
 package io.objectbox.processor.test;
 
+import java.util.List;
+
 import io.objectbox.BoxStore;
 import io.objectbox.Cursor;
 import io.objectbox.Transaction;
@@ -49,10 +51,11 @@ public final class BacklinkListParentCursor extends Cursor<BacklinkListParent> {
                 0, 0, 0, 0);
 
         entity.id = __assignedId;
-        entity.__boxStore = boxStoreForEntities;
 
-        if (entity.children instanceof ToMany) {
-            ToMany<BacklinkListChild> toMany = (ToMany<BacklinkListChild>) entity.children;
+        entity.__boxStore = boxStoreForEntities;
+        List<BacklinkListChild> children = entity.children;
+        if (children instanceof ToMany) {
+            ToMany<BacklinkListChild> toMany = (ToMany<BacklinkListChild>) children;
             if (toMany.internalRequiresPutTarget()) {
                 toMany.internalPutTarget(getRelationTargetCursor(BacklinkListChild.class));
             }
