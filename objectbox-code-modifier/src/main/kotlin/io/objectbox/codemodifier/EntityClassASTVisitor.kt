@@ -26,6 +26,7 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
     val oneRelations = mutableListOf<ToOneRelation>()
     val manyRelations = mutableListOf<ToManyRelation>()
     var keepSource = false
+    var entityUseNoArgConstructor = false
     var createTable = true
     var protobufClassName: String? = null
     var usedNotNullAnnotation: String? = null
@@ -82,6 +83,7 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
                         isEntity = true
                         val entityAnnotation = AnnotationProxy<Entity>(node)
                         // schemaName = entityAnnotation.schema
+                        entityUseNoArgConstructor = entityAnnotation.useNoArgConstructor
                         if (node is NormalAnnotation) {
                             // protobufClassName = (node["protobuf"] as? TypeLiteral)?.type?.typeName?.nullIfBlank()
                             if (protobufClassName != null && entityDbName == null) {
@@ -426,7 +428,7 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
                     source = source,
                     keepSource = keepSource,
                     createInDb = createTable,
-                    generateConstructors = true,
+                    generateConstructors = !entityUseNoArgConstructor,
                     protobufClassName = protobufClassName,
                     notNullAnnotation = usedNotNullAnnotation,
                     lastFieldDeclaration = lastField
