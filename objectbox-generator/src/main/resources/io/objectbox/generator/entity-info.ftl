@@ -147,7 +147,8 @@ property.converter??>, ${property.converterClassName}.class, ${property.customTy
     <#list entity.toOneRelations as toOne>
     static final RelationInfo<${toOne.targetEntity.className}> ${toOne.name} =
         new RelationInfo<>(${toOne.sourceEntity.className}_.__INSTANCE,<#--
-    --> ${toOne.targetEntity.className}_.__INSTANCE, ${toOne.targetIdProperty.propertyName});
+    --> ${toOne.targetEntity.className}_.__INSTANCE,<#--
+    --> <#if toOne.targetIdProperty.virtual>null<#else>${toOne.targetIdProperty.propertyName}</#if>);
 
     </#list>
     <#list entity.toManyRelations as toMany>

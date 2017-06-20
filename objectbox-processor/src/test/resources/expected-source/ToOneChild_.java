@@ -94,6 +94,6 @@ public final class ToOneChild_ implements EntityInfo<ToOneChild> {
     }
 
     static final RelationInfo<ToOneParent> parent =
-            new RelationInfo<>(ToOneChild_.__INSTANCE, ToOneParent_.__INSTANCE, parentId);
+            new RelationInfo<>(ToOneChild_.__INSTANCE, ToOneParent_.__INSTANCE, null);
 
 }
