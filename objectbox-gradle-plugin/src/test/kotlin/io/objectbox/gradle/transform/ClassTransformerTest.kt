@@ -29,8 +29,8 @@ class EntityToMany {
     val entityEmpty = ToMany<EntityEmpty>()
 }
 
-class EntityTransformerTest {
-    val transformer = EntityTransformer()
+class ClassTransformerTest {
+    val transformer = ClassTransformer()
     val classDir1 = File("build/classes/test")
     val classDir2 = File("objectbox-gradle-plugin/${classDir1.path}")
     val classDir = if (classDir1.exists()) classDir1 else classDir2

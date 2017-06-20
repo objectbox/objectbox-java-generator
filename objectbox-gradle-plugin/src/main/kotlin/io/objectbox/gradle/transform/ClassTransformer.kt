@@ -14,7 +14,7 @@ import java.io.DataInputStream
 import java.io.File
 
 
-class EntityTransformer() {
+class ClassTransformer() {
     object Const {
         val entityAnnotationName = Entity::class.qualifiedName
 
