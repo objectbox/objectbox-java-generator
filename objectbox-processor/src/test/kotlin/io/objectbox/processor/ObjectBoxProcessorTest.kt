@@ -71,6 +71,14 @@ class ObjectBoxProcessorTest {
                     )
                     .compile(fileObjects)
         }
+
+        fun cleanModelFile() {
+            Files.deleteIfExists(File(modelFilePath).toPath())
+        }
+
+        fun readModel(): IdSync {
+            return IdSync(File(modelFilePath))
+        }
     }
 
     @Test
@@ -98,8 +106,7 @@ class ObjectBoxProcessorTest {
     private fun testSchemaAndModel(className: String) {
         // ensure mode file is re-created on each run
         val environment = TestEnvironment("default-temp.json")
-        val modelFile = File(environment.modelFilePath)
-        Files.deleteIfExists(modelFile.toPath())
+        environment.cleanModelFile()
 
         val compilation = environment.compileDaoCompat(className)
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
@@ -179,7 +186,7 @@ class ObjectBoxProcessorTest {
         }
 
         // assert model
-        val model = IdSync(modelFile)
+        val model = environment.readModel()
         assertThat(model.lastEntityId).isNotNull()
         assertThat(model.lastEntityId).isNotEqualTo(IdUid())
         assertThat(model.lastEntityId).isEqualTo(schema.lastEntityId)
@@ -337,25 +344,25 @@ class ObjectBoxProcessorTest {
         val parentName = "RelationParent"
         val childName = "RelationChild"
 
-        val environment = TestEnvironment("relation.json")
+        // assert generated files source trees
+        testToOneSources(parentName, childName, "relation.json")
+
+        // assert schema and model
+        val environment = TestEnvironment("relation-temp.json")
+        environment.cleanModelFile()
 
         val compilation = environment.compile(parentName, childName)
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
 
-        // assert generated files source trees
-        assertGeneratedSourceMatches(compilation, "${childName}_")
-        assertGeneratedSourceMatches(compilation, "${childName}Cursor")
-
-        // assert schema
         val schema = environment.schema
         assertThat(schema).isNotNull()
         assertThat(schema.entities).hasSize(2)
 
-        // assert entity
         val parent = schema.entities.single { it.className == parentName }
         val child = schema.entities.single { it.className == childName }
 
-        // assert properties
+        // assert to-one and index on target property in schema
+        assertThat(child.properties.size).isAtLeast(1)
         for (prop in child.properties) {
             when (prop.propertyName) {
                 "id" -> {
@@ -373,6 +380,8 @@ class ObjectBoxProcessorTest {
                 else -> fail("Found stray property '${prop.propertyName}' in schema.")
             }
         }
+
+        assertToOneModel(environment, childName)
     }
 
     @Test
@@ -381,16 +390,16 @@ class ObjectBoxProcessorTest {
         val parentName = "ToOneParent"
         val childName = "ToOneChild"
 
-        val environment = TestEnvironment("to-one.json")
+        // assert generated files source trees
+        testToOneSources(parentName, childName, "to-one.json")
+
+        // assert schema and model
+        val environment = TestEnvironment("to-one-temp.json")
+        environment.cleanModelFile()
 
         val compilation = environment.compile(parentName, childName)
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
 
-        // assert generated files source trees
-        assertGeneratedSourceMatches(compilation, "${childName}_")
-        assertGeneratedSourceMatches(compilation, "${childName}Cursor")
-
-        // assert schema
         val schema = environment.schema
         assertThat(schema).isNotNull()
         assertThat(schema.entities).hasSize(2)
@@ -415,6 +424,37 @@ class ObjectBoxProcessorTest {
                     assertToOneIndexAndRelation(child, parent, prop, toOneName = "parent")
                 }
                 else -> fail("Found stray property '${prop.propertyName}' in schema.")
+            }
+        }
+
+        assertToOneModel(environment, childName)
+    }
+
+    private fun testToOneSources(parentName: String, childName: String, modelFileName: String) {
+        val fixedEnvironment = TestEnvironment(modelFileName)
+
+        val fixedCompilation = fixedEnvironment.compile(parentName, childName)
+        CompilationSubject.assertThat(fixedCompilation).succeededWithoutWarnings()
+
+        assertGeneratedSourceMatches(fixedCompilation, "${childName}_")
+        assertGeneratedSourceMatches(fixedCompilation, "${childName}Cursor")
+    }
+
+    private fun assertToOneModel(environment: TestEnvironment, childName: String) {
+        val model = environment.readModel()
+        val modelChild = model.findEntity(childName, null)
+
+        // assert only target property has an index in model
+        assertThat(modelChild!!.properties.size).isAtLeast(1)
+        for (property in modelChild.properties) {
+            when (property.name) {
+                "parentId" -> {
+                    assertThat(property.indexId).isNotNull()
+                    assertThat(property.indexId).isNotEqualTo(IdUid())
+                }
+                else -> {
+                    assertThat(property.indexId).isNull()
+                }
             }
         }
     }
