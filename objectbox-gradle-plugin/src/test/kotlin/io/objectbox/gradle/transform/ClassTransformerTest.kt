@@ -1,5 +1,6 @@
 package io.objectbox.gradle.transform
 
+import io.objectbox.Cursor
 import io.objectbox.annotation.Entity
 import io.objectbox.relation.ToMany
 import io.objectbox.relation.ToOne
@@ -28,6 +29,8 @@ class EntityToOne {
 class EntityToMany {
     val entityEmpty = ToMany<EntityEmpty>()
 }
+
+class TestCursor : Cursor()
 
 class ClassTransformerTest {
     val transformer = ClassTransformer()
@@ -73,6 +76,12 @@ class ClassTransformerTest {
     fun testProbeEntityToMany() {
         val entity = probeClass(EntityToMany::class)
         assertTrue(entity.hasToMany)
+    }
+
+    @Test
+    fun testProbeCursor() {
+        val probed = probeClass(TestCursor::class)
+        assertTrue(probed.isCursor)
     }
 
     @Test
