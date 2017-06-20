@@ -152,8 +152,11 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         val properties = Properties(elementUtils, typeUtils, messages, relations, entityModel, entity)
         properties.parseFields()
 
+        val hasBoxStoreField = properties.hasBoxStoreField()
+        entityModel.hasBoxStoreField = hasBoxStoreField
+
         // if not added automatically and relations are used, ensure there is a box store field
-        if (!transformationEnabled && relations.hasRelations(entityModel) && !properties.hasBoxStoreField()) {
+        if (!transformationEnabled && relations.hasRelations(entityModel) && !hasBoxStoreField) {
             messages.error("To use relations in '${entityModel.className}' " +
                     "add a field '__boxStore' of type 'BoxStore'.", entity)
         }
