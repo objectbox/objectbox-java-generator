@@ -123,6 +123,8 @@ ${propertyCollector}
 <#if entity.active && !entity.protobuf>
     <#if entity.hasBoxStoreField>
         entity.__boxStore = boxStoreForEntities;
+    <#else>
+        attachEntity(entity);
     </#if>
 </#if>
 <#list entity.toManyRelations as toMany>
@@ -136,13 +138,11 @@ ${propertyCollector}
         return __assignedId;
     }
 
-<#if entity.active>
-    // TODO @Override
-    //protected final void attachEntity(${entity.className} entity) {
-        // TODO super.attachEntity(entity);
+<#if entity.active && !entity.hasBoxStoreField>
+    private void attachEntity(${entity.className} entity) {
+        // Transformer will create __boxStore field in entity and init it here:
         //entity.__boxStore = boxStoreForEntities;
-    //}
+    }
 
 </#if>
-
 }
