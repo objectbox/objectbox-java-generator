@@ -83,6 +83,7 @@ public class MyObjectBox {
 <#if property.notNull><#assign flags = flags + ["PropertyFlags.NOT_NULL"]></#if>
 <#if property.nonPrimitiveType && property.propertyType.scalar><#assign flags = flags + ["PropertyFlags.NON_PRIMITIVE_TYPE"]></#if>
 <#if property.index??><#assign flags = flags + ["PropertyFlags.INDEXED"]></#if>
+<#if property.virtual><#assign flags = flags + ["PropertyFlags.VIRTUAL"]></#if>
 <#if property.propertyType == "RelationId"><#assign flags = flags + ["PropertyFlags.INDEXED", "PropertyFlags.INDEX_PARTIAL_SKIP_ZERO"]></#if>
 <#assign uniqueFlags = []>
 <#list flags as flag>
