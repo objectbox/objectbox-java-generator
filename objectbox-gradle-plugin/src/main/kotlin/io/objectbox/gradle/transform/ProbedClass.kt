@@ -1,4 +1,4 @@
-package io.objectbox.gradle
+package io.objectbox.gradle.transform
 
 import java.io.File
 

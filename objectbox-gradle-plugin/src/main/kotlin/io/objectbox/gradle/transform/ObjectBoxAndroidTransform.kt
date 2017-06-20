@@ -1,4 +1,4 @@
-package io.objectbox.gradle
+package io.objectbox.gradle.transform
 
 import com.android.build.api.transform.Format
 import com.android.build.api.transform.QualifiedContent
@@ -13,7 +13,6 @@ import com.android.build.gradle.TestExtension
 import com.android.build.gradle.TestPlugin
 import org.gradle.api.Project
 import java.io.File
-
 
 class ObjectBoxAndroidTransform(val project: Project) : Transform() {
 

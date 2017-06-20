@@ -3,6 +3,7 @@ package io.objectbox.gradle
 import io.objectbox.codemodifier.ObjectBoxGenerator
 import io.objectbox.codemodifier.SchemaOptions
 import io.objectbox.gradle.ProjectEnv.Const.name
+import io.objectbox.gradle.transform.ObjectBoxAndroidTransform
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task

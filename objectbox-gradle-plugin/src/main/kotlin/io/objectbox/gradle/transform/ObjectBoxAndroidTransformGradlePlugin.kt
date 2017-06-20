@@ -1,4 +1,4 @@
-package io.objectbox.gradle
+package io.objectbox.gradle.transform
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project

@@ -1,4 +1,4 @@
-package io.objectbox.gradle
+package io.objectbox.gradle.transform
 
 import io.objectbox.annotation.Entity
 import io.objectbox.relation.ToMany
