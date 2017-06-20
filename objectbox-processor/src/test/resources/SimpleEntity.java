@@ -15,7 +15,6 @@ import io.objectbox.converter.PropertyConverter;
 
 @Entity
 @NameInDb("A")
-@Uid(4858050548069557694L)
 public class SimpleEntity {
 
     @Id(assignable = true)
@@ -57,9 +56,6 @@ public class SimpleEntity {
 
     @NameInDb("B")
     String namedProperty;
-
-    @Uid(3817914863709111804L)
-    Long uidProperty;
 
     @Convert(converter = SimpleEnumConverter.class, dbType = Integer.class)
     SimpleEnum customType;

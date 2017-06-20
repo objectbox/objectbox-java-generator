@@ -58,9 +58,8 @@ public final class SimpleEntity_ implements EntityInfo<SimpleEntity> {
     public final static Property simpleByteArray = new Property(17, 18, byte[].class, "simpleByteArray");
     public final static Property indexedProperty = new Property(18, 19, Integer.class, "indexedProperty");
     public final static Property namedProperty = new Property(19, 20, String.class, "namedProperty", false, "B");
-    public final static Property uidProperty = new Property(20, 21, Long.class, "uidProperty");
-    public final static Property customType = new Property(21, 22, int.class, "customType", false, "customType", SimpleEnumConverter.class, SimpleEnum.class);
-    public final static Property customTypes = new Property(22, 23, int.class, "customTypes", false, "customTypes", SimpleEnumListConverter.class, List.class);
+    public final static Property customType = new Property(20, 21, int.class, "customType", false, "customType", SimpleEnumConverter.class, SimpleEnum.class);
+    public final static Property customTypes = new Property(21, 22, int.class, "customTypes", false, "customTypes", SimpleEnumListConverter.class, List.class);
 
     public final static Property[] __ALL_PROPERTIES = {
             id,
@@ -83,7 +82,6 @@ public final class SimpleEntity_ implements EntityInfo<SimpleEntity> {
             simpleByteArray,
             indexedProperty,
             namedProperty,
-            uidProperty,
             customType,
             customTypes
     };

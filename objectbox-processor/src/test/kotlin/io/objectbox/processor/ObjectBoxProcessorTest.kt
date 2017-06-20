@@ -17,6 +17,7 @@ import org.junit.Assert.fail
 import org.junit.Test
 import java.io.File
 import java.io.FileNotFoundException
+import java.nio.file.Files
 import javax.tools.JavaFileObject
 
 class ObjectBoxProcessorTest {
@@ -73,11 +74,17 @@ class ObjectBoxProcessorTest {
     }
 
     @Test
-    fun testProcessor() {
+    fun testSimpleEntity() {
         val className = "SimpleEntity"
-        val modelFileName = "default.json"
 
-        val environment = TestEnvironment(modelFileName)
+        testGeneratedSources(className)
+
+        testSchemaAndModel(className)
+    }
+
+    private fun testGeneratedSources(className: String) {
+        // need stable model file + ids to verify sources match
+        val environment = TestEnvironment("default.json")
 
         val compilation = environment.compileDaoCompat(className)
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
@@ -86,42 +93,42 @@ class ObjectBoxProcessorTest {
         assertGeneratedSourceMatches(compilation, "MyObjectBox")
         assertGeneratedSourceMatches(compilation, "${className}_")
         assertGeneratedSourceMatches(compilation, "${className}Cursor")
+    }
+
+    private fun testSchemaAndModel(className: String) {
+        // ensure mode file is re-created on each run
+        val environment = TestEnvironment("default-temp.json")
+        val modelFile = File(environment.modelFilePath)
+        Files.deleteIfExists(modelFile.toPath())
+
+        val compilation = environment.compileDaoCompat(className)
+        CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
 
         // assert schema
         val schema = environment.schema
         assertThat(schema).isNotNull()
         assertThat(schema.version).isEqualTo(1)
         assertThat(schema.defaultJavaPackage).isEqualTo("io.objectbox.processor.test")
-        val lastEntityId = IdUid(1, 4858050548069557694)
-        assertThat(schema.lastEntityId).isEqualTo(lastEntityId)
-        val lastIndexId = IdUid(1, 4551328960004588074)
-        assertThat(schema.lastIndexId).isEqualTo(lastIndexId)
         assertThat(schema.entities).hasSize(1)
 
         // assert entity
-        val entity = schema.entities[0]
-        assertThat(entity.className).isEqualTo(className)
+        val schemaEntity = schema.entities[0]
+        assertThat(schemaEntity.className).isEqualTo(className)
         val dbName = "A"
-        assertThat(entity.dbName).isEqualTo(dbName)
-        assertThat(entity.modelId).isEqualTo(1)
-        assertThat(entity.modelUid).isEqualTo(4858050548069557694)
-        assertThat(entity.lastPropertyId).isEqualTo(IdUid(23, 4772590935549770830))
-        assertThat(entity.isConstructors).isFalse()
+        assertThat(schemaEntity.dbName).isEqualTo(dbName)
+        assertThat(schemaEntity.isConstructors).isFalse()
 
         // assert index
-        assertThat(entity.indexes.size).isAtLeast(1)
-        for (index in entity.indexes) {
-            when (index.orderSpec) {
-                "indexedProperty ASC" -> {
-                    assertThat(index.isUnique).isFalse()
-                    assertThat(index.isNonDefaultName).isFalse()
-                }
-                else -> fail("Found stray index '${index.orderSpec}' in schema.")
-            }
-        }
+        assertThat(schemaEntity.indexes).hasSize(1)
+        val index = schemaEntity.indexes[0]
+        assertThat(index.isNonDefaultName).isFalse()
+        assertThat(index.isUnique).isFalse()
+        assertThat(index.properties).hasSize(1)
+        val indexProperty = index.properties[0]
 
         // assert properties
-        for (prop in entity.properties) {
+        assertThat(schemaEntity.properties.size).isAtLeast(1)
+        for (prop in schemaEntity.properties) {
             when (prop.propertyName) {
                 "id" -> {
                     assertThat(prop.isPrimaryKey).isTrue()
@@ -150,15 +157,12 @@ class ObjectBoxProcessorTest {
                     fail("Transient field should not be added to schema.")
                 "indexedProperty" -> {
                     assertType(prop, PropertyType.Int)
-                    assertThat(prop.index).isEqualTo(entity.indexes[0])
+                    assertThat(prop.index).isEqualTo(index)
+                    assertThat(prop).isEqualTo(indexProperty)
                 }
                 "namedProperty" -> {
                     assertThat(prop.dbName).isEqualTo("B")
                     assertType(prop, PropertyType.String)
-                }
-                "uidProperty" -> {
-                    assertThat(prop.modelId.uid).isEqualTo(3817914863709111804)
-                    assertType(prop, PropertyType.Long)
                 }
                 "customType" -> {
                     assertThat(prop.customType).isEqualTo("io.objectbox.processor.test.SimpleEntity.SimpleEnum")
@@ -174,16 +178,26 @@ class ObjectBoxProcessorTest {
             }
         }
 
-        // assert model file
-        val modelFile = File(environment.modelFilePath)
-        val absolutePath = modelFile.absolutePath
-        System.out.println("Model file path: $absolutePath")
-        val idSync = IdSync(modelFile)
-        assertThat(idSync.lastEntityId).isEqualTo(lastEntityId)
-        assertThat(idSync.lastIndexId).isEqualTo(lastIndexId)
-        val modelEntity = idSync.findEntity(dbName, null)
+        // assert model
+        val model = IdSync(modelFile)
+        assertThat(model.lastEntityId).isNotNull()
+        assertThat(model.lastEntityId).isNotEqualTo(IdUid())
+        assertThat(model.lastEntityId).isEqualTo(schema.lastEntityId)
+        assertThat(model.lastIndexId).isNotNull()
+        assertThat(model.lastIndexId).isNotEqualTo(IdUid())
+        assertThat(model.lastIndexId).isEqualTo(schema.lastIndexId)
+
+        // assert model entity
+        val modelEntity = model.findEntity(dbName, null)
         assertThat(modelEntity).isNotNull()
-        assertThat(modelEntity!!.properties.size).isAtLeast(1)
+        assertThat(modelEntity!!.id).isNotNull()
+        assertThat(modelEntity.id).isNotEqualTo(IdUid())
+        assertThat(modelEntity.id).isEqualTo(model.lastEntityId)
+        assertThat(modelEntity.id.id).isEqualTo(schemaEntity.modelId)
+        assertThat(modelEntity.id.uid).isEqualTo(schemaEntity.modelUid)
+        assertThat(modelEntity.lastPropertyId).isNotNull()
+        assertThat(modelEntity.lastPropertyId).isNotEqualTo(IdUid())
+        assertThat(modelEntity.lastPropertyId).isEqualTo(schemaEntity.lastPropertyId)
 
         // assert model properties
         val modelPropertyNames = listOf(
@@ -205,14 +219,20 @@ class ObjectBoxProcessorTest {
                 "simpleDate",
                 "simpleString",
                 "simpleByteArray",
-                "indexedProperty",
+                "indexedProperty", // indexed
                 "B",
-                "uidProperty",
                 "customType",
-                "customTypes"
+                "customTypes" // last
         )
+        val modelProperties = modelEntity.properties
+        assertThat(modelProperties.size).isAtLeast(1)
+
+        modelProperties
+                .filterNot { modelPropertyNames.contains(it.name) }
+                .forEach { fail("Found stray property '${it.name}' in model file.") }
+
         modelPropertyNames.forEach { name ->
-            val property = modelEntity.properties.singleOrNull { it.name == name }
+            val property = modelProperties.singleOrNull { it.name == name }
             assertWithMessage("Property '$name' not in model file").that(property).isNotNull()
             assertWithMessage("Property '$name' has no id").that(property!!.id).isNotNull()
             assertWithMessage("Property '$name' id:uid is 0:0").that(property.id).isNotEqualTo(IdUid())
@@ -221,15 +241,13 @@ class ObjectBoxProcessorTest {
                 "indexedProperty" -> {
                     assertThat(property.indexId).isNotNull()
                     assertThat(property.indexId).isNotEqualTo(IdUid())
+                    assertThat(property.indexId).isEqualTo(model.lastIndexId)
                 }
-                "uidProperty" -> assertThat(property.id.uid).isEqualTo(3817914863709111804)
+                "customTypes" -> {
+                    assertThat(property.id).isEqualTo(modelEntity.lastPropertyId)
+                }
             }
         }
-
-        // assert no other model properties exist
-        modelEntity.properties
-                .filterNot { modelPropertyNames.contains(it.name) }
-                .forEach { fail("Found stray property '${it.name}' in model file.") }
     }
 
     @Test
