@@ -271,9 +271,6 @@ class PropertyCollector {
         if (last) {
             if (!entity.isProtobuf()) {
                 all.append(INDENT).append(setValue(idProperty, "__assignedId")).append(";\n");
-                if (Boolean.TRUE.equals(entity.getActive())) {
-                    all.append(INDENT).append("entity.__boxStore = boxStoreForEntities;\n");
-                }
             }
         }
     }
