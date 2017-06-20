@@ -19,6 +19,7 @@ import javax.tools.StandardLocation
  *
  * Might not be necessary in the future: https://issuetracker.google.com/issues/37063033
  */
+@Throws(FileNotFoundException::class)
 fun findProjectRoot(filer: Filer): File {
     val fileProbe: FileObject
     try {
@@ -51,7 +52,7 @@ fun findProjectRoot(filer: Filer): File {
     try {
         cleanURI = URI(filePathProbe)
     } catch (e: URISyntaxException) {
-        throw FileNotFoundException(e.message)
+        throw FileNotFoundException("parse failed: ${e.message}")
     }
 
     val fileDummy = File(cleanURI)

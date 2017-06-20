@@ -16,18 +16,36 @@ import io.objectbox.generator.model.ToMany
 import org.junit.Assert.fail
 import org.junit.Test
 import java.io.File
+import java.io.FileNotFoundException
 import javax.tools.JavaFileObject
 
 class ObjectBoxProcessorTest {
 
     class TestEnvironment(modelFile: String) {
-        val modelFilesBaseBath = "src/test/resources/objectbox-models/"
-        val modelFilePath = "$modelFilesBaseBath$modelFile"
-        val modelFileProcessorOption = "-A${ObjectBoxProcessor.OPTION_MODEL_PATH}=$modelFilePath"
+        val modelFilesPathModule = "src/test/resources/objectbox-models/"
+        val modelFilesPathProject = "objectbox-processor/$modelFilesPathModule"
+
+        val modelFilePath: String
+        val modelFileProcessorOption: String
+            get() = "-A${ObjectBoxProcessor.OPTION_MODEL_PATH}=$modelFilePath"
 
         val processor = ObjectBoxProcessorShim()
         val schema: Schema
             get() = processor.schema!!
+
+        init {
+            // tests run from Gradle are relative to project directory
+            val modelFilePathProject = "$modelFilesPathProject$modelFile"
+            // tests run from IntelliJ are relative to module directory
+            val modelFilePathModule = "$modelFilesPathModule$modelFile"
+            if (File(modelFilePathProject).parentFile.isDirectory) {
+                modelFilePath = modelFilePathProject
+            } else if (File(modelFilePathModule).parentFile.isDirectory) {
+                modelFilePath = modelFilePathModule
+            } else {
+                throw FileNotFoundException("Can not find model file directory.")
+            }
+        }
 
         fun compile(vararg files: String): Compilation {
             val fileObjects = files.map { JavaFileObjects.forResource("$it.java") }

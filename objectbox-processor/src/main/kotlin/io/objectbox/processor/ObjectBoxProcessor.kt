@@ -39,7 +39,6 @@ open class ObjectBoxProcessor : AbstractProcessor() {
     private lateinit var typeUtils: Types
     private lateinit var filer: Filer
     private lateinit var messages: Messages
-    private lateinit var projectRoot: File
     private var customModelPath: String? = null
     private var daoCompat: Boolean = false
     private var transformationEnabled: Boolean = false
@@ -57,12 +56,6 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         daoCompat = "true" == env.options[OPTION_DAO_COMPAT]
         daoCompatPackage = env.options[OPTION_DAO_PACKAGE]
         transformationEnabled = "true" == env.options[OPTION_TRANSFORMATION_ENABLED]
-
-        try {
-            projectRoot = findProjectRoot(env.filer)
-        } catch (e: FileNotFoundException) {
-            throw FileNotFoundException("Could not find project root: ${e.message}")
-        }
     }
 
     override fun getSupportedAnnotationTypes(): Set<String> {
@@ -210,13 +203,30 @@ open class ObjectBoxProcessor : AbstractProcessor() {
     }
 
     private fun syncIdModel(schema: Schema): Boolean {
-        val modelFilePath = if (customModelPath.isNullOrEmpty()) "objectbox-models/default.json" else customModelPath
-        val modelFile = File(projectRoot, modelFilePath)
+        val useDefaultPath = customModelPath.isNullOrEmpty()
+        val modelFile = if (useDefaultPath) {
+            try {
+                val projectRoot = findProjectRoot(filer)
+                File(projectRoot, "objectbox-models/default.json")
+            } catch (e: FileNotFoundException) {
+                messages.error("Could not find project root to create model file in. " +
+                        "Add absolute path to model file with processor option '$OPTION_MODEL_PATH'. (${e.message})")
+                return false
+            }
+        } else {
+            File(customModelPath)
+        }
 
         val modelFolder = modelFile.parentFile
-        if (!modelFolder.isDirectory && !modelFolder.mkdirs()) {
-            messages.error("Could not create model folder at '${modelFolder.absolutePath}'.")
-            return false
+        if (!modelFolder.isDirectory) {
+            if (useDefaultPath && !modelFolder.mkdirs()) {
+                messages.error("Could not create default model folder at '${modelFolder.absolutePath}'. " +
+                        "Add absolute path to model file with processor option '$OPTION_MODEL_PATH'.")
+                return false
+            } else {
+                messages.error("Model folder does not exist at '${modelFolder.absolutePath}'.")
+                return false
+            }
         }
 
         val idSync: IdSync
