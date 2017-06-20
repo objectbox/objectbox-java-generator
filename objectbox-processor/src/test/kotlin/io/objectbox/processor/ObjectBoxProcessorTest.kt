@@ -466,7 +466,8 @@ class ObjectBoxProcessorTest {
         val parentName = "ToOneParent"
         val childName = "ToOneAllArgs"
 
-        val environment = TestEnvironment("to-one-all-args.json")
+        val environment = TestEnvironment("to-one-all-args-temp.json")
+        environment.cleanModelFile()
 
         val compilation = environment.compile(parentName, childName)
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
@@ -559,7 +560,8 @@ class ObjectBoxProcessorTest {
         val parentName = "BacklinkWithToParent"
         val childName = "BacklinkWithToChild"
 
-        val environment = TestEnvironment("backlink-with-to.json")
+        val environment = TestEnvironment("backlink-with-to-temp.json")
+        environment.cleanModelFile()
 
         val compilation = environment.compile(parentName, childName)
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
@@ -604,7 +606,8 @@ class ObjectBoxProcessorTest {
     fun testKotlinByteCode() {
         val entityName = "SimpleKotlinEntity"
 
-        val environment = TestEnvironment("kotlin.json")
+        val environment = TestEnvironment("kotlin-temp.json")
+        environment.cleanModelFile()
 
         val compilation = environment.compile(entityName)
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
