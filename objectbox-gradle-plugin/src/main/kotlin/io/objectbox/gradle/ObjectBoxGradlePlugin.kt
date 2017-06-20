@@ -24,7 +24,6 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
         env.logDebug("objectbox.allowApt: $allowApt")
         if (allowApt && env.hasKotlinAndroidPlugin) {
             project.dependencies.add("kapt", "io.objectbox:objectbox-processor:$version")
-            project.dependencies.add("kaptAndroidTest", "io.objectbox:objectbox-processor:$version")
         } else if (allowApt && env.hasKotlinPlugin) {
             project.dependencies.add("kapt", "io.objectbox:objectbox-processor:$version")
 
