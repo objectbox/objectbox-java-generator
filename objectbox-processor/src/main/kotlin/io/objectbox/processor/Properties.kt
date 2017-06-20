@@ -121,11 +121,6 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
         // @Index
         if (field.hasAnnotation(Index::class.java)) {
             propertyBuilder.indexAsc(null, false)
-            // manually set index on property
-            // normally generator would auto-set in Entity.init2ndPass, but we need it earlier for id sync
-            propertyBuilder.property.index = propertyBuilder.property.entity.indexes.single {
-                it.properties[0] == propertyBuilder.property
-            }
         }
 
         // @Uid
