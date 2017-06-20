@@ -35,7 +35,7 @@ class ObjectBoxAndroidTransform(val project: Project) : Transform() {
         }
     }
 
-    val entityTransformer = EntityTransformer()
+    val classTransformer = ClassTransformer()
 
     override fun getName(): String {
         return "ObjectBoxAndroidTransform"
@@ -62,10 +62,10 @@ class ObjectBoxAndroidTransform(val project: Project) : Transform() {
             allClassFiles.addAll(directoryInput.file.walk().filter { it.isFile })
         }
 
-        val probedEntities = allClassFiles.map { entityTransformer.probeClass(it) }.filterNotNull()
+        val probedClasses = allClassFiles.map { classTransformer.probeClass(it) }.filterNotNull()
         val outDir = info.outputProvider.getContentLocation("objectbox", inputTypes, scopes, Format.DIRECTORY)
 
-        entityTransformer.transformOrCopyClasses(probedEntities, outDir)
+        classTransformer.transformOrCopyClasses(probedClasses, outDir)
     }
 
 }
