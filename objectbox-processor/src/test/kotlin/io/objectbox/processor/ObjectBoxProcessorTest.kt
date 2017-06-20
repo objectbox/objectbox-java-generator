@@ -273,6 +273,23 @@ class ObjectBoxProcessorTest {
     }
 
     @Test
+    fun testUid() {
+        // test that @Uid values are picked up
+        val className = "UidEntity"
+
+        val environment = TestEnvironment("uid.json")
+
+        val compilation = environment.compile(className)
+        CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
+
+        val entity = environment.schema.entities[0]
+        assertThat(entity.modelUid).isEqualTo(2361091532752425885)
+
+        val property = entity.properties.single { it.propertyName == "uidProperty" }
+        assertThat(property.modelId.uid).isEqualTo(7287685531948841886)
+    }
+
+    @Test
     fun testMultipleAnnotations() {
         // test multiple (non-conflicting) annotations on a single property
         val className = "MultipleEntity"
