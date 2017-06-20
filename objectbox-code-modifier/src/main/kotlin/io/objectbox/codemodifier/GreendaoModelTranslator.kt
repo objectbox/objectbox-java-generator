@@ -35,6 +35,7 @@ object GreendaoModelTranslator {
             if (parsedEntity.dbName != null) entity.dbName = parsedEntity.dbName
             entity.isSkipCreationInDb = !parsedEntity.createInDb
             entity.javaPackage = parsedEntity.packageName
+            entity.hasBoxStoreField = parsedEntity.transientFields.any { it.variable.name == "__boxStore" }
 
             val idSyncEntity = idSync.get(parsedEntity)
             entity.modelUid = idSyncEntity.uid

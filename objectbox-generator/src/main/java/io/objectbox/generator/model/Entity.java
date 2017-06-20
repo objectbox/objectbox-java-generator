@@ -80,6 +80,7 @@ public class Entity implements HasParsedElement {
     private boolean skipCreationInDb;
     private Boolean active;
     private Boolean hasKeepSections;
+    private boolean hasBoxStoreField;
     private Object parsedElement;
 
     Entity(Schema schema, String className) {
@@ -503,6 +504,14 @@ public class Entity implements HasParsedElement {
 
     public void setCodeBeforeClass(String codeBeforeClass) {
         this.codeBeforeClass = codeBeforeClass;
+    }
+
+    public boolean getHasBoxStoreField() {
+        return hasBoxStoreField;
+    }
+
+    public void setHasBoxStoreField(boolean hasBoxStoreField) {
+        this.hasBoxStoreField = hasBoxStoreField;
     }
 
     void init2ndPass() {
