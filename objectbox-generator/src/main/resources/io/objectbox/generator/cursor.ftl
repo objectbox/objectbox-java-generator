@@ -137,7 +137,12 @@ ${propertyCollector}
         if (${toMany.name} instanceof ToMany) {
             ToMany<${toMany.targetEntity.className}> toMany = (ToMany<${toMany.targetEntity.className}>) ${toMany.name};
             if (toMany.internalRequiresPutTarget()) {
-                toMany.internalPutTarget(getRelationTargetCursor(${toMany.targetEntity.className}.class));
+                Cursor<${toMany.targetEntity.className}> targetCursor = getRelationTargetCursor(${toMany.targetEntity.className}.class);
+                try {
+                    toMany.internalPutTarget(targetCursor);
+                } finally {
+                    targetCursor.close();
+                }
             }
         }
 </#list>
