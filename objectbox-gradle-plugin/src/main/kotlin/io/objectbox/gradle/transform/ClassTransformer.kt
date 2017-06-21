@@ -115,7 +115,8 @@ class ClassTransformer() {
     }
 
 
-    private fun transformEntities(probedClasses: List<ProbedClass>, outDir: File, classPool: ClassPool, transformedClasses: MutableSet<ProbedClass>) {
+    private fun transformEntities(probedClasses: List<ProbedClass>, outDir: File, classPool: ClassPool,
+                                  transformedClasses: MutableSet<ProbedClass>) {
         probedClasses.filter { it.hasToOne || it.hasToMany }.forEach { entityClass ->
             entityClass.file.inputStream().use {
                 val ctClass = classPool.makeClass(it)
@@ -143,7 +144,8 @@ class ClassTransformer() {
         return changed
     }
 
-    private fun transformCursors(probedClasses: List<ProbedClass>, outDir: File, classPool: ClassPool, transformedClasses: MutableSet<ProbedClass>) {
+    private fun transformCursors(probedClasses: List<ProbedClass>, outDir: File, classPool: ClassPool,
+                                 transformedClasses: MutableSet<ProbedClass>) {
         probedClasses.filter { it.isCursor }.forEach { cursorClass ->
             cursorClass.file.inputStream().use {
                 val ctClass = classPool.makeClass(it)
@@ -159,12 +161,14 @@ class ClassTransformer() {
         if (attachCtMethod != null) {
             val signature = attachCtMethod.signature
             if (!signature.startsWith("(L") || !signature.endsWith(";)V") || signature.contains(',')) {
-                throw TransformException("Bad signature for ${ctClass.name}.${Const.cursorAttachEntityMethodName}: $signature")
+                throw TransformException(
+                        "Bad signature for ${ctClass.name}.${Const.cursorAttachEntityMethodName}: $signature")
             }
 
             val existingCode = attachCtMethod.methodInfo.codeAttribute.code
             if (existingCode.size != 1 || existingCode[0] != Opcode.RETURN.toByte()) {
-                throw TransformException("Expected empty method body for ${ctClass.name}.${Const.cursorAttachEntityMethodName} " +
+                throw TransformException(
+                        "Expected empty method body for ${ctClass.name}.${Const.cursorAttachEntityMethodName} " +
                         "but was ${existingCode.size} long")
             }
 
