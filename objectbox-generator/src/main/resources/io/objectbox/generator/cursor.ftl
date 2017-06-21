@@ -67,6 +67,7 @@ import ${entity.javaPackage}.${entity.className}.Builder;
 public final class ${entity.classNameDao} extends Cursor<${entity.className}> {
     @Internal
     static final class Factory implements CursorFactory<${entity.className}> {
+        @Override
         public Cursor<${entity.className}> createCursor(Transaction tx, long cursorHandle, BoxStore boxStoreForEntities) {
             return new ${entity.classNameDao}(tx, cursorHandle, boxStoreForEntities);
         }
