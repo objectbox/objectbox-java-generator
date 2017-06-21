@@ -26,7 +26,8 @@ data class ToOneRelation(
 data class ToManyRelation(
         val propertyName: String,
         val targetEntityName: String,
-        var targetIdName: String? = null
+        var targetIdName: String? = null,
+        val fieldAccessible: Boolean
 )
 
 /**
@@ -52,7 +53,8 @@ class Relations(private val messages: Messages) {
         val toMany = ToManyRelation(
                 propertyName = field.simpleName.toString(),
                 targetEntityName = targetEntityName.toString(),
-                targetIdName = backlinkAnnotation.to.nullIfBlank()
+                targetIdName = backlinkAnnotation.to.nullIfBlank(),
+                fieldAccessible = !field.modifiers.contains(Modifier.PRIVATE)
         )
 
         collectToMany(entityModel, toMany)
@@ -230,7 +232,8 @@ class Relations(private val messages: Messages) {
             targetToOne
         }
 
-        entity.addToMany(targetEntity, targetToOne.targetIdProperty, toMany.propertyName)
+        val toManyModel = entity.addToMany(targetEntity, targetToOne.targetIdProperty, toMany.propertyName)
+        toManyModel.isFieldAccessible = toMany.fieldAccessible
         return true
     }
 
