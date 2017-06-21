@@ -30,7 +30,9 @@ class EntityToMany {
     val entityEmpty = ToMany<EntityEmpty>()
 }
 
-class TestCursor : Cursor()
+class TestCursor : Cursor() {
+    private fun attachEntity(entity: EntityBoxStoreField) {}
+}
 
 class ClassTransformerTest {
     val transformer = ClassTransformer()
@@ -85,13 +87,24 @@ class ClassTransformerTest {
     }
 
     @Test
-    fun testTransform() {
-        val entity = probeClass(EntityToOne::class)
+    fun testTransformEntity() {
+        testTransformClass(EntityToOne::class)
+    }
+
+    @Test
+    fun testTransformCursorEntity() {
+        testTransformClass(TestCursor::class)
+    }
+
+    fun testTransformClass(kClass: KClass<*>) {
+        val probedClass = probeClass(kClass)
         val tempDir = File.createTempFile(this.javaClass.name, "")
         tempDir.delete()
         assertTrue(tempDir.mkdir())
         try {
-            transformer.transformOrCopyClasses(listOf(entity), tempDir)
+            transformer.transformOrCopyClasses(listOf(probedClass), tempDir)
+            assertEquals(1, transformer.totalCountTransformed)
+            assertEquals(0, transformer.totalCountCopied)
             val createdFiles = tempDir.walkBottomUp().toList()
             assertEquals(1, createdFiles.filter { it.isFile }.size)
         } finally {

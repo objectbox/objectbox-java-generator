@@ -29,10 +29,14 @@ class ClassTransformer() {
         val boxStoreDescriptor = "Lio.objectbox.BoxStore;"
 
         val cursorClass = "io.objectbox.Cursor"
+        val cursorAttachEntityMethodName = "attachEntity"
 
         val genericSignatureT =
                 SignatureAttribute.ClassSignature(arrayOf(SignatureAttribute.TypeParameter("T"))).encode()!!
     }
+
+    var totalCountTransformed = 0
+    var totalCountCopied = 0
 
     fun probeClass(file: File): ProbedClass {
         DataInputStream(BufferedInputStream(file.inputStream())).use {
@@ -82,13 +86,15 @@ class ClassTransformer() {
         val startTime = System.currentTimeMillis()
         var countTransformed = 0
         var countCopied = 0
-        val classPool = ClassPool(null)
-        classPool.makeClass(Const.boxStoreClass)
-        classPool.makeClass(Const.toOne).genericSignature = Const.genericSignatureT
-        classPool.makeClass(Const.toMany).genericSignature = Const.genericSignatureT
+        val classPool = createClassPool()
         for (probedClass in probedClasses) {
             var transformed = false
-            if (probedClass.hasToOne || probedClass.hasToMany) {
+            if (probedClass.isCursor) {
+                probedClass.file.inputStream().use {
+                    val ctClass = classPool.makeClass(it)
+                    transformed = transformCursor(ctClass, outDir, classPool)
+                }
+            } else if (probedClass.hasToOne || probedClass.hasToMany) {
                 probedClass.file.inputStream().use {
                     val ctClass = classPool.makeClass(it)
                     transformed = transformRelationEntity(ctClass, outDir)
@@ -104,11 +110,43 @@ class ClassTransformer() {
         }
         val time = System.currentTimeMillis() - startTime
         System.out.println("Transformed $countTransformed entities and copied $countCopied classes in $time ms")
+        totalCountTransformed += countTransformed
+        totalCountCopied += countCopied
+    }
+
+    private fun createClassPool(): ClassPool {
+        val classPool = ClassPool(null)
+        classPool.makeClass(Const.boxStoreClass)
+        val cursorCtClass = classPool.makeClass(Const.cursorClass)
+        cursorCtClass.addField(CtField.make("${Const.boxStoreClass} boxStoreForEntities;", cursorCtClass))
+        classPool.makeClass(Const.toOne).genericSignature = Const.genericSignatureT
+        classPool.makeClass(Const.toMany).genericSignature = Const.genericSignatureT
+        return classPool
+    }
+
+    private fun transformCursor(ctClass: CtClass, outDir: File, classPool: ClassPool): Boolean {
+        val attachCtMethod = ctClass.declaredMethods?.singleOrNull { it.name == Const.cursorAttachEntityMethodName }
+        if(attachCtMethod != null) {
+            val signature = attachCtMethod.signature
+            if(!signature.startsWith("(L") || !signature.endsWith(";)V") || signature.contains(',')) {
+                throw RuntimeException("Bad signature for $ctClass.${Const.cursorAttachEntityMethodName}: $signature")
+            }
+
+            // TODO better use the real entity class
+            val entityClass = signature.drop(2).dropLast(3).replace('/', '.')
+            val entityCtClass = classPool.makeClass(entityClass)
+            entityCtClass.addField(CtField.make("transient ${Const.boxStoreClass} ${Const.boxStoreFieldName};", entityCtClass))
+
+            val code = "\$1.${Const.boxStoreFieldName} = \$0.boxStoreForEntities;"
+            attachCtMethod.setBody(code)
+            ctClass.writeFile(outDir.absolutePath)
+            return true
+        } else return false
     }
 
     private fun transformRelationEntity(ctClass: CtClass, outDir: File): Boolean {
         var changed = false
-        var boxStoreField = ctClass.declaredFields.find { it.name == "__boxStore" }
+        var boxStoreField = ctClass.declaredFields.find { it.name == Const.boxStoreFieldName }
         if (boxStoreField == null) {
             boxStoreField = CtField.make("transient ${Const.boxStoreClass} ${Const.boxStoreFieldName};", ctClass)
             ctClass.addField(boxStoreField)
