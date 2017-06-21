@@ -5,6 +5,7 @@ import io.objectbox.Cursor;
 import io.objectbox.Transaction;
 import io.objectbox.annotation.apihint.Internal;
 import io.objectbox.internal.CursorFactory;
+import io.objectbox.relation.ToOne;
 
 //////
 // NOTE: this is the EXPECTED generated source.
@@ -43,10 +44,11 @@ public final class ToOneChildCursor extends Cursor<ToOneChild> {
      */
     @Override
     public final long put(ToOneChild entity) {
-        if(entity.parent.internalRequiresPutTarget()) {
+        ToOne<ToOneParent> parent = entity.parent;
+        if(parent != null && parent.internalRequiresPutTarget()) {
             Cursor<ToOneParent> targetCursor = getRelationTargetCursor(ToOneParent.class);
             try {
-                entity.parent.internalPutTarget(targetCursor);
+                parent.internalPutTarget(targetCursor);
             } finally {
                 targetCursor.close();
             }
@@ -61,16 +63,9 @@ public final class ToOneChildCursor extends Cursor<ToOneChild> {
                 0, 0, 0, 0);
 
         entity.id = __assignedId;
-        entity.__boxStore = boxStoreForEntities;
 
+        entity.__boxStore = boxStoreForEntities;
         return __assignedId;
     }
-
-    // TODO @Override
-    //protected final void attachEntity(ToOneChild entity) {
-    // TODO super.attachEntity(entity);
-    //entity.__boxStore = boxStoreForEntities;
-    //}
-
 
 }
