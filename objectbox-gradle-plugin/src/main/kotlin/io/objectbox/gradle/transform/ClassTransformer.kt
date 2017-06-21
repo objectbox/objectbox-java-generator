@@ -104,7 +104,7 @@ class ClassTransformer() {
             if (transformed) {
                 countTransformed++;
             } else {
-                val targetFile = File(outDir, probedClass.name.replace('.', '/'))
+                val targetFile = File(outDir, probedClass.name.replace('.', '/') + ".class")
                 probedClass.file.copyTo(targetFile)
                 countCopied++;
             }
@@ -127,14 +127,14 @@ class ClassTransformer() {
 
     private fun transformCursor(ctClass: CtClass, outDir: File, classPool: ClassPool): Boolean {
         val attachCtMethod = ctClass.declaredMethods?.singleOrNull { it.name == Const.cursorAttachEntityMethodName }
-        if(attachCtMethod != null) {
+        if (attachCtMethod != null) {
             val signature = attachCtMethod.signature
-            if(!signature.startsWith("(L") || !signature.endsWith(";)V") || signature.contains(',')) {
+            if (!signature.startsWith("(L") || !signature.endsWith(";)V") || signature.contains(',')) {
                 throw TransformException("Bad signature for ${ctClass.name}.${Const.cursorAttachEntityMethodName}: $signature")
             }
 
             val existingCode = attachCtMethod.methodInfo.codeAttribute.code
-            if(existingCode.size != 1 || existingCode[0] != Opcode.RETURN.toByte()) {
+            if (existingCode.size != 1 || existingCode[0] != Opcode.RETURN.toByte()) {
                 throw TransformException("Expected empty method body for ${ctClass.name}.${Const.cursorAttachEntityMethodName} " +
                         "but was ${existingCode.size} long")
             }

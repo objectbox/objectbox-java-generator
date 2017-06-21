@@ -7,6 +7,7 @@ import io.objectbox.relation.ToOne
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertThat
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
@@ -39,6 +40,8 @@ class CursorWithExistingImpl : Cursor() {
         System.out.println(entity)
     }
 }
+
+class JustCopyMe
 
 class ClassTransformerTest {
     val transformer = ClassTransformer()
@@ -94,30 +97,39 @@ class ClassTransformerTest {
 
     @Test
     fun testTransformEntity() {
-        testTransformClass(EntityToOne::class)
+        testTransformOrCopy(EntityToOne::class, 1, 0)
     }
 
     @Test
     fun testTransformCursor() {
-        testTransformClass(TestCursor::class)
+        testTransformOrCopy(TestCursor::class, 1, 0)
     }
 
     @Test(expected = TransformException::class)
     fun testTransformCursorWithExistingImpl() {
-        testTransformClass(CursorWithExistingImpl::class)
+        testTransformOrCopy(CursorWithExistingImpl::class, 1, 0)
     }
 
-    fun testTransformClass(kClass: KClass<*>) {
+    @Test
+    fun testCopy() {
+        val copiedFile = testTransformOrCopy(JustCopyMe::class, 0, 1).single()
+        val expectedPath = '/' + JustCopyMe::class.qualifiedName!!.replace('.', '/') + ".class"
+        val actualPath = copiedFile.absolutePath.replace('\\', '/')
+        assertTrue(actualPath, actualPath.endsWith(expectedPath))
+    }
+
+    fun testTransformOrCopy(kClass: KClass<*>, expectedTransformed: Int, expectedCopied: Int): List<File> {
         val probedClass = probeClass(kClass)
         val tempDir = File.createTempFile(this.javaClass.name, "")
         tempDir.delete()
         assertTrue(tempDir.mkdir())
         try {
             transformer.transformOrCopyClasses(listOf(probedClass), tempDir)
-            assertEquals(1, transformer.totalCountTransformed)
-            assertEquals(0, transformer.totalCountCopied)
-            val createdFiles = tempDir.walkBottomUp().toList()
-            assertEquals(1, createdFiles.filter { it.isFile }.size)
+            assertEquals(expectedTransformed, transformer.totalCountTransformed)
+            assertEquals(expectedCopied, transformer.totalCountCopied)
+            val createdFiles = tempDir.walkBottomUp().toList().filter { it.isFile }
+            assertEquals(expectedTransformed + expectedCopied, createdFiles.size)
+            return createdFiles
         } finally {
             tempDir.deleteRecursively()
         }
