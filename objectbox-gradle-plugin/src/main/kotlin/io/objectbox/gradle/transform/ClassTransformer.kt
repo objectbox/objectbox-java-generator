@@ -7,6 +7,7 @@ import javassist.CtField
 import javassist.bytecode.AnnotationsAttribute
 import javassist.bytecode.ClassFile
 import javassist.bytecode.FieldInfo
+import javassist.bytecode.Opcode
 import javassist.bytecode.SignatureAttribute
 import javassist.bytecode.annotation.Annotation
 import java.io.BufferedInputStream
@@ -129,7 +130,13 @@ class ClassTransformer() {
         if(attachCtMethod != null) {
             val signature = attachCtMethod.signature
             if(!signature.startsWith("(L") || !signature.endsWith(";)V") || signature.contains(',')) {
-                throw RuntimeException("Bad signature for $ctClass.${Const.cursorAttachEntityMethodName}: $signature")
+                throw TransformException("Bad signature for ${ctClass.name}.${Const.cursorAttachEntityMethodName}: $signature")
+            }
+
+            val existingCode = attachCtMethod.methodInfo.codeAttribute.code
+            if(existingCode.size != 1 || existingCode[0] != Opcode.RETURN.toByte()) {
+                throw TransformException("Expected empty method body for ${ctClass.name}.${Const.cursorAttachEntityMethodName} " +
+                        "but was ${existingCode.size} long")
             }
 
             // TODO better use the real entity class

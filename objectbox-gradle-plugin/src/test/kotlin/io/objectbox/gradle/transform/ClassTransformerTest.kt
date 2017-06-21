@@ -34,6 +34,12 @@ class TestCursor : Cursor() {
     private fun attachEntity(entity: EntityBoxStoreField) {}
 }
 
+class CursorWithExistingImpl : Cursor() {
+    private fun attachEntity(entity: EntityBoxStoreField) {
+        System.out.println(entity)
+    }
+}
+
 class ClassTransformerTest {
     val transformer = ClassTransformer()
     val classDir1 = File("build/classes/test")
@@ -92,8 +98,13 @@ class ClassTransformerTest {
     }
 
     @Test
-    fun testTransformCursorEntity() {
+    fun testTransformCursor() {
         testTransformClass(TestCursor::class)
+    }
+
+    @Test(expected = TransformException::class)
+    fun testTransformCursorWithExistingImpl() {
+        testTransformClass(CursorWithExistingImpl::class)
     }
 
     fun testTransformClass(kClass: KClass<*>) {
