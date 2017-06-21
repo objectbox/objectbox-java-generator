@@ -132,6 +132,7 @@ public final class SimpleEntity_ implements EntityInfo<SimpleEntity> {
 
     @Internal
     static final class SimpleEntityIdGetter implements IdGetter<SimpleEntity> {
+        @Override
         public long getId(SimpleEntity object) {
             Long id = object.id;
             return id != null? id : 0;

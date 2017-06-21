@@ -87,6 +87,7 @@ public final class BacklinkToManyParent_ implements EntityInfo<BacklinkToManyPar
 
     @Internal
     static final class BacklinkToManyParentIdGetter implements IdGetter<BacklinkToManyParent> {
+        @Override
         public long getId(BacklinkToManyParent object) {
             Long id = object.id;
             return id != null? id : 0;

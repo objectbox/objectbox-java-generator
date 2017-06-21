@@ -87,6 +87,7 @@ public final class ToOneChild_ implements EntityInfo<ToOneChild> {
 
     @Internal
     static final class ToOneChildIdGetter implements IdGetter<ToOneChild> {
+        @Override
         public long getId(ToOneChild object) {
             Long id = object.id;
             return id != null? id : 0;

@@ -20,6 +20,7 @@ import io.objectbox.relation.ToMany;
 public final class BacklinkListParentCursor extends Cursor<BacklinkListParent> {
     @Internal
     static final class Factory implements CursorFactory<BacklinkListParent> {
+        @Override
         public Cursor<BacklinkListParent> createCursor(Transaction tx, long cursorHandle, BoxStore boxStoreForEntities) {
             return new BacklinkListParentCursor(tx, cursorHandle, boxStoreForEntities);
         }

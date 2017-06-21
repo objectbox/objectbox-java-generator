@@ -87,6 +87,7 @@ public final class RelationChild_ implements EntityInfo<RelationChild> {
 
     @Internal
     static final class RelationChildIdGetter implements IdGetter<RelationChild> {
+        @Override
         public long getId(RelationChild object) {
             Long id = object.id;
             return id != null? id : 0;

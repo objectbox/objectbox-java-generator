@@ -87,6 +87,7 @@ public final class BacklinkListParent_ implements EntityInfo<BacklinkListParent>
 
     @Internal
     static final class BacklinkListParentIdGetter implements IdGetter<BacklinkListParent> {
+        @Override
         public long getId(BacklinkListParent object) {
             Long id = object.id;
             return id != null? id : 0;

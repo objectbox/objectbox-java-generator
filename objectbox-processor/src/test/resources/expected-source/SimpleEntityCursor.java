@@ -22,6 +22,7 @@ import java.util.List;
 public final class SimpleEntityCursor extends Cursor<SimpleEntity> {
     @Internal
     static final class Factory implements CursorFactory<SimpleEntity> {
+        @Override
         public Cursor<SimpleEntity> createCursor(Transaction tx, long cursorHandle, BoxStore boxStoreForEntities) {
             return new SimpleEntityCursor(tx, cursorHandle, boxStoreForEntities);
         }

@@ -18,6 +18,7 @@ import io.objectbox.relation.ToOne;
 public final class ToOneChildCursor extends Cursor<ToOneChild> {
     @Internal
     static final class Factory implements CursorFactory<ToOneChild> {
+        @Override
         public Cursor<ToOneChild> createCursor(Transaction tx, long cursorHandle, BoxStore boxStoreForEntities) {
             return new ToOneChildCursor(tx, cursorHandle, boxStoreForEntities);
         }
