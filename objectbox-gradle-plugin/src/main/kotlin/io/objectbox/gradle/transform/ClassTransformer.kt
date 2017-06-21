@@ -85,34 +85,23 @@ class ClassTransformer() {
 
     fun transformOrCopyClasses(probedClasses: List<ProbedClass>, outDir: File) {
         val startTime = System.currentTimeMillis()
-        var countTransformed = 0
-        var countCopied = 0
         val classPool = createClassPool()
-        for (probedClass in probedClasses) {
-            var transformed = false
-            if (probedClass.isCursor) {
-                probedClass.file.inputStream().use {
-                    val ctClass = classPool.makeClass(it)
-                    transformed = transformCursor(ctClass, outDir, classPool)
-                }
-            } else if (probedClass.hasToOne || probedClass.hasToMany) {
-                probedClass.file.inputStream().use {
-                    val ctClass = classPool.makeClass(it)
-                    transformed = transformRelationEntity(ctClass, outDir)
-                }
-            }
-            if (transformed) {
-                countTransformed++;
-            } else {
-                val targetFile = File(outDir, probedClass.name.replace('.', '/') + ".class")
-                probedClass.file.copyTo(targetFile)
-                countCopied++;
-            }
+        val transformedClasses = mutableSetOf<ProbedClass>()
+
+        transformEntities(probedClasses, outDir, classPool, transformedClasses)
+        // Transform Cursors after entities because this depends on entity CtClasses added to the ClassPool
+        transformCursors(probedClasses, outDir, classPool, transformedClasses)
+
+        probedClasses.filter { !transformedClasses.contains(it) }.forEach { classToCopy ->
+            val targetFile = File(outDir, classToCopy.name.replace('.', '/') + ".class")
+            classToCopy.file.copyTo(targetFile)
         }
         val time = System.currentTimeMillis() - startTime
-        System.out.println("Transformed $countTransformed entities and copied $countCopied classes in $time ms")
-        totalCountTransformed += countTransformed
-        totalCountCopied += countCopied
+        val transformed = transformedClasses.size
+        val copied = probedClasses.size - transformed
+        totalCountTransformed += transformed
+        totalCountCopied += copied
+        System.out.println("Transformed $transformed entities and copied $copied classes in $time ms")
     }
 
     private fun createClassPool(): ClassPool {
@@ -125,30 +114,16 @@ class ClassTransformer() {
         return classPool
     }
 
-    private fun transformCursor(ctClass: CtClass, outDir: File, classPool: ClassPool): Boolean {
-        val attachCtMethod = ctClass.declaredMethods?.singleOrNull { it.name == Const.cursorAttachEntityMethodName }
-        if (attachCtMethod != null) {
-            val signature = attachCtMethod.signature
-            if (!signature.startsWith("(L") || !signature.endsWith(";)V") || signature.contains(',')) {
-                throw TransformException("Bad signature for ${ctClass.name}.${Const.cursorAttachEntityMethodName}: $signature")
+
+    private fun transformEntities(probedClasses: List<ProbedClass>, outDir: File, classPool: ClassPool, transformedClasses: MutableSet<ProbedClass>) {
+        probedClasses.filter { it.hasToOne || it.hasToMany }.forEach { entityClass ->
+            entityClass.file.inputStream().use {
+                val ctClass = classPool.makeClass(it)
+                if (transformRelationEntity(ctClass, outDir)) {
+                    transformedClasses.add(entityClass)
+                }
             }
-
-            val existingCode = attachCtMethod.methodInfo.codeAttribute.code
-            if (existingCode.size != 1 || existingCode[0] != Opcode.RETURN.toByte()) {
-                throw TransformException("Expected empty method body for ${ctClass.name}.${Const.cursorAttachEntityMethodName} " +
-                        "but was ${existingCode.size} long")
-            }
-
-            // TODO better use the real entity class
-            val entityClass = signature.drop(2).dropLast(3).replace('/', '.')
-            val entityCtClass = classPool.makeClass(entityClass)
-            entityCtClass.addField(CtField.make("transient ${Const.boxStoreClass} ${Const.boxStoreFieldName};", entityCtClass))
-
-            val code = "\$1.${Const.boxStoreFieldName} = \$0.boxStoreForEntities;"
-            attachCtMethod.setBody(code)
-            ctClass.writeFile(outDir.absolutePath)
-            return true
-        } else return false
+        }
     }
 
     private fun transformRelationEntity(ctClass: CtClass, outDir: File): Boolean {
@@ -167,5 +142,46 @@ class ClassTransformer() {
         }
         return changed
     }
+
+    private fun transformCursors(probedClasses: List<ProbedClass>, outDir: File, classPool: ClassPool, transformedClasses: MutableSet<ProbedClass>) {
+        probedClasses.filter { it.isCursor }.forEach { cursorClass ->
+            cursorClass.file.inputStream().use {
+                val ctClass = classPool.makeClass(it)
+                if (transformCursor(ctClass, outDir, classPool)) {
+                    transformedClasses.add(cursorClass)
+                }
+            }
+        }
+    }
+
+    private fun transformCursor(ctClass: CtClass, outDir: File, classPool: ClassPool): Boolean {
+        val attachCtMethod = ctClass.declaredMethods?.singleOrNull { it.name == Const.cursorAttachEntityMethodName }
+        if (attachCtMethod != null) {
+            val signature = attachCtMethod.signature
+            if (!signature.startsWith("(L") || !signature.endsWith(";)V") || signature.contains(',')) {
+                throw TransformException("Bad signature for ${ctClass.name}.${Const.cursorAttachEntityMethodName}: $signature")
+            }
+
+            val existingCode = attachCtMethod.methodInfo.codeAttribute.code
+            if (existingCode.size != 1 || existingCode[0] != Opcode.RETURN.toByte()) {
+                throw TransformException("Expected empty method body for ${ctClass.name}.${Const.cursorAttachEntityMethodName} " +
+                        "but was ${existingCode.size} long")
+            }
+
+            val entityClass = signature.drop(2).dropLast(3).replace('/', '.')
+            if (classPool.find(entityClass) == null) {
+                System.out.println("Warning: cursor transformer did not find entity class $entityClass")
+                val entityCtClass = classPool.makeClass(entityClass)
+                val fieldCode = "transient ${Const.boxStoreClass} ${Const.boxStoreFieldName};"
+                entityCtClass.addField(CtField.make(fieldCode, entityCtClass))
+            }
+
+            val code = "\$1.${Const.boxStoreFieldName} = \$0.boxStoreForEntities;"
+            attachCtMethod.setBody(code)
+            ctClass.writeFile(outDir.absolutePath)
+            return true
+        } else return false
+    }
+
 
 }
