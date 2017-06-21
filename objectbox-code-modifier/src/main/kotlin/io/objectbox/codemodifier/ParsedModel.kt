@@ -93,7 +93,8 @@ data class ToManyRelation(
         var backlinkName: String? = null,
         val joinOnProperties: List<JoinOnProperty> = emptyList(),
         val order: List<OrderProperty>? = null,
-        val astNode: FieldDeclaration? = null
+        val astNode: FieldDeclaration? = null,
+        val fieldAccessible: Boolean = false
 )
 
 data class ParsedEntity(

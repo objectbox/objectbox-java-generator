@@ -270,7 +270,9 @@ class EntityClassASTVisitor(val source: String, val classesInPackage: List<Strin
         return ToManyRelation(
                 variable = Variable(variableType, fieldName.toString()),
                 backlinkName = backlink.to.nullIfBlank(),
-                astNode = node
+                astNode = node,
+                fieldAccessible = !Modifier.isPrivate(node.modifiers)
+
 //                ,joinOnProperties = proxy.joinProperties.map { JoinOnProperty(it.name, it.referencedName) },
 //                order = orderByAnnotation?.let {
 //                    val spec = it.value

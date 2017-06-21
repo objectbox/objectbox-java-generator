@@ -170,6 +170,7 @@ object GreendaoModelTranslator {
                 val backlinkProperty = toOneTargetIdProperty ?: targetEntity.findPropertyByNameOrThrow(backlinkName)
                 val converted = entity.addToMany(targetEntity, backlinkProperty, toMany.variable.name)
                 converted.parsedElement = toMany.astNode
+                converted.isFieldAccessible = toMany.fieldAccessible
                 converted
             }
         // Currently not supported by ObjectBox

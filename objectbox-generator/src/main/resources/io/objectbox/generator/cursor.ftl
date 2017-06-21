@@ -37,6 +37,9 @@ import io.objectbox.internal.CursorFactory;
 <#if entity.toManyRelations?has_content>
 import io.objectbox.relation.ToMany;
 </#if>
+<#if entity.toOneRelations?has_content>
+import io.objectbox.relation.ToOne;
+</#if>
 <#if entity.javaPackageDao != schema.defaultJavaPackageDao>
 //import ${schema.defaultJavaPackageDao}.${schema.prefix}DaoSession;
 
@@ -106,10 +109,11 @@ public final class ${entity.classNameDao} extends Cursor<${entity.className}> {
     @Override
     public final long put(${entity.className} entity) {
 <#list entity.toOneRelations as toOne>
-        if(entity.${toOne.nameToOne}.internalRequiresPutTarget()) {
+        ToOne<${toOne.targetEntity.className}> ${toOne.nameToOne} = entity.${toOne.toOneValueExpression};
+        if(${toOne.nameToOne} != null && ${toOne.nameToOne}.internalRequiresPutTarget()) {
             Cursor<${toOne.targetEntity.className}> targetCursor = getRelationTargetCursor(${toOne.targetEntity.className}.class);
             try {
-                entity.${toOne.nameToOne}.internalPutTarget(targetCursor);
+                ${toOne.nameToOne}.internalPutTarget(targetCursor);
             } finally {
                 targetCursor.close();
             }
@@ -128,7 +132,7 @@ ${propertyCollector}
     </#if>
 </#if>
 <#list entity.toManyRelations as toMany>
-        List<${toMany.targetEntity.className}> ${toMany.name} = entity.${toMany.name};
+        List<${toMany.targetEntity.className}> ${toMany.name} = entity.${toMany.valueExpression};
         if (${toMany.name} instanceof ToMany) {
             ToMany<${toMany.targetEntity.className}> toMany = (ToMany<${toMany.targetEntity.className}>) ${toMany.name};
             if (toMany.internalRequiresPutTarget()) {

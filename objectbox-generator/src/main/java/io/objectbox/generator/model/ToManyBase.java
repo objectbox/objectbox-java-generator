@@ -18,15 +18,18 @@
 
 package io.objectbox.generator.model;
 
+import io.objectbox.generator.TextUtil;
+
 /** Base class for to-many relationship from source entities to target entities. */
 @SuppressWarnings("unused")
 public abstract class ToManyBase implements HasParsedElement {
     @SuppressWarnings("unused")
     private final Schema schema;
-    private String name;
+    protected String name;
     protected final Entity sourceEntity;
     protected final Entity targetEntity;
     private final PropertyOrderList propertyOrderList;
+    private boolean fieldAccessible;
 
     public ToManyBase(Schema schema, Entity sourceEntity, Entity targetEntity) {
         this.schema = schema;
@@ -53,6 +56,18 @@ public abstract class ToManyBase implements HasParsedElement {
      */
     public void setName(String name) {
         this.name = name;
+    }
+
+    public boolean isFieldAccessible() {
+        return fieldAccessible;
+    }
+
+    public void setFieldAccessible(boolean fieldAccessible) {
+        this.fieldAccessible = fieldAccessible;
+    }
+
+    public String getValueExpression() {
+        return fieldAccessible ? name : "get" + TextUtil.capFirst(name) + "()";
     }
 
     /** Property of target entity used for ascending order. */

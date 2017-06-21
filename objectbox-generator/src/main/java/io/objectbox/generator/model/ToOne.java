@@ -18,6 +18,8 @@
 
 package io.objectbox.generator.model;
 
+import io.objectbox.generator.TextUtil;
+
 /** To-one relationship from a source entity to one (or zero) target entity. */
 @SuppressWarnings("unused")
 public class ToOne implements HasParsedElement {
@@ -80,6 +82,10 @@ public class ToOne implements HasParsedElement {
 
     public String getNameToOne() {
         return nameToOne;
+    }
+
+    public String getToOneValueExpression() {
+        return toOneFieldAccessible ? nameToOne : "get" + TextUtil.capFirst(nameToOne) + "()";
     }
 
     public void setNameToOne(String nameToOne) {
