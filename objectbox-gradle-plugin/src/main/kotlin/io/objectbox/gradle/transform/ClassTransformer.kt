@@ -16,7 +16,7 @@ class ClassTransformer(val debug: Boolean = false) {
     private class Context(val probedClasses: List<ProbedClass>, val outDir: File) {
         val classPool = createClassPool()
         val transformedClasses = mutableSetOf<ProbedClass>()
-        val entityTypes = probedClasses.filter { it.isEntity }.map { it.name }.toHashSet()
+        val entityTypes: Set<String> = probedClasses.filter { it.isEntity }.map { it.name }.toHashSet()
 
         private fun createClassPool(): ClassPool {
             val classPool = ClassPool(null)
@@ -58,7 +58,7 @@ class ClassTransformer(val debug: Boolean = false) {
                 if (debug) println("Preparing entity ${entityClass.name}")
                 val ctClass = context.classPool.makeClass(it)
                 try {
-                    if (entityClass.hasToOneRef || entityClass.hasToManyRef) {
+                    if (hasRelation(entityClass, context.entityTypes)) {
                         if (transformRelationEntity(ctClass, context.outDir)) {
                             context.transformedClasses.add(entityClass)
                         }
@@ -69,6 +69,10 @@ class ClassTransformer(val debug: Boolean = false) {
             }
         }
     }
+
+    private fun hasRelation(entityClass: ProbedClass, entityTypes: Set<String>): Boolean =
+            entityClass.hasToOneRef || entityClass.hasToManyRef ||
+                    entityClass.listFieldTypes.any { entityTypes.contains(it) }
 
     private fun transformRelationEntity(ctClass: CtClass, outDir: File): Boolean {
         if (debug) println("Transforming entity with relations: ${ctClass.name}")
