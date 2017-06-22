@@ -59,6 +59,9 @@ open class ObjectBoxOptions(val project: Project) {
 
     var allowApt = false
 
+    // TODO use it
+    var debugTransform = false
+
     internal val formatting = FormattingExtension()
     internal val schemas = SchemasExtension(project)
 

@@ -32,7 +32,7 @@ class EntityToMany {
 }
 
 class TestCursor : Cursor() {
-    private fun attachEntity(entity: EntityBoxStoreField) {}
+    private fun attachEntity(@Suppress("UNUSED_PARAMETER") entity: EntityBoxStoreField) {}
 }
 
 class CursorWithExistingImpl : Cursor() {
@@ -44,7 +44,7 @@ class CursorWithExistingImpl : Cursor() {
 class JustCopyMe
 
 class ClassTransformerTest {
-    val transformer = ClassTransformer()
+    val transformer = ClassTransformer(true)
     val classDir1 = File("build/classes/test")
     val classDir2 = File("objectbox-gradle-plugin/${classDir1.path}")
     val classDir = if (classDir1.exists()) classDir1 else classDir2

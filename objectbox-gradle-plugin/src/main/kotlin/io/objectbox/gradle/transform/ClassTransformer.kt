@@ -16,7 +16,7 @@ import java.io.DataInputStream
 import java.io.File
 
 
-class ClassTransformer() {
+class ClassTransformer(val debug: Boolean = false) {
     object Const {
         val entityAnnotationName = Entity::class.qualifiedName
 
@@ -51,6 +51,7 @@ class ClassTransformer() {
                 } else {
                     var annotation = getEntityAnnotation(classFile)
                     if (annotation != null) {
+                        @Suppress("UNCHECKED_CAST")
                         val fields = classFile.fields as List<FieldInfo>
                         return ProbedClass(
                                 file = file,
@@ -80,6 +81,7 @@ class ClassTransformer() {
 
     private fun hasClassRef(classFile: ClassFile, className: String, classDescriptorName: String): Boolean {
         // Fields may be of type List, so also check class names (was OK for Customer test entity at least)
+        @Suppress("UNCHECKED_CAST")
         return classFile.constPool.classNames.any { it is String && it == className }
                 || (classFile.fields as List<FieldInfo>).any { it.descriptor == classDescriptorName }
     }
@@ -120,6 +122,7 @@ class ClassTransformer() {
                                   transformedClasses: MutableSet<ProbedClass>) {
         probedClasses.filter { it.isEntity }.forEach { entityClass ->
             entityClass.file.inputStream().use {
+                if(debug) println ("Preparing entity ${entityClass.name}")
                 val ctClass = classPool.makeClass(it)
                 try {
                     if (entityClass.hasToOne || entityClass.hasToMany) {
@@ -135,6 +138,7 @@ class ClassTransformer() {
     }
 
     private fun transformRelationEntity(ctClass: CtClass, outDir: File): Boolean {
+        if(debug) println ("Transforming entity with relations: ${ctClass.name}")
         var changed = false
         var boxStoreField = ctClass.declaredFields.find { it.name == Const.boxStoreFieldName }
         if (boxStoreField == null) {
@@ -202,7 +206,7 @@ class ClassTransformer() {
         }
         if (entityCtClass == null) {
             System.out.println("Warning: cursor transformer did not find entity class $entityClass")
-            val entityCtClass = classPool.makeClass(entityClass)
+            entityCtClass = classPool.makeClass(entityClass)
             val fieldCode = "transient ${Const.boxStoreClass} ${Const.boxStoreFieldName};"
             entityCtClass.addField(CtField.make(fieldCode, entityCtClass))
         }
