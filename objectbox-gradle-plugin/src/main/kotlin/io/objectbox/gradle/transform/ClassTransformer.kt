@@ -4,6 +4,7 @@ import io.objectbox.annotation.Entity
 import javassist.ClassPool
 import javassist.CtClass
 import javassist.CtField
+import javassist.NotFoundException
 import javassist.bytecode.AnnotationsAttribute
 import javassist.bytecode.ClassFile
 import javassist.bytecode.FieldInfo
@@ -169,22 +170,32 @@ class ClassTransformer() {
             if (existingCode.size != 1 || existingCode[0] != Opcode.RETURN.toByte()) {
                 throw TransformException(
                         "Expected empty method body for ${ctClass.name}.${Const.cursorAttachEntityMethodName} " +
-                        "but was ${existingCode.size} long")
+                                "but was ${existingCode.size} long")
             }
 
-            val entityClass = signature.drop(2).dropLast(3).replace('/', '.')
-            if (classPool.find(entityClass) == null) {
-                System.out.println("Warning: cursor transformer did not find entity class $entityClass")
-                val entityCtClass = classPool.makeClass(entityClass)
-                val fieldCode = "transient ${Const.boxStoreClass} ${Const.boxStoreFieldName};"
-                entityCtClass.addField(CtField.make(fieldCode, entityCtClass))
-            }
+            checkEntityIsInClassPool(classPool, signature)
 
             val code = "\$1.${Const.boxStoreFieldName} = \$0.boxStoreForEntities;"
             attachCtMethod.setBody(code)
             ctClass.writeFile(outDir.absolutePath)
             return true
         } else return false
+    }
+
+    private fun checkEntityIsInClassPool(classPool: ClassPool, signature: String) {
+        val entityClass = signature.drop(2).dropLast(3).replace('/', '.')
+        var entityCtClass: CtClass? = null
+        try {
+            entityCtClass = classPool.get(entityClass) // find() seems to do something else!?
+        } catch (e: NotFoundException) {
+            // entityCtClass just keeps null
+        }
+        if (entityCtClass == null) {
+            System.out.println("Warning: cursor transformer did not find entity class $entityClass")
+            val entityCtClass = classPool.makeClass(entityClass)
+            val fieldCode = "transient ${Const.boxStoreClass} ${Const.boxStoreFieldName};"
+            entityCtClass.addField(CtField.make(fieldCode, entityCtClass))
+        }
     }
 
 
