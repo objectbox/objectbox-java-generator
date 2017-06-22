@@ -677,6 +677,9 @@ public class Entity implements HasParsedElement {
     }
 
     private void init3rdPassRelations() {
+        for (ToOne toOne : toOneRelations) {
+            toOne.init3ndPass();
+        }
         for (ToManyBase toMany : toManyRelations) {
             toMany.init3rdPass();
             if (toMany instanceof ToMany) {
