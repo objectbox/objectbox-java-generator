@@ -20,8 +20,10 @@ package io.objectbox.generator.model;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -49,7 +51,12 @@ public class Entity implements HasParsedElement {
     private List<Property> propertiesColumns;
     private final List<Property> propertiesPk;
     private final List<Property> propertiesNonPk;
-    private final Set<String> names;
+
+    /**
+     * For fail fast checks which can show the stacktrace of the add operation
+     * (there's another check after the 3rd init phase).
+     */
+    private final Map<String, Object> names;
     private final List<Index> indexes;
     private final List<Index> multiIndexes;
     private final List<ToOne> toOneRelations;
@@ -89,7 +96,7 @@ public class Entity implements HasParsedElement {
         properties = new ArrayList<>();
         propertiesPk = new ArrayList<>();
         propertiesNonPk = new ArrayList<>();
-        names = new HashSet<>();
+        names = new HashMap<>();
         indexes = new ArrayList<>();
         multiIndexes = new ArrayList<>();
         toOneRelations = new ArrayList<>();
@@ -170,16 +177,11 @@ public class Entity implements HasParsedElement {
     }
 
     public Property.PropertyBuilder addProperty(PropertyType propertyType, String propertyName) {
-        trackUniqueName(propertyName);
         Property.PropertyBuilder builder = new Property.PropertyBuilder(schema, this, propertyType, propertyName);
-        properties.add(builder.getProperty());
+        Property property = builder.getProperty();
+        trackUniqueName(names, propertyName, property);
+        properties.add(property);
         return builder;
-    }
-
-    private void trackUniqueName(String name) {
-        if (!names.add(name)) {
-            throw new RuntimeException("Name already present in entity: " + name);
-        }
     }
 
     /** Adds a standard id property. */
@@ -199,9 +201,9 @@ public class Entity implements HasParsedElement {
      * ToMany#setName(String)}.
      */
     public ToMany addToMany(Entity target, Property targetProperty, String name) {
-        trackUniqueName(name);
         ToMany toMany = addToMany(target, targetProperty);
         toMany.setName(name);
+        trackUniqueName(names, name, toMany);
         return toMany;
     }
 
@@ -242,9 +244,9 @@ public class Entity implements HasParsedElement {
         toOne.setNameToOne(nameToOne);
         toOne.setToOneFieldAccessible(toOneFieldAccessible);
         toOneRelations.add(toOne);
-        trackUniqueName(name);
-        if(nameToOne != null && !nameToOne.equals(name)) {
-            trackUniqueName(nameToOne);
+        trackUniqueName(names, name, toOne);
+        if (nameToOne != null && !nameToOne.equals(name)) {
+            trackUniqueName(names, nameToOne, toOne);
         }
         return toOne;
     }
@@ -647,18 +649,36 @@ public class Entity implements HasParsedElement {
 
         init3rdPassRelations();
         init3rdPassAdditionalImports();
+
+        // Check again, because names may have changed during 2nd or 3rd pass
+        verifyAllNamesUnique();
+    }
+
+    private void verifyAllNamesUnique() {
+        Map<String, Object> names = new HashMap<>();
+        for (Property property : properties) {
+            trackUniqueName(names, property.getPropertyName(), property);
+        }
+        for (ToOne toOne : toOneRelations) {
+            trackUniqueName(names, toOne.getName(), toOne);
+            if (toOne.getNameToOne() != null && toOne.getNameToOne() != toOne.getName()) {
+                trackUniqueName(names, toOne.getNameToOne(), toOne);
+            }
+        }
+        for (ToManyBase toMany : toManyRelations) {
+            trackUniqueName(names, toMany.getName(), toMany);
+        }
+    }
+
+    private void trackUniqueName(Map<String, Object> names, String name, Object object) {
+        Object oldValue = names.put(name.toLowerCase(), object);
+        if (oldValue != null) {
+            throw new RuntimeException("Duplicate name \"" + name + "\" in entity \"" + className +
+                    "\": [" + object + "] vs. [" + oldValue + "]");
+        }
     }
 
     private void init3rdPassRelations() {
-        Set<String> toOneNames = new HashSet<>();
-        for (ToOne toOne : toOneRelations) {
-            toOne.init3ndPass();
-            if (!toOneNames.add(toOne.getName().toLowerCase())) {
-                throw new RuntimeException("Duplicate name for " + toOne);
-            }
-        }
-
-        Set<String> toManyNames = new HashSet<>();
         for (ToManyBase toMany : toManyRelations) {
             toMany.init3rdPass();
             if (toMany instanceof ToMany) {
@@ -668,9 +688,6 @@ public class Entity implements HasParsedElement {
                         targetEntity.propertiesColumns.add(targetProperty);
                     }
                 }
-            }
-            if (!toManyNames.add(toMany.getName().toLowerCase())) {
-                throw new RuntimeException("Duplicate name for " + toMany);
             }
         }
     }
