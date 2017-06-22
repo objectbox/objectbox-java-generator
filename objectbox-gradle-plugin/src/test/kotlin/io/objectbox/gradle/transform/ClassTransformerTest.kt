@@ -7,7 +7,6 @@ import io.objectbox.relation.ToOne
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertThat
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
@@ -29,6 +28,12 @@ class EntityToOne {
 @Entity
 class EntityToMany {
     val entityEmpty = ToMany<EntityEmpty>()
+}
+
+@Entity
+class EntityToManyList {
+    lateinit var typelessList : List<*>
+    lateinit var entityEmpty : List<EntityEmpty>
 }
 
 class TestCursor : Cursor() {
@@ -64,8 +69,8 @@ class ClassTransformerTest {
         val entity = probeClass(EntityEmpty::class)
         assertNotNull(entity)
         assertTrue(entity.isEntity)
-        assertFalse(entity.hasToMany)
-        assertFalse(entity.hasToOne)
+        assertFalse(entity.hasToManyRef)
+        assertFalse(entity.hasToOneRef)
         assertFalse(entity.hasBoxStoreField)
         assertEquals(EntityEmpty::class.java.`package`.name, entity.javaPackage)
         assertEquals(EntityEmpty::class.java.name, entity.name)
@@ -80,13 +85,20 @@ class ClassTransformerTest {
     @Test
     fun testProbeEntityToOne() {
         val entity = probeClass(EntityToOne::class)
-        assertTrue(entity.hasToOne)
+        assertTrue(entity.hasToOneRef)
     }
 
     @Test
     fun testProbeEntityToMany() {
         val entity = probeClass(EntityToMany::class)
-        assertTrue(entity.hasToMany)
+        assertTrue(entity.hasToManyRef)
+    }
+
+    @Test
+    fun testProbeEntityToManyList() {
+        val entity = probeClass(EntityToManyList::class)
+        assertEquals(1, entity.listFieldTypes.size)
+        assertEquals(EntityEmpty::class.qualifiedName, entity.listFieldTypes[0])
     }
 
     @Test

@@ -28,10 +28,12 @@ class ClassTransformer(val debug: Boolean = false) {
 
         val boxStoreFieldName = "__boxStore"
         val boxStoreClass = "io.objectbox.BoxStore"
-        val boxStoreDescriptor = "Lio.objectbox.BoxStore;"
 
         val cursorClass = "io.objectbox.Cursor"
         val cursorAttachEntityMethodName = "attachEntity"
+
+        val listClass = "java/util/List"
+        val listDescriptor = "L$listClass;"
 
         val genericSignatureT =
                 SignatureAttribute.ClassSignature(arrayOf(SignatureAttribute.TypeParameter("T"))).encode()!!
@@ -58,15 +60,25 @@ class ClassTransformer(val debug: Boolean = false) {
                                 name = name,
                                 javaPackage = javaPackage,
                                 isEntity = true,
+                                listFieldTypes = extractAllListTypes(fields),
                                 hasBoxStoreField = fields.any { it.name == Const.boxStoreFieldName },
-                                hasToOne = hasClassRef(classFile, Const.toOne, Const.toOneDescriptor),
-                                hasToMany = hasClassRef(classFile, Const.toMany, Const.toManyDescriptor)
+                                hasToOneRef = hasClassRef(classFile, Const.toOne, Const.toOneDescriptor),
+                                hasToManyRef = hasClassRef(classFile, Const.toMany, Const.toManyDescriptor)
                         )
                     }
                 }
             }
             return return ProbedClass(file = file, name = name, javaPackage = javaPackage)
         }
+    }
+
+    private fun extractAllListTypes(fields: List<FieldInfo>): List<String> {
+        return fields.filter { it.descriptor == Const.listDescriptor }.map {
+            val signatureAttr = it.getAttribute(SignatureAttribute.tag) as SignatureAttribute
+            val classSignature = SignatureAttribute.toClassSignature(signatureAttr.signature)
+            val typeArguments = classSignature.superClass.typeArguments
+            (typeArguments?.singleOrNull()?.type as? SignatureAttribute.ClassType)?.name
+        }.filterNotNull()
     }
 
     private fun getEntityAnnotation(classFile: ClassFile): Annotation? {
@@ -122,10 +134,10 @@ class ClassTransformer(val debug: Boolean = false) {
                                   transformedClasses: MutableSet<ProbedClass>) {
         probedClasses.filter { it.isEntity }.forEach { entityClass ->
             entityClass.file.inputStream().use {
-                if(debug) println ("Preparing entity ${entityClass.name}")
+                if (debug) println("Preparing entity ${entityClass.name}")
                 val ctClass = classPool.makeClass(it)
                 try {
-                    if (entityClass.hasToOne || entityClass.hasToMany) {
+                    if (entityClass.hasToOneRef || entityClass.hasToManyRef) {
                         if (transformRelationEntity(ctClass, outDir)) {
                             transformedClasses.add(entityClass)
                         }
@@ -138,7 +150,7 @@ class ClassTransformer(val debug: Boolean = false) {
     }
 
     private fun transformRelationEntity(ctClass: CtClass, outDir: File): Boolean {
-        if(debug) println ("Transforming entity with relations: ${ctClass.name}")
+        if (debug) println("Transforming entity with relations: ${ctClass.name}")
         var changed = false
         var boxStoreField = ctClass.declaredFields.find { it.name == Const.boxStoreFieldName }
         if (boxStoreField == null) {
