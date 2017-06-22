@@ -1,111 +1,13 @@
 package io.objectbox.gradle.transform
 
-import io.objectbox.Cursor
-import io.objectbox.annotation.Entity
-import io.objectbox.relation.ToMany
-import io.objectbox.relation.ToOne
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
 import kotlin.reflect.KClass
 
-@Entity
-class EntityEmpty
-
-@Entity
-class EntityBoxStoreField {
-    val __boxStore = Object()
-}
-
-@Entity
-class EntityToOne {
-    val entityEmpty = ToOne<EntityEmpty>()
-}
-
-@Entity
-class EntityToMany {
-    val entityEmpty = ToMany<EntityEmpty>()
-}
-
-@Entity
-class EntityToManyList {
-    lateinit var typelessList : List<*>
-    lateinit var entityEmpty : List<EntityEmpty>
-}
-
-class TestCursor : Cursor() {
-    private fun attachEntity(@Suppress("UNUSED_PARAMETER") entity: EntityBoxStoreField) {}
-}
-
-class CursorWithExistingImpl : Cursor() {
-    private fun attachEntity(entity: EntityBoxStoreField) {
-        System.out.println(entity)
-    }
-}
-
-class JustCopyMe
-
-class ClassTransformerTest {
+class ClassTransformerTest : AbstractTransformTest() {
     val transformer = ClassTransformer(true)
-    val classDir1 = File("build/classes/test")
-    val classDir2 = File("objectbox-gradle-plugin/${classDir1.path}")
-    val classDir = if (classDir1.exists()) classDir1 else classDir2
-
-    @Test
-    fun testClassDir() {
-        assertTrue(classDir.exists())
-    }
-
-    @Test
-    fun testProbeNoEntity() {
-        assertFalse(probeClass(this.javaClass.kotlin).isEntity)
-    }
-
-    @Test
-    fun testProbeEntity() {
-        val entity = probeClass(EntityEmpty::class)
-        assertNotNull(entity)
-        assertTrue(entity.isEntity)
-        assertFalse(entity.hasToManyRef)
-        assertFalse(entity.hasToOneRef)
-        assertFalse(entity.hasBoxStoreField)
-        assertEquals(EntityEmpty::class.java.`package`.name, entity.javaPackage)
-        assertEquals(EntityEmpty::class.java.name, entity.name)
-    }
-
-    @Test
-    fun testProbeEntityBoxStoreField() {
-        val entity = probeClass(EntityBoxStoreField::class)
-        assertTrue(entity.hasBoxStoreField)
-    }
-
-    @Test
-    fun testProbeEntityToOne() {
-        val entity = probeClass(EntityToOne::class)
-        assertTrue(entity.hasToOneRef)
-    }
-
-    @Test
-    fun testProbeEntityToMany() {
-        val entity = probeClass(EntityToMany::class)
-        assertTrue(entity.hasToManyRef)
-    }
-
-    @Test
-    fun testProbeEntityToManyList() {
-        val entity = probeClass(EntityToManyList::class)
-        assertEquals(1, entity.listFieldTypes.size)
-        assertEquals(EntityEmpty::class.qualifiedName, entity.listFieldTypes[0])
-    }
-
-    @Test
-    fun testProbeCursor() {
-        val probed = probeClass(TestCursor::class)
-        assertTrue(probed.isCursor)
-    }
 
     @Test
     fun testTransformEntity() {
@@ -147,10 +49,5 @@ class ClassTransformerTest {
         }
     }
 
-    private fun probeClass(kclass: KClass<*>): ProbedClass {
-        val file = File(classDir, kclass.qualifiedName!!.replace('.', '/') + ".class")
-        assertTrue(file.exists())
-        return transformer.probeClass(file)
-    }
 
 }
