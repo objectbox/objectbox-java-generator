@@ -35,7 +35,7 @@ class ObjectBoxAndroidTransform(val project: Project) : Transform() {
         }
     }
 
-    val classTransformer = ClassTransformer()
+    val classTransformer = ClassTransformer(true) // TODO turn on debug temp
 
     override fun getName(): String {
         return "ObjectBoxAndroidTransform"
