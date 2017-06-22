@@ -120,11 +120,15 @@ class ClassTransformer() {
                                   transformedClasses: MutableSet<ProbedClass>) {
         probedClasses.filter { it.isEntity }.forEach { entityClass ->
             entityClass.file.inputStream().use {
-                val ctClass= classPool.makeClass(it)
-                if (entityClass.hasToOne || entityClass.hasToMany) {
-                    if (transformRelationEntity(ctClass, outDir)) {
-                        transformedClasses.add(entityClass)
+                val ctClass = classPool.makeClass(it)
+                try {
+                    if (entityClass.hasToOne || entityClass.hasToMany) {
+                        if (transformRelationEntity(ctClass, outDir)) {
+                            transformedClasses.add(entityClass)
+                        }
                     }
+                } catch (e: Exception) {
+                    throw TransformException("Could not transform entity class: ${ctClass.name}", e)
                 }
             }
         }
@@ -152,8 +156,12 @@ class ClassTransformer() {
         probedClasses.filter { it.isCursor }.forEach { cursorClass ->
             cursorClass.file.inputStream().use {
                 val ctClass = classPool.makeClass(it)
-                if (transformCursor(ctClass, outDir, classPool)) {
-                    transformedClasses.add(cursorClass)
+                try {
+                    if (transformCursor(ctClass, outDir, classPool)) {
+                        transformedClasses.add(cursorClass)
+                    }
+                } catch (e: Exception) {
+                    throw TransformException("Could not transform Cursor class: ${ctClass.name}", e)
                 }
             }
         }
