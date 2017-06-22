@@ -118,11 +118,13 @@ class ClassTransformer() {
 
     private fun transformEntities(probedClasses: List<ProbedClass>, outDir: File, classPool: ClassPool,
                                   transformedClasses: MutableSet<ProbedClass>) {
-        probedClasses.filter { it.hasToOne || it.hasToMany }.forEach { entityClass ->
+        probedClasses.filter { it.isEntity }.forEach { entityClass ->
             entityClass.file.inputStream().use {
-                val ctClass = classPool.makeClass(it)
-                if (transformRelationEntity(ctClass, outDir)) {
-                    transformedClasses.add(entityClass)
+                val ctClass= classPool.makeClass(it)
+                if (entityClass.hasToOne || entityClass.hasToMany) {
+                    if (transformRelationEntity(ctClass, outDir)) {
+                        transformedClasses.add(entityClass)
+                    }
                 }
             }
         }
