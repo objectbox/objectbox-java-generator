@@ -170,13 +170,13 @@ public class Entity implements HasParsedElement {
     }
 
     public Property.PropertyBuilder addProperty(PropertyType propertyType, String propertyName) {
-        checkUniqueName(propertyName);
+        trackUniqueName(propertyName);
         Property.PropertyBuilder builder = new Property.PropertyBuilder(schema, this, propertyType, propertyName);
         properties.add(builder.getProperty());
         return builder;
     }
 
-    private void checkUniqueName(String name) {
+    private void trackUniqueName(String name) {
         if (!names.add(name)) {
             throw new RuntimeException("Name already present in entity: " + name);
         }
@@ -199,7 +199,7 @@ public class Entity implements HasParsedElement {
      * ToMany#setName(String)}.
      */
     public ToMany addToMany(Entity target, Property targetProperty, String name) {
-        checkUniqueName(name);
+        trackUniqueName(name);
         ToMany toMany = addToMany(target, targetProperty);
         toMany.setName(name);
         return toMany;
@@ -242,7 +242,10 @@ public class Entity implements HasParsedElement {
         toOne.setNameToOne(nameToOne);
         toOne.setToOneFieldAccessible(toOneFieldAccessible);
         toOneRelations.add(toOne);
-        checkUniqueName(name);
+        trackUniqueName(name);
+        if(nameToOne != null && !nameToOne.equals(name)) {
+            trackUniqueName(nameToOne);
+        }
         return toOne;
     }
 
