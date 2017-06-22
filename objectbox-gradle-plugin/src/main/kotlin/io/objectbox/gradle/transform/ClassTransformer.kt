@@ -58,7 +58,7 @@ class ClassTransformer(val debug: Boolean = false) {
                 if (debug) println("Preparing entity ${entityClass.name}")
                 val ctClass = context.classPool.makeClass(it)
                 try {
-                    if (hasRelation(entityClass, context.entityTypes)) {
+                    if (entityClass.hasRelation(context.entityTypes)) {
                         if (transformRelationEntity(ctClass, context.outDir)) {
                             context.transformedClasses.add(entityClass)
                         }
@@ -69,10 +69,6 @@ class ClassTransformer(val debug: Boolean = false) {
             }
         }
     }
-
-    private fun hasRelation(entityClass: ProbedClass, entityTypes: Set<String>): Boolean =
-            entityClass.hasToOneRef || entityClass.hasToManyRef ||
-                    entityClass.listFieldTypes.any { entityTypes.contains(it) }
 
     private fun transformRelationEntity(ctClass: CtClass, outDir: File): Boolean {
         if (debug) println("Transforming entity with relations: ${ctClass.name}")

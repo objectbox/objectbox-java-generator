@@ -13,4 +13,7 @@ data class ProbedClass(
         val hasToOneRef: Boolean = false,
         val hasToManyRef: Boolean = false,
         val hasBoxStoreField: Boolean = false
-)
+) {
+    fun hasRelation(entityTypes: Set<String>): Boolean
+            = hasToOneRef || hasToManyRef || listFieldTypes.any { entityTypes.contains(it) }
+}

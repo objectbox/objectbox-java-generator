@@ -5,6 +5,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.io.File
 
 
 class ClassProberTest : AbstractTransformTest() {
@@ -55,6 +56,12 @@ class ClassProberTest : AbstractTransformTest() {
     fun testProbeCursor() {
         val probed = probeClass(TestCursor::class)
         assertTrue(probed.isCursor)
+    }
+
+    @Test
+    fun testProbedClassHasRelation() {
+        assertFalse(ProbedClass(File("."), "", "", listFieldTypes = listOf("Nope")).hasRelation(setOf("Yes")))
+        assertTrue(ProbedClass(File("."), "", "", listFieldTypes = listOf("Yes")).hasRelation(setOf("Yes")))
     }
 
 }
