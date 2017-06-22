@@ -13,48 +13,54 @@ class ClassTransformer(val debug: Boolean = false) {
     var totalCountTransformed = 0
     var totalCountCopied = 0
 
-    fun transformOrCopyClasses(probedClasses: List<ProbedClass>, outDir: File) {
-        val startTime = System.currentTimeMillis()
+    private class Context(val probedClasses: List<ProbedClass>, val outDir: File) {
         val classPool = createClassPool()
         val transformedClasses = mutableSetOf<ProbedClass>()
+        val entityTypes = probedClasses.filter { it.isEntity }.map { it.name }.toHashSet()
 
-        transformEntities(probedClasses, outDir, classPool, transformedClasses)
-        // Transform Cursors after entities because this depends on entity CtClasses added to the ClassPool
-        transformCursors(probedClasses, outDir, classPool, transformedClasses)
-
-        probedClasses.filter { !transformedClasses.contains(it) }.forEach { classToCopy ->
-            val targetFile = File(outDir, classToCopy.name.replace('.', '/') + ".class")
-            classToCopy.file.copyTo(targetFile)
+        private fun createClassPool(): ClassPool {
+            val classPool = ClassPool(null)
+            classPool.makeClass(ClassConst.boxStoreClass)
+            val cursorCtClass = classPool.makeClass(ClassConst.cursorClass)
+            cursorCtClass.addField(CtField.make("${ClassConst.boxStoreClass} boxStoreForEntities;", cursorCtClass))
+            classPool.makeClass(ClassConst.toOne).genericSignature = ClassConst.genericSignatureT
+            classPool.makeClass(ClassConst.toMany).genericSignature = ClassConst.genericSignatureT
+            return classPool
         }
-        val time = System.currentTimeMillis() - startTime
-        val transformed = transformedClasses.size
+
+        fun wasTransformed(probedClass: ProbedClass) = transformedClasses.contains(probedClass)
+    }
+
+    fun transformOrCopyClasses(probedClasses: List<ProbedClass>, outDir: File) {
+        val startTime = System.currentTimeMillis()
+
+        val context = Context(probedClasses, outDir)
+
+        transformEntities(context)
+        // Transform Cursors after entities because this depends on entity CtClasses added to the ClassPool
+        transformCursors(context)
+
+        probedClasses.filter { !context.wasTransformed(it) }.forEach { (file, name) ->
+            val targetFile = File(outDir, name.replace('.', '/') + ".class")
+            file.copyTo(targetFile)
+        }
+        val transformed = context.transformedClasses.size
         val copied = probedClasses.size - transformed
         totalCountTransformed += transformed
         totalCountCopied += copied
+        val time = System.currentTimeMillis() - startTime
         System.out.println("Transformed $transformed entities and copied $copied classes in $time ms")
     }
 
-    private fun createClassPool(): ClassPool {
-        val classPool = ClassPool(null)
-        classPool.makeClass(ClassConst.boxStoreClass)
-        val cursorCtClass = classPool.makeClass(ClassConst.cursorClass)
-        cursorCtClass.addField(CtField.make("${ClassConst.boxStoreClass} boxStoreForEntities;", cursorCtClass))
-        classPool.makeClass(ClassConst.toOne).genericSignature = ClassConst.genericSignatureT
-        classPool.makeClass(ClassConst.toMany).genericSignature = ClassConst.genericSignatureT
-        return classPool
-    }
-
-
-    private fun transformEntities(probedClasses: List<ProbedClass>, outDir: File, classPool: ClassPool,
-                                  transformedClasses: MutableSet<ProbedClass>) {
-        probedClasses.filter { it.isEntity }.forEach { entityClass ->
+    private fun transformEntities(context: Context) {
+        context.probedClasses.filter { it.isEntity }.forEach { entityClass ->
             entityClass.file.inputStream().use {
                 if (debug) println("Preparing entity ${entityClass.name}")
-                val ctClass = classPool.makeClass(it)
+                val ctClass = context.classPool.makeClass(it)
                 try {
                     if (entityClass.hasToOneRef || entityClass.hasToManyRef) {
-                        if (transformRelationEntity(ctClass, outDir)) {
-                            transformedClasses.add(entityClass)
+                        if (transformRelationEntity(ctClass, context.outDir)) {
+                            context.transformedClasses.add(entityClass)
                         }
                     }
                 } catch (e: Exception) {
@@ -82,14 +88,13 @@ class ClassTransformer(val debug: Boolean = false) {
         return changed
     }
 
-    private fun transformCursors(probedClasses: List<ProbedClass>, outDir: File, classPool: ClassPool,
-                                 transformedClasses: MutableSet<ProbedClass>) {
-        probedClasses.filter { it.isCursor }.forEach { cursorClass ->
+    private fun transformCursors(context: Context) {
+        context.probedClasses.filter { it.isCursor }.forEach { cursorClass ->
             cursorClass.file.inputStream().use {
-                val ctClass = classPool.makeClass(it)
+                val ctClass = context.classPool.makeClass(it)
                 try {
-                    if (transformCursor(ctClass, outDir, classPool)) {
-                        transformedClasses.add(cursorClass)
+                    if (transformCursor(ctClass, context.outDir, context.classPool)) {
+                        context.transformedClasses.add(cursorClass)
                     }
                 } catch (e: Exception) {
                     throw TransformException("Could not transform Cursor class: ${ctClass.name}", e)
