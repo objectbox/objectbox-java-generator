@@ -49,7 +49,7 @@ class ClassTransformer(val debug: Boolean = false) {
                         context.transformedClasses.add(entityClass)
                     }
                 } catch (e: Exception) {
-                    throw TransformException("Could not transform entity class: ${ctClass.name}", e)
+                    throw TransformException("Could not transform entity class \"${ctClass.name}\" (${e.message})", e)
                 }
             }
         }
@@ -125,7 +125,7 @@ class ClassTransformer(val debug: Boolean = false) {
                         context.transformedClasses.add(cursorClass)
                     }
                 } catch (e: Exception) {
-                    throw TransformException("Could not transform Cursor class: ${ctClass.name}", e)
+                    throw TransformException("Could not transform Cursor class \"${ctClass.name}\" (${e.message})", e)
                 }
             }
         }
