@@ -1,5 +1,6 @@
 package io.objectbox.gradle.transform
 
+import io.objectbox.BoxStoreBuilder
 import javassist.ClassPool
 import javassist.CtClass
 import javassist.CtConstructor
@@ -12,11 +13,20 @@ import java.io.File
 
 class ClassTransformer(val debug: Boolean = false) {
 
-    private class Context(val probedClasses: List<ProbedClass>, val outDir: File) {
-        val classPool = ClassPool(true)
+    internal class Context(val probedClasses: List<ProbedClass>, val outDir: File) {
+        val classPool = ClassPool(null)
         val transformedClasses = mutableSetOf<ProbedClass>()
         val entityTypes: Set<String> = probedClasses.filter { it.isEntity }.map { it.name }.toHashSet()
         val stats = ClassTransformerStats()
+
+        init {
+            // Notes:
+            // 1) class pool does not use system path (problem: would infer with test Fakes)
+            // 2) class pool cannot find ObjectBox classes on system path when run as Gradle plugin (OK in iJ)
+            val objectBoxPath = BoxStoreBuilder::class.java.protectionDomain.codeSource.location.path
+            classPool.appendClassPath(objectBoxPath)
+            classPool.makeClass("java.lang.Object")
+        }
 
         fun wasTransformed(probedClass: ProbedClass) = transformedClasses.contains(probedClass)
     }
@@ -83,7 +93,9 @@ class ClassTransformer(val debug: Boolean = false) {
                 val initializedFields = getInitializedFields(ctClass, constructor)
                 for ((toOneCtField, targetClassType) in toOneFields) {
                     if (!initializedFields.contains(toOneCtField.name)) {
-                        constructor.insertAfter("\$0.${toOneCtField.name} = new io.objectbox.relation.ToOne();")
+                        val code = "\$0.${toOneCtField.name} = " +
+                                "new ${ClassConst.toOne}((java.lang.Object) \$0, (${ClassConst.relationInfo}) null);"
+                        constructor.insertAfter(code)
                         context.stats.toOnesInitialized++
                         changed = true
                     }

@@ -20,7 +20,7 @@ class EntityBoxStoreField {
 
 @Entity
 class EntityToOne {
-    val entityEmpty = ToOne<EntityEmpty>()
+    val entityEmpty = ToOne<EntityEmpty>(this, null)
 }
 
 @Entity
@@ -30,7 +30,7 @@ class EntityToOneLateInit {
 
 @Entity
 class EntityToMany {
-    val entityEmpty = ToMany<EntityEmpty>()
+    val entityEmpty = ToMany<EntityEmpty>(this, null)
 }
 
 @Entity
@@ -39,11 +39,11 @@ class EntityToManyList {
     lateinit var entityEmpty: List<EntityEmpty>
 }
 
-class TestCursor : Cursor() {
+class TestCursor : Cursor<EntityBoxStoreField>() {
     private fun attachEntity(@Suppress("UNUSED_PARAMETER") entity: EntityBoxStoreField) {}
 }
 
-class CursorWithExistingImpl : Cursor() {
+class CursorWithExistingImpl : Cursor<EntityBoxStoreField>() {
     private fun attachEntity(entity: EntityBoxStoreField) {
         System.out.println(entity)
     }

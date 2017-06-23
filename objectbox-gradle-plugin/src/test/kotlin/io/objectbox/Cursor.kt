@@ -6,7 +6,7 @@ class BoxStore {
 }
 
 /** FAKE just for tests */
-open class Cursor {
+open class Cursor<T> {
     @JvmField
     protected var boxStoreForEntities: BoxStore? = null
 }

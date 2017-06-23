@@ -10,6 +10,17 @@ class ClassTransformerTest : AbstractTransformTest() {
     val transformer = ClassTransformer(true)
 
     @Test
+    fun testClassInPool() {
+        val classPool = ClassTransformer.Context(emptyList(), File(".")).classPool
+        val toOne = classPool.get(ClassConst.toOne)
+        val constructorSignature = toOne.constructors.single().signature
+        // Verify its not a fake
+        assertEquals("(Ljava/lang/Object;Lio/objectbox/relation/RelationInfo;)V", constructorSignature)
+        assertTrue(toOne.declaredFields.size > 0)
+        assertTrue(toOne.declaredMethods.size > 0)
+    }
+
+    @Test
     fun testTransformEntity_toOne() {
         val (stats) = testTransformOrCopy(EntityToOne::class, 1, 0)
         assertEquals(1, stats.toOnesFound)

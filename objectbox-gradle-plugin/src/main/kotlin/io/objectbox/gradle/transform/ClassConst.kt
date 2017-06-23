@@ -12,14 +12,15 @@ object ClassConst {
     val toMany = "io.objectbox.relation.ToMany"
     val toManyDescriptor = "Lio/objectbox/relation/ToMany;"
 
+    val relationInfo = "io.objectbox.relation.RelationInfo"
+
     val boxStoreFieldName = "__boxStore"
     val boxStoreClass = "io.objectbox.BoxStore"
 
     val cursorClass = "io.objectbox.Cursor"
     val cursorAttachEntityMethodName = "attachEntity"
 
-    val listClass = "java/util/List"
-    val listDescriptor = "L${listClass};"
+    val listDescriptor = "Ljava/util/List;"
 
     val genericSignatureT =
             SignatureAttribute.ClassSignature(arrayOf(SignatureAttribute.TypeParameter("T"))).encode()!!
