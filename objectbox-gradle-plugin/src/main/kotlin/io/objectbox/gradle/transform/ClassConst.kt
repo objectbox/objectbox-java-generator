@@ -12,6 +12,7 @@ object ClassConst {
     val toMany = "io.objectbox.relation.ToMany"
     val toManyDescriptor = "Lio/objectbox/relation/ToMany;"
 
+    val entityInfo = "io.objectbox.EntityInfo"
     val relationInfo = "io.objectbox.relation.RelationInfo"
 
     val boxStoreFieldName = "__boxStore"

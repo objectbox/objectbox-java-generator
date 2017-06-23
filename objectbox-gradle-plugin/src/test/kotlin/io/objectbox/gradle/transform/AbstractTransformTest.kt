@@ -1,7 +1,9 @@
 package io.objectbox.gradle.transform
 
 import io.objectbox.Cursor
+import io.objectbox.EntityInfo
 import io.objectbox.annotation.Entity
+import io.objectbox.relation.RelationInfo
 import io.objectbox.relation.ToMany
 import io.objectbox.relation.ToOne
 import org.junit.Assert.assertTrue
@@ -26,6 +28,11 @@ class EntityToOne {
 @Entity
 class EntityToOneLateInit {
     lateinit var entityEmpty: ToOne<EntityEmpty>
+}
+
+object EntityToOneLateInit_ : EntityInfo<EntityToOneLateInit> {
+    @JvmField
+    val entityEmpty = RelationInfo<EntityEmpty>(null, null, null)
 }
 
 @Entity

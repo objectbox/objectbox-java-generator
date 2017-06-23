@@ -14,18 +14,20 @@ import java.io.File
 class ClassTransformer(val debug: Boolean = false) {
 
     internal class Context(val probedClasses: List<ProbedClass>, val outDir: File) {
-        val classPool = ClassPool(null)
+        val classPool = ClassPool()
         val transformedClasses = mutableSetOf<ProbedClass>()
         val entityTypes: Set<String> = probedClasses.filter { it.isEntity }.map { it.name }.toHashSet()
         val stats = ClassTransformerStats()
 
         init {
             // Notes:
-            // 1) class pool does not use system path (problem: would infer with test Fakes)
+            // 1) class pool should not use any ClassClassPath (problem: would infer with test Fakes)
             // 2) class pool cannot find ObjectBox classes on system path when run as Gradle plugin (OK in iJ)
+            // 3) ObjectBox is separated for mainly for tests (we make this configurable, treat tests as special)
+            // 4) Don't fake java.lang.Object, it may cause stack overflows because superclass != null
             val objectBoxPath = BoxStoreBuilder::class.java.protectionDomain.codeSource.location.path
             classPool.appendClassPath(objectBoxPath)
-            classPool.makeClass("java.lang.Object")
+            classPool.appendClassPath(PrefixedClassPath("java.", java.lang.Object::class.java))
         }
 
         fun wasTransformed(probedClass: ProbedClass) = transformedClasses.contains(probedClass)
@@ -33,6 +35,8 @@ class ClassTransformer(val debug: Boolean = false) {
 
     fun transformOrCopyClasses(probedClasses: List<ProbedClass>, outDir: File): ClassTransformerStats {
         val context = Context(probedClasses, outDir)
+
+        probedClasses.forEach { if (it.isEntityInfo) makeCtClass(context, it) }
 
         transformEntities(context)
         // Transform Cursors after entities because this depends on entity CtClasses added to the ClassPool
@@ -52,16 +56,20 @@ class ClassTransformer(val debug: Boolean = false) {
 
     private fun transformEntities(context: Context) {
         context.probedClasses.filter { it.isEntity }.forEach { entityClass ->
-            entityClass.file.inputStream().use {
-                val ctClass = context.classPool.makeClass(it)
-                try {
-                    if (transformEntity(context, ctClass, entityClass)) {
-                        context.transformedClasses.add(entityClass)
-                    }
-                } catch (e: Exception) {
-                    throw TransformException("Could not transform entity class \"${ctClass.name}\" (${e.message})", e)
+            val ctClass = makeCtClass(context, entityClass)
+            try {
+                if (transformEntity(context, ctClass, entityClass)) {
+                    context.transformedClasses.add(entityClass)
                 }
+            } catch (e: Exception) {
+                throw TransformException("Could not transform entity class \"${ctClass.name}\" (${e.message})", e)
             }
+        }
+    }
+
+    private fun makeCtClass(context: Context, entityClass: ProbedClass): CtClass {
+        entityClass.file.inputStream().use {
+            return context.classPool.makeClass(it)
         }
     }
 
@@ -92,9 +100,10 @@ class ClassTransformer(val debug: Boolean = false) {
             for (constructor in ctClass.constructors) {
                 val initializedFields = getInitializedFields(ctClass, constructor)
                 for ((toOneCtField, targetClassType) in toOneFields) {
-                    if (!initializedFields.contains(toOneCtField.name)) {
-                        val code = "\$0.${toOneCtField.name} = " +
-                                "new ${ClassConst.toOne}((java.lang.Object) \$0, (${ClassConst.relationInfo}) null);"
+                    val fieldName = toOneCtField.name
+                    if (!initializedFields.contains(fieldName)) {
+                        val code = "\$0.$fieldName = " +
+                                "new ${ClassConst.toOne}((java.lang.Object) \$0, ${entityClass.name}_#$fieldName);"
                         constructor.insertAfter(code)
                         context.stats.toOnesInitialized++
                         changed = true
@@ -130,15 +139,13 @@ class ClassTransformer(val debug: Boolean = false) {
 
     private fun transformCursors(context: Context) {
         context.probedClasses.filter { it.isCursor }.forEach { cursorClass ->
-            cursorClass.file.inputStream().use {
-                val ctClass = context.classPool.makeClass(it)
-                try {
-                    if (transformCursor(ctClass, context.outDir, context.classPool)) {
-                        context.transformedClasses.add(cursorClass)
-                    }
-                } catch (e: Exception) {
-                    throw TransformException("Could not transform Cursor class \"${ctClass.name}\" (${e.message})", e)
+            val ctClass = makeCtClass(context, cursorClass)
+            try {
+                if (transformCursor(ctClass, context.outDir, context.classPool)) {
+                    context.transformedClasses.add(cursorClass)
                 }
+            } catch (e: Exception) {
+                throw TransformException("Could not transform Cursor class \"${ctClass.name}\" (${e.message})", e)
             }
         }
     }

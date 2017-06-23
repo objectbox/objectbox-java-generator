@@ -12,9 +12,6 @@ import java.io.File
 
 class ClassProber(val debug: Boolean = false) {
 
-    var totalCountTransformed = 0
-    var totalCountCopied = 0
-
     fun probeClass(file: File): ProbedClass {
         DataInputStream(BufferedInputStream(file.inputStream())).use {
             val classFile = ClassFile(it)
@@ -22,7 +19,7 @@ class ClassProber(val debug: Boolean = false) {
             val javaPackage = name.substringBeforeLast('.', "")
             if (!classFile.isAbstract) {
                 if (ClassConst.cursorClass == classFile.superclass) {
-                    return return ProbedClass(file = file, name = name, javaPackage = javaPackage, isCursor = true)
+                    return ProbedClass(file = file, name = name, javaPackage = javaPackage, isCursor = true)
                 } else {
                     var annotation = getEntityAnnotation(classFile)
                     if (annotation != null) {
@@ -41,7 +38,8 @@ class ClassProber(val debug: Boolean = false) {
                     }
                 }
             }
-            return return ProbedClass(file = file, name = name, javaPackage = javaPackage)
+            return ProbedClass(file = file, name = name, javaPackage = javaPackage,
+                    isEntityInfo = classFile.interfaces.any { it == ClassConst.entityInfo })
         }
     }
 

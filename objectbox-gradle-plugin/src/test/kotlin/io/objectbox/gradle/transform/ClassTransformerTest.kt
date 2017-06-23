@@ -1,6 +1,7 @@
 package io.objectbox.gradle.transform
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
@@ -12,9 +13,13 @@ class ClassTransformerTest : AbstractTransformTest() {
     @Test
     fun testClassInPool() {
         val classPool = ClassTransformer.Context(emptyList(), File(".")).classPool
+
+        // Ensure we have the real java.lang.Object (a fake would have itself as superclass)
+        assertNull(classPool.get("java.lang.Object").superclass)
+
         val toOne = classPool.get(ClassConst.toOne)
         val constructorSignature = toOne.constructors.single().signature
-        // Verify its not a fake
+        // Verify its not the test fake
         assertEquals("(Ljava/lang/Object;Lio/objectbox/relation/RelationInfo;)V", constructorSignature)
         assertTrue(toOne.declaredFields.size > 0)
         assertTrue(toOne.declaredMethods.size > 0)
@@ -29,7 +34,8 @@ class ClassTransformerTest : AbstractTransformTest() {
 
     @Test
     fun testTransformEntity_toOneLateInit() {
-        val (stats) = testTransformOrCopy(EntityToOneLateInit::class, 1, 0)
+        val classes = listOf(EntityToOneLateInit::class, EntityToOneLateInit_::class)
+        val (stats) = testTransformOrCopy(classes, 1, 1)
         assertEquals(1, stats.toOnesFound)
         assertEquals(1, stats.toOnesInitialized)
     }

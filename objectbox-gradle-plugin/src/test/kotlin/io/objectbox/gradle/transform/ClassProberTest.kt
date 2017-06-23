@@ -59,6 +59,12 @@ class ClassProberTest : AbstractTransformTest() {
     }
 
     @Test
+    fun testProbeEntityInfo() {
+        val probed = probeClass(EntityToOneLateInit_::class)
+        assertTrue(probed.isEntityInfo)
+    }
+
+    @Test
     fun testProbedClassHasRelation() {
         assertFalse(ProbedClass(File("."), "", "", listFieldTypes = listOf("Nope")).hasRelation(setOf("Yes")))
         assertTrue(ProbedClass(File("."), "", "", listFieldTypes = listOf("Yes")).hasRelation(setOf("Yes")))

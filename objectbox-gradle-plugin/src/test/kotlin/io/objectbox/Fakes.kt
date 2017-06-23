@@ -11,3 +11,6 @@ open class Cursor<T> {
     protected var boxStoreForEntities: BoxStore? = null
 }
 
+/** FAKE just for tests */
+interface EntityInfo<T> {
+}
