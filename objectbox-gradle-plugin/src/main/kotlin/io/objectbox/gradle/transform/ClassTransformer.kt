@@ -5,6 +5,7 @@ import javassist.CtClass
 import javassist.CtField
 import javassist.NotFoundException
 import javassist.bytecode.Opcode
+import javassist.bytecode.SignatureAttribute
 import java.io.File
 
 
@@ -79,9 +80,13 @@ class ClassTransformer(val debug: Boolean = false) {
             ctClass.addField(boxStoreField)
             changed = true
         }
-//        ctClass.declaredFields.filter { it.type.name == Const.toOne }.forEach { toOneField ->
-//            val x=  toOneField.genericSignature
-//        }
+        val toOneFields = mutableListOf<Pair<CtField, SignatureAttribute.ClassType>>()
+        ctClass.declaredFields.filter { it.type.name == ClassConst.toOne }.forEach { toOneField ->
+            val targetClassType = toOneField.fieldInfo.exGetSingleGenericTypeArgumentOrNull()
+                    ?: throw TransformException("Cannot transform non-generic ToOne field:" +
+                    "${ctClass.name}.${toOneField.name} (please add generic type parameter)")
+            toOneFields += Pair(toOneField, targetClassType)
+        }
         if (changed) {
             ctClass.writeFile(outDir.absolutePath)
         }

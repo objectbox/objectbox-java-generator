@@ -6,11 +6,11 @@ import javassist.bytecode.SignatureAttribute
 object ClassConst {
     val entityAnnotationName = Entity::class.qualifiedName
 
-    val toOne = "io/objectbox/relation/ToOne"
-    val toOneDescriptor = "L${toOne};"
+    val toOne = "io.objectbox.relation.ToOne"
+    val toOneDescriptor = "Lio/objectbox/relation/ToOne;"
 
-    val toMany = "io/objectbox/relation/ToMany"
-    val toManyDescriptor = "L${toMany};"
+    val toMany = "io.objectbox.relation.ToMany"
+    val toManyDescriptor = "Lio/objectbox/relation/ToMany;"
 
     val boxStoreFieldName = "__boxStore"
     val boxStoreClass = "io.objectbox.BoxStore"

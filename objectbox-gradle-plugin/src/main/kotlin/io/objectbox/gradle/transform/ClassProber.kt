@@ -47,10 +47,7 @@ class ClassProber(val debug: Boolean = false) {
 
     private fun extractAllListTypes(fields: List<FieldInfo>): List<String> {
         return fields.filter { it.descriptor == ClassConst.listDescriptor }.map {
-            val signatureAttr = it.getAttribute(SignatureAttribute.tag) as SignatureAttribute
-            val classSignature = SignatureAttribute.toClassSignature(signatureAttr.signature)
-            val typeArguments = classSignature.superClass.typeArguments
-            (typeArguments?.singleOrNull()?.type as? SignatureAttribute.ClassType)?.name
+            it.exGetSingleGenericTypeArgumentOrNull()?.name
         }.filterNotNull()
     }
 
