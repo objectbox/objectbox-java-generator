@@ -14,10 +14,7 @@ dependencies {
     compile 'org.greenrobot:greenrobot-jdt:3.12.2'
     compile 'com.squareup.moshi:moshi:1.4.0'
 
-    // Synchronize dependency versions with project version
-    def baseVersion = "${project.version}"
-//    baseVersion = "0.9.12"
-    compile "io.objectbox:objectbox-java-api:$baseVersion"
+    compile "io.objectbox:objectbox-java-api:$objectbox_java_version"
     compile project (':objectbox-generator')
 
     testCompile 'junit:junit:4.12'
