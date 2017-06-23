@@ -24,6 +24,11 @@ class EntityToOne {
 }
 
 @Entity
+class EntityToOneLateInit {
+    lateinit var entityEmpty: ToOne<EntityEmpty>
+}
+
+@Entity
 class EntityToMany {
     val entityEmpty = ToMany<EntityEmpty>()
 }

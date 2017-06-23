@@ -10,9 +10,17 @@ class ClassTransformerTest : AbstractTransformTest() {
     val transformer = ClassTransformer(true)
 
     @Test
-    fun testTransformEntity() {
+    fun testTransformEntity_toOne() {
         val (stats) = testTransformOrCopy(EntityToOne::class, 1, 0)
         assertEquals(1, stats.toOnesFound)
+        assertEquals(0, stats.toOnesInitialized)
+    }
+
+    @Test
+    fun testTransformEntity_toOneLateInit() {
+        val (stats) = testTransformOrCopy(EntityToOneLateInit::class, 1, 0)
+        assertEquals(1, stats.toOnesFound)
+        assertEquals(1, stats.toOnesInitialized)
     }
 
     @Test

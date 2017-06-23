@@ -2,6 +2,7 @@ package io.objectbox.gradle.transform
 
 import javassist.ClassPool
 import javassist.CtClass
+import javassist.CtConstructor
 import javassist.CtField
 import javassist.NotFoundException
 import javassist.bytecode.Opcode
@@ -83,10 +84,39 @@ class ClassTransformer(val debug: Boolean = false) {
             toOneFields += Pair(toOneField, targetClassType)
             context.stats.toOnesFound++
         }
+        for (constructor in ctClass.constructors) {
+            val initializedFields = getInitializedFields(ctClass, constructor)
+            for ((toOneCtField, targetClassType) in toOneFields) {
+                if (!initializedFields.contains(toOneCtField.name)) {
+                    // TODO initialized
+                    context.stats.toOnesInitialized++
+                    changed = true
+                }
+            }
+        }
         if (changed) {
             ctClass.writeFile(context.outDir.absolutePath)
         }
         return changed
+    }
+
+    private fun getInitializedFields(ctClass: CtClass, constructor: CtConstructor): HashSet<String> {
+        val initializedFields = hashSetOf<String>()
+        val codeIterator = constructor.methodInfo.codeAttribute.iterator()
+        codeIterator.begin()
+        while (codeIterator.hasNext()) {
+            val opIndex = codeIterator.next()
+            val op = codeIterator.byteAt(opIndex)
+            if (op == Opcode.PUTFIELD) {
+                val fieldIndex = codeIterator.u16bitAt(opIndex + 1)
+                val constPool = ctClass.classFile.constPool
+                val fieldName = constPool.getFieldrefName(fieldIndex)
+                if (fieldName != null) {
+                    initializedFields += fieldName
+                }
+            }
+        }
+        return initializedFields
     }
 
     private fun transformCursors(context: Context) {
