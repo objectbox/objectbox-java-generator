@@ -11,9 +11,13 @@ class ClassTransformerStats {
     var toOnesFound = 0
     var toOnesInitialized = 0
 
+    var boxStoreFieldsMadeVisible = 0
+    var boxStoreFieldsAdded = 0
+
     fun done() {
         endTime = System.currentTimeMillis()
         System.out.println("Transformed $countTransformed entities and copied $countCopied classes in $time ms")
 
     }
+
 }

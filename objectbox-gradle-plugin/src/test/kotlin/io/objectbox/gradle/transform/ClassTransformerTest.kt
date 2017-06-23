@@ -25,7 +25,8 @@ class ClassTransformerTest : AbstractTransformTest() {
 
     @Test
     fun testTransformCursor() {
-        testTransformOrCopy(TestCursor::class, 1, 0)
+        val classes = listOf(TestCursor::class, EntityBoxStoreField::class)
+        testTransformOrCopy(classes, 2, 0)
     }
 
     @Test(expected = TransformException::class)
@@ -43,13 +44,16 @@ class ClassTransformerTest : AbstractTransformTest() {
     }
 
     fun testTransformOrCopy(kClass: KClass<*>, expectedTransformed: Int, expectedCopied: Int)
+            = testTransformOrCopy(listOf(kClass), expectedTransformed, expectedCopied)
+
+    fun testTransformOrCopy(kClasses: List<KClass<*>>, expectedTransformed: Int, expectedCopied: Int)
             : Pair<ClassTransformerStats, List<File>> {
-        val probedClass = probeClass(kClass)
+        val probedClasses = kClasses.map { probeClass(it) }
         val tempDir = File.createTempFile(this.javaClass.name, "")
         tempDir.delete()
         assertTrue(tempDir.mkdir())
         try {
-            val stats = transformer.transformOrCopyClasses(listOf(probedClass), tempDir)
+            val stats = transformer.transformOrCopyClasses(probedClasses, tempDir)
             assertEquals(expectedTransformed, stats.countTransformed)
             assertEquals(expectedCopied, stats.countCopied)
             val createdFiles = tempDir.walkBottomUp().toList().filter { it.isFile }

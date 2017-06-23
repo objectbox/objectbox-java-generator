@@ -4,6 +4,7 @@ import javassist.ClassPool
 import javassist.CtClass
 import javassist.CtConstructor
 import javassist.CtField
+import javassist.Modifier
 import javassist.NotFoundException
 import javassist.bytecode.Opcode
 import javassist.bytecode.SignatureAttribute
@@ -12,20 +13,10 @@ import java.io.File
 class ClassTransformer(val debug: Boolean = false) {
 
     private class Context(val probedClasses: List<ProbedClass>, val outDir: File) {
-        val classPool = createClassPool()
+        val classPool = ClassPool(true)
         val transformedClasses = mutableSetOf<ProbedClass>()
         val entityTypes: Set<String> = probedClasses.filter { it.isEntity }.map { it.name }.toHashSet()
         val stats = ClassTransformerStats()
-
-        private fun createClassPool(): ClassPool {
-            val classPool = ClassPool(null)
-            classPool.makeClass(ClassConst.boxStoreClass)
-            val cursorCtClass = classPool.makeClass(ClassConst.cursorClass)
-            cursorCtClass.addField(CtField.make("${ClassConst.boxStoreClass} boxStoreForEntities;", cursorCtClass))
-            classPool.makeClass(ClassConst.toOne).genericSignature = ClassConst.genericSignatureT
-            classPool.makeClass(ClassConst.toMany).genericSignature = ClassConst.genericSignatureT
-            return classPool
-        }
 
         fun wasTransformed(probedClass: ProbedClass) = transformedClasses.contains(probedClass)
     }
@@ -52,13 +43,10 @@ class ClassTransformer(val debug: Boolean = false) {
     private fun transformEntities(context: Context) {
         context.probedClasses.filter { it.isEntity }.forEach { entityClass ->
             entityClass.file.inputStream().use {
-                if (debug) println("Preparing entity ${entityClass.name}")
                 val ctClass = context.classPool.makeClass(it)
                 try {
-                    if (entityClass.hasRelation(context.entityTypes)) {
-                        if (transformRelationEntity(context, ctClass)) {
-                            context.transformedClasses.add(entityClass)
-                        }
+                    if (transformEntity(context, ctClass, entityClass)) {
+                        context.transformedClasses.add(entityClass)
                     }
                 } catch (e: Exception) {
                     throw TransformException("Could not transform entity class: ${ctClass.name}", e)
@@ -67,34 +55,43 @@ class ClassTransformer(val debug: Boolean = false) {
         }
     }
 
-    private fun transformRelationEntity(context: Context, ctClass: CtClass): Boolean {
-        if (debug) println("Transforming entity with relations: ${ctClass.name}")
+    private fun transformEntity(context: Context, ctClass: CtClass, entityClass: ProbedClass): Boolean {
+        val hasRelations = entityClass.hasRelation(context.entityTypes)
+        if (debug) println("Checking to transform entity \"${ctClass.name}\" (has relations: $hasRelations)")
         var changed = false
         var boxStoreField = ctClass.declaredFields.find { it.name == ClassConst.boxStoreFieldName }
-        if (boxStoreField == null) {
+        if (boxStoreField != null && Modifier.isPrivate(boxStoreField.modifiers)) {
+            boxStoreField.modifiers = boxStoreField.modifiers.xor(Modifier.PRIVATE)
+            context.stats.boxStoreFieldsMadeVisible++
+            changed = true
+        } else if (boxStoreField == null && hasRelations) {
             boxStoreField = CtField.make("transient ${ClassConst.boxStoreClass} ${ClassConst.boxStoreFieldName};", ctClass)
             ctClass.addField(boxStoreField)
+            context.stats.boxStoreFieldsAdded++
             changed = true
         }
-        val toOneFields = mutableListOf<Pair<CtField, SignatureAttribute.ClassType>>()
-        ctClass.declaredFields.filter { it.fieldInfo.descriptor == ClassConst.toOneDescriptor }.forEach { toOneField ->
-            val targetClassType = toOneField.fieldInfo.exGetSingleGenericTypeArgumentOrNull()
-                    ?: throw TransformException("Cannot transform non-generic ToOne field:" +
-                    "${ctClass.name}.${toOneField.name} (please add generic type parameter)")
-            toOneFields += Pair(toOneField, targetClassType)
-            context.stats.toOnesFound++
-        }
-        for (constructor in ctClass.constructors) {
-            val initializedFields = getInitializedFields(ctClass, constructor)
-            for ((toOneCtField, targetClassType) in toOneFields) {
-                if (!initializedFields.contains(toOneCtField.name)) {
-                    // TODO initialized
-                    context.stats.toOnesInitialized++
-                    changed = true
+        if (hasRelations) {
+            val toOneFields = mutableListOf<Pair<CtField, SignatureAttribute.ClassType>>()
+            ctClass.declaredFields.filter { it.fieldInfo.descriptor == ClassConst.toOneDescriptor }.forEach { toOneField ->
+                val targetClassType = toOneField.fieldInfo.exGetSingleGenericTypeArgumentOrNull()
+                        ?: throw TransformException("Cannot transform non-generic ToOne field:" +
+                        "${ctClass.name}.${toOneField.name} (please add generic type parameter)")
+                toOneFields += Pair(toOneField, targetClassType)
+                context.stats.toOnesFound++
+            }
+            for (constructor in ctClass.constructors) {
+                val initializedFields = getInitializedFields(ctClass, constructor)
+                for ((toOneCtField, targetClassType) in toOneFields) {
+                    if (!initializedFields.contains(toOneCtField.name)) {
+                        constructor.insertAfter("\$0.${toOneCtField.name} = new io.objectbox.relation.ToOne();")
+                        context.stats.toOnesInitialized++
+                        changed = true
+                    }
                 }
             }
         }
         if (changed) {
+            if (debug) println("Writing transformed entity \"${ctClass.name}\"")
             ctClass.writeFile(context.outDir.absolutePath)
         }
         return changed
