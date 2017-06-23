@@ -11,7 +11,8 @@ class ClassTransformerTest : AbstractTransformTest() {
 
     @Test
     fun testTransformEntity() {
-        testTransformOrCopy(EntityToOne::class, 1, 0)
+        val (stats) = testTransformOrCopy(EntityToOne::class, 1, 0)
+        assertEquals(1, stats.toOnesFound)
     }
 
     @Test
@@ -26,13 +27,15 @@ class ClassTransformerTest : AbstractTransformTest() {
 
     @Test
     fun testCopy() {
-        val copiedFile = testTransformOrCopy(JustCopyMe::class, 0, 1).single()
+        val result = testTransformOrCopy(JustCopyMe::class, 0, 1)
+        val copiedFile = result.second.single()
         val expectedPath = '/' + JustCopyMe::class.qualifiedName!!.replace('.', '/') + ".class"
         val actualPath = copiedFile.absolutePath.replace('\\', '/')
         assertTrue(actualPath, actualPath.endsWith(expectedPath))
     }
 
-    fun testTransformOrCopy(kClass: KClass<*>, expectedTransformed: Int, expectedCopied: Int): List<File> {
+    fun testTransformOrCopy(kClass: KClass<*>, expectedTransformed: Int, expectedCopied: Int)
+            : Pair<ClassTransformerStats, List<File>> {
         val probedClass = probeClass(kClass)
         val tempDir = File.createTempFile(this.javaClass.name, "")
         tempDir.delete()
@@ -43,7 +46,7 @@ class ClassTransformerTest : AbstractTransformTest() {
             assertEquals(expectedCopied, stats.countCopied)
             val createdFiles = tempDir.walkBottomUp().toList().filter { it.isFile }
             assertEquals(expectedTransformed + expectedCopied, createdFiles.size)
-            return createdFiles
+            return Pair(stats, createdFiles)
         } finally {
             tempDir.deleteRecursively()
         }

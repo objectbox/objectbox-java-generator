@@ -81,6 +81,7 @@ class ClassTransformer(val debug: Boolean = false) {
                     ?: throw TransformException("Cannot transform non-generic ToOne field:" +
                     "${ctClass.name}.${toOneField.name} (please add generic type parameter)")
             toOneFields += Pair(toOneField, targetClassType)
+            context.stats.toOnesFound++
         }
         if (changed) {
             ctClass.writeFile(context.outDir.absolutePath)
