@@ -60,7 +60,7 @@ class ClassTransformer(val debug: Boolean = false) {
                 val ctClass = context.classPool.makeClass(it)
                 try {
                     if (entityClass.hasRelation(context.entityTypes)) {
-                        if (transformRelationEntity(ctClass, context.outDir)) {
+                        if (transformRelationEntity(context, ctClass)) {
                             context.transformedClasses.add(entityClass)
                         }
                     }
@@ -71,7 +71,7 @@ class ClassTransformer(val debug: Boolean = false) {
         }
     }
 
-    private fun transformRelationEntity(ctClass: CtClass, outDir: File): Boolean {
+    private fun transformRelationEntity(context: Context, ctClass: CtClass): Boolean {
         if (debug) println("Transforming entity with relations: ${ctClass.name}")
         var changed = false
         var boxStoreField = ctClass.declaredFields.find { it.name == ClassConst.boxStoreFieldName }
@@ -81,14 +81,14 @@ class ClassTransformer(val debug: Boolean = false) {
             changed = true
         }
         val toOneFields = mutableListOf<Pair<CtField, SignatureAttribute.ClassType>>()
-        ctClass.declaredFields.filter { it.type.name == ClassConst.toOne }.forEach { toOneField ->
+        ctClass.declaredFields.filter { it.fieldInfo.descriptor == ClassConst.toOneDescriptor }.forEach { toOneField ->
             val targetClassType = toOneField.fieldInfo.exGetSingleGenericTypeArgumentOrNull()
                     ?: throw TransformException("Cannot transform non-generic ToOne field:" +
                     "${ctClass.name}.${toOneField.name} (please add generic type parameter)")
             toOneFields += Pair(toOneField, targetClassType)
         }
         if (changed) {
-            ctClass.writeFile(outDir.absolutePath)
+            ctClass.writeFile(context.outDir.absolutePath)
         }
         return changed
     }
