@@ -8,16 +8,13 @@ import javassist.bytecode.Opcode
 import javassist.bytecode.SignatureAttribute
 import java.io.File
 
-
 class ClassTransformer(val debug: Boolean = false) {
-
-    var totalCountTransformed = 0
-    var totalCountCopied = 0
 
     private class Context(val probedClasses: List<ProbedClass>, val outDir: File) {
         val classPool = createClassPool()
         val transformedClasses = mutableSetOf<ProbedClass>()
         val entityTypes: Set<String> = probedClasses.filter { it.isEntity }.map { it.name }.toHashSet()
+        val stats = ClassTransformerStats()
 
         private fun createClassPool(): ClassPool {
             val classPool = ClassPool(null)
@@ -32,9 +29,7 @@ class ClassTransformer(val debug: Boolean = false) {
         fun wasTransformed(probedClass: ProbedClass) = transformedClasses.contains(probedClass)
     }
 
-    fun transformOrCopyClasses(probedClasses: List<ProbedClass>, outDir: File) {
-        val startTime = System.currentTimeMillis()
-
+    fun transformOrCopyClasses(probedClasses: List<ProbedClass>, outDir: File): ClassTransformerStats {
         val context = Context(probedClasses, outDir)
 
         transformEntities(context)
@@ -45,12 +40,12 @@ class ClassTransformer(val debug: Boolean = false) {
             val targetFile = File(outDir, name.replace('.', '/') + ".class")
             file.copyTo(targetFile)
         }
-        val transformed = context.transformedClasses.size
-        val copied = probedClasses.size - transformed
-        totalCountTransformed += transformed
-        totalCountCopied += copied
-        val time = System.currentTimeMillis() - startTime
-        System.out.println("Transformed $transformed entities and copied $copied classes in $time ms")
+
+        context.stats.countTransformed = context.transformedClasses.size
+        context.stats.countCopied = probedClasses.size - context.transformedClasses.size
+        context.stats.done()
+
+        return context.stats
     }
 
     private fun transformEntities(context: Context) {

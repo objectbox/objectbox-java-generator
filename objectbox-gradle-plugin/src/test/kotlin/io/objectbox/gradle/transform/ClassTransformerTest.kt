@@ -38,9 +38,9 @@ class ClassTransformerTest : AbstractTransformTest() {
         tempDir.delete()
         assertTrue(tempDir.mkdir())
         try {
-            transformer.transformOrCopyClasses(listOf(probedClass), tempDir)
-            assertEquals(expectedTransformed, transformer.totalCountTransformed)
-            assertEquals(expectedCopied, transformer.totalCountCopied)
+            val stats = transformer.transformOrCopyClasses(listOf(probedClass), tempDir)
+            assertEquals(expectedTransformed, stats.countTransformed)
+            assertEquals(expectedCopied, stats.countCopied)
             val createdFiles = tempDir.walkBottomUp().toList().filter { it.isFile }
             assertEquals(expectedTransformed + expectedCopied, createdFiles.size)
             return createdFiles
