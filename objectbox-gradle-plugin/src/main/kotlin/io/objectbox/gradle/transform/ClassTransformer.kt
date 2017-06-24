@@ -116,7 +116,8 @@ class ClassTransformer(val debug: Boolean = false) {
         return changed
     }
 
-    private fun findRelationFields(context: Context, ctClass: CtClass, fieldTypeDescriptor: String, relationType: String)
+    private fun findRelationFields(context: Context, ctClass: CtClass, fieldTypeDescriptor: String,
+                                   relationType: String)
             : MutableList<RelationField> {
         val fields = mutableListOf<RelationField>()
         ctClass.declaredFields.filter { it.fieldInfo.descriptor == fieldTypeDescriptor }.forEach { field ->
@@ -126,9 +127,38 @@ class ClassTransformer(val debug: Boolean = false) {
                     return@forEach
                 }
             }
-            fields += RelationField(field, field.name, relationType, targetClassType)
+            val name = findRelationNameInEntityInfo(context, ctClass, field, relationType)
+            fields += RelationField(field, name, relationType, targetClassType)
         }
         return fields
+    }
+
+    private fun findRelationNameInEntityInfo(context: Context, ctClass: CtClass, field: CtField, relationType: String)
+            : String {
+        val entityInfoClassName = ctClass.name + '_'
+        val entityInfoCtClass = try {
+            context.classPool.get(entityInfoClassName)
+        } catch (e: NotFoundException) {
+            throw TransformException("Could not find generated class \"$entityInfoClassName\", " +
+                    "please ensure that ObjectBox class generation runs properly before")
+        }
+        var name = field.name
+        if (!entityInfoCtClass.fields.any { it.name == name }) {
+            val suffix = when (relationType) {
+                ClassConst.toOne -> "ToOne"
+                ClassConst.toMany -> "ToMany"
+                else -> throw TransformException("Unexpected $relationType")
+            }
+            if (name.endsWith(suffix)) {
+                val name2 = name.dropLast(suffix.length)
+                if (!entityInfoCtClass.fields.any { it.name == name2 }) {
+                    throw TransformException("Could not find RelationInfo element for relation field " +
+                            "\"${ctClass.name}.$name\" in generated class \"$entityInfoClassName\"")
+                }
+                name = name2
+            }
+        }
+        return name
     }
 
     private fun transformConstructors(context: Context, ctClass: CtClass, relationFields: List<RelationField>)

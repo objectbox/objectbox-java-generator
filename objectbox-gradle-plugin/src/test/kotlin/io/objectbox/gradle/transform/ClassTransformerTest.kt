@@ -27,7 +27,8 @@ class ClassTransformerTest : AbstractTransformTest() {
 
     @Test
     fun testTransformEntity_toOne() {
-        val (stats) = testTransformOrCopy(EntityToOne::class, 1, 0)
+        val classes = listOf(EntityToOne::class, EntityToOne_::class)
+        val (stats) = testTransformOrCopy(classes, 1, 1)
         assertEquals(0, stats.toManyFound)
         assertEquals(1, stats.toOnesFound)
         assertEquals(0, stats.toOnesInitializerAdded)
@@ -44,8 +45,8 @@ class ClassTransformerTest : AbstractTransformTest() {
 
     @Test
     fun testTransformEntity_toMany() {
-        val classes = listOf(EntityToMany::class, EntityEmpty::class)
-        val (stats) = testTransformOrCopy(classes, 1, 1)
+        val classes = listOf(EntityToMany::class, EntityToMany_::class, EntityEmpty::class)
+        val (stats) = testTransformOrCopy(classes, 1, 2)
         assertEquals(1, stats.boxStoreFieldsAdded)
         assertEquals(2, stats.toManyFound)
         assertEquals(0, stats.toManyInitializerAdded)

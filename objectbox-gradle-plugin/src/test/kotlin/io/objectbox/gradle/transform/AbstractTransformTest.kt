@@ -25,6 +25,11 @@ class EntityToOne {
     val entityEmpty = ToOne<EntityEmpty>(this, null)
 }
 
+object EntityToOne_ : EntityInfo<EntityToOneLateInit> {
+    @JvmField
+    val entityEmpty = RelationInfo<EntityEmpty>(null, null, null)
+}
+
 @Entity
 class EntityToOneLateInit {
     lateinit var entityEmpty: ToOne<EntityEmpty>
@@ -39,6 +44,11 @@ object EntityToOneLateInit_ : EntityInfo<EntityToOneLateInit> {
 class EntityToMany {
     val entityEmpty = ToMany<EntityEmpty>(this, null)
     val entityEmptyList = listOf<EntityEmpty>()
+}
+
+object EntityToMany_ : EntityInfo<EntityToOneLateInit> {
+    @JvmField
+    val entityEmpty = RelationInfo<EntityEmpty>(null, null, null)
 }
 
 @Entity
