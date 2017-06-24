@@ -41,6 +41,16 @@ object EntityToOneLateInit_ : EntityInfo<EntityToOneLateInit> {
 }
 
 @Entity
+class EntityToOneSuffix {
+    lateinit var entityEmptyToOne: ToOne<EntityEmpty>
+}
+
+object EntityToOneSuffix_ : EntityInfo<EntityToOneLateInit> {
+    @JvmField
+    val entityEmpty = RelationInfo<EntityEmpty>(null, null, null)
+}
+
+@Entity
 class EntityToMany {
     val entityEmpty = ToMany<EntityEmpty>(this, null)
     val entityEmptyList = listOf<EntityEmpty>()
@@ -57,6 +67,16 @@ class EntityToManyLateInit {
 }
 
 object EntityToManyLateInit_ : EntityInfo<EntityToOneLateInit> {
+    @JvmField
+    val entityEmpty = RelationInfo<EntityEmpty>(null, null, null)
+}
+
+@Entity
+class EntityToManySuffix {
+    lateinit var entityEmptyToMany: ToMany<EntityEmpty>
+}
+
+object EntityToManySuffix_ : EntityInfo<EntityToOneLateInit> {
     @JvmField
     val entityEmpty = RelationInfo<EntityEmpty>(null, null, null)
 }

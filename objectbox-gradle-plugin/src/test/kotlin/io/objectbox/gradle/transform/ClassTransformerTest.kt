@@ -44,6 +44,15 @@ class ClassTransformerTest : AbstractTransformTest() {
     }
 
     @Test
+    fun testTransformEntity_toOneSuffix() {
+        val classes = listOf(EntityToOneSuffix::class, EntityToOneSuffix_::class)
+        val (stats) = testTransformOrCopy(classes, 1, 1)
+        assertEquals(0, stats.toManyFound)
+        assertEquals(1, stats.toOnesFound)
+        assertEquals(1, stats.toOnesInitializerAdded)
+    }
+
+    @Test
     fun testTransformEntity_toMany() {
         val classes = listOf(EntityToMany::class, EntityToMany_::class, EntityEmpty::class)
         val (stats) = testTransformOrCopy(classes, 1, 2)
@@ -55,6 +64,16 @@ class ClassTransformerTest : AbstractTransformTest() {
     @Test
     fun testTransformEntity_toManyLateInit() {
         val classes = listOf(EntityToManyLateInit::class, EntityToManyLateInit_::class)
+        val (stats) = testTransformOrCopy(classes, 1, 1)
+        assertEquals(1, stats.boxStoreFieldsAdded)
+        assertEquals(0, stats.toOnesFound)
+        assertEquals(1, stats.toManyFound)
+        assertEquals(1, stats.toManyInitializerAdded)
+    }
+
+    @Test
+    fun testTransformEntity_toManySuffix() {
+        val classes = listOf(EntityToManySuffix::class, EntityToManySuffix_::class)
         val (stats) = testTransformOrCopy(classes, 1, 1)
         assertEquals(1, stats.boxStoreFieldsAdded)
         assertEquals(0, stats.toOnesFound)
