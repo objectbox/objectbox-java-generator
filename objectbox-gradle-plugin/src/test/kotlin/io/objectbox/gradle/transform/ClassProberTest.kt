@@ -47,7 +47,7 @@ class ClassProberTest : AbstractTransformTest() {
 
     @Test
     fun testProbeEntityToManyList() {
-        val entity = probeClass(EntityToManyList::class)
+        val entity = probeClass(EntityToManyListLateInit::class)
         assertEquals(1, entity.listFieldTypes.size)
         assertEquals(EntityEmpty::class.qualifiedName, entity.listFieldTypes[0])
     }

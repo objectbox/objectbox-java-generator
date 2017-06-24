@@ -33,6 +33,12 @@ class ClassTransformer(val debug: Boolean = false) {
         fun wasTransformed(probedClass: ProbedClass) = transformedClasses.contains(probedClass)
     }
 
+    private class RelationField(val ctField: CtField,
+                                val relationName: String,
+                                val relationType: String,
+                                val targetTypeSignature: SignatureAttribute.ClassType?
+    )
+
     fun transformOrCopyClasses(probedClasses: List<ProbedClass>, outDir: File): ClassTransformerStats {
         val context = Context(probedClasses, outDir)
 
@@ -78,8 +84,13 @@ class ClassTransformer(val debug: Boolean = false) {
         if (debug) println("Checking to transform entity \"${ctClass.name}\" (has relations: $hasRelations)")
         var changed = checkBoxStoreField(ctClass, context, hasRelations)
         if (hasRelations) {
-            val toOneFields = findToOneFields(context, ctClass)
-            if(transformConstructors(context, ctClass, toOneFields)) changed = true
+            val toOneFields = findRelationFields(context, ctClass, ClassConst.toOneDescriptor, ClassConst.toOne)
+            context.stats.toOnesFound += toOneFields.size
+            val toManyFields = findRelationFields(context, ctClass, ClassConst.toManyDescriptor, ClassConst.toMany)
+            val listToEntityFields = findRelationFields(context, ctClass, ClassConst.listDescriptor, ClassConst.toMany)
+            toManyFields += listToEntityFields
+            context.stats.toManyFound += toManyFields.size
+            if (transformConstructors(context, ctClass, toOneFields + toManyFields)) changed = true
         }
         if (changed) {
             if (debug) println("Writing transformed entity \"${ctClass.name}\"")
@@ -105,31 +116,34 @@ class ClassTransformer(val debug: Boolean = false) {
         return changed
     }
 
-    private fun findToOneFields(context: Context, ctClass: CtClass)
-            : MutableList<Pair<CtField, SignatureAttribute.ClassType>> {
-        val toOneFields = mutableListOf<Pair<CtField, SignatureAttribute.ClassType>>()
-        ctClass.declaredFields.filter { it.fieldInfo.descriptor == ClassConst.toOneDescriptor }.forEach { toOneField ->
-            val targetClassType = toOneField.fieldInfo.exGetSingleGenericTypeArgumentOrNull()
-                    ?: throw TransformException("Cannot transform non-generic ToOne field:" +
-                    "${ctClass.name}.${toOneField.name} (please add generic type parameter)")
-            toOneFields += Pair(toOneField, targetClassType)
-            context.stats.toOnesFound++
+    private fun findRelationFields(context: Context, ctClass: CtClass, fieldTypeDescriptor: String, relationType: String)
+            : MutableList<RelationField> {
+        val fields = mutableListOf<RelationField>()
+        ctClass.declaredFields.filter { it.fieldInfo.descriptor == fieldTypeDescriptor }.forEach { field ->
+            val targetClassType = field.fieldInfo.exGetSingleGenericTypeArgumentOrNull()
+            if (ClassConst.listDescriptor == fieldTypeDescriptor) {
+                if (targetClassType == null || !context.entityTypes.contains(targetClassType.name)) {
+                    return@forEach
+                }
+            }
+            fields += RelationField(field, field.name, relationType, targetClassType)
         }
-        return toOneFields
+        return fields
     }
 
-    private fun transformConstructors(context: Context, ctClass: CtClass,
-                                      toOneFields: MutableList<Pair<CtField, SignatureAttribute.ClassType>>): Boolean {
+    private fun transformConstructors(context: Context, ctClass: CtClass, relationFields: List<RelationField>)
+            : Boolean {
         var changed = false
         for (constructor in ctClass.constructors) {
             val initializedFields = getInitializedFields(ctClass, constructor)
-            for ((toOneCtField) in toOneFields) {
-                val fieldName = toOneCtField.name
+            for (field in relationFields) {
+                val fieldName = field.ctField.name
                 if (!initializedFields.contains(fieldName)) {
-                    val code = "\$0.$fieldName = " +
-                            "new ${ClassConst.toOne}((java.lang.Object) \$0, ${ctClass.name}_#$fieldName);"
+                    val code = "\$0.$fieldName = new ${field.relationType}" +
+                            "((java.lang.Object) \$0, ${ctClass.name}_#${field.relationName});"
                     constructor.insertAfter(code)
-                    context.stats.toOnesInitialized++
+                    if (field.relationType == ClassConst.toOne) context.stats.toOnesInitializerAdded++
+                    else if (field.relationType == ClassConst.toMany) context.stats.toManyInitializerAdded++
                     changed = true
                 }
             }

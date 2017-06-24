@@ -28,16 +28,47 @@ class ClassTransformerTest : AbstractTransformTest() {
     @Test
     fun testTransformEntity_toOne() {
         val (stats) = testTransformOrCopy(EntityToOne::class, 1, 0)
+        assertEquals(0, stats.toManyFound)
         assertEquals(1, stats.toOnesFound)
-        assertEquals(0, stats.toOnesInitialized)
+        assertEquals(0, stats.toOnesInitializerAdded)
     }
 
     @Test
     fun testTransformEntity_toOneLateInit() {
         val classes = listOf(EntityToOneLateInit::class, EntityToOneLateInit_::class)
         val (stats) = testTransformOrCopy(classes, 1, 1)
+        assertEquals(0, stats.toManyFound)
         assertEquals(1, stats.toOnesFound)
-        assertEquals(1, stats.toOnesInitialized)
+        assertEquals(1, stats.toOnesInitializerAdded)
+    }
+
+    @Test
+    fun testTransformEntity_toMany() {
+        val classes = listOf(EntityToMany::class, EntityEmpty::class)
+        val (stats) = testTransformOrCopy(classes, 1, 1)
+        assertEquals(1, stats.boxStoreFieldsAdded)
+        assertEquals(2, stats.toManyFound)
+        assertEquals(0, stats.toManyInitializerAdded)
+    }
+
+    @Test
+    fun testTransformEntity_toManyLateInit() {
+        val classes = listOf(EntityToManyLateInit::class, EntityToManyLateInit_::class)
+        val (stats) = testTransformOrCopy(classes, 1, 1)
+        assertEquals(1, stats.boxStoreFieldsAdded)
+        assertEquals(0, stats.toOnesFound)
+        assertEquals(1, stats.toManyFound)
+        assertEquals(1, stats.toManyInitializerAdded)
+    }
+
+    @Test
+    fun testTransformEntity_toManyListLateInit() {
+        val classes = listOf(EntityToManyListLateInit::class, EntityToManyListLateInit_::class, EntityEmpty::class)
+        val (stats) = testTransformOrCopy(classes, 1, 2)
+        assertEquals(1, stats.boxStoreFieldsAdded)
+        assertEquals(0, stats.toOnesFound)
+        assertEquals(1, stats.toManyFound)
+        assertEquals(1, stats.toManyInitializerAdded)
     }
 
     @Test

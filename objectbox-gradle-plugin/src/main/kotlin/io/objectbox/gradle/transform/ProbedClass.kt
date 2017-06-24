@@ -8,7 +8,7 @@ data class ProbedClass(
         val javaPackage: String,
         val isCursor: Boolean = false,
         val isEntity: Boolean = false,
-        /** Fully qualified names (fot notation) of generic types in fields of List */
+        /** Fully qualified names (dot notation) of generic types in fields of List */
         val listFieldTypes: List<String> = emptyList(),
         val hasToOneRef: Boolean = false,
         val hasToManyRef: Boolean = false,

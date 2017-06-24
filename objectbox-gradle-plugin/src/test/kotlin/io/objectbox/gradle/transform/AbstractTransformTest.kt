@@ -38,13 +38,30 @@ object EntityToOneLateInit_ : EntityInfo<EntityToOneLateInit> {
 @Entity
 class EntityToMany {
     val entityEmpty = ToMany<EntityEmpty>(this, null)
+    val entityEmptyList = listOf<EntityEmpty>()
 }
 
 @Entity
-class EntityToManyList {
+class EntityToManyLateInit {
+    lateinit var entityEmpty: ToMany<EntityEmpty>
+}
+
+object EntityToManyLateInit_ : EntityInfo<EntityToOneLateInit> {
+    @JvmField
+    val entityEmpty = RelationInfo<EntityEmpty>(null, null, null)
+}
+
+@Entity
+class EntityToManyListLateInit {
     lateinit var typelessList: List<*>
     lateinit var entityEmpty: List<EntityEmpty>
 }
+
+object EntityToManyListLateInit_ : EntityInfo<EntityToOneLateInit> {
+    @JvmField
+    val entityEmpty = RelationInfo<EntityEmpty>(null, null, null)
+}
+
 
 class TestCursor : Cursor<EntityBoxStoreField>() {
     private fun attachEntity(@Suppress("UNUSED_PARAMETER") entity: EntityBoxStoreField) {}

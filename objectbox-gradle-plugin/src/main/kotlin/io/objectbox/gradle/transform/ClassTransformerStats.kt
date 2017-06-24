@@ -9,7 +9,10 @@ class ClassTransformerStats {
     var countCopied = 0
 
     var toOnesFound = 0
-    var toOnesInitialized = 0
+    var toOnesInitializerAdded = 0
+
+    var toManyFound = 0
+    var toManyInitializerAdded = 0
 
     var boxStoreFieldsMadeVisible = 0
     var boxStoreFieldsAdded = 0
