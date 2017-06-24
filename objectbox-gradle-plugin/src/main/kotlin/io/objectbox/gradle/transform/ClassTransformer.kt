@@ -76,6 +76,19 @@ class ClassTransformer(val debug: Boolean = false) {
     private fun transformEntity(context: Context, ctClass: CtClass, entityClass: ProbedClass): Boolean {
         val hasRelations = entityClass.hasRelation(context.entityTypes)
         if (debug) println("Checking to transform entity \"${ctClass.name}\" (has relations: $hasRelations)")
+        var changed = checkBoxStoreField(ctClass, context, hasRelations)
+        if (hasRelations) {
+            val toOneFields = findToOneFields(context, ctClass)
+            if(transformConstructors(context, ctClass, toOneFields)) changed = true
+        }
+        if (changed) {
+            if (debug) println("Writing transformed entity \"${ctClass.name}\"")
+            ctClass.writeFile(context.outDir.absolutePath)
+        }
+        return changed
+    }
+
+    private fun checkBoxStoreField(ctClass: CtClass, context: Context, hasRelations: Boolean): Boolean {
         var changed = false
         var boxStoreField = ctClass.declaredFields.find { it.name == ClassConst.boxStoreFieldName }
         if (boxStoreField != null && Modifier.isPrivate(boxStoreField.modifiers)) {
@@ -83,37 +96,43 @@ class ClassTransformer(val debug: Boolean = false) {
             context.stats.boxStoreFieldsMadeVisible++
             changed = true
         } else if (boxStoreField == null && hasRelations) {
-            boxStoreField = CtField.make("transient ${ClassConst.boxStoreClass} ${ClassConst.boxStoreFieldName};", ctClass)
+            val code = "transient ${ClassConst.boxStoreClass} ${ClassConst.boxStoreFieldName};"
+            boxStoreField = CtField.make(code, ctClass)
             ctClass.addField(boxStoreField)
             context.stats.boxStoreFieldsAdded++
             changed = true
         }
-        if (hasRelations) {
-            val toOneFields = mutableListOf<Pair<CtField, SignatureAttribute.ClassType>>()
-            ctClass.declaredFields.filter { it.fieldInfo.descriptor == ClassConst.toOneDescriptor }.forEach { toOneField ->
-                val targetClassType = toOneField.fieldInfo.exGetSingleGenericTypeArgumentOrNull()
-                        ?: throw TransformException("Cannot transform non-generic ToOne field:" +
-                        "${ctClass.name}.${toOneField.name} (please add generic type parameter)")
-                toOneFields += Pair(toOneField, targetClassType)
-                context.stats.toOnesFound++
-            }
-            for (constructor in ctClass.constructors) {
-                val initializedFields = getInitializedFields(ctClass, constructor)
-                for ((toOneCtField, targetClassType) in toOneFields) {
-                    val fieldName = toOneCtField.name
-                    if (!initializedFields.contains(fieldName)) {
-                        val code = "\$0.$fieldName = " +
-                                "new ${ClassConst.toOne}((java.lang.Object) \$0, ${entityClass.name}_#$fieldName);"
-                        constructor.insertAfter(code)
-                        context.stats.toOnesInitialized++
-                        changed = true
-                    }
+        return changed
+    }
+
+    private fun findToOneFields(context: Context, ctClass: CtClass)
+            : MutableList<Pair<CtField, SignatureAttribute.ClassType>> {
+        val toOneFields = mutableListOf<Pair<CtField, SignatureAttribute.ClassType>>()
+        ctClass.declaredFields.filter { it.fieldInfo.descriptor == ClassConst.toOneDescriptor }.forEach { toOneField ->
+            val targetClassType = toOneField.fieldInfo.exGetSingleGenericTypeArgumentOrNull()
+                    ?: throw TransformException("Cannot transform non-generic ToOne field:" +
+                    "${ctClass.name}.${toOneField.name} (please add generic type parameter)")
+            toOneFields += Pair(toOneField, targetClassType)
+            context.stats.toOnesFound++
+        }
+        return toOneFields
+    }
+
+    private fun transformConstructors(context: Context, ctClass: CtClass,
+                                      toOneFields: MutableList<Pair<CtField, SignatureAttribute.ClassType>>): Boolean {
+        var changed = false
+        for (constructor in ctClass.constructors) {
+            val initializedFields = getInitializedFields(ctClass, constructor)
+            for ((toOneCtField) in toOneFields) {
+                val fieldName = toOneCtField.name
+                if (!initializedFields.contains(fieldName)) {
+                    val code = "\$0.$fieldName = " +
+                            "new ${ClassConst.toOne}((java.lang.Object) \$0, ${ctClass.name}_#$fieldName);"
+                    constructor.insertAfter(code)
+                    context.stats.toOnesInitialized++
+                    changed = true
                 }
             }
-        }
-        if (changed) {
-            if (debug) println("Writing transformed entity \"${ctClass.name}\"")
-            ctClass.writeFile(context.outDir.absolutePath)
         }
         return changed
     }
