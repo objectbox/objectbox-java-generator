@@ -20,7 +20,7 @@ public class MultipleEntity {
     SimpleEnum someString;
 
     // Test asserts that an all-args constructor exists
-    public MultipleEntity(Long id, SimpleEnumConverter someString) {
+    public MultipleEntity(Long id, SimpleEnum someString) {
         this.id = id;
         this.someString = someString;
     }
