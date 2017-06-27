@@ -308,6 +308,9 @@ class ObjectBoxProcessorTest {
 
         val entity = environment.schema.entities.single { it.className == className }
 
+        // All-args constructor
+        assertThat(entity.isConstructors).isTrue()
+
         // assert index
         assertThat(entity.indexes.size).isAtLeast(1)
         for (index in entity.indexes) {

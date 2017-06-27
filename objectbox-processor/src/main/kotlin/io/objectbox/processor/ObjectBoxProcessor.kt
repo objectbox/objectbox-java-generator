@@ -191,7 +191,15 @@ open class ObjectBoxProcessor : AbstractProcessor() {
             val property = properties[idx]
             if (property.parsedElement != null) {
                 val parsedElement = property.parsedElement as VariableElement
-                if (param.asType() != parsedElement.asType() || param.simpleName != parsedElement.simpleName) {
+                if (param.simpleName != parsedElement.simpleName) {
+                    return false
+                }
+                if (property.customType != null) {
+                    val converterType = elementUtils.getTypeElement(property.customType).asType()
+                    if (!converterType.equals(param.asType())) {
+                        return false
+                    }
+                } else if (param.asType() != parsedElement.asType()) {
                     return false
                 }
             } else {
