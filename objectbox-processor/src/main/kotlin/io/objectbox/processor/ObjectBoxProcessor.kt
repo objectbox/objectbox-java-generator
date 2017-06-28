@@ -60,6 +60,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         transformationEnabled = "true" == env.options[OPTION_TRANSFORMATION_ENABLED]
 
         messages = Messages(env.messager, debug)
+        messages.info("Starting ObjectBox processor (debug: $debug)")
     }
 
     override fun getSupportedAnnotationTypes(): Set<String> {
@@ -132,7 +133,9 @@ open class ObjectBoxProcessor : AbstractProcessor() {
     }
 
     private fun parseEntity(schema: Schema, relations: Relations, entity: Element) {
-        val entityModel = schema.addEntity(entity.simpleName.toString())
+        val name = entity.simpleName.toString()
+        if (debug) messages.debug("Parsing entity $name...")
+        val entityModel = schema.addEntity(name)
         entityModel.isSkipGeneration = true // processor may not generate duplicate entity source files
         entityModel.isSkipCreationInDb = false
         entityModel.javaPackage = elementUtils.getPackageOf(entity).qualifiedName.toString()
@@ -183,7 +186,9 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         val properties = entityModel.properties
         for (constructor in constructors) {
             val parameters = constructor.parameters
+            if (debug) messages.debug("Checking constructor $constructor...")
             if (parameters.size == properties.size && parametersMatchProperties(parameters, properties)) {
+                if (debug) messages.debug("Valid all-args constructor found")
                 return true
             }
         }
@@ -196,20 +201,29 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         val typeHelper = TypeHelper(typeUtils)
         for ((idx, param) in parameters.withIndex()) {
             val property = properties[idx]
+            val altName = "arg$idx"
             if (property.parsedElement != null) {
                 val parsedElement = property.parsedElement as VariableElement
                 if (param.simpleName != parsedElement.simpleName) {
-                    messages.debug("Constructor param names differ")
-                    return false
+                    if (altName == param.simpleName.toString()) {
+                        if (debug) messages.debug("Constructor param name alternative accepted: " +
+                                "$altName for ${parsedElement.simpleName}")
+                    } else {
+                        if (debug) messages.debug("Constructor param names differ: " +
+                                "${param.simpleName} vs. ${parsedElement.simpleName} ($altName)")
+                        return false
+                    }
                 }
                 if (property.customType != null) {
                     val converterType = elementUtils.getTypeElement(property.customType).asType()
-                    if (!converterType.equals(param.asType())) {
-                        messages.debug("Constructor param types differs (custom class)")
+                    // Note: equality check does not work for TypeMirror
+                    if (!typeUtils.isSameType(converterType, param.asType())) {
+                        messages.debug("Constructor param types differs (custom type): " +
+                                "${param.asType()} vs. $converterType")
                         return false
                     }
                 } else if (param.asType() != parsedElement.asType()) {
-                    messages.debug("Constructor param types differs (custom class)")
+                    messages.debug("Constructor param types differs: ${param.asType()} vs. ${parsedElement.asType()}")
                     return false
                 }
             } else {
@@ -220,6 +234,9 @@ open class ObjectBoxProcessor : AbstractProcessor() {
                     return false
                 }
                 if (param.simpleName.toString() != property.propertyName) {
+                    if (altName == property.propertyName) {
+                        if (debug) messages.debug("Constructor param name alternative accepted: $altName for ${property.propertyName}")
+                    }
                     messages.debug("Constructor param names differs (virtual property)")
                     return false
                 }

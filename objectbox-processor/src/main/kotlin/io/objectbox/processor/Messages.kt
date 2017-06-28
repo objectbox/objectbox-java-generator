@@ -23,6 +23,10 @@ class Messages(val messager: Messager, val debug: Boolean) {
         }
     }
 
+    fun info(message: String) {
+        messager.printMessage(Diagnostic.Kind.NOTE, message)
+    }
+
     fun error(message: String) {
         printCustomError(message, null)
     }
