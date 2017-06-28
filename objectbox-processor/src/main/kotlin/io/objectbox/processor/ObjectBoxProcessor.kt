@@ -31,6 +31,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         val OPTION_DEBUG: String = "objectbox.debug"
         /** Set by ObjectBox plugin */
         val OPTION_TRANSFORMATION_ENABLED: String = "objectbox.transformationEnabled"
+        val OPTION_ALLOW_NUMBERED_CONSTRUCTOR_ARGS: String = "objectbox.allowNumberedConstructorArgs"
     }
 
     // make processed schema accessible for testing
@@ -45,6 +46,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
     private var transformationEnabled: Boolean = false
     private var daoCompatPackage: String? = null
     private var debug: Boolean = false
+    private var allowNumberedConstructorArgs: Boolean = false
 
     @Synchronized override fun init(env: ProcessingEnvironment) {
         super.init(env)
@@ -53,11 +55,13 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         typeUtils = env.typeUtils
         filer = env.filer
 
-        customModelPath = env.options[OPTION_MODEL_PATH]
-        daoCompat = "true" == env.options[OPTION_DAO_COMPAT]
-        debug = "true" == env.options[OPTION_DEBUG]
-        daoCompatPackage = env.options[OPTION_DAO_PACKAGE]
-        transformationEnabled = "true" == env.options[OPTION_TRANSFORMATION_ENABLED]
+        val options = env.options
+        customModelPath = options[OPTION_MODEL_PATH]
+        daoCompat = "true" == options[OPTION_DAO_COMPAT]
+        debug = "true" == options[OPTION_DEBUG]
+        daoCompatPackage = options[OPTION_DAO_PACKAGE]
+        transformationEnabled = "false" != options[OPTION_TRANSFORMATION_ENABLED] // default true
+        allowNumberedConstructorArgs = "false" != options[OPTION_ALLOW_NUMBERED_CONSTRUCTOR_ARGS] // default true
 
         messages = Messages(env.messager, debug)
         messages.info("Starting ObjectBox processor (debug: $debug)")
@@ -76,6 +80,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         options.add(OPTION_DAO_PACKAGE)
         options.add(OPTION_TRANSFORMATION_ENABLED)
         options.add(OPTION_DEBUG)
+        options.add(OPTION_ALLOW_NUMBERED_CONSTRUCTOR_ARGS)
         return options
     }
 
@@ -201,7 +206,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         val typeHelper = TypeHelper(typeUtils)
         for ((idx, param) in parameters.withIndex()) {
             val property = properties[idx]
-            val altName = "arg$idx"
+            val altName = if (allowNumberedConstructorArgs) "arg$idx" else null
             if (property.parsedElement != null) {
                 val parsedElement = property.parsedElement as VariableElement
                 if (param.simpleName != parsedElement.simpleName) {
