@@ -28,6 +28,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         val OPTION_MODEL_PATH: String = "objectbox.modelPath"
         val OPTION_DAO_COMPAT: String = "objectbox.daoCompat"
         val OPTION_DAO_PACKAGE: String = "objectbox.daoPackage"
+        val OPTION_DEBUG: String = "objectbox.debug"
         /** Set by ObjectBox plugin */
         val OPTION_TRANSFORMATION_ENABLED: String = "objectbox.transformationEnabled"
     }
@@ -43,6 +44,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
     private var daoCompat: Boolean = false
     private var transformationEnabled: Boolean = false
     private var daoCompatPackage: String? = null
+    private var debug: Boolean = false
 
     @Synchronized override fun init(env: ProcessingEnvironment) {
         super.init(env)
@@ -50,12 +52,14 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         elementUtils = env.elementUtils
         typeUtils = env.typeUtils
         filer = env.filer
-        messages = Messages(env.messager)
 
         customModelPath = env.options[OPTION_MODEL_PATH]
         daoCompat = "true" == env.options[OPTION_DAO_COMPAT]
+        debug = "true" == env.options[OPTION_DEBUG]
         daoCompatPackage = env.options[OPTION_DAO_PACKAGE]
         transformationEnabled = "true" == env.options[OPTION_TRANSFORMATION_ENABLED]
+
+        messages = Messages(env.messager, debug)
     }
 
     override fun getSupportedAnnotationTypes(): Set<String> {
@@ -70,6 +74,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         options.add(OPTION_DAO_COMPAT)
         options.add(OPTION_DAO_PACKAGE)
         options.add(OPTION_TRANSFORMATION_ENABLED)
+        options.add(OPTION_DEBUG)
         return options
     }
 
@@ -173,6 +178,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
      * given entity model.
      */
     private fun hasAllArgsConstructor(entity: Element, entityModel: io.objectbox.generator.model.Entity): Boolean {
+        if (debug) messages.debug("Checking for all-args constructor for ${entityModel.className}...")
         val constructors = ElementFilter.constructorsIn(entity.enclosedElements)
         val properties = entityModel.properties
         for (constructor in constructors) {
@@ -181,6 +187,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
                 return true
             }
         }
+        if (debug) messages.debug("No all-args constructor found for ${entityModel.className}")
         return false
     }
 
@@ -192,21 +199,28 @@ open class ObjectBoxProcessor : AbstractProcessor() {
             if (property.parsedElement != null) {
                 val parsedElement = property.parsedElement as VariableElement
                 if (param.simpleName != parsedElement.simpleName) {
+                    messages.debug("Constructor param names differ")
                     return false
                 }
                 if (property.customType != null) {
                     val converterType = elementUtils.getTypeElement(property.customType).asType()
                     if (!converterType.equals(param.asType())) {
+                        messages.debug("Constructor param types differs (custom class)")
                         return false
                     }
                 } else if (param.asType() != parsedElement.asType()) {
+                    messages.debug("Constructor param types differs (custom class)")
                     return false
                 }
             } else {
                 // special case: virtual property (to-one target id) that has no matching field
                 val paramPropertyType = typeHelper.getPropertyType(param.asType())
-                if (paramPropertyType != property.propertyType
-                        || param.simpleName.toString() != property.propertyName) {
+                if (paramPropertyType != property.propertyType) {
+                    messages.debug("Constructor param types differs (virtual property)")
+                    return false
+                }
+                if (param.simpleName.toString() != property.propertyName) {
+                    messages.debug("Constructor param names differs (virtual property)")
                     return false
                 }
             }

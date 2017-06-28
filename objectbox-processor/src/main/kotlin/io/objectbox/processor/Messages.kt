@@ -10,12 +10,18 @@ import javax.tools.Diagnostic
 /**
  * Helps raise and keep count of errors during processing.
  */
-class Messages(val messager: Messager) {
+class Messages(val messager: Messager, val debug: Boolean) {
 
     var errorCount: Int = 0
 
     val errorRaised: Boolean
         get() = errorCount > 0
+
+    fun debug(message: String) {
+        if (debug) {
+            println(message) // TODO really println or messager?
+        }
+    }
 
     fun error(message: String) {
         printCustomError(message, null)
