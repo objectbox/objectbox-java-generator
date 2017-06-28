@@ -22,13 +22,17 @@ import javax.tools.JavaFileObject
 
 class ObjectBoxProcessorTest {
 
-    class TestEnvironment(modelFile: String) {
+    class TestEnvironment(modelFile: String, val optionDisableTransform: Boolean = false) {
         val modelFilesPathModule = "src/test/resources/objectbox-models/"
         val modelFilesPathProject = "objectbox-processor/$modelFilesPathModule"
 
         val modelFilePath: String
-        val modelFileProcessorOption: String
-            get() = "-A${ObjectBoxProcessor.OPTION_MODEL_PATH}=$modelFilePath"
+        val modelFileProcessorOption: List<String>
+            get() {
+                val options = mutableListOf("-A${ObjectBoxProcessor.OPTION_MODEL_PATH}=$modelFilePath")
+                if(optionDisableTransform) options+= "-A${ObjectBoxProcessor.OPTION_TRANSFORMATION_ENABLED}=false"
+                return options
+            }
 
         val processor = ObjectBoxProcessorShim()
         val schema: Schema
@@ -486,8 +490,7 @@ class ObjectBoxProcessorTest {
         val parentName = "ToOneParent"
         val childName = "ToOneNoBoxStore"
 
-        val environment = TestEnvironment("not-generated.json")
-
+        val environment = TestEnvironment("not-generated.json", optionDisableTransform = true)
         val compilation = environment.compile(parentName, childName)
         CompilationSubject.assertThat(compilation).failed()
 
