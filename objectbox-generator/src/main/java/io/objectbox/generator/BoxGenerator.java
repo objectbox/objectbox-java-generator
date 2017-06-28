@@ -73,7 +73,7 @@ public class BoxGenerator {
 
     public BoxGenerator(boolean daoCompat) throws IOException {
         System.out.println("ObjectBox Generator");
-        System.out.println("Copyright 2017 Markus Junginger, greenrobot.org / objectbox.io. Licensed under GPL V3.");
+        System.out.println("Copyright 2017 Markus Junginger, objectbox.io. Licensed under GPL V3.");
         System.out.println("This program comes with ABSOLUTELY NO WARRANTY");
 
         this.daoCompat = daoCompat;
