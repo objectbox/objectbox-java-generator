@@ -19,12 +19,6 @@ public class MultipleEntity {
     @Uid(167962951075785953L)
     SimpleEnum someString;
 
-    // Test asserts that an all-args constructor exists
-    public MultipleEntity(Long id, SimpleEnum someString) {
-        this.id = id;
-        this.someString = someString;
-    }
-
     public enum SimpleEnum {DEFAULT}
 
     public static class SimpleEnumConverter implements PropertyConverter<SimpleEnum, String> {

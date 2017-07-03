@@ -312,9 +312,6 @@ class ObjectBoxProcessorTest {
 
         val entity = environment.schema.entities.single { it.className == className }
 
-        // All-args constructor
-        assertThat(entity.isConstructors).isTrue()
-
         // assert index
         assertThat(entity.indexes.size).isAtLeast(1)
         for (index in entity.indexes) {
@@ -343,6 +340,24 @@ class ObjectBoxProcessorTest {
                 else -> fail("Found stray field '${property.propertyName}' in schema.")
             }
         }
+    }
+
+    @Test
+    fun testAllArgsConstructor() {
+        // tests if constructor with param for virtual property (to-one target id) and custom type is recognized
+        // implicitly tests if all-args-constructor check can handle virtual and custom type properties
+        val parentName = "ToOneParent"
+        val childName = "ToOneAllArgs"
+
+        val environment = TestEnvironment("to-one-all-args-temp.json")
+        environment.cleanModelFile()
+
+        val compilation = environment.compile(parentName, childName)
+        CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
+
+        val schema = environment.schema
+        val child = schema.entities.single { it.className == childName }
+        assertThat(child.isConstructors).isTrue()
     }
 
     @Test
@@ -464,24 +479,6 @@ class ObjectBoxProcessorTest {
                 }
             }
         }
-    }
-
-    @Test
-    fun testToOneAllArgsConstructor() {
-        // tests if constructor with param for virtual property is recognized
-        // implicitly tests if all-args-constructor check can handle virtual properties
-        val parentName = "ToOneParent"
-        val childName = "ToOneAllArgs"
-
-        val environment = TestEnvironment("to-one-all-args-temp.json")
-        environment.cleanModelFile()
-
-        val compilation = environment.compile(parentName, childName)
-        CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
-
-        val schema = environment.schema
-        val child = schema.entities.single { it.className == childName }
-        assertThat(child.isConstructors).isTrue()
     }
 
     @Test
