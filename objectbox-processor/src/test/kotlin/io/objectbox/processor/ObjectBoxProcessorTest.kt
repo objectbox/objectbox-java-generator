@@ -30,6 +30,7 @@ class ObjectBoxProcessorTest {
         val modelFileProcessorOption: List<String>
             get() {
                 val options = mutableListOf("-A${ObjectBoxProcessor.OPTION_MODEL_PATH}=$modelFilePath")
+                options += "-A${ObjectBoxProcessor.OPTION_DEBUG}=true"
                 if(optionDisableTransform) options+= "-A${ObjectBoxProcessor.OPTION_TRANSFORMATION_ENABLED}=false"
                 return options
             }
