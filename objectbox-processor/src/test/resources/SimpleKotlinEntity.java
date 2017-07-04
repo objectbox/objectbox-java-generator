@@ -5,7 +5,7 @@ import io.objectbox.annotation.Id;
 import org.jetbrains.annotations.Nullable;
 
 //
-// Copy of decompiled byte-code of a Kotlin data class
+// Copy of decompiled byte-code of a Kotlin data class, modified to remove parameter names
 //
 
 @Entity
@@ -42,11 +42,11 @@ public final class SimpleKotlinEntity {
         return this.simpleLong;
     }
 
-    public SimpleKotlinEntity(long id, @Nullable Short simpleShort, @Nullable Integer simpleInt, @Nullable Long simpleLong) {
-        this.id = id;
-        this.simpleShort = simpleShort;
-        this.simpleInt = simpleInt;
-        this.simpleLong = simpleLong;
+    public SimpleKotlinEntity(long arg0, @Nullable Short arg1, @Nullable Integer arg2, @Nullable Long arg3) {
+        this.id = arg0;
+        this.simpleShort = arg1;
+        this.simpleInt = arg2;
+        this.simpleLong = arg3;
     }
 
     // methods left out as they do not affect us: copy, equals, hashCode, component1..N

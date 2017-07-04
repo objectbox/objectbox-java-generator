@@ -210,6 +210,8 @@ open class ObjectBoxProcessor : AbstractProcessor() {
             if (property.parsedElement != null) {
                 val parsedElement = property.parsedElement as VariableElement
                 if (param.simpleName != parsedElement.simpleName) {
+                    // note: Kotlin generates Java 6 bytecode and may not generate parameter names for any methods.
+                    // Java 6 bytecode parameters are named arg0 to argn.
                     if (altName == param.simpleName.toString()) {
                         if (debug) messages.debug("Constructor param name alternative accepted: " +
                                 "$altName for ${parsedElement.simpleName}")
