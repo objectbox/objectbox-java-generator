@@ -1,10 +1,7 @@
 package io.objectbox.gradle.transform
 
-import javassist.bytecode.AnnotationsAttribute
 import javassist.bytecode.ClassFile
 import javassist.bytecode.FieldInfo
-import javassist.bytecode.SignatureAttribute
-import javassist.bytecode.annotation.Annotation
 import java.io.BufferedInputStream
 import java.io.DataInputStream
 import java.io.File
@@ -21,7 +18,7 @@ class ClassProber(val debug: Boolean = false) {
                 if (ClassConst.cursorClass == classFile.superclass) {
                     return ProbedClass(file = file, name = name, javaPackage = javaPackage, isCursor = true)
                 } else {
-                    var annotation = getEntityAnnotation(classFile)
+                    var annotation = classFile.exGetAnnotation(ClassConst.entityAnnotationName)
                     if (annotation != null) {
                         @Suppress("UNCHECKED_CAST")
                         val fields = classFile.fields as List<FieldInfo>
@@ -49,16 +46,6 @@ class ClassProber(val debug: Boolean = false) {
         }.map {
             it.exGetSingleGenericTypeArgumentOrNull()?.name
         }.filterNotNull()
-    }
-
-    private fun getEntityAnnotation(classFile: ClassFile): Annotation? {
-        var annotationsAttribute = classFile.getAttribute(AnnotationsAttribute.visibleTag) as AnnotationsAttribute?
-        var annotation = annotationsAttribute?.getAnnotation(ClassConst.entityAnnotationName)
-        if (annotation == null) {
-            annotationsAttribute = classFile.getAttribute(AnnotationsAttribute.invisibleTag) as AnnotationsAttribute?
-            annotation = annotationsAttribute?.getAnnotation(ClassConst.entityAnnotationName)
-        }
-        return annotation
     }
 
     private fun hasClassRef(classFile: ClassFile, className: String, classDescriptorName: String): Boolean {
