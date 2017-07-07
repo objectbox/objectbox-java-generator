@@ -1,5 +1,7 @@
 package io.objectbox.gradle.transform
 
+import javassist.Modifier
+import javassist.bytecode.AccessFlag
 import javassist.bytecode.FieldInfo
 import javassist.bytecode.SignatureAttribute
 
@@ -11,4 +13,12 @@ fun FieldInfo.exGetGenericTypeArguments(): Array<out SignatureAttribute.TypeArgu
 
 fun FieldInfo.exGetSingleGenericTypeArgumentOrNull(): SignatureAttribute.ClassType? {
     return exGetGenericTypeArguments()?.singleOrNull()?.type as? SignatureAttribute.ClassType
+}
+
+fun FieldInfo.exGetModifiers(): Int {
+    return AccessFlag.toModifier(accessFlags)
+}
+
+fun FieldInfo.exIsTransient(): Boolean {
+    return Modifier.isTransient(exGetModifiers())
 }

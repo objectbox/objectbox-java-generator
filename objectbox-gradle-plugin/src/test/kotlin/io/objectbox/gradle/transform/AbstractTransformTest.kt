@@ -7,6 +7,7 @@ import io.objectbox.relation.RelationInfo
 import io.objectbox.relation.ToMany
 import io.objectbox.relation.ToOne
 import org.junit.Assert.assertTrue
+import org.junit.Rule
 import org.junit.Test
 import java.io.File
 import kotlin.reflect.KClass
@@ -92,6 +93,19 @@ object EntityToManyListLateInit_ : EntityInfo<EntityToOneLateInit> {
     val entityEmpty = RelationInfo<EntityEmpty>(null, null, null)
 }
 
+@Entity
+class EntityTransientList {
+    @Transient
+    lateinit var transientList1: List<EntityEmpty>
+
+//    @io.objectbox.annotation.Transient
+//    lateinit var transientList2: List<EntityEmpty>
+//
+//    @Rule
+//    val dummyWithAlienAnnotation: Boolean = false
+}
+
+object EntityTransientList_ : EntityInfo<EntityToOneLateInit>
 
 class TestCursor : Cursor<EntityBoxStoreField>() {
     private fun attachEntity(@Suppress("UNUSED_PARAMETER") entity: EntityBoxStoreField) {}

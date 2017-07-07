@@ -92,6 +92,15 @@ class ClassTransformerTest : AbstractTransformTest() {
     }
 
     @Test
+    fun testTransformEntity_transientList() {
+        val classes = listOf(EntityTransientList::class, EntityTransientList_::class, EntityEmpty::class)
+        val (stats) = testTransformOrCopy(classes, 0, 3)
+        assertEquals(0, stats.boxStoreFieldsAdded)
+        assertEquals(0, stats.toOnesFound)
+        assertEquals(0, stats.toManyFound)
+    }
+
+    @Test
     fun testTransformCursor() {
         val classes = listOf(TestCursor::class, EntityBoxStoreField::class)
         testTransformOrCopy(classes, 2, 0)

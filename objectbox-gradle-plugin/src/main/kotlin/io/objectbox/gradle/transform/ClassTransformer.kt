@@ -123,7 +123,8 @@ class ClassTransformer(val debug: Boolean = false) {
         ctClass.declaredFields.filter { it.fieldInfo.descriptor == fieldTypeDescriptor }.forEach { field ->
             val targetClassType = field.fieldInfo.exGetSingleGenericTypeArgumentOrNull()
             if (ClassConst.listDescriptor == fieldTypeDescriptor) {
-                if (targetClassType == null || !context.entityTypes.contains(targetClassType.name)) {
+                if (targetClassType == null || !context.entityTypes.contains(targetClassType.name)
+                        || Modifier.isTransient(field.modifiers)) {
                     return@forEach
                 }
             }

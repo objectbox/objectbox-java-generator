@@ -44,7 +44,9 @@ class ClassProber(val debug: Boolean = false) {
     }
 
     private fun extractAllListTypes(fields: List<FieldInfo>): List<String> {
-        return fields.filter { it.descriptor == ClassConst.listDescriptor }.map {
+        return fields.filter {
+            it.descriptor == ClassConst.listDescriptor && !it.exIsTransient()
+        }.map {
             it.exGetSingleGenericTypeArgumentOrNull()?.name
         }.filterNotNull()
     }
