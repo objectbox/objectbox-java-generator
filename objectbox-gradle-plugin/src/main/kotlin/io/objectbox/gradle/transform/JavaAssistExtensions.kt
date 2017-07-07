@@ -26,6 +26,16 @@ fun FieldInfo.exIsTransient(): Boolean {
     return Modifier.isTransient(exGetModifiers())
 }
 
+fun FieldInfo.exGetAnnotation(name: String): Annotation? {
+    var annotationsAttribute = getAttribute(AnnotationsAttribute.visibleTag) as AnnotationsAttribute?
+    var annotation = annotationsAttribute?.getAnnotation(name)
+    if (annotation == null) {
+        annotationsAttribute = getAttribute(AnnotationsAttribute.invisibleTag) as AnnotationsAttribute?
+        annotation = annotationsAttribute?.getAnnotation(name)
+    }
+    return annotation
+}
+
 fun ClassFile.exGetAnnotation(name: String): Annotation? {
     var annotationsAttribute = getAttribute(AnnotationsAttribute.visibleTag) as AnnotationsAttribute?
     var annotation = annotationsAttribute?.getAnnotation(name)

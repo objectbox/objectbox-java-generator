@@ -124,7 +124,8 @@ class ClassTransformer(val debug: Boolean = false) {
             val targetClassType = field.fieldInfo.exGetSingleGenericTypeArgumentOrNull()
             if (ClassConst.listDescriptor == fieldTypeDescriptor) {
                 if (targetClassType == null || !context.entityTypes.contains(targetClassType.name)
-                        || Modifier.isTransient(field.modifiers)) {
+                        || Modifier.isTransient(field.modifiers)
+                        || field.fieldInfo.exGetAnnotation(ClassConst.transientAnnotationName) != null) {
                     return@forEach
                 }
             }

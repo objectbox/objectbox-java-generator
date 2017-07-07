@@ -98,14 +98,19 @@ class EntityTransientList {
     @Transient
     lateinit var transientList1: List<EntityEmpty>
 
-//    @io.objectbox.annotation.Transient
-//    lateinit var transientList2: List<EntityEmpty>
-//
-//    @Rule
-//    val dummyWithAlienAnnotation: Boolean = false
+    @io.objectbox.annotation.Transient
+    lateinit var transientList2: List<EntityEmpty>
+
+    lateinit var actualRelation: List<EntityEmpty>
+
+    @Rule
+    val dummyWithAlienAnnotation: Boolean = false
 }
 
-object EntityTransientList_ : EntityInfo<EntityToOneLateInit>
+object EntityTransientList_ : EntityInfo<EntityToOneLateInit> {
+    @JvmField
+    val actualRelation = RelationInfo<EntityEmpty>(null, null, null)
+}
 
 class TestCursor : Cursor<EntityBoxStoreField>() {
     private fun attachEntity(@Suppress("UNUSED_PARAMETER") entity: EntityBoxStoreField) {}

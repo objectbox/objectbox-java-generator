@@ -94,10 +94,11 @@ class ClassTransformerTest : AbstractTransformTest() {
     @Test
     fun testTransformEntity_transientList() {
         val classes = listOf(EntityTransientList::class, EntityTransientList_::class, EntityEmpty::class)
-        val (stats) = testTransformOrCopy(classes, 0, 3)
-        assertEquals(0, stats.boxStoreFieldsAdded)
+        val (stats) = testTransformOrCopy(classes, 1, 2)
+        assertEquals(1, stats.boxStoreFieldsAdded)
         assertEquals(0, stats.toOnesFound)
-        assertEquals(0, stats.toManyFound)
+        assertEquals(1, stats.toManyFound)
+        assertEquals(1, stats.toManyInitializerAdded)
     }
 
     @Test
