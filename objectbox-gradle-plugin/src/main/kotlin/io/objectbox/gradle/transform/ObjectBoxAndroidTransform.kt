@@ -62,7 +62,7 @@ class ObjectBoxAndroidTransform(val project: Project) : Transform() {
         info.inputs.flatMap { it.directoryInputs }.forEach { directoryInput ->
             // TODO incremental: directoryInput.changedFiles
 
-            allClassFiles.addAll(directoryInput.file.walk().filter { it.isFile })
+            allClassFiles.addAll(directoryInput.file.walk().filter { it.isFile && it.name.endsWith(".class") })
         }
 
         val probedClasses = allClassFiles.map { classProber.probeClass(it) }.filterNotNull()
