@@ -269,12 +269,15 @@ open class ObjectBoxProcessor : AbstractProcessor() {
 
         val modelFolder = modelFile.parentFile
         if (!modelFolder.isDirectory) {
-            if (useDefaultPath && !modelFolder.mkdirs()) {
-                messages.error("Could not create default model folder at '${modelFolder.absolutePath}'. " +
-                        "Add absolute path to model file with processor option '$OPTION_MODEL_PATH'.")
-                return false
+            if (useDefaultPath) {
+                if(!modelFolder.mkdirs()) {
+                    messages.error("Could not create default model folder at '${modelFolder.absolutePath}'. " +
+                            "Add absolute path to model file with processor option '$OPTION_MODEL_PATH'.")
+                    return false
+                }
             } else {
-                messages.error("Model folder does not exist at '${modelFolder.absolutePath}'.")
+                messages.error("The model folder does not exist at '${modelFolder.absolutePath}'" +
+                        " (based on the option $OPTION_MODEL_PATH='$customModelPath').")
                 return false
             }
         }
