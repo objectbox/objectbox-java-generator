@@ -33,7 +33,7 @@ javadoc {
     title = "ObjectBox Generator ${version} API"
     // Unfinished APIs:
     excludes = ['org/greenrobot/daogenerator/Query*']
-    options.bottom = 'Available under the GPLv3 - <i>Copyright &#169; 2017 <a href="http://greenrobot.org/">greenrobot.org</a>. All Rights Reserved.</i>'
+    options.bottom = /*'Available under the GPLv3 - */'<i>Copyright &#169; 2017 <a href="http://objectbox.io/">ObjectBox Ltd</a>. All Rights Reserved.</i>'
     doLast {
         copy {
             from '../javadoc-style/'
