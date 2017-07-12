@@ -19,42 +19,47 @@ class Messages(val messager: Messager, val debug: Boolean) {
 
     fun debug(message: String) {
         if (debug) {
-            println(message) // TODO really println or messager?
+            printMessage(Diagnostic.Kind.NOTE, message)
         }
     }
 
     fun info(message: String) {
-        messager.printMessage(Diagnostic.Kind.NOTE, message)
+        printMessage(Diagnostic.Kind.NOTE, message)
     }
 
     fun error(message: String) {
-        printCustomError(message, null)
+        printAndTrackError(message, null)
     }
 
     fun error(message: String, element: Element) {
-        printCustomError(message, element)
+        printAndTrackError(message, element)
     }
 
     fun error(message: String, field: VariableElement) {
         val enclosingElement = field.enclosingElement as TypeElement
         val fieldName = field.simpleName
-        printCustomError(message + " (${enclosingElement.qualifiedName}.$fieldName)", field)
+        printAndTrackError(message + " (${enclosingElement.qualifiedName}.$fieldName)", field)
     }
 
     fun error(message: String, elementHolder: HasParsedElement? = null) {
         val element: Element? = if (elementHolder?.parsedElement is Element) {
             elementHolder.parsedElement as Element
         } else null
-        printCustomError(message, element)
+        printAndTrackError(message, element)
     }
 
-    private fun printCustomError(message: String, element: Element? = null) {
+    private fun printAndTrackError(message: String, element: Element? = null) {
         errorCount++
-        if (element != null) {
-            messager.printMessage(Diagnostic.Kind.ERROR, message, element)
-        } else {
-            messager.printMessage(Diagnostic.Kind.ERROR, "ObjectBox: " + message)
+        printMessage(Diagnostic.Kind.ERROR, message, element)
+    }
+
+    private fun printMessage(kind: Diagnostic.Kind, message: String, element: Element? = null) {
+        val prefixedMessage = "[ObjectBox] $message"
+        if (debug) {
+            // This is only visible in tests:
+            println(prefixedMessage)
         }
+        messager.printMessage(kind, prefixedMessage, element)
     }
 
 }
