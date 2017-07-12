@@ -1,6 +1,6 @@
 <#--
 
-Copyright (C) 2011-2015 Markus Junginger, greenrobot (http://greenrobot.de)
+Copyright (C) 2016-2017 ObjectBox Ltd.
                                                                            
 This file is part of greenDAO Generator.                                   
                                                                            

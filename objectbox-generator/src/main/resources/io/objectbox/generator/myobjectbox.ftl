@@ -1,6 +1,6 @@
 <#--
 
-Copyright (C) 2017 Markus Junginger, greenrobot (http://greenrobot.org)
+Copyright (C) 2016-2017 ObjectBox Ltd.
 
 This file is part of ObjectBox Generator.
 
