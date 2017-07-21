@@ -143,7 +143,13 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
             throw IllegalStateException("May be called only once")
         }
         try {
-            val entities = parsedEntities.map { syncEntity(it) }.sortedBy { it.id.id }
+            val entities = parsedEntities.map {
+                try {
+                    syncEntity(it)
+                } catch (e: Exception) {
+                    throw IdSyncException("Could not sync entity ${it.name}", e)
+                }
+            }.sortedBy { it.id.id }
             updateRetiredRefIds(entities)
             val model = IdSyncModel(
                     version = 1,
@@ -405,12 +411,12 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
             if (filtered.isEmpty()) {
                 throw IdSyncException("In entity ${entity.name}, no property with UID $uid found")
             }
-            check(filtered.size == 1)
+            check(filtered.size == 1, {"property name: $name, UID: $uid"})
             return filtered.first()
         } else {
             val nameLowerCase = name.toLowerCase()
             val filtered = entity.properties.filter { it.name.toLowerCase() == nameLowerCase }
-            check(filtered.size <= 1)
+            check(filtered.size <= 1,  {"size: ${filtered.size} property name: $name, UID: $uid"})
             return if (filtered.isNotEmpty()) filtered.first() else null
         }
     }
