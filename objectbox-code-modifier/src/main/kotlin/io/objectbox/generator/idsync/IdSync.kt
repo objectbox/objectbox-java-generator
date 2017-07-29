@@ -16,6 +16,7 @@ import com.squareup.moshi.FromJson
 import com.squareup.moshi.ToJson
 import io.objectbox.generator.IdUid
 import io.objectbox.generator.model.Schema
+import io.objectbox.generator.model.ToManyStandalone
 
 class IdSync(val jsonFile: File = File("objectmodel.json")) {
     private val noteSeeDocs = "Please read the docs how to resolve this."
@@ -75,14 +76,13 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
         try {
             val idSyncModel = justRead()
             if (idSyncModel != null) {
-                if (idSyncModel.modelVersion != 2) {
-                    throw IdSyncException("This version requires model version 2, but found " +
-                            idSyncModel.modelVersion +
-                            ". If you just updated from 0.9.6 that is expected. $noteSeeDocs")
+                if (idSyncModel.modelVersion < 2) {
+                    throw IdSyncException("This version requires model version 2 or 3, but found ${idSyncModel.modelVersion}")
                 }
                 validateIds(idSyncModel)
                 modelRead = idSyncModel
                 lastEntityId = idSyncModel.lastEntityId
+                lastRelationId = idSyncModel.lastRelationId ?: IdUid() // version 2 did not have this, provide non-null
                 lastIndexId = idSyncModel.lastIndexId
                 lastSequenceId = idSyncModel.lastSequenceId
                 retiredEntityUids += idSyncModel.retiredEntityUids ?: emptyList()
@@ -212,6 +212,7 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
         // update schema with new IDs
         schema.lastEntityId = lastEntityId
         schema.lastIndexId = lastIndexId
+        schema.lastRelationId = lastRelationId
     }
 
     private fun syncEntity(schemaEntity: io.objectbox.generator.model.Entity): Entity {
@@ -228,15 +229,8 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
         } else {
             existingEntity.lastPropertyId.clone() // use existing id + uid
         }
-        val properties = ArrayList<Property>()
-        for (parsedProperty in schemaEntity.properties) {
-            val property = syncProperty(existingEntity, schemaEntity, parsedProperty, lastPropertyId)
-            if (property.modelId > lastPropertyId.id) {
-                lastPropertyId.set(property.id)
-            }
-            properties.add(property)
-        }
-        properties.sortBy { it.id.id }
+        val properties = syncProperties(schemaEntity, existingEntity, lastPropertyId)
+        val relations = syncRelations(schemaEntity, existingEntity)
 
         val sourceId = if (existingEntity?.id == null || shouldGenerateNewIdUid) {
             lastEntityId.incId(uidHelper.create()) // create new id + uid
@@ -247,6 +241,7 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
                 name = entityName,
                 id = sourceId.clone(),
                 properties = properties,
+                relations = relations,
                 lastPropertyId = lastPropertyId
         )
 
@@ -292,25 +287,40 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
                 name = entityName,
                 id = sourceId.clone(),
                 properties = properties,
+                relations = emptyList(), // Unsupported for legacy plugin
                 lastPropertyId = lastPropertyId
         )
         entitiesByParsedEntity[parsedEntity] = entity
         return entity
     }
 
+    private fun syncProperties(schemaEntity: io.objectbox.generator.model.Entity, existingEntity: Entity?,
+                               lastPropertyId: IdUid): ArrayList<Property> {
+        val properties = ArrayList<Property>()
+        for (parsedProperty in schemaEntity.properties) {
+            val property = syncProperty(existingEntity, schemaEntity, parsedProperty, lastPropertyId)
+            if (property.modelId > lastPropertyId.id) {
+                lastPropertyId.set(property.id)
+            }
+            properties.add(property)
+        }
+        properties.sortBy { it.id.id }
+        return properties
+    }
+
     private fun syncProperty(existingEntity: Entity?, schemaEntity: io.objectbox.generator.model.Entity,
                              schemaProperty: io.objectbox.generator.model.Property, lastPropertyId: IdUid): Property {
         val name = schemaProperty.dbName ?: schemaProperty.propertyName
-        val propertyRefId = schemaProperty.modelId?.uid
-        val shouldGenerateNewIdUid = schemaEntity.modelUid == -1L || propertyRefId == -1L
+        val propertyUid = schemaProperty.modelId?.uid
+        val shouldGenerateNewIdUid = schemaEntity.modelUid == -1L || propertyUid == -1L
         var existingProperty: Property? = null
         if (existingEntity != null) {
-            if (propertyRefId != null && !shouldGenerateNewIdUid && !parsedRefIds.add(propertyRefId)) {
-                throw IdSyncException("Non-unique refId $propertyRefId in parsed entity " +
+            if (propertyUid != null && !shouldGenerateNewIdUid && !parsedRefIds.add(propertyUid)) {
+                throw IdSyncException("Non-unique UID $propertyUid in parsed entity " +
                         "${schemaEntity.javaPackage}.${schemaEntity.className} " +
                         "for property ${schemaProperty.propertyName}")
             }
-            existingProperty = findProperty(existingEntity, name, propertyRefId)
+            existingProperty = findProperty(existingEntity, name, propertyUid)
         }
 
         var sourceIndexId: IdUid? = null
@@ -338,12 +348,56 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
         // update schema property
         schemaProperty.modelId = property.id
         schemaProperty.modelIndexId = property.indexId
-        
+
         val collision = propertiesBySchemaProperty.put(schemaProperty, property)
         if (collision != null) {
             throw IllegalStateException("Property collision: $schemaProperty vs. $collision")
         }
         return property
+    }
+
+    private fun syncRelations(schemaEntity: io.objectbox.generator.model.Entity, existingEntity: Entity?)
+            : ArrayList<Relation> {
+        val relations = ArrayList<Relation>()
+        for (schemaRelation in schemaEntity.toManyRelations.filterIsInstance<ToManyStandalone>()) {
+            val relation = syncRelation(existingEntity, schemaEntity, schemaRelation)
+            if (relation.modelId > lastRelationId.id) {
+                lastRelationId.set(relation.id)
+            }
+            relations.add(relation)
+        }
+        relations.sortBy { it.id.id }
+        return relations
+    }
+
+    private fun syncRelation(existingEntity: Entity?, schemaEntity: io.objectbox.generator.model.Entity,
+                             schemaRelation: ToManyStandalone): Relation {
+        val name = schemaRelation.dbName ?: schemaRelation.name
+        val relationUid = schemaRelation.modelId?.uid
+        val shouldGenerateNewIdUid = schemaEntity.modelUid == -1L || relationUid == -1L
+        var existingRelation: Relation? = null
+        if (existingEntity != null) {
+            if (relationUid != null && !shouldGenerateNewIdUid && !parsedRefIds.add(relationUid)) {
+                throw IdSyncException("Non-unique UID $relationUid in parsed entity " +
+                        "${schemaEntity.javaPackage}.${schemaEntity.className} " +
+                        "for relation ${schemaRelation.name}")
+            }
+            existingRelation = findRelation(existingEntity, name, relationUid)
+        }
+
+        val sourceId = if (existingRelation?.id == null || shouldGenerateNewIdUid) {
+            lastRelationId.incId(uidHelper.create()) // create a new id + uid
+        } else {
+            existingRelation.id // use existing id + uid
+        }
+        val relation = Relation(
+                name = name,
+                id = sourceId.clone()
+        )
+
+        // update schema property
+        schemaRelation.modelId = relation.id
+        return relation
     }
 
     private fun syncProperty(existingEntity: Entity?, parsedEntity: ParsedEntity, parsedProperty: ParsedProperty,
@@ -391,7 +445,7 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
      * Just reads the model without changing any state of this object. Nice for testing also.
      */
     fun justRead(file: File = jsonFile): IdSyncModel? {
-        if(!jsonFile.exists() || jsonFile.length() == 0L) { // Temp files have a 0 bytes length
+        if (!jsonFile.exists() || jsonFile.length() == 0L) { // Temp files have a 0 bytes length
             return null
         }
         var source: Source? = null
@@ -421,12 +475,29 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
             if (filtered.isEmpty()) {
                 throw IdSyncException("In entity ${entity.name}, no property with UID $uid found")
             }
-            check(filtered.size == 1, {"property name: $name, UID: $uid"})
+            check(filtered.size == 1, { "property name: $name, UID: $uid" })
             return filtered.first()
         } else {
             val nameLowerCase = name.toLowerCase()
             val filtered = entity.properties.filter { it.name.toLowerCase() == nameLowerCase }
-            check(filtered.size <= 1,  {"size: ${filtered.size} property name: $name, UID: $uid"})
+            check(filtered.size <= 1, { "size: ${filtered.size} property name: $name, UID: $uid" })
+            return if (filtered.isNotEmpty()) filtered.first() else null
+        }
+    }
+
+    fun findRelation(entity: Entity, name: String, uid: Long?): Relation? {
+        if(entity.relations == null) return null
+        if (uid != null && uid != -1L) {
+            val filtered = entity.relations.filter { it.uid == uid }
+            if (filtered.isEmpty()) {
+                throw IdSyncException("In entity ${entity.name}, no relation with UID $uid found")
+            }
+            check(filtered.size == 1, { "relation name: $name, UID: $uid" })
+            return filtered.first()
+        } else {
+            val nameLowerCase = name.toLowerCase()
+            val filtered = entity.relations.filter { it.name.toLowerCase() == nameLowerCase }
+            check(filtered.size <= 1, { "size: ${filtered.size} relation name: $name, UID: $uid" })
             return if (filtered.isNotEmpty()) filtered.first() else null
         }
     }

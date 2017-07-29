@@ -49,6 +49,7 @@ public class Schema {
     private final String prefix;
     private IdUid lastEntityId;
     private IdUid lastIndexId;
+    private IdUid lastRelationId;
 
     public Schema(String name, int version, String defaultJavaPackage) {
         this.name = name;
@@ -204,6 +205,14 @@ public class Schema {
 
     public void setLastIndexId(IdUid lastIndexId) {
         this.lastIndexId = lastIndexId;
+    }
+
+    public IdUid getLastRelationId() {
+        return lastRelationId;
+    }
+
+    public void setLastRelationId(IdUid lastRelationId) {
+        this.lastRelationId = lastRelationId;
     }
 
     void init2ndPass() {

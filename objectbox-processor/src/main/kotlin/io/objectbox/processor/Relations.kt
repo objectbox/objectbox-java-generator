@@ -237,8 +237,6 @@ class Relations(private val messages: Messages) {
             toManyModel = entity.addToMany(targetEntity, targetToOne.targetIdProperty, toMany.propertyName)
         } else {
             val standalone = entity.addToManyStandalone(targetEntity, toMany.propertyName)
-            // FIXME: dummy
-            standalone.modelId = IdUid()
             toManyModel = standalone
         }
 

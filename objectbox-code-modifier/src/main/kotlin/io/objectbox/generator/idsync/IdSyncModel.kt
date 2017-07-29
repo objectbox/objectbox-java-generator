@@ -9,7 +9,7 @@ data class IdSyncModel(
         val _note3: String = "If you have VCS merge conflicts, you must resolve them according to ObjectBox docs.",
 
         val version: Long,
-        val modelVersion: Int = 2,
+        val modelVersion: Int = 3,
         val lastEntityId: IdUid,
         val lastIndexId: IdUid,
         val lastRelationId: IdUid,
@@ -51,7 +51,8 @@ data class Entity(
         val name: String,
         override val id: IdUid = IdUid(),
         val lastPropertyId: IdUid,
-        val properties: List<Property>
+        val properties: List<Property>,
+        val relations: List<Relation>
 ) : HasIdUid
 
 
@@ -59,5 +60,10 @@ data class Property(
         override val id: IdUid = IdUid(),
         val name: String,
         val indexId: IdUid?
+) : HasIdUid
+
+data class Relation(
+        override val id: IdUid = IdUid(),
+        val name: String
 ) : HasIdUid
 

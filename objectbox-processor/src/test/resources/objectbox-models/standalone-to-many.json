@@ -12,6 +12,12 @@
           "id": "1:1826906556673625342",
           "name": "id"
         }
+      ],
+      "relations": [
+        {
+          "id": "1:5028542044911165101",
+          "name": "children"
+        }
       ]
     },
     {
@@ -23,12 +29,13 @@
           "id": "1:3998626054824627444",
           "name": "id"
         }
-      ]
+      ],
+      "relations": []
     }
   ],
   "lastEntityId": "2:6121770550573222603",
   "lastIndexId": "1:3805303550911331096",
-  "lastRelationId": "0:0",
+  "lastRelationId": "1:5028542044911165101",
   "lastSequenceId": "0:0",
   "modelVersion": 2,
   "retiredEntityUids": [],

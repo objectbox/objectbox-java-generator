@@ -7,6 +7,9 @@ public class ToManyStandalone extends ToManyBase {
 
     private IdUid modelId;
 
+    // TODO actually parse and set this
+    private String dbName;
+
     public ToManyStandalone(Schema schema, Entity sourceEntity, Entity targetEntity) {
         super(schema, sourceEntity, targetEntity);
     }
@@ -17,6 +20,14 @@ public class ToManyStandalone extends ToManyBase {
 
     public void setModelId(IdUid modelId) {
         this.modelId = modelId;
+    }
+
+    public String getDbName() {
+        return dbName;
+    }
+
+    public void setDbName(String dbName) {
+        this.dbName = dbName;
     }
 
     void init2ndPass() {
