@@ -25,7 +25,6 @@ import java.util.List;
 public class ToMany extends ToManyBase {
     private Property[] sourceProperties;
     private final Property[] targetProperties;
-    private Object parsedElement;
     private ToOne backlinkToOne;
 
     public ToMany(Schema schema, Entity sourceEntity, Property[] sourceProperties, Entity targetEntity,
@@ -49,16 +48,6 @@ public class ToMany extends ToManyBase {
 
     public ToOne getBacklinkToOne() {
         return backlinkToOne;
-    }
-
-    @Override
-    public Object getParsedElement() {
-        return parsedElement;
-    }
-
-    @Override
-    public void setParsedElement(Object parsedElement) {
-        this.parsedElement = parsedElement;
     }
 
     void init2ndPass() {

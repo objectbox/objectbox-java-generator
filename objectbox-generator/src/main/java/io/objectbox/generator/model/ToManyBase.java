@@ -30,6 +30,7 @@ public abstract class ToManyBase implements HasParsedElement {
     protected final Entity targetEntity;
     private final PropertyOrderList propertyOrderList;
     private boolean fieldAccessible;
+    private Object parsedElement;
 
     public ToManyBase(Schema schema, Entity sourceEntity, Entity targetEntity) {
         this.schema = schema;
@@ -102,6 +103,16 @@ public abstract class ToManyBase implements HasParsedElement {
         } else {
             return propertyOrderList.getOrderSpec();
         }
+    }
+
+    @Override
+    public Object getParsedElement() {
+        return parsedElement;
+    }
+
+    @Override
+    public void setParsedElement(Object parsedElement) {
+        this.parsedElement = parsedElement;
     }
 
     void init2ndPass() {
