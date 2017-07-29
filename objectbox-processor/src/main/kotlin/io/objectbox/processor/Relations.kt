@@ -26,7 +26,8 @@ data class ToOneRelation(
 data class ToManyRelation(
         val propertyName: String,
         val targetEntityName: String,
-        var targetIdName: String? = null,
+        val isBacklink: Boolean,
+        var backlinkTo: String? = null,
         val fieldAccessible: Boolean
 )
 
@@ -53,7 +54,8 @@ class Relations(private val messages: Messages) {
         val toMany = ToManyRelation(
                 propertyName = field.simpleName.toString(),
                 targetEntityName = targetEntityName.toString(),
-                targetIdName = backlinkAnnotation.to.nullIfBlank(),
+                isBacklink = backlinkAnnotation != null,
+                backlinkTo = backlinkAnnotation?.to?.nullIfBlank(),
                 fieldAccessible = !field.modifiers.contains(Modifier.PRIVATE)
         )
 
@@ -192,18 +194,22 @@ class Relations(private val messages: Messages) {
         return true
     }
 
-    private fun resolveToMany(schema: Schema, entity: Entity, toMany: ToManyRelation):
-            Boolean {
+    private fun resolveToMany(schema: Schema, entity: Entity, toMany: ToManyRelation): Boolean {
         val targetEntity = findTargetEntityOrRaiseError(schema, toMany.targetEntityName, entity) ?: return false
 
-        val targetToOne = if (toMany.targetIdName.isNullOrEmpty()) {
+        if (!toMany.isBacklink) {
+            throw RuntimeException("TODO: support standalone to-many")
+        }
+
+        val targetToOne = if (toMany.backlinkTo.isNullOrEmpty()) {
             // no explicit target name: just ensure a single to-one relation, then use that
             val targetToOne = targetEntity.toOneRelations.filter {
                 it.targetEntity == entity
             }
             if (targetToOne.isEmpty()) {
-                messages.error("A to-one relation must be added to '${targetEntity.className}' to create the to-many " +
-                        "relation '${toMany.propertyName}' in '${entity.className}'.", entity)
+                messages.error("Illegal @Backlink: no (to-one) relation found in '${targetEntity.className}'. " +
+                        "Required by backlink to-many relation '${toMany.propertyName}' in '${entity.className}'.",
+                        entity)
                 return false
             } else if (targetToOne.size > 1) {
                 messages.error("Set name of one to-one relation of '${targetEntity.className}' as @Backlink 'to' " +
@@ -215,10 +221,10 @@ class Relations(private val messages: Messages) {
         } else {
             // explicit target name: find the related to-one relation
             val targetToOne = targetEntity.toOneRelations.singleOrNull {
-                it.targetEntity == entity && it.targetIdProperty.propertyName == toMany.targetIdName
+                it.targetEntity == entity && it.targetIdProperty.propertyName == toMany.backlinkTo
             }
             if (targetToOne == null) {
-                messages.error("Could not find target property '${toMany.targetIdName}' in " +
+                messages.error("Could not find target property '${toMany.backlinkTo}' in " +
                         "'${targetEntity.className}' of @Backlink in '${entity.className}'.", entity)
                 return false
             }
