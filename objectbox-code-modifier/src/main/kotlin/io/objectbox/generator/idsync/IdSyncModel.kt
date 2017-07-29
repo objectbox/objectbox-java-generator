@@ -12,6 +12,7 @@ data class IdSyncModel(
         val modelVersion: Int = 2,
         val lastEntityId: IdUid,
         val lastIndexId: IdUid,
+        val lastRelationId: IdUid,
         // TODO use this once we support sequences
         val lastSequenceId: IdUid,
 
@@ -24,7 +25,10 @@ data class IdSyncModel(
         val retiredPropertyUids: List<Long>?,
 
         /** Previously used UIDs, which are now deleted. Archived to ensure no collisions. */
-        val retiredIndexUids: List<Long>?
+        val retiredIndexUids: List<Long>?,
+
+        /** Previously used UIDs, which are now deleted. Archived to ensure no collisions. */
+        val retiredRelationUids: List<Long>?
 )
 
 interface HasIdUid {

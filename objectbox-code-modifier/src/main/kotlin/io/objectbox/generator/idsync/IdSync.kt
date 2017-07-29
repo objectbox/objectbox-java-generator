@@ -39,12 +39,16 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
     var lastIndexId: IdUid = IdUid()
         private set
 
+    var lastRelationId: IdUid = IdUid()
+        private set
+
     var lastSequenceId: IdUid = IdUid()
         private set
 
     private val retiredEntityUids = ArrayList<Long>()
     private val retiredPropertyUids = ArrayList<Long>()
     private val retiredIndexUids = ArrayList<Long>()
+    private val retiredRelationUids = ArrayList<Long>()
 
     // Use IdentityHashMap here to avoid collisions (e.g. same name)
     private val entitiesByParsedEntity = IdentityHashMap<ParsedEntity, Entity>()
@@ -84,9 +88,11 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
                 retiredEntityUids += idSyncModel.retiredEntityUids ?: emptyList()
                 retiredPropertyUids += idSyncModel.retiredPropertyUids ?: emptyList()
                 retiredIndexUids += idSyncModel.retiredIndexUids ?: emptyList()
+                retiredRelationUids += idSyncModel.retiredRelationUids ?: emptyList()
                 uidHelper.addExistingIds(retiredEntityUids)
                 uidHelper.addExistingIds(retiredPropertyUids)
                 uidHelper.addExistingIds(retiredIndexUids)
+                uidHelper.addExistingIds(retiredRelationUids)
                 idSyncModel.entities.forEach {
                     uidHelper.addExistingId(it.uid)
                     it.properties.forEach { uidHelper.addExistingId(it.uid) }
@@ -156,11 +162,13 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
                     modelVersion = 2,
                     lastEntityId = lastEntityId,
                     lastIndexId = lastIndexId,
+                    lastRelationId = lastRelationId,
                     lastSequenceId = lastSequenceId,
                     entities = entities,
                     retiredEntityUids = retiredEntityUids,
                     retiredPropertyUids = retiredPropertyUids,
-                    retiredIndexUids = retiredIndexUids)
+                    retiredIndexUids = retiredIndexUids,
+                    retiredRelationUids = retiredRelationUids)
             writeModel(model)
             // Paranoia check, that synced model is OK (do this after writing because that's what the user sees)
             validateIds(model)
@@ -185,11 +193,13 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
                     modelVersion = 2,
                     lastEntityId = lastEntityId,
                     lastIndexId = lastIndexId,
+                    lastRelationId = lastRelationId,
                     lastSequenceId = lastSequenceId,
                     entities = entities,
                     retiredEntityUids = retiredEntityUids,
                     retiredPropertyUids = retiredPropertyUids,
-                    retiredIndexUids = retiredIndexUids)
+                    retiredIndexUids = retiredIndexUids,
+                    retiredRelationUids = retiredRelationUids)
             writeModel(model)
             // Paranoia check, that synced model is OK (do this after writing because that's what the user sees)
             validateIds(model)
@@ -456,7 +466,7 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
     private fun writeModel(model: IdSyncModel) {
         val buffer = Buffer()
         val jsonWriter = JsonWriter.of(buffer)
-        jsonWriter.setIndent("  ")
+        jsonWriter.indent = "  "
         modelJsonAdapter.toJson(jsonWriter, model)
         if (jsonFile.exists()) {
             val existingContent = jsonFile.readBytes()
@@ -473,10 +483,8 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
         }
 
         val sink = Okio.sink(jsonFile)
-        try {
+        sink.use { sink ->
             buffer.readAll(sink)
-        } finally {
-            sink.close()
         }
     }
 
