@@ -106,7 +106,7 @@ public class ToMany extends ToManyBase {
                 }
             }
             if (backlinkToOne == null) {
-                throw new IllegalStateException("No one matching backling found for " + this);
+                throw new IllegalStateException("No matching backlink found for " + this);
             }
         }
     }

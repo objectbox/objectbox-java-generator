@@ -143,6 +143,7 @@ class Relations(private val messages: Messages) {
         }
     }
 
+    /** Once all entities are parsed, relations are resolved and checked against their target entities.*/
     fun resolve(schema: Schema): Boolean {
         // resolve to-one relations
         for (entity in schema.entities) {
@@ -169,15 +170,19 @@ class Relations(private val messages: Messages) {
         return true
     }
 
-    private fun resolveToOne(schema: Schema, entity: Entity, toOne: ToOneRelation): Boolean {
+    private fun findTargetEntityOrRaiseError(schema: Schema, targetEntityName: String, sourceEntity: Entity): Entity? {
         val targetEntity = schema.entities.singleOrNull {
-            it.className == toOne.targetEntityName
+            it.className == targetEntityName
         }
         if (targetEntity == null) {
-            messages.error("Relation target class '${toOne.targetEntityName}' " +
-                    "defined in class '${entity.className}' could not be found (is it an @Entity?)", entity)
-            return false
+            messages.error("Relation target class '$targetEntityName' " +
+                    "defined in class '${sourceEntity.className}' could not be found (is it an @Entity?)", sourceEntity)
         }
+        return targetEntity
+    }
+
+    private fun resolveToOne(schema: Schema, entity: Entity, toOne: ToOneRelation): Boolean {
+        val targetEntity = findTargetEntityOrRaiseError(schema, toOne.targetEntityName, entity) ?: return false
 
         val targetIdProperty = entity.findPropertyByName(toOne.targetIdName)
         if (targetIdProperty == null) {
@@ -194,14 +199,7 @@ class Relations(private val messages: Messages) {
 
     private fun resolveToMany(schema: Schema, entity: Entity, toMany: ToManyRelation):
             Boolean {
-        val targetEntity = schema.entities.singleOrNull {
-            it.className == toMany.targetEntityName
-        }
-        if (targetEntity == null) {
-            messages.error("ToMany target class '${toMany.targetEntityName}' " +
-                    "defined in class '${entity.className}' could not be found (is it an @Entity?)", entity)
-            return false
-        }
+        val targetEntity = findTargetEntityOrRaiseError(schema, toMany.targetEntityName, entity) ?: return false
 
         val targetToOne = if (toMany.targetIdName.isNullOrEmpty()) {
             // no explicit target name: just ensure a single to-one relation, then use that
