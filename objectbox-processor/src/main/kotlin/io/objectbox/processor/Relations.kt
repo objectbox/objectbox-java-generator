@@ -35,11 +35,11 @@ data class ToManyRelation(
  */
 class Relations(private val messages: Messages) {
 
-    val toOneByEntity: MutableMap<Entity, MutableList<ToOneRelation>> = mutableMapOf()
-    val toManyByEntity: MutableMap<Entity, MutableList<ToManyRelation>> = mutableMapOf()
+    val toOnesByEntity: MutableMap<Entity, MutableList<ToOneRelation>> = mutableMapOf()
+    val toManysByEntity: MutableMap<Entity, MutableList<ToManyRelation>> = mutableMapOf()
 
     fun hasRelations(entity: Entity) =
-            (toOneByEntity[entity]?.isNotEmpty() ?: false) || (toManyByEntity[entity]?.isNotEmpty() ?: false)
+            (toOnesByEntity[entity]?.isNotEmpty() ?: false) || (toManysByEntity[entity]?.isNotEmpty() ?: false)
 
     fun parseToMany(entityModel: Entity, field: VariableElement) {
         // assuming List<TargetType> or ToMany<TargetType>
@@ -93,25 +93,25 @@ class Relations(private val messages: Messages) {
     }
 
     private fun collectToOne(entity: Entity, toOne: ToOneRelation) {
-        var toOnes = toOneByEntity[entity]
+        var toOnes = toOnesByEntity[entity]
         if (toOnes == null) {
             toOnes = mutableListOf<ToOneRelation>()
-            toOneByEntity.put(entity, toOnes)
+            toOnesByEntity.put(entity, toOnes)
         }
         toOnes.add(toOne)
     }
 
     private fun collectToMany(entity: Entity, toMany: ToManyRelation) {
-        var toManys = toManyByEntity[entity]
+        var toManys = toManysByEntity[entity]
         if (toManys == null) {
             toManys = mutableListOf<ToManyRelation>()
-            toManyByEntity.put(entity, toManys)
+            toManysByEntity.put(entity, toManys)
         }
         toManys.add(toMany)
     }
 
     fun ensureForeignKeys(entity: Entity) {
-        val toOnes = toOneByEntity[entity]
+        val toOnes = toOnesByEntity[entity]
         // only if entity has to-one relations
         if (toOnes != null) {
             for (toOne in toOnes) {
@@ -145,25 +145,20 @@ class Relations(private val messages: Messages) {
 
     /** Once all entities are parsed, relations are resolved and checked against their target entities.*/
     fun resolve(schema: Schema): Boolean {
-        // resolve to-one relations
-        for (entity in schema.entities) {
-            val toOnes = toOneByEntity[entity]
-            if (toOnes != null) {
-                for (toOne in toOnes) {
-                    if (!resolveToOne(schema, entity, toOne)) {
-                        return false // resolving to-one failed
-                    }
+        // resolve to-one relations first
+        for ((entity, toOnes) in toOnesByEntity) {
+            for (toOne in toOnes) {
+                if (!resolveToOne(schema, entity, toOne)) {
+                    return false // resolving to-one failed
                 }
             }
         }
-        // then resolve to-many relations which depend on to-one relations being resolved
-        for (entity in schema.entities) {
-            val toManys = toManyByEntity[entity]
-            if (toManys != null) {
-                for (toMany in toManys) {
-                    if (!resolveToMany(schema, entity, toMany)) {
-                        return false // resolving to-many failed
-                    }
+
+        // then resolve to-many relations which depends on to-one relations being resolved
+        for ((entity, toManys) in toManysByEntity) {
+            for (toMany in toManys) {
+                if (!resolveToMany(schema, entity, toMany)) {
+                    return false // resolving to-many failed
                 }
             }
         }
