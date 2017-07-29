@@ -9,7 +9,7 @@ import io.objectbox.generator.IdUid
 import io.objectbox.generator.model.Entity
 import io.objectbox.generator.model.PropertyType
 import io.objectbox.generator.model.Schema
-import io.objectbox.generator.model.ToMany
+import io.objectbox.generator.model.ToManyBase
 import io.objectbox.generator.model.ToOne
 import javax.lang.model.element.Modifier
 import javax.lang.model.element.VariableElement
@@ -231,12 +231,15 @@ class Relations(private val messages: Messages) {
     private fun resolveToMany(schema: Schema, entity: Entity, toMany: ToManyRelation): Boolean {
         val targetEntity = findTargetEntityOrRaiseError(schema, toMany.targetEntityName, entity) ?: return false
 
-        val toManyModel: ToMany
+        val toManyModel: ToManyBase
         if (toMany.isBacklink) {
             val targetToOne = findBacklinkToOneOrRaiseError(entity, targetEntity, toMany) ?: return false
             toManyModel = entity.addToMany(targetEntity, targetToOne.targetIdProperty, toMany.propertyName)
         } else {
-            throw RuntimeException("TODO: support standalone to-many")
+            val standalone = entity.addToManyStandalone(targetEntity, toMany.propertyName)
+            // FIXME: dummy
+            standalone.modelId = IdUid()
+            toManyModel = standalone
         }
 
         toManyModel.isFieldAccessible = toMany.fieldAccessible

@@ -5,11 +5,11 @@ import io.objectbox.annotation.Id;
 import io.objectbox.relation.ToMany;
 
 @Entity
-public class BacklinkMissingParent {
+public class ToManyStandalone {
 
     @Id
     Long id;
 
-    ToMany<IdEntity> children = new ToMany<>(this, BacklinkMissingParent_.children);
+    ToMany<IdEntity> children = new ToMany<>(this, ToManyStandalone_.children);
 
 }

@@ -531,17 +531,19 @@ class ObjectBoxProcessorTest {
     }
 
     @Test
-    fun testBacklinkMissing() {
-        // test if missing @Backlink on ToMany field is detected
-        val parentName = "BacklinkMissingParent"
+    fun testToManyStandalone() {
+        val parentName = "ToManyStandalone"
         val childName = "IdEntity"
 
-        val environment = TestEnvironment("not-generated.json")
+        val environment = TestEnvironment("standalone-to-many.json")
 
         val compilation = environment.compile(parentName, childName)
-        CompilationSubject.assertThat(compilation).failed()
+        CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
 
-        CompilationSubject.assertThat(compilation).hadErrorContaining("ToMany field must be annotated with @Backlink")
+        assertGeneratedSourceMatches(compilation, "${parentName}_")
+        assertGeneratedSourceMatches(compilation, "${parentName}Cursor")
+
+        assertToManySchema(environment.schema, parentName, childName)
     }
 
     @Test

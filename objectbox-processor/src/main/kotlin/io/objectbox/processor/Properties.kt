@@ -1,6 +1,5 @@
 package io.objectbox.processor
 
-import io.objectbox.annotation.Backlink
 import io.objectbox.annotation.Convert
 import io.objectbox.annotation.Id
 import io.objectbox.annotation.Index
@@ -59,17 +58,9 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
             relations.parseToOne(entityModel, field)
         } else if (!field.hasAnnotation(Convert::class.java)
                 && typeHelper.isTypeEqualTo(field.asType(), List::class.java.name, eraseTypeParameters = true)) {
-            if (!field.hasAnnotation(Backlink::class.java)) {
-                messages.error("Is this a custom type or to-many relation? Add @Convert or @Backlink.", field)
-                return
-            }
             // List<TARGET> property
             relations.parseToMany(entityModel, field)
         } else if (typeHelper.isTypeEqualTo(field.asType(), ToMany::class.java.name, eraseTypeParameters = true)) {
-            if (!field.hasAnnotation(Backlink::class.java)) {
-                messages.error("ToMany field must be annotated with @Backlink.", field)
-                return
-            }
             // ToMany<TARGET> property
             relations.parseToMany(entityModel, field)
         } else {

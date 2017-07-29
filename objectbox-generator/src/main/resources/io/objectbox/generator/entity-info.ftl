@@ -154,15 +154,15 @@ property.converter??>, ${property.converterClassName}.class, ${property.customTy
     </#list>
     <#list entity.toManyRelations as toMany>
     static final RelationInfo<${toMany.targetEntity.className}> ${toMany.name} =
-        new RelationInfo<>(${toMany.sourceEntity.className}_.__INSTANCE,<#--
+        new RelationInfo<${toMany.targetEntity.className}>(${toMany.sourceEntity.className}_.__INSTANCE,<#--
      --> ${toMany.targetEntity.className}_.__INSTANCE,<#--
-     --> ${toMany.targetEntity.className}_.${toMany.targetProperties[0].propertyName},<#--
+     --><#if toMany.targetProperties??>  ${toMany.targetEntity.className}_.${toMany.targetProperties[0].propertyName},<#--
      --> new ToOneGetter<${toMany.targetEntity.className}>() {
             @Override
             public ToOne<${toMany.sourceEntity.className}> getToOne(${toMany.targetEntity.className} entity) {
                 return entity.${toMany.backlinkToOne.nameToOne};
             }
-        });
+        });<#else> ${toMany.modelId.id});</#if>
 
     </#list>
 </#if>

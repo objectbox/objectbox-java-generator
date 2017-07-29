@@ -206,6 +206,17 @@ public class Entity implements HasParsedElement {
     }
 
     /**
+     * Adds a stand-alone to-many relation ({@link ToManyStandalone}).
+     */
+    public ToManyStandalone addToManyStandalone(Entity target, String name) {
+        ToManyStandalone toMany = new ToManyStandalone(schema, this, target);
+        toMany.setName(name);
+        trackUniqueName(names, name, toMany);
+        addToMany(toMany);
+        return toMany;
+    }
+
+    /**
      * Add a to-many relationship; the target entity is joined using the given target property (of the target entity)
      * and given source property (of this entity).
      */
@@ -216,14 +227,18 @@ public class Entity implements HasParsedElement {
     }
 
     public ToMany addToMany(Property[] sourceProperties, Entity target, Property[] targetProperties) {
+        ToMany toMany = new ToMany(schema, this, sourceProperties, target, targetProperties);
+        addToMany(toMany);
+        return toMany;
+    }
+
+    public void addToMany(ToManyBase toMany) {
         if (protobuf) {
             throw new IllegalStateException("Protobuf entities do not support relations, currently");
         }
 
-        ToMany toMany = new ToMany(schema, this, sourceProperties, target, targetProperties);
         toManyRelations.add(toMany);
-        target.incomingToManyRelations.add(toMany);
-        return toMany;
+        toMany.targetEntity.incomingToManyRelations.add(toMany);
     }
 
     /**
