@@ -94,6 +94,6 @@ public final class ToManyStandalone_ implements EntityInfo<ToManyStandalone> {
     }
 
     static final RelationInfo<IdEntity> children =
-            new RelationInfo<IdEntity>(ToManyStandalone_.__INSTANCE, IdEntity_.__INSTANCE, 0);
+            new RelationInfo<>(ToManyStandalone_.__INSTANCE, IdEntity_.__INSTANCE, 0);
 
 }
