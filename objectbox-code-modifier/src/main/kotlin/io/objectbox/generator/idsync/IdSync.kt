@@ -483,8 +483,8 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
         }
 
         val sink = Okio.sink(jsonFile)
-        sink.use { sink ->
-            buffer.readAll(sink)
+        sink.use {
+            buffer.readAll(it)
         }
     }
 
