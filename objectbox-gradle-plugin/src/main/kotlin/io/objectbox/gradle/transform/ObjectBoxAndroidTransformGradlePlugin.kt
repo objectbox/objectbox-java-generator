@@ -10,13 +10,12 @@ class ObjectBoxAndroidTransformGradlePlugin : Plugin<Project> {
         val env = ProjectEnv(project)
         if (!env.hasAndroidPlugin) {
             // throw RuntimeException("Use the ObjectBox plugin AFTER applying Android plugin")
-            project.logger.warn("ObjectBox: Use the ObjectBox plugin AFTER applying Android plugin. NO TRANSFORM SUPPORT for plain Java/Kotlin projects yet. " +
+            project.logger.warn("ObjectBox: Use the ObjectBox plugin AFTER applying Android plugin." +
+                    "NO TRANSFORM SUPPORT for plain Java/Kotlin projects yet. " +
                     "Limited support only!! Especially relations are NOT supported.")
         }
         val pluginVersion = env.objectBoxVersion
-//        val runtimeVersion = pluginVersion
-        // FIXME static version
-        val runtimeVersion = "0.9.13"
+        val runtimeVersion = pluginVersion
 
         if (env.hasKotlinPlugin) {
             project.plugins.apply("kotlin-kapt")
