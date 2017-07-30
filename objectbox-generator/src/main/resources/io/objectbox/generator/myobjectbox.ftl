@@ -64,6 +64,9 @@ public class MyObjectBox {
 <#if schema.lastIndexId??>
         modelBuilder.lastIndexId(${schema.lastIndexId.id?c}, ${schema.lastIndexId.uid?c}L);
 </#if>
+<#if schema.lastRelationId??>
+        modelBuilder.lastRelationId(${schema.lastRelationId.id?c}, ${schema.lastRelationId.uid?c}L);
+</#if>
 
         EntityBuilder entityBuilder;
 
