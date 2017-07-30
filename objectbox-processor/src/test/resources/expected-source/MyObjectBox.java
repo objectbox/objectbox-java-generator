@@ -23,6 +23,8 @@ public class MyObjectBox {
         ModelBuilder modelBuilder = new ModelBuilder();
         modelBuilder.lastEntityId(1, 4858050548069557694L);
         modelBuilder.lastIndexId(1, 4551328960004588074L);
+        modelBuilder.lastRelationId(0, 0L);
+
         EntityBuilder entityBuilder;
 
         entityBuilder = modelBuilder.entity("A");
