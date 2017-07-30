@@ -99,6 +99,12 @@ public class MyObjectBox {
             .flags(${uniqueFlags?join(" | ")})</#if><#--
         --><#if property.modelIndexId??>.indexId(${property.modelIndexId.id?c}, ${property.modelIndexId.uid?c}L)</#if>;
 </#list>
+<#list entity.toManyRelations as toMany>
+<#if toMany.modelId??>
+
+        entityBuilder.relation("${toMany.name}", ${toMany.modelId.id?c}, ${toMany.modelId.uid?c}L, ${toMany.targetEntity.modelId?c}, ${toMany.targetEntity.modelUid?c}L);
+</#if>
+</#list>
         entityBuilder.entityDone();
 
 </#list>
