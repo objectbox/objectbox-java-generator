@@ -547,6 +547,17 @@ class ObjectBoxProcessorTest {
     }
 
     @Test
+    fun testToManyAndConverter() {
+        val parentName = "ToManyAndConverter"
+        val childName = "IdEntity"
+
+        val environment = TestEnvironment("to-many-and-converter.json")
+
+        val compilation = environment.compile(parentName, childName, "TestConverter")
+        CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
+    }
+
+    @Test
     fun testBacklinkMultiple() {
         // test if multiple to-one fields for one @Backlink (without 'to' value) are detected
         val parentName = "BacklinkMultipleParent"
