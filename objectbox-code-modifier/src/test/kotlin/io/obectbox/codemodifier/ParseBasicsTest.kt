@@ -178,8 +178,8 @@ class ParseBasicsTest : ParseTestBase() {
         }
         """)!!
         val field = entity.properties[0]
-        val index = field.index!!
-        // TODO assertTrue(index.unique)
+        assertNotNull(field.index)
+        // TODO assertTrue(field.index!!.unique)
     }
 
     @Test

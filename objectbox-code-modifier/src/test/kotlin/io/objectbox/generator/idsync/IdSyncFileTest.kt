@@ -48,7 +48,7 @@ class IdSyncFileTest {
         for (file in badFiles) {
             assertTrue(file.exists())
             try {
-                var idSync = IdSync(file)
+                IdSync(file)
                 fail("Should have failed: " + file.absoluteFile)
             } catch (e: IdSyncException) {
                 // OK

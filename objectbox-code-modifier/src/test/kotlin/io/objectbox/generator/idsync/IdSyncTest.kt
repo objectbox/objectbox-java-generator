@@ -250,7 +250,8 @@ class IdSyncTest {
         val parsedProperty2 = entity2.properties[0]
         idSync!!.sync(listOf(entity1, entity2))
 
-        val model = idSync!!.justRead()!!
+        val model = idSync!!.justRead()
+        assertNotNull(model)
         assertNotSame(parsedProperty1, parsedProperty2)
 
         val property1 = idSync!!.get(parsedProperty1)
