@@ -50,7 +50,10 @@ class PluginIntegrationTest {
 
         val classpathContent = IoUtils.readAllChars(classpathFileIn.bufferedReader()).replace("\\", "\\\\")
         val classpath = StringUtils.splitLines(classpathContent, true).map(::File)
-        classpath.forEach { assertTrue(it.absolutePath, it.name.endsWith("test") || it.exists()) }
+        classpath.forEach {
+            val path = it.absolutePath
+            assertTrue(path, it.exists() || path.contains("/build/") || path.contains("\\build\\"))
+        }
 
         val result = GradleRunner.create()
                 .withProjectDir(dir)
