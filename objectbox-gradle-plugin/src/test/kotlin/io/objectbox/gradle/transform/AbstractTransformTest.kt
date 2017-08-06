@@ -6,15 +6,19 @@ import java.io.File
 import kotlin.reflect.KClass
 
 abstract class AbstractTransformTest {
-    private val classDir1 = File("build/classes/test")
-    private val classDir2 = File("objectbox-gradle-plugin/${classDir1.path}")
-    val classDir = if (classDir1.exists()) classDir1 else classDir2
+    private val classDirs = arrayOf(
+            "build/classes/test",
+            "objectbox-gradle-plugin/build/classes/test",
+            "out/test/classes/",
+            "objectbox-gradle-plugin/out/test/classes/"
+    )
+    val classDir = classDirs.map(::File).first { it.exists() }
 
     val prober = ClassProber(true)
 
     @Test
     fun testClassDir() {
-        assertTrue(classDir.exists())
+        assertTrue(classDir.absolutePath, classDir.exists())
     }
 
     protected fun probeClass(kclass: KClass<*>): ProbedClass {
