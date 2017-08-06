@@ -195,6 +195,7 @@ class ParseBasicsTest : ParseTestBase() {
             String name;
         }
         """)!!
+        assertNotNull(entity)
         // TODO assertTrue(entity.properties[0].unique)
     }
 
