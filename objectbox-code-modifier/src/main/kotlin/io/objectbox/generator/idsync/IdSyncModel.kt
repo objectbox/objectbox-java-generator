@@ -9,7 +9,7 @@ data class IdSyncModel(
         val _note3: String = "If you have VCS merge conflicts, you must resolve them according to ObjectBox docs.",
 
         val version: Long,
-        val modelVersion: Int = 3,
+        var modelVersion: Int = MODEL_VERSION,
         val lastEntityId: IdUid,
         val lastIndexId: IdUid,
         val lastRelationId: IdUid,
@@ -29,7 +29,11 @@ data class IdSyncModel(
 
         /** Previously used UIDs, which are now deleted. Archived to ensure no collisions. */
         val retiredRelationUids: List<Long>?
-)
+) {
+    companion object {
+        val MODEL_VERSION = 3
+    }
+}
 
 interface HasIdUid {
     val id: IdUid
