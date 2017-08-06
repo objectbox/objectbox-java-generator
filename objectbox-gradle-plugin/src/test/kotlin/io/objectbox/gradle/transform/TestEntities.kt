@@ -2,7 +2,9 @@ package io.objectbox.gradle.transform
 
 import io.objectbox.Cursor
 import io.objectbox.EntityInfo
+import io.objectbox.annotation.Convert
 import io.objectbox.annotation.Entity
+import io.objectbox.converter.PropertyConverter
 import io.objectbox.relation.RelationInfo
 import io.objectbox.relation.ToMany
 import io.objectbox.relation.ToOne
@@ -69,6 +71,32 @@ object EntityToManyLateInit_ : EntityInfo<EntityToOneLateInit> {
 }
 
 @Entity
+class EntityToManyAndConverter {
+    lateinit var entityEmpty: ToMany<EntityEmpty>
+
+    @Convert(converter = TestConverter::class, dbType = String::class)
+    lateinit var convertedString: JustCopyMe
+}
+
+object EntityToManyAndConverter_ : EntityInfo<EntityToOneLateInit> {
+    @JvmField
+    val entityEmpty = RelationInfo<EntityEmpty>(null, null, null)
+}
+
+@Entity
+class EntityToOneAndConverter {
+    lateinit var entityEmpty: ToOne<EntityEmpty>
+
+    @Convert(converter = TestConverter::class, dbType = String::class)
+    lateinit var convertedString: JustCopyMe
+}
+
+object EntityToOneAndConverter_ : EntityInfo<EntityToOneLateInit> {
+    @JvmField
+    val entityEmpty = RelationInfo<EntityEmpty>(null, null, null)
+}
+
+@Entity
 class EntityToManySuffix {
     lateinit var entityEmptyToMany: ToMany<EntityEmpty>
 }
@@ -119,3 +147,13 @@ class CursorWithExistingImpl : Cursor<EntityBoxStoreField>() {
 }
 
 class JustCopyMe
+
+class TestConverter : PropertyConverter<String, String> {
+    override fun convertToEntityProperty(databaseValue: String?): String? {
+        return databaseValue?.substring(0, databaseValue.length - 1)
+    }
+
+    override fun convertToDatabaseValue(entityProperty: String?): String? {
+        return if (entityProperty == null) null else entityProperty + "!"
+    }
+}

@@ -19,7 +19,7 @@ abstract class AbstractTransformTest {
 
     protected fun probeClass(kclass: KClass<*>): ProbedClass {
         val file = File(classDir, kclass.qualifiedName!!.replace('.', '/') + ".class")
-        assertTrue(file.exists())
+        assertTrue(file.absolutePath, file.exists())
         return prober.probeClass(file)
     }
 

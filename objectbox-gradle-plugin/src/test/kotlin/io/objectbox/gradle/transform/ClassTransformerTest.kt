@@ -72,6 +72,26 @@ class ClassTransformerTest : AbstractTransformTest() {
     }
 
     @Test
+    fun testTransformEntity_toManyAndConverter() {
+        val classes = listOf(EntityToManyAndConverter::class, EntityToManyAndConverter_::class)
+        val (stats) = testTransformOrCopy(classes, 1, 1)
+        assertEquals(1, stats.boxStoreFieldsAdded)
+        assertEquals(0, stats.toOnesFound)
+        assertEquals(1, stats.toManyFound)
+        assertEquals(1, stats.toManyInitializerAdded)
+    }
+
+    @Test
+    fun testTransformEntity_toOneAndConverter() {
+        val classes = listOf(EntityToOneAndConverter::class, EntityToOneAndConverter_::class)
+        val (stats) = testTransformOrCopy(classes, 1, 1)
+        assertEquals(1, stats.boxStoreFieldsAdded)
+        assertEquals(1, stats.toOnesFound)
+        assertEquals(0, stats.toManyFound)
+        assertEquals(1, stats.toOnesInitializerAdded)
+    }
+
+    @Test
     fun testTransformEntity_toManySuffix() {
         val classes = listOf(EntityToManySuffix::class, EntityToManySuffix_::class)
         val (stats) = testTransformOrCopy(classes, 1, 1)
