@@ -1,6 +1,7 @@
 package io.objectbox.generator.model;
 
 import io.objectbox.generator.IdUid;
+import io.objectbox.generator.TextUtil;
 
 /** To-many relationship from a source entity to many target entities. */
 public class ToManyStandalone extends ToManyBase {
@@ -32,6 +33,9 @@ public class ToManyStandalone extends ToManyBase {
 
     void init2ndPass() {
         super.init2ndPass();
+        if (dbName == null) {
+            dbName = TextUtil.dbName(name);
+        }
     }
 
     void init3rdPass() {

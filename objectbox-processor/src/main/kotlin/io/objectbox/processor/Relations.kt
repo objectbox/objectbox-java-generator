@@ -30,7 +30,9 @@ data class ToManyRelation(
         val targetEntityName: String,
         val isBacklink: Boolean,
         var backlinkTo: String? = null,
-        val fieldAccessible: Boolean
+        val fieldAccessible: Boolean,
+        val nameInDb: String?,
+        val uid: Long? = null
 )
 
 /**
@@ -52,13 +54,20 @@ class Relations(private val messages: Messages) {
         val targetEntityName = targetTypeMirror.asElement().simpleName
 
         val backlinkAnnotation = field.getAnnotation(Backlink::class.java)
+        val isBacklink = backlinkAnnotation != null
+        val nameInDb = field.getAnnotation(NameInDb::class.java)?.value
+        val uid = field.getAnnotation(Uid::class.java)?.value
+        if (isBacklink && nameInDb != null) messages.error("Backlinks are not allowed to have @NameInDb")
+        if (isBacklink && uid != null) messages.error("Backlinks are not allowed to have @Uid")
 
         val toMany = ToManyRelation(
                 propertyName = field.simpleName.toString(),
                 targetEntityName = targetEntityName.toString(),
-                isBacklink = backlinkAnnotation != null,
+                isBacklink = isBacklink,
                 backlinkTo = backlinkAnnotation?.to?.nullIfBlank(),
-                fieldAccessible = !field.modifiers.contains(Modifier.PRIVATE)
+                fieldAccessible = !field.modifiers.contains(Modifier.PRIVATE),
+                nameInDb = nameInDb,
+                uid = uid
         )
 
         collectToMany(entityModel, toMany)
@@ -237,6 +246,8 @@ class Relations(private val messages: Messages) {
             toManyModel = entity.addToMany(targetEntity, targetToOne.targetIdProperty, toMany.propertyName)
         } else {
             val standalone = entity.addToManyStandalone(targetEntity, toMany.propertyName)
+            if (toMany.uid != null) standalone.modelId = IdUid(0, toMany.uid)
+            standalone.dbName = toMany.nameInDb
             toManyModel = standalone
         }
 

@@ -105,7 +105,7 @@ public class MyObjectBox {
 <#list entity.toManyRelations as toMany>
 <#if toMany.modelId??>
 
-        entityBuilder.relation("${toMany.name}", ${toMany.modelId.id?c}, ${toMany.modelId.uid?c}L, ${toMany.targetEntity.modelId?c}, ${toMany.targetEntity.modelUid?c}L);
+        entityBuilder.relation("${toMany.dbName}", ${toMany.modelId.id?c}, ${toMany.modelId.uid?c}L, ${toMany.targetEntity.modelId?c}, ${toMany.targetEntity.modelUid?c}L);
 </#if>
 </#list>
         entityBuilder.entityDone();

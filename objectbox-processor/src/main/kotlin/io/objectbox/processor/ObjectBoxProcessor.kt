@@ -96,6 +96,9 @@ open class ObjectBoxProcessor : AbstractProcessor() {
     private fun findAndParse(env: RoundEnvironment) {
         var schema: Schema? = null
         val relations = Relations(messages)
+        if (messages.errorRaised) {
+            return
+        }
 
         for (entity in env.getElementsAnnotatedWith(Entity::class.java)) {
             if (schema == null) {

@@ -1,0 +1,50 @@
+{
+  "_note1": "KEEP THIS FILE! Check it into a version control system (VCS) like git.",
+  "_note2": "ObjectBox manages crucial IDs for your object model. See docs for details.",
+  "_note3": "If you have VCS merge conflicts, you must resolve them according to ObjectBox docs.",
+  "entities": [
+    {
+      "id": "2:6121770550573222603",
+      "lastPropertyId": "1:3998626054824627444",
+      "name": "IdEntity",
+      "properties": [
+        {
+          "id": "1:3998626054824627444",
+          "name": "id"
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "3:6887153342881324587",
+      "lastPropertyId": "1:1269516875643200528",
+      "name": "ToManyStandaloneUidName",
+      "properties": [
+        {
+          "id": "1:1269516875643200528",
+          "name": "id"
+        }
+      ],
+      "relations": [
+        {
+          "id": "2:420000000",
+          "name": "Hoolaloop"
+        }
+      ]
+    }
+  ],
+  "lastEntityId": "3:6887153342881324587",
+  "lastIndexId": "1:3805303550911331096",
+  "lastRelationId": "2:420000000",
+  "lastSequenceId": "0:0",
+  "modelVersion": 3,
+  "retiredEntityUids": [
+    4031058995108974500
+  ],
+  "retiredIndexUids": [],
+  "retiredPropertyUids": [
+    1826906556673625342
+  ],
+  "retiredRelationUids": [],
+  "version": 1
+}

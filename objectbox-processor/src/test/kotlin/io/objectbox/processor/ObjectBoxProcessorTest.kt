@@ -5,6 +5,7 @@ import com.google.common.truth.Truth.assertWithMessage
 import com.google.testing.compile.Compilation
 import com.google.testing.compile.CompilationSubject
 import com.google.testing.compile.Compiler.javac
+import com.google.testing.compile.JavaFileObjectSubject
 import com.google.testing.compile.JavaFileObjects
 import io.objectbox.generator.IdUid
 import io.objectbox.generator.idsync.IdSync
@@ -13,6 +14,8 @@ import io.objectbox.generator.model.Property
 import io.objectbox.generator.model.PropertyType
 import io.objectbox.generator.model.Schema
 import io.objectbox.generator.model.ToMany
+import io.objectbox.generator.model.ToManyStandalone
+import org.junit.Assert.assertEquals
 import org.junit.Assert.fail
 import org.junit.Test
 import java.io.File
@@ -31,7 +34,7 @@ class ObjectBoxProcessorTest {
             get() {
                 val options = mutableListOf("-A${ObjectBoxProcessor.OPTION_MODEL_PATH}=$modelFilePath")
                 options += "-A${ObjectBoxProcessor.OPTION_DEBUG}=true"
-                if(optionDisableTransform) options+= "-A${ObjectBoxProcessor.OPTION_TRANSFORMATION_ENABLED}=false"
+                if (optionDisableTransform) options += "-A${ObjectBoxProcessor.OPTION_TRANSFORMATION_ENABLED}=false"
                 return options
             }
 
@@ -547,6 +550,26 @@ class ObjectBoxProcessorTest {
     }
 
     @Test
+    fun testToManyStandaloneUidName() {
+        val parentName = "ToManyStandaloneUidName"
+        val childName = "IdEntity"
+
+        val environment = TestEnvironment("standalone-to-many-uid-name.json")
+
+        val compilation = environment.compile(parentName, childName)
+        CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
+
+        val myObjectBoxContent = getGeneratedJavaFile(compilation, "MyObjectBox").contentsAsUtf8String()
+        myObjectBoxContent.contains("420000000L")
+        myObjectBoxContent.contains("\"Hoolaloop\"")
+        val entity = environment.schema.entities.filter { it.className == "ToManyStandaloneUidName" }.single()
+        assertEquals(1, entity.toManyRelations.size)
+        val toMany = entity.toManyRelations[0] as ToManyStandalone
+        assertEquals("Hoolaloop", toMany.dbName)
+        assertEquals(420000000L, toMany.modelId.uid)
+    }
+
+    @Test
     fun testToManyAndConverter() {
         val parentName = "ToManyAndConverter"
         val childName = "IdEntity"
@@ -736,10 +759,16 @@ class ObjectBoxProcessorTest {
     }
 
     private fun assertGeneratedSourceMatches(compilation: Compilation, simpleName: String) {
+        val generatedFile = getGeneratedJavaFile(compilation, simpleName)
+        generatedFile.hasSourceEquivalentTo(JavaFileObjects.forResource("expected-source/$simpleName.java"))
+    }
+
+    /** non-null*/
+    private fun getGeneratedJavaFile(compilation: Compilation, simpleName: String): JavaFileObjectSubject {
         val generatedFile = CompilationSubject.assertThat(compilation)
-                .generatedSourceFile("io.objectbox.processor.test.${simpleName}")
+                .generatedSourceFile("io.objectbox.processor.test.$simpleName")
         generatedFile.isNotNull()
-        generatedFile.hasSourceEquivalentTo(JavaFileObjects.forResource("expected-source/${simpleName}.java"))
+        return generatedFile
     }
 
     private fun assertPrimitiveType(prop: Property, type: PropertyType) {
