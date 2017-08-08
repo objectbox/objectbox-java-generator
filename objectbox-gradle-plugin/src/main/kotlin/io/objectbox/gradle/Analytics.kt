@@ -53,9 +53,9 @@ class Analytics(val env: ProjectEnv) {
 
         // detect CI
         // https://docs.travis-ci.com/user/environment-variables/#Default-Environment-Variables
-        val isTravis = System.getProperty("CI") == "true"
+        val isTravis = System.getenv("CI") == "true"
 //        // https://wiki.jenkins.io/display/JENKINS/Building+a+software+project#Buildingasoftwareproject-below
-        val isJenkins = System.getProperty("JENKINS_URL") != null
+        val isJenkins = System.getenv("JENKINS_URL") != null
         val isContinuousIntegration = isTravis || isJenkins
 
         // https://mixpanel.com/help/reference/http#tracking-events
