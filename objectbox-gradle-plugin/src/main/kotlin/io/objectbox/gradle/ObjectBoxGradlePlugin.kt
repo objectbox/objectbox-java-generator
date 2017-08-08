@@ -108,6 +108,8 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
                         env.options.daoCompat,
                         encoding
                 ).run(candidatesFiles, schemaOptions)
+
+                Analytics(env).submitAsync()
             }
         }
         generateTask.group = name
