@@ -7,6 +7,7 @@ import com.android.build.gradle.LibraryPlugin
 import org.gradle.api.plugins.ExtensionContainer
 import org.greenrobot.essentials.Base64
 import org.greenrobot.essentials.hash.Murmur3F
+import java.io.File
 import java.net.HttpURLConnection
 import java.net.URL
 import java.util.*
@@ -44,8 +45,7 @@ class Analytics(val env: ProjectEnv) {
     }
 
     private fun buildUrl(): String {
-        // TODO ut: distinct id (possibly persist UUID to file, but where to?), more reliable than MAC or BIOS ID
-        val distinctId = UUID.randomUUID().toString()
+        val distinctId = uniqueIdentifier()
         val appIdHash = androidAppIdHash() ?: "unknown"
         val os = System.getProperty("os.name")
         val osVersion = System.getProperty("os.version")
@@ -120,6 +120,19 @@ class Analytics(val env: ProjectEnv) {
 
     private operator fun <T : Any> ExtensionContainer.get(type: KClass<T>): T {
         return getByType(type.java)!!
+    }
+
+    private fun uniqueIdentifier() : String {
+        // a temp file should survive long enough to report multiple builds as a unique user
+        val idFile = File(System.getProperty("java.io.tmpdir"), "objectbox-id.tmp")
+        val existingId = if (idFile.canRead()) idFile.readText() else null
+        if (existingId != null && existingId.isNotBlank()) {
+            return existingId
+        } else {
+            val newId = UUID.randomUUID().toString()
+            idFile.writeText(newId)
+            return newId
+        }
     }
 
 }
