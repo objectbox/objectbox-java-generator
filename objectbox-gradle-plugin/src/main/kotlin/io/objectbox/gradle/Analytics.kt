@@ -21,10 +21,11 @@ import kotlin.reflect.KClass
  * - the operating system the build is running on
  * - if Kotlin or only Java code is used
  */
-class Analytics(val env: ProjectEnv) {
+// Non-final for easier mocking
+open class Analytics(val env: ProjectEnv) {
 
     private val BASE_URL = "https://api.mixpanel.com/track/?data="
-    private val TOKEN = "ddefa920bbb8d1a98e2bd4b85e181668" // ut
+    private val TOKEN = "REPLACE_WITH_TOKEN"
     private val TIMEOUT_READ = 15000
     private val TIMEOUT_CONNECT = 20000
 
@@ -45,18 +46,18 @@ class Analytics(val env: ProjectEnv) {
     }
 
     private fun buildUrl(): String {
-        val distinctId = uniqueIdentifier()
-        val appIdHash = androidAppIdHash() ?: "unknown"
+        val event = buildEventData()
+
+        // https://mixpanel.com/help/reference/http#base64
+        val eventEncoded = Base64.encodeBytes(event.toByteArray())
+
+        return BASE_URL + eventEncoded
+    }
+
+    internal fun buildEventData(): String {
         val os = System.getProperty("os.name")
         val osVersion = System.getProperty("os.version")
         val hasKotlinPlugin = env.hasKotlinAndroidPlugin || env.hasKotlinPlugin
-
-        // detect CI
-        // https://docs.travis-ci.com/user/environment-variables/#Default-Environment-Variables
-        val isTravis = System.getenv("CI") == "true"
-//        // https://wiki.jenkins.io/display/JENKINS/Building+a+software+project#Buildingasoftwareproject-below
-        val isJenkins = System.getenv("JENKINS_URL") != null
-        val isContinuousIntegration = isTravis || isJenkins
 
         // https://mixpanel.com/help/reference/http#tracking-events
         val event = StringBuilder()
@@ -65,20 +66,26 @@ class Analytics(val env: ProjectEnv) {
         event.key("properties").append(" {")
 
         event.key("token").value(TOKEN).comma()
-        event.key("distinct_id").value(distinctId).comma()
-        event.key("Anonymous App ID").value(appIdHash).comma()
-        event.key("Build OS").value(os).comma()
-        event.key("Build OS Version").value(osVersion).comma()
-        event.key("CI Detected").value(isContinuousIntegration.toString()).comma()
-        event.key("Kotlin Detected").value(hasKotlinPlugin.toString()).comma()
-        event.key("ObjectBox Version").value(env.objectBoxVersion)
+        event.key("distinct_id").value(uniqueIdentifier()).comma()
+        // AAID: Anonymous App ID
+        val appId = androidAppId()
+        if (appId != null) {
+            event.key("AAID").value(hashBase64(appId)).comma()
+        }
+        event.key("BuildOS").value(os).comma()
+        event.key("BuildOSVersion").value(osVersion).comma()
+        val ci = checkCI()
+        if (ci != null) {
+            event.key("CI").value(ci).comma()
+        }
+        // There may be multiple languages in a project, so it's not a single dimension
+        event.key("Kotlin").value(hasKotlinPlugin.toString()).comma()
+        event.key("Java").value(env.hasJavaPlugin.toString()).comma()
+        event.key("Version").value(env.objectBoxVersion).comma()
+        event.key("Target").value(if (env.hasAndroidPlugin) "Android" else "Other")
 
         event.append("}").append("}")
-
-        // https://mixpanel.com/help/reference/http#base64
-        val eventEncoded = Base64.encodeBytes(event.toString().toByteArray())
-
-        return BASE_URL + eventEncoded
+        return event.toString()
     }
 
     private fun StringBuilder.key(value: String): java.lang.StringBuilder {
@@ -96,14 +103,14 @@ class Analytics(val env: ProjectEnv) {
         return this
     }
 
-    private fun androidAppIdHash(): String? {
-        val appId = androidAppId() ?: return null
+    internal fun hashBase64(input: String): String {
         val murmurHash = Murmur3F()
-        murmurHash.update(appId.toByteArray())
-        return murmurHash.valueHexString
+        murmurHash.update(input.toByteArray())
+        return Base64.encodeBytes(murmurHash.valueBytesBigEndian)
     }
 
-    private fun androidAppId(): String? {
+    // Allow stubbing for testing
+    open internal fun androidAppId(): String? {
         val project = env.project
         val appPlugin = project.plugins.find { it is AppPlugin }
         if (appPlugin != null) {
@@ -118,11 +125,27 @@ class Analytics(val env: ProjectEnv) {
         return null
     }
 
+    private fun checkCI(): String? {
+        val ci = when {
+        //https://docs.travis-ci.com/user/environment-variables/#Default-Environment-Variables
+            System.getenv("CI") == "true" -> "T"
+        // https://wiki.jenkins.io/display/JENKINS/Building+a+software+project#Buildingasoftwareproject-below
+            System.getenv("JENKINS_URL") != null -> "J"
+            System.getenv("GITLAB_CI") != null -> "GL" // https://docs.gitlab.com/ee/ci/variables/
+            System.getenv("CIRCLECI") != null -> "C" // https://circleci.com/docs/1.0/environment-variables/
+        // https://documentation.codeship.com/pro/builds-and-configuration/steps/
+            System.getenv("CI_NAME")?.toLowerCase() == "codeship" -> "CS"
+            System.getenv("CI") != null -> "Other"
+            else -> null
+        }
+        return ci
+    }
+
     private operator fun <T : Any> ExtensionContainer.get(type: KClass<T>): T {
         return getByType(type.java)!!
     }
 
-    private fun uniqueIdentifier() : String {
+    internal fun uniqueIdentifier(): String {
         // a temp file should survive long enough to report multiple builds as a unique user
         val idFile = File(System.getProperty("java.io.tmpdir"), "objectbox-id.tmp")
         val existingId = if (idFile.canRead()) idFile.readText() else null
