@@ -110,7 +110,7 @@ open class Analytics(val env: ProjectEnv) {
     internal fun hashBase64(input: String): String {
         val murmurHash = Murmur3F()
         murmurHash.update(input.toByteArray())
-        return Base64.encodeBytes(murmurHash.valueBytesBigEndian)
+        return encodeBase64WithoutPadding(murmurHash.valueBytesBigEndian)
     }
 
     // Allow stubbing for testing
@@ -175,7 +175,7 @@ open class Analytics(val env: ProjectEnv) {
         if (uid.isNullOrBlank()) {
             val uuid = UUID.randomUUID()
             val buffer = ByteBuffer.allocate(16).putLong(uuid.mostSignificantBits).putLong(uuid.leastSignificantBits)
-            uid = Base64.encodeBytes(buffer.array())
+            uid = encodeBase64WithoutPadding(buffer.array())
             properties.put(keyUid, uid)
             FileWriter(file).use {
                 properties.store(it, "Properties for ObjectBox build tools")
@@ -183,5 +183,8 @@ open class Analytics(val env: ProjectEnv) {
         }
         return uid!!
     }
+
+    private fun encodeBase64WithoutPadding(valueBytesBigEndian: ByteArray?) =
+            Base64.encodeBytes(valueBytesBigEndian).removeSuffix("=").removeSuffix("=")
 
 }
