@@ -74,7 +74,7 @@ open class Analytics(val env: ProjectEnv) {
         // AAID: Anonymous App ID
         val appId = androidAppId()
         if (appId != null) {
-            event.key("AAID").value(hashBase64(appId)).comma()
+            event.key("AAID").value(hashBase64WithoutPadding(appId)).comma()
         }
         event.key("BuildOS").value(os).comma()
         event.key("BuildOSVersion").value(osVersion).comma()
@@ -107,7 +107,7 @@ open class Analytics(val env: ProjectEnv) {
         return this
     }
 
-    internal fun hashBase64(input: String): String {
+    internal fun hashBase64WithoutPadding(input: String): String {
         val murmurHash = Murmur3F()
         murmurHash.update(input.toByteArray())
         return encodeBase64WithoutPadding(murmurHash.valueBytesBigEndian)
