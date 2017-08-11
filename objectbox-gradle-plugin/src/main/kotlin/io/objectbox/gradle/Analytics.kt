@@ -8,8 +8,12 @@ import org.gradle.api.plugins.ExtensionContainer
 import org.greenrobot.essentials.Base64
 import org.greenrobot.essentials.hash.Murmur3F
 import java.io.File
+import java.io.FileReader
+import java.io.FileWriter
+import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
+import java.nio.ByteBuffer
 import java.util.*
 import kotlin.reflect.KClass
 
@@ -126,7 +130,7 @@ open class Analytics(val env: ProjectEnv) {
     }
 
     private fun checkCI(): String? {
-        val ci = when {
+        return when {
         //https://docs.travis-ci.com/user/environment-variables/#Default-Environment-Variables
             System.getenv("CI") == "true" -> "T"
         // https://wiki.jenkins.io/display/JENKINS/Building+a+software+project#Buildingasoftwareproject-below
@@ -138,7 +142,6 @@ open class Analytics(val env: ProjectEnv) {
             System.getenv("CI") != null -> "Other"
             else -> null
         }
-        return ci
     }
 
     private operator fun <T : Any> ExtensionContainer.get(type: KClass<T>): T {
@@ -146,16 +149,39 @@ open class Analytics(val env: ProjectEnv) {
     }
 
     internal fun uniqueIdentifier(): String {
-        // a temp file should survive long enough to report multiple builds as a unique user
-        val idFile = File(System.getProperty("java.io.tmpdir"), "objectbox-id.tmp")
-        val existingId = if (idFile.canRead()) idFile.readText() else null
-        if (existingId != null && existingId.isNotBlank()) {
-            return existingId
-        } else {
-            val newId = UUID.randomUUID().toString()
-            idFile.writeText(newId)
-            return newId
+        var file: File? = null
+        val fileName = ".objectbox-build.properties"
+        try {
+            val dir = File(System.getProperty("user.home"))
+            if (dir.isDirectory) file = File(dir, fileName)
+        } catch (e: Exception) {
+            System.err.println("Could not get user dir: " + e) // No stack trace
         }
+        if (file == null) file = File(System.getProperty("java.io.tmpdir"), fileName) // Plan B
+        val keyUid = "uid"
+        var uid: String? = null
+        var properties = Properties()
+        if (file.exists()) {
+            try {
+                FileReader(file).use {
+                    properties.load(it)
+                    uid = properties.getProperty(keyUid)
+                }
+            } catch (e: IOException) {
+                e.printStackTrace()
+                properties = Properties()
+            }
+        }
+        if (uid.isNullOrBlank()) {
+            val uuid = UUID.randomUUID()
+            val buffer = ByteBuffer.allocate(16).putLong(uuid.mostSignificantBits).putLong(uuid.leastSignificantBits)
+            uid = Base64.encodeBytes(buffer.array())
+            properties.put(keyUid, uid)
+            FileWriter(file).use {
+                properties.store(it, "Properties for ObjectBox build tools")
+            }
+        }
+        return uid!!
     }
 
 }
