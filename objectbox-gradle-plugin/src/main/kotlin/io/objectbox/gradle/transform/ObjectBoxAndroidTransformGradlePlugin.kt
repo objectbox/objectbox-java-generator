@@ -24,7 +24,12 @@ class ObjectBoxAndroidTransformGradlePlugin : Plugin<Project> {
             project.dependencies.add(depScope, "io.objectbox:objectbox-kotlin:$runtimeVersion")
             project.dependencies.add("kapt", processorDep)
         } else {
-            project.dependencies.add("apt", processorDep)
+            // https://bitbucket.org/hvisser/android-apt
+            if(project.plugins.findPlugin("com.neenbedankt.android-apt") != null) {
+                project.dependencies.add("apt", processorDep)
+            } else {
+                project.dependencies.add("annotationProcessor", processorDep)
+            }
             if(env.hasAndroidPlugin) {
                 project.dependencies.add(depScope, "io.objectbox:objectbox-android:$runtimeVersion")
             } else {
