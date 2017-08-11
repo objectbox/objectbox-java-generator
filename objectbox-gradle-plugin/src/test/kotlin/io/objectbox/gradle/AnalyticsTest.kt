@@ -49,7 +49,7 @@ class AnalyticsTest {
         Assert.assertNotNull(properties["token"])
         val distinctId = properties["distinct_id"] as String
         Assert.assertNotNull(distinctId)
-        Assert.assertEquals(analytics.hashBase64WithoutPadding(aid), properties["AAID"])
+        Assert.assertEquals(analytics.hashBase64(aid), properties["AAID"])
 
         val analytics2 = spy(Analytics(env))
         Assert.assertEquals(distinctId, analytics2.uniqueIdentifier())
