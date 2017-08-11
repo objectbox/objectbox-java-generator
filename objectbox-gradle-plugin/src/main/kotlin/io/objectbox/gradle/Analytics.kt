@@ -13,7 +13,7 @@ import java.io.FileWriter
 import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
-import java.nio.ByteBuffer
+import java.security.SecureRandom
 import java.util.*
 import kotlin.reflect.KClass
 
@@ -74,7 +74,7 @@ open class Analytics(val env: ProjectEnv) {
         // AAID: Anonymous App ID
         val appId = androidAppId()
         if (appId != null) {
-            event.key("AAID").value(hashBase64(appId)).comma()
+            event.key("AAID").value(hashBase64WithoutPadding(appId)).comma()
         }
         event.key("BuildOS").value(os).comma()
         event.key("BuildOSVersion").value(osVersion).comma()
@@ -107,7 +107,7 @@ open class Analytics(val env: ProjectEnv) {
         return this
     }
 
-    internal fun hashBase64(input: String): String {
+    internal fun hashBase64WithoutPadding(input: String): String {
         val murmurHash = Murmur3F()
         murmurHash.update(input.toByteArray())
         return encodeBase64WithoutPadding(murmurHash.valueBytesBigEndian)
@@ -173,9 +173,9 @@ open class Analytics(val env: ProjectEnv) {
             }
         }
         if (uid.isNullOrBlank()) {
-            val uuid = UUID.randomUUID()
-            val buffer = ByteBuffer.allocate(16).putLong(uuid.mostSignificantBits).putLong(uuid.leastSignificantBits)
-            uid = encodeBase64WithoutPadding(buffer.array())
+            val bytes = ByteArray(8)
+            SecureRandom().nextBytes(bytes)
+            uid = encodeBase64WithoutPadding(bytes)
             properties.put(keyUid, uid)
             FileWriter(file).use {
                 properties.store(it, "Properties for ObjectBox build tools")
