@@ -18,25 +18,33 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
         val env = ProjectEnv(project)
         env.logDebug("$name plugin starting...")
 
-        val version = env.objectBoxVersion
-        project.logger.debug("$name plugin $version preparing tasks...")
+        val buildTracker = BuildTracker("LegacyGradlePlugin")
+        buildTracker.trackBuild(env)
 
-        val allowApt = env.options.allowApt
-        env.logDebug("objectbox.allowApt: $allowApt")
-        if (allowApt && env.hasKotlinAndroidPlugin) {
-            project.dependencies.add("kapt", "io.objectbox:objectbox-processor:$version")
-        } else if (allowApt && env.hasKotlinPlugin) {
-            project.dependencies.add("kapt", "io.objectbox:objectbox-processor:$version")
+        try {
+            val version = env.objectBoxVersion
+            project.logger.debug("$name plugin $version preparing tasks...")
 
-            project.logger.warn("ObjectBox: NO TRANSFORM SUPPORT for plain Kotlin projects yet. " +
-                    "Limited support only!! Especially relations are NOT supported.")
-        } else {
-            addJavaModifierTasks(env)
-        }
+            val allowApt = env.options.allowApt
+            env.logDebug("objectbox.allowApt: $allowApt")
+            if (allowApt && env.hasKotlinAndroidPlugin) {
+                project.dependencies.add("kapt", "io.objectbox:objectbox-processor:$version")
+            } else if (allowApt && env.hasKotlinPlugin) {
+                project.dependencies.add("kapt", "io.objectbox:objectbox-processor:$version")
 
-        if (env.hasAndroidPlugin) {
-            // Cannot use afterEvaluate to register transform, thus out plugin must be applied after Android
-            ObjectBoxAndroidTransform.Registration.to(project)
+                project.logger.warn("ObjectBox: NO TRANSFORM SUPPORT for plain Kotlin projects yet. " +
+                        "Limited support only!! Especially relations are NOT supported.")
+            } else {
+                addJavaModifierTasks(env)
+            }
+
+            if (env.hasAndroidPlugin) {
+                // Cannot use afterEvaluate to register transform, thus out plugin must be applied after Android
+                ObjectBoxAndroidTransform.Registration.to(project)
+            }
+        } catch (e:Throwable) {
+            buildTracker.trackFatal("Applying plugin failed", e)
+            throw e
         }
     }
 
@@ -109,7 +117,6 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
                         encoding
                 ).run(candidatesFiles, schemaOptions)
 
-                BuildTracker("LegacyGradlePlugin").trackBuild(env)
             }
         }
         generateTask.group = name

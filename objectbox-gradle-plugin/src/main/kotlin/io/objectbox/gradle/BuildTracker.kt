@@ -37,11 +37,11 @@ open class BuildTracker(val toolName: String) {
         sendEventAsync("Build", buildEventProperties(env))
     }
 
-    fun trackError(message: String, throwable: Throwable? = null) {
+    fun trackError(message: String?, throwable: Throwable? = null) {
         sendEventAsync("Error", errorProperties(message, throwable))
     }
 
-    fun trackFatal(message: String, throwable: Throwable? = null) {
+    fun trackFatal(message: String?, throwable: Throwable? = null) {
         sendEventAsync("Fatal", errorProperties(message, throwable))
     }
 
@@ -83,9 +83,11 @@ open class BuildTracker(val toolName: String) {
         return event.toString()
     }
 
-    internal fun errorProperties(message: String, throwable: Throwable?): String {
+    internal fun errorProperties(message: String?, throwable: Throwable?): String {
         val event = StringBuilder()
-        event.key("Message").valueEscaped(message).comma()
+        if(message != null) {
+            event.key("Message").valueEscaped(message).comma()
+        }
         event.key("Version").valueEscaped(ProjectEnv.Const.objectBoxVersion)
 
         if (throwable != null) {
