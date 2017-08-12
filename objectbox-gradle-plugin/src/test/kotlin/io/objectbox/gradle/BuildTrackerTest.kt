@@ -78,9 +78,9 @@ class BuildTrackerTest {
         assertEquals("java.lang.RuntimeException", properties["ExClass2"])
     }
 
-    private fun parseJsonAndAssertBasics(eventData: String, expectedEvent:String): Map<String, Object> {
-        val parameterizedType = Types.newParameterizedType(Map::class.java, String::class.java, Object::class.java);
-        val adapter = Moshi.Builder().build().adapter<Map<String, Object>>(parameterizedType)
+    private fun parseJsonAndAssertBasics(eventData: String, expectedEvent:String): Map<String, Any> {
+        val parameterizedType = Types.newParameterizedType(Map::class.java, String::class.java, Any::class.java);
+        val adapter = Moshi.Builder().build().adapter<Map<String, Any>>(parameterizedType)
         val json = adapter.fromJson(eventData)
 
         assertEquals(expectedEvent, json["event"])

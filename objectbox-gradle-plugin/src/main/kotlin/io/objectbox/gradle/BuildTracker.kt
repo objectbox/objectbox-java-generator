@@ -9,7 +9,6 @@ import io.objectbox.build.BasicBuildTracker
 import okio.Buffer
 import org.gradle.api.Project
 import org.gradle.api.plugins.ExtensionContainer
-import org.greenrobot.essentials.hash.Murmur3F
 import kotlin.reflect.KClass
 
 /**
