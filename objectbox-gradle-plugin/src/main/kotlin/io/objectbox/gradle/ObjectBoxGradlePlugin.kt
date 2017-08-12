@@ -109,7 +109,7 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
                         encoding
                 ).run(candidatesFiles, schemaOptions)
 
-                BuildTracker(env, "LegacyGradlePlugin").trackBuildAsync()
+                BuildTracker("LegacyGradlePlugin").trackBuildAsync(env)
             }
         }
         generateTask.group = name

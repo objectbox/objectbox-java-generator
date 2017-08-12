@@ -8,6 +8,15 @@ class ProjectEnv(val project: Project) {
     object Const {
         const val name: String = "objectbox"
         const val packageName: String = "io/objectbox"
+        val objectBoxVersion: String by lazy {
+            val properties = Properties()
+            val stream = javaClass.getResourceAsStream("/${Const.packageName}/gradle/version.properties")
+            stream?.use {
+                properties.load(it)
+            }
+            properties.getProperty("version").nullIfBlank()
+                    ?: throw RuntimeException("Version unavailable (bad Gradle build?)")
+        }
     }
 
     /** Works only if first called inside a Gradle task NOT plugin! */
@@ -21,13 +30,7 @@ class ProjectEnv(val project: Project) {
     val hasJavaPlugin = project.plugins.hasPlugin("java")
 
     val objectBoxVersion: String by lazy {
-        val properties = Properties()
-        val stream = javaClass.getResourceAsStream("/${Const.packageName}/gradle/version.properties")
-        stream?.use {
-            properties.load(it)
-        }
-        properties.getProperty("version").nullIfBlank()
-                ?: throw RuntimeException("Version unavailable (bad Gradle build?)")
+        Const.objectBoxVersion
     }
 
     /**

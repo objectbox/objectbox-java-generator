@@ -16,6 +16,8 @@ import org.mockito.Mockito.spy
 import java.io.File
 
 class BuildTrackerTest {
+    val toolName = "TestTool"
+
     @Test
     fun testBuildEventData() {
         val project = mock(Project::class.java)
@@ -36,24 +38,42 @@ class BuildTrackerTest {
 
         val env = ProjectEnv(project)
         val toolName = "TestTool"
-        val analytics = spy(BuildTracker(env, toolName))
+        val analytics = spy(BuildTracker(toolName))
         val aid = "my.test.app"
-        doReturn(aid).`when`(analytics).androidAppId()
+        doReturn(aid).`when`(analytics).androidAppId(env.project)
 
-        val eventData = analytics.eventData("Build", analytics.buildEventProperties())
-
-        val parameterizedType = Types.newParameterizedType(Map::class.java, String::class.java, Object::class.java);
-        val adapter = Moshi.Builder().build().adapter<Map<String, Object>>(parameterizedType)
-        val json = adapter.fromJson(eventData)
-        Assert.assertEquals("Build", json["event"])
+        val eventData = analytics.eventData("Build", analytics.buildEventProperties(env))
+        val json = parseJsonAndAssertBasics(eventData, "Build")
         val properties = json["properties"] as Map<String, Any>
-        Assert.assertNotNull(properties["token"])
         val distinctId = properties["distinct_id"] as String
-        Assert.assertNotNull(distinctId)
         Assert.assertEquals(analytics.hashBase64WithoutPadding(aid), properties["AAID"])
         Assert.assertEquals(toolName, properties["Tool"])
 
-        val analytics2 = spy(BuildTracker(env, toolName))
+        val analytics2 = spy(BuildTracker(toolName))
         Assert.assertEquals(distinctId, analytics2.uniqueIdentifier())
+    }
+
+    @Test
+    fun testErrorEventData() {
+        val analytics = spy(BuildTracker(toolName))
+        val cause = Exception("Banana")
+        val eventData = analytics.eventData("Error", analytics.errorProperties("Boo", Exception("Bad", cause)))
+
+        val json = parseJsonAndAssertBasics(eventData, "Error")
+        val properties = json["properties"] as Map<String, Any>
+
+    }
+
+    private fun parseJsonAndAssertBasics(eventData: String, expectedEvent:String): Map<String, Object> {
+        val parameterizedType = Types.newParameterizedType(Map::class.java, String::class.java, Object::class.java);
+        val adapter = Moshi.Builder().build().adapter<Map<String, Object>>(parameterizedType)
+        val json = adapter.fromJson(eventData)
+
+        Assert.assertEquals(expectedEvent, json["event"])
+        val properties = json["properties"] as Map<String, Any>
+        Assert.assertNotNull(properties["token"])
+        Assert.assertNotNull(properties["distinct_id"] as String)
+        Assert.assertEquals(toolName, properties["Tool"])
+        return json
     }
 }

@@ -4,6 +4,7 @@ import com.android.build.gradle.AppExtension
 import com.android.build.gradle.AppPlugin
 import com.android.build.gradle.LibraryExtension
 import com.android.build.gradle.LibraryPlugin
+import org.gradle.api.Project
 import org.gradle.api.plugins.ExtensionContainer
 import org.greenrobot.essentials.Base64
 import org.greenrobot.essentials.hash.Murmur3F
@@ -11,6 +12,8 @@ import java.io.File
 import java.io.FileReader
 import java.io.FileWriter
 import java.io.IOException
+import java.io.PrintWriter
+import java.io.StringWriter
 import java.net.HttpURLConnection
 import java.net.URL
 import java.nio.ByteBuffer
@@ -21,19 +24,27 @@ import kotlin.reflect.KClass
  * Track build errors and anonymous stats.
  */
 // Non-final for easier mocking
-open class BuildTracker(val env: ProjectEnv, val toolName: String) {
+open class BuildTracker(val toolName: String) {
 
     private val BASE_URL = "https://api.mixpanel.com/track/?data="
     private val TOKEN = "REPLACE_WITH_TOKEN"
     private val TIMEOUT_READ = 15000
     private val TIMEOUT_CONNECT = 20000
 
-    fun trackBuildAsync() {
-        Thread(Runnable { trackBuild() }).start()
+    fun trackBuildAsync(env: ProjectEnv) {
+        Thread(Runnable { trackBuild(env) }).start()
     }
 
-    fun trackBuild() {
-        sendEvent("Build", buildEventProperties())
+    fun trackBuild(env: ProjectEnv) {
+        sendEvent("Build", buildEventProperties(env))
+    }
+
+    fun trackErrorAsync(message: String, throwable: Throwable? = null) {
+        Thread(Runnable { trackError(message, throwable) }).start()
+    }
+
+    fun trackError(message: String, throwable: Throwable? = null) {
+        sendEvent("Error", errorProperties(message, throwable))
     }
 
     private fun sendEvent(eventName: String, eventProperties: String) {
@@ -62,6 +73,7 @@ open class BuildTracker(val env: ProjectEnv, val toolName: String) {
 
         event.key("token").value(TOKEN).comma()
         event.key("distinct_id").value(uniqueIdentifier()).comma()
+        event.key("Tool").value(toolName).comma()
 
         event.append(properties)
 
@@ -69,17 +81,42 @@ open class BuildTracker(val env: ProjectEnv, val toolName: String) {
         return event.toString()
     }
 
-    internal fun buildEventProperties(): String {
+
+    internal fun errorProperties(message: String, throwable: Throwable?): String {
+        val event = StringBuilder()
+        event.key("Message").value(message).comma()
+        event.key("Version").value(ProjectEnv.Const.objectBoxVersion)
+
+        if (throwable != null) {
+            event.comma()
+            var n = 1
+            var ex = throwable
+            val stringWriter = StringWriter()
+            val printWriter = PrintWriter(stringWriter)
+            ex.printStackTrace(printWriter)
+            event.key("ExStack").value(stringWriter.buffer.toString()).comma()
+            while (ex != null) {
+                event.comma()
+                event.key("ExMessage$n").value(ex.message ?: "na").comma()
+                event.key("ExClass$n").value(ex.javaClass.name)
+
+                if (ex.cause != ex) ex = ex.cause
+                n++
+            }
+        }
+        return event.toString()
+    }
+
+    internal fun buildEventProperties(env: ProjectEnv): String {
         val event = StringBuilder()
 
         // AAID: Anonymous App ID
-        val appId = androidAppId()
+        val appId = androidAppId(env.project)
         if (appId != null) {
             event.key("AAID").value(hashBase64WithoutPadding(appId)).comma()
         }
         event.key("BuildOS").value(System.getProperty("os.name")).comma()
         event.key("BuildOSVersion").value(System.getProperty("os.version")).comma()
-        event.key("Tool").value(toolName).comma()
 
         val ci = checkCI()
         if (ci != null) {
@@ -116,8 +153,7 @@ open class BuildTracker(val env: ProjectEnv, val toolName: String) {
     }
 
     // Allow stubbing for testing
-    open internal fun androidAppId(): String? {
-        val project = env.project
+    open internal fun androidAppId(project: Project): String? {
         val appPlugin = project.plugins.find { it is AppPlugin }
         if (appPlugin != null) {
             val variants = project.extensions[AppExtension::class].applicationVariants
