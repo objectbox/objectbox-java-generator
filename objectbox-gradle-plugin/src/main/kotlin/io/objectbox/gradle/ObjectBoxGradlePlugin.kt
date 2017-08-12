@@ -39,6 +39,14 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
                 if (ObjectBoxAndroidTransform.Registration.getAndroidExtensionClasses(project).isEmpty()) {
                     // TODO check
                 }
+
+                val aptConf = project.configurations.findByName("kapt") ?:
+                        project.configurations.findByName("annotationProcessor") ?:
+                        project.configurations.findByName("apt")
+                val foundDependency = aptConf?.dependencies?.firstOrNull() { it.group == "io.objectbox" }
+                foundDependency ?:
+                        throw RuntimeException("No configuration found with the ObjectBox annotation processor. " +
+                                "Currently only Android projects are fully supported.")
             }
         } catch(e: Throwable) {
             if (e is TransformException) buildTracker.trackError("Transform preparation failed", e)
@@ -66,11 +74,14 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
             project.dependencies.add(depScope, "io.objectbox:objectbox-kotlin:$runtimeVersion")
             project.dependencies.add("kapt", processorDep)
         } else {
-            // https://bitbucket.org/hvisser/android-apt
-            if (project.plugins.hasPlugin("com.neenbedankt.android-apt")) {
-                project.dependencies.add("apt", processorDep)
-            } else {
+            // Gradle requires custom config!?
+            // https://docs.gradle.org/current/userguide/java_plugin.html#sec:java_compile_avoidance
+            // Android uses annotationProcessor
+            if (project.configurations.findByName("annotationProcessor") != null) {
                 project.dependencies.add("annotationProcessor", processorDep)
+            } else if (project.configurations.findByName("apt") != null) {
+                // https://bitbucket.org/hvisser/android-apt or custom apt
+                project.dependencies.add("apt", processorDep)
             }
             if (env.hasAndroidPlugin) {
                 project.dependencies.add(depScope, "io.objectbox:objectbox-android:$runtimeVersion")
