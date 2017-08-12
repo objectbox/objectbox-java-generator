@@ -1,6 +1,6 @@
 // Plugins must be in (test) classpath of objectbox-gradle-plugin
 plugins {
-    id 'io.objectbox'
+    id 'io.objectbox.legacy'
     id 'java'
 }
 
@@ -9,6 +9,15 @@ sourceCompatibility = '1.7'
 
 objectbox {
     schemaVersion 1000
+}
+
+// io.objectbox plugin with apt does not work (cannot find Customer_)
+configurations {
+    apt
+}
+
+compileJava {
+    options.annotationProcessorPath = configurations.apt
 }
 
 dependencies {

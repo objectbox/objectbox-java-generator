@@ -2,7 +2,7 @@
 plugins {
     id 'com.android.application'
     id 'kotlin-android'
-    id 'io.objectbox'
+    id 'io.objectbox.legacy'
 }
 
 targetCompatibility = '1.7'
