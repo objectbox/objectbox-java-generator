@@ -13,13 +13,11 @@ import java.io.File
 
 class ObjectBoxGradlePlugin : Plugin<Project> {
 
+    val buildTracker = BuildTracker("LegacyGradlePlugin")
 
     override fun apply(project: Project) {
         val env = ProjectEnv(project)
         env.logDebug("$name plugin starting...")
-
-        val buildTracker = BuildTracker("LegacyGradlePlugin")
-        buildTracker.trackBuild(env)
 
         try {
             val version = env.objectBoxVersion
@@ -42,7 +40,7 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
                 // Cannot use afterEvaluate to register transform, thus out plugin must be applied after Android
                 ObjectBoxAndroidTransform.Registration.to(project)
             }
-        } catch (e:Throwable) {
+        } catch (e: Throwable) {
             buildTracker.trackFatal("Applying plugin failed", e)
             throw e
         }
@@ -100,6 +98,10 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
 
             if (env.options.generateTests) {
                 outputs.dir(env.options.targetGenDirTests)
+            }
+
+            doFirst {
+                buildTracker.trackBuild(env)
             }
 
             doLast {

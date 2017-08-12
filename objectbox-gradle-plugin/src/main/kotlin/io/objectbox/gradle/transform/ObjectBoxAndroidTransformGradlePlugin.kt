@@ -11,7 +11,6 @@ class ObjectBoxAndroidTransformGradlePlugin : Plugin<Project> {
         val buildTracker = BuildTracker("GradlePlugin")
         try {
             val env = ProjectEnv(project)
-            buildTracker.trackBuild(env)
             if (!env.hasAndroidPlugin) {
                 // throw RuntimeException("Use the ObjectBox plugin AFTER applying Android plugin")
                 project.logger.warn("ObjectBox: Use the ObjectBox plugin AFTER applying Android plugin. " +
@@ -25,8 +24,11 @@ class ObjectBoxAndroidTransformGradlePlugin : Plugin<Project> {
                 ObjectBoxAndroidTransform.Registration.to(project)
             }
 
+            val task = project.task("objectboxVerifySetup")
+            task.dependsOn(project.configurations.getByName(env.dependencyScopeApiOrCompile))
+            task.doFirst {
+                buildTracker.trackBuild(env)
 
-            project.task("objectbox-verify-setup").doFirst {
                 val env = ProjectEnv(project) // Now Options are available
                 if (ObjectBoxAndroidTransform.Registration.getAndroidExtensionClasses(project).isEmpty()) {
                     // TODO check
