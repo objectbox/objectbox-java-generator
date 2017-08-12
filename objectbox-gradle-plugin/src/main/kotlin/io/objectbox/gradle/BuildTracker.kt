@@ -28,11 +28,11 @@ open class BuildTracker(val env: ProjectEnv, val toolName: String) {
     private val TIMEOUT_READ = 15000
     private val TIMEOUT_CONNECT = 20000
 
-    fun submitAsync() {
-        Thread(Runnable { submit() }).start()
+    fun trackBuildAsync() {
+        Thread(Runnable { trackBuild() }).start()
     }
 
-    fun submit() {
+    fun trackBuild() {
         try {
             val url = URL(buildUrl())
             val con = url.openConnection() as HttpURLConnection
@@ -40,6 +40,7 @@ open class BuildTracker(val env: ProjectEnv, val toolName: String) {
             con.readTimeout = TIMEOUT_READ
             con.requestMethod = "GET"
             con.responseCode
+            con.disconnect()
         } catch (ignored: Exception) {
         }
     }

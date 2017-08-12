@@ -22,7 +22,7 @@ class ObjectBoxAndroidTransformGradlePlugin : Plugin<Project> {
             ObjectBoxAndroidTransform.Registration.to(project)
         }
 
-        BuildTracker(env, "GradlePlugin").submitAsync()
+        BuildTracker(env, "GradlePlugin").trackBuildAsync()
 
         project.task("objectbox-verify-setup").doFirst {
             val env = ProjectEnv(project) // Now Options are available
