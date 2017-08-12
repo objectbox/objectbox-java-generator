@@ -39,12 +39,14 @@ class ObjectBoxAndroidTransformGradlePlugin : Plugin<Project> {
         val processorDep = "io.objectbox:objectbox-processor:$pluginVersion"
         val depScope = env.dependencyScopeApiOrCompile
         if (env.hasKotlinPlugin) {
-            project.plugins.apply("kotlin-kapt")
+            if(!project.plugins.hasPlugin("kotlin-kapt")) {
+                project.plugins.apply("kotlin-kapt")
+            }
             project.dependencies.add(depScope, "io.objectbox:objectbox-kotlin:$runtimeVersion")
             project.dependencies.add("kapt", processorDep)
         } else {
             // https://bitbucket.org/hvisser/android-apt
-            if (project.plugins.findPlugin("com.neenbedankt.android-apt") != null) {
+            if (project.plugins.hasPlugin("com.neenbedankt.android-apt")) {
                 project.dependencies.add("apt", processorDep)
             } else {
                 project.dependencies.add("annotationProcessor", processorDep)
