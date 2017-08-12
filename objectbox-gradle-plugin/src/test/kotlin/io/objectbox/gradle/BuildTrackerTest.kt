@@ -15,7 +15,7 @@ import org.mockito.Mockito.mock
 import org.mockito.Mockito.spy
 import java.io.File
 
-class AnalyticsTest {
+class BuildTrackerTest {
     @Test
     fun testBuildEventData() {
         val project = mock(Project::class.java)
@@ -36,7 +36,7 @@ class AnalyticsTest {
 
         val env = ProjectEnv(project)
         val toolName = "TestTool"
-        val analytics = spy(Analytics(env, toolName))
+        val analytics = spy(BuildTracker(env, toolName))
         val aid = "my.test.app"
         doReturn(aid).`when`(analytics).androidAppId()
 
@@ -53,7 +53,7 @@ class AnalyticsTest {
         Assert.assertEquals(analytics.hashBase64WithoutPadding(aid), properties["AAID"])
         Assert.assertEquals(toolName, properties["Tool"])
 
-        val analytics2 = spy(Analytics(env, toolName))
+        val analytics2 = spy(BuildTracker(env, toolName))
         Assert.assertEquals(distinctId, analytics2.uniqueIdentifier())
     }
 }

@@ -1,6 +1,6 @@
 package io.objectbox.gradle.transform
 
-import io.objectbox.gradle.Analytics
+import io.objectbox.gradle.BuildTracker
 import io.objectbox.gradle.ProjectEnv
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -22,7 +22,7 @@ class ObjectBoxAndroidTransformGradlePlugin : Plugin<Project> {
             ObjectBoxAndroidTransform.Registration.to(project)
         }
 
-        Analytics(env, "GradlePlugin").submitAsync()
+        BuildTracker(env, "GradlePlugin").submitAsync()
 
         project.task("objectbox-verify-setup").doFirst {
             val env = ProjectEnv(project) // Now Options are available

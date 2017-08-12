@@ -18,15 +18,10 @@ import java.util.*
 import kotlin.reflect.KClass
 
 /**
- * Send anonymous data when building.
- *
- * Currently sends:
- * - the version of ObjectBox used
- * - the operating system the build is running on
- * - if Kotlin or only Java code is used
+ * Track build errors and anonymous stats.
  */
 // Non-final for easier mocking
-open class Analytics(val env: ProjectEnv, val toolName: String) {
+open class BuildTracker(val env: ProjectEnv, val toolName: String) {
 
     private val BASE_URL = "https://api.mixpanel.com/track/?data="
     private val TOKEN = "REPLACE_WITH_TOKEN"
