@@ -40,7 +40,7 @@ class BuildTrackerTest {
         val aid = "my.test.app"
         doReturn(aid).`when`(analytics).androidAppId()
 
-        val eventData = analytics.buildEventData()
+        val eventData = analytics.eventData("Build", analytics.buildEventProperties())
 
         val parameterizedType = Types.newParameterizedType(Map::class.java, String::class.java, Object::class.java);
         val adapter = Moshi.Builder().build().adapter<Map<String, Object>>(parameterizedType)

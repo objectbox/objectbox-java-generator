@@ -33,8 +33,16 @@ open class BuildTracker(val env: ProjectEnv, val toolName: String) {
     }
 
     fun trackBuild() {
+        sendEvent("Build", buildEventProperties())
+    }
+
+    private fun sendEvent(eventName: String, eventProperties: String) {
+        val event = eventData(eventName, eventProperties)
+
+        // https://mixpanel.com/help/reference/http#base64
+        val eventEncoded = Base64.encodeBytes(event.toByteArray())
         try {
-            val url = URL(buildUrl())
+            val url = URL(BASE_URL + eventEncoded)
             val con = url.openConnection() as HttpURLConnection
             con.connectTimeout = TIMEOUT_CONNECT
             con.readTimeout = TIMEOUT_READ
@@ -45,36 +53,32 @@ open class BuildTracker(val env: ProjectEnv, val toolName: String) {
         }
     }
 
-    private fun buildUrl(): String {
-        val event = buildEventData()
-
-        // https://mixpanel.com/help/reference/http#base64
-        val eventEncoded = Base64.encodeBytes(event.toByteArray())
-
-        return BASE_URL + eventEncoded
-    }
-
-    internal fun buildEventData(): String {
-        val os = System.getProperty("os.name")
-        val osVersion = System.getProperty("os.version")
-        val hasKotlinPlugin = env.hasKotlinAndroidPlugin || env.hasKotlinPlugin
-
+    internal fun eventData(eventName: String, properties: String): String {
         // https://mixpanel.com/help/reference/http#tracking-events
         val event = StringBuilder()
         event.append("{")
-        event.key("event").value("Build").comma()
+        event.key("event").value(eventName).comma()
         event.key("properties").append(" {")
 
         event.key("token").value(TOKEN).comma()
         event.key("distinct_id").value(uniqueIdentifier()).comma()
+
+        event.append(properties)
+
+        event.append("}").append("}")
+        return event.toString()
+    }
+
+    internal fun buildEventProperties(): String {
+        val event = StringBuilder()
 
         // AAID: Anonymous App ID
         val appId = androidAppId()
         if (appId != null) {
             event.key("AAID").value(hashBase64WithoutPadding(appId)).comma()
         }
-        event.key("BuildOS").value(os).comma()
-        event.key("BuildOSVersion").value(osVersion).comma()
+        event.key("BuildOS").value(System.getProperty("os.name")).comma()
+        event.key("BuildOSVersion").value(System.getProperty("os.version")).comma()
         event.key("Tool").value(toolName).comma()
 
         val ci = checkCI()
@@ -82,12 +86,11 @@ open class BuildTracker(val env: ProjectEnv, val toolName: String) {
             event.key("CI").value(ci).comma()
         }
         // There may be multiple languages in a project, so it's not a single dimension
+        val hasKotlinPlugin = env.hasKotlinAndroidPlugin || env.hasKotlinPlugin
         event.key("Kotlin").value(hasKotlinPlugin.toString()).comma()
         event.key("Java").value(env.hasJavaPlugin.toString()).comma()
         event.key("Version").value(env.objectBoxVersion).comma()
         event.key("Target").value(if (env.hasAndroidPlugin) "Android" else "Other")
-
-        event.append("}").append("}")
         return event.toString()
     }
 
