@@ -4,6 +4,8 @@ import com.android.build.gradle.AppExtension
 import com.android.build.gradle.AppPlugin
 import com.android.build.gradle.LibraryExtension
 import com.android.build.gradle.LibraryPlugin
+import com.squareup.moshi.JsonWriter
+import okio.Buffer
 import org.gradle.api.Project
 import org.gradle.api.plugins.ExtensionContainer
 import org.greenrobot.essentials.Base64
@@ -84,8 +86,8 @@ open class BuildTracker(val toolName: String) {
 
     internal fun errorProperties(message: String, throwable: Throwable?): String {
         val event = StringBuilder()
-        event.key("Message").value(message).comma()
-        event.key("Version").value(ProjectEnv.Const.objectBoxVersion)
+        event.key("Message").valueEscaped(message).comma()
+        event.key("Version").valueEscaped(ProjectEnv.Const.objectBoxVersion)
 
         if (throwable != null) {
             event.comma()
@@ -94,10 +96,10 @@ open class BuildTracker(val toolName: String) {
             val stringWriter = StringWriter()
             val printWriter = PrintWriter(stringWriter)
             ex.printStackTrace(printWriter)
-            event.key("ExStack").value(stringWriter.buffer.toString()).comma()
+            event.key("ExStack").valueEscaped(stringWriter.buffer.toString())
             while (ex != null) {
                 event.comma()
-                event.key("ExMessage$n").value(ex.message ?: "na").comma()
+                event.key("ExMessage$n").valueEscaped(ex.message ?: "na").comma()
                 event.key("ExClass$n").value(ex.javaClass.name)
 
                 if (ex.cause != ex) ex = ex.cause
@@ -115,8 +117,8 @@ open class BuildTracker(val toolName: String) {
         if (appId != null) {
             event.key("AAID").value(hashBase64WithoutPadding(appId)).comma()
         }
-        event.key("BuildOS").value(System.getProperty("os.name")).comma()
-        event.key("BuildOSVersion").value(System.getProperty("os.version")).comma()
+        event.key("BuildOS").valueEscaped(System.getProperty("os.name")).comma()
+        event.key("BuildOSVersion").valueEscaped(System.getProperty("os.version")).comma()
 
         val ci = checkCI()
         if (ci != null) {
@@ -141,8 +143,15 @@ open class BuildTracker(val toolName: String) {
         return this
     }
 
+    private fun StringBuilder.valueEscaped(value: String): java.lang.StringBuilder {
+        val buffer = Buffer()
+        JsonWriter.of(buffer).value(value)
+        append(buffer.readUtf8())
+        return this
+    }
+
     private fun StringBuilder.comma(): java.lang.StringBuilder {
-        append(",")
+        append(',')
         return this
     }
 
