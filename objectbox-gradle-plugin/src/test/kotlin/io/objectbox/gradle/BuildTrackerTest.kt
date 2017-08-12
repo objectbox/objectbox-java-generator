@@ -40,7 +40,7 @@ class BuildTrackerTest {
 
         val env = ProjectEnv(project)
         val toolName = "TestTool"
-        val analytics = spy(BuildTracker(toolName))
+        val analytics = spy(GradleBuildTracker(toolName))
         val aid = "my.test.app"
         doReturn(aid).`when`(analytics).androidAppId(env.project)
 
@@ -52,13 +52,13 @@ class BuildTrackerTest {
         assertEquals(toolName, properties["Tool"])
         assertEquals(ProjectEnv.Const.objectBoxVersion, properties["Version"])
 
-        val analytics2 = spy(BuildTracker(toolName))
+        val analytics2 = spy(GradleBuildTracker(toolName))
         assertEquals(distinctId, analytics2.uniqueIdentifier())
     }
 
     @Test
     fun testErrorEventData() {
-        val analytics = spy(BuildTracker(toolName))
+        val analytics = spy(GradleBuildTracker(toolName))
         val cause = RuntimeException("Banana")
         val eventData = analytics.eventData("Error", analytics.errorProperties("Boo", Exception("Bad", cause)))
 

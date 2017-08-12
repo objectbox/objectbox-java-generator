@@ -13,7 +13,7 @@ import java.io.File
 
 class LegacyGradlePlugin : Plugin<Project> {
 
-    val buildTracker = BuildTracker("LegacyGradlePlugin")
+    val buildTracker = GradleBuildTracker("LegacyGradlePlugin")
 
     override fun apply(project: Project) {
         val env = ProjectEnv(project)

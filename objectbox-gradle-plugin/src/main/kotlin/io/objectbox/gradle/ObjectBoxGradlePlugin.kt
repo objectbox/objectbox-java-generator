@@ -11,7 +11,7 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
     }
 
     override fun apply(project: Project) {
-        val buildTracker = BuildTracker("GradlePlugin")
+        val buildTracker = GradleBuildTracker("GradlePlugin")
         try {
             val env = ProjectEnv(project)
             if (!env.hasAndroidPlugin) {

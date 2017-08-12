@@ -15,7 +15,7 @@ import kotlin.reflect.KClass
  * Track build errors and anonymous stats for Gradle projects.
  */
 // Non-final for easier mocking
-open class BuildTracker(toolName: String) : BasicBuildTracker(toolName) {
+open class GradleBuildTracker(toolName: String) : BasicBuildTracker(toolName) {
 
     override fun version(): String? {
         return ProjectEnv.Const.objectBoxVersion

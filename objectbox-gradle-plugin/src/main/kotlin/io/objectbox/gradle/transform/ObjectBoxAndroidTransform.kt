@@ -11,7 +11,7 @@ import com.android.build.gradle.LibraryExtension
 import com.android.build.gradle.LibraryPlugin
 import com.android.build.gradle.TestExtension
 import com.android.build.gradle.TestPlugin
-import io.objectbox.gradle.BuildTracker
+import io.objectbox.gradle.GradleBuildTracker
 import org.gradle.api.Project
 import java.io.File
 
@@ -77,7 +77,7 @@ class ObjectBoxAndroidTransform(val project: Project) : Transform() {
 
             classTransformer.transformOrCopyClasses(probedClasses, outDir)
         } catch (e: Throwable) {
-            val buildTracker = BuildTracker("Transformer")
+            val buildTracker = GradleBuildTracker("Transformer")
             if(e is TransformException) buildTracker.trackError("Transform failed", e)
             else buildTracker.trackFatal("Transform failed", e)
             throw e
