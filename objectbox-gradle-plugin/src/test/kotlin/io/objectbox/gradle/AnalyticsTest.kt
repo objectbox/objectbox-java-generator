@@ -35,7 +35,8 @@ class AnalyticsTest {
         `when`(extensionContainer.create(ProjectEnv.Const.name, ObjectBoxOptions::class.java, project)).thenReturn(options)
 
         val env = ProjectEnv(project)
-        val analytics = spy(Analytics(env))
+        val toolName = "TestTool"
+        val analytics = spy(Analytics(env, toolName))
         val aid = "my.test.app"
         doReturn(aid).`when`(analytics).androidAppId()
 
@@ -50,8 +51,9 @@ class AnalyticsTest {
         val distinctId = properties["distinct_id"] as String
         Assert.assertNotNull(distinctId)
         Assert.assertEquals(analytics.hashBase64WithoutPadding(aid), properties["AAID"])
+        Assert.assertEquals(toolName, properties["Tool"])
 
-        val analytics2 = spy(Analytics(env))
+        val analytics2 = spy(Analytics(env, toolName))
         Assert.assertEquals(distinctId, analytics2.uniqueIdentifier())
     }
 }
