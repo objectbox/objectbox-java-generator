@@ -23,18 +23,7 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
             val version = env.objectBoxVersion
             project.logger.debug("$name plugin $version preparing tasks...")
 
-            val allowApt = env.options.allowApt
-            env.logDebug("objectbox.allowApt: $allowApt")
-            if (allowApt && env.hasKotlinAndroidPlugin) {
-                project.dependencies.add("kapt", "io.objectbox:objectbox-processor:$version")
-            } else if (allowApt && env.hasKotlinPlugin) {
-                project.dependencies.add("kapt", "io.objectbox:objectbox-processor:$version")
-
-                project.logger.warn("ObjectBox: NO TRANSFORM SUPPORT for plain Kotlin projects yet. " +
-                        "Limited support only!! Especially relations are NOT supported.")
-            } else {
-                addJavaModifierTasks(env)
-            }
+            addJavaModifierTasks(env)
 
             if (env.hasAndroidPlugin) {
                 // Cannot use afterEvaluate to register transform, thus out plugin must be applied after Android

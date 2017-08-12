@@ -57,8 +57,6 @@ open class ObjectBoxOptions(val project: Project) {
 
     var daoCompat = false
 
-    var allowApt = false
-
     // TODO use it
     var debugTransform = false
 
