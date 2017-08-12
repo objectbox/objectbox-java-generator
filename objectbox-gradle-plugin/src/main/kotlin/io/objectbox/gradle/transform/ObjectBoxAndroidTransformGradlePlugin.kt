@@ -51,11 +51,17 @@ class ObjectBoxAndroidTransformGradlePlugin : Plugin<Project> {
         val pluginVersion = env.objectBoxVersion
         val runtimeVersion = pluginVersion
 
+        // Does not seem to work with Android projects; project should do that themselves:
         val processorDep = "io.objectbox:objectbox-processor:$pluginVersion"
+
         val depScope = env.dependencyScopeApiOrCompile
         if (env.hasKotlinPlugin) {
+            if (DEBUG) println("### Kotlin plugin detected")
+
             if (!project.plugins.hasPlugin("kotlin-kapt")) {
+                // Does not seem to work reliable; project should do that themselves:
                 project.plugins.apply("kotlin-kapt")
+                if (DEBUG) println("### Kotlin KAPT plugin added")
             }
             project.dependencies.add(depScope, "io.objectbox:objectbox-kotlin:$runtimeVersion")
             project.dependencies.add("kapt", processorDep)
@@ -68,6 +74,7 @@ class ObjectBoxAndroidTransformGradlePlugin : Plugin<Project> {
             }
             if (env.hasAndroidPlugin) {
                 project.dependencies.add(depScope, "io.objectbox:objectbox-android:$runtimeVersion")
+                project.dependencies.add("androidTestCompile", "com.google.code.findbugs:jsr305:3.0.2")
             } else {
                 project.dependencies.add(depScope, "io.objectbox:objectbox-java:$runtimeVersion")
             }
