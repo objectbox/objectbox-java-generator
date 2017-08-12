@@ -33,20 +33,20 @@ open class BuildTracker(val toolName: String) {
     private val TIMEOUT_READ = 15000
     private val TIMEOUT_CONNECT = 20000
 
-    fun trackBuildAsync(env: ProjectEnv) {
-        Thread(Runnable { trackBuild(env) }).start()
-    }
-
     fun trackBuild(env: ProjectEnv) {
-        sendEvent("Build", buildEventProperties(env))
-    }
-
-    fun trackErrorAsync(message: String, throwable: Throwable? = null) {
-        Thread(Runnable { trackError(message, throwable) }).start()
+        sendEventAsync("Build", buildEventProperties(env))
     }
 
     fun trackError(message: String, throwable: Throwable? = null) {
-        sendEvent("Error", errorProperties(message, throwable))
+        sendEventAsync("Error", errorProperties(message, throwable))
+    }
+
+    fun trackFatal(message: String, throwable: Throwable? = null) {
+        sendEventAsync("Fatal", errorProperties(message, throwable))
+    }
+
+    fun sendEventAsync(eventName: String, eventProperties: String) {
+        Thread(Runnable { sendEvent(eventName, eventProperties) }).start()
     }
 
     private fun sendEvent(eventName: String, eventProperties: String) {
@@ -82,7 +82,6 @@ open class BuildTracker(val toolName: String) {
         event.append("}").append("}")
         return event.toString()
     }
-
 
     internal fun errorProperties(message: String, throwable: Throwable?): String {
         val event = StringBuilder()
