@@ -50,6 +50,7 @@ class BuildTrackerTest {
         val distinctId = properties["distinct_id"] as String
         assertEquals(analytics.hashBase64WithoutPadding(aid), properties["AAID"])
         assertEquals(toolName, properties["Tool"])
+        assertEquals(ProjectEnv.Const.objectBoxVersion, properties["Version"])
 
         val analytics2 = spy(BuildTracker(toolName))
         assertEquals(distinctId, analytics2.uniqueIdentifier())
@@ -63,6 +64,8 @@ class BuildTrackerTest {
 
         val json = parseJsonAndAssertBasics(eventData, "Error")
         val properties = json["properties"] as Map<String, Any>
+
+        assertEquals(ProjectEnv.Const.objectBoxVersion, properties["Version"])
 
         val exStack = properties["ExStack"] as String
         assertTrue(exStack, exStack.contains("Banana"))
