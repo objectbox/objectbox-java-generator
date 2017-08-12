@@ -33,7 +33,8 @@ class ObjectBoxAndroidTransformGradlePlugin : Plugin<Project> {
                 }
             }
         } catch(e: Throwable) {
-            buildTracker.trackFatal("Applying plugin failed", e)
+            if(e is TransformException) buildTracker.trackError("Transform preparation failed", e)
+            else buildTracker.trackFatal("Applying plugin failed", e)
             throw e
         }
     }

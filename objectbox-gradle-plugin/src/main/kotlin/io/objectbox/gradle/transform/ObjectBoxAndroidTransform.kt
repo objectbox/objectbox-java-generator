@@ -11,6 +11,7 @@ import com.android.build.gradle.LibraryExtension
 import com.android.build.gradle.LibraryPlugin
 import com.android.build.gradle.TestExtension
 import com.android.build.gradle.TestPlugin
+import io.objectbox.gradle.BuildTracker
 import org.gradle.api.Project
 import java.io.File
 
@@ -63,17 +64,24 @@ class ObjectBoxAndroidTransform(val project: Project) : Transform() {
 
     override fun transform(info: TransformInvocation) {
         super.transform(info)
-        val allClassFiles = mutableSetOf<File>()
-        info.inputs.flatMap { it.directoryInputs }.forEach { directoryInput ->
-            // TODO incremental: directoryInput.changedFiles
+        try {
+            val allClassFiles = mutableSetOf<File>()
+            info.inputs.flatMap { it.directoryInputs }.forEach { directoryInput ->
+                // TODO incremental: directoryInput.changedFiles
 
-            allClassFiles.addAll(directoryInput.file.walk().filter { it.isFile && it.name.endsWith(".class") })
+                allClassFiles.addAll(directoryInput.file.walk().filter { it.isFile && it.name.endsWith(".class") })
+            }
+
+            val probedClasses = allClassFiles.map { classProber.probeClass(it) }.filterNotNull()
+            val outDir = info.outputProvider.getContentLocation("objectbox", inputTypes, scopes, Format.DIRECTORY)
+
+            classTransformer.transformOrCopyClasses(probedClasses, outDir)
+        } catch (e: Throwable) {
+            val buildTracker = BuildTracker("Transformer")
+            if(e is TransformException) buildTracker.trackError("Transform failed", e)
+            else buildTracker.trackFatal("Transform failed", e)
+            throw e
         }
-
-        val probedClasses = allClassFiles.map { classProber.probeClass(it) }.filterNotNull()
-        val outDir = info.outputProvider.getContentLocation("objectbox", inputTypes, scopes, Format.DIRECTORY)
-
-        classTransformer.transformOrCopyClasses(probedClasses, outDir)
     }
 
 }

@@ -51,6 +51,7 @@ class Messages(val messager: Messager, val debug: Boolean) {
     private fun printAndTrackError(message: String, element: Element? = null) {
         errorCount++
         printMessage(Diagnostic.Kind.ERROR, message, element)
+        // TODO move BuildTracker to a reachable module and track
     }
 
     private fun printMessage(kind: Diagnostic.Kind, message: String, element: Element? = null) {
