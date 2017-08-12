@@ -3,6 +3,7 @@ package io.objectbox.processor
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.NameInDb
 import io.objectbox.annotation.Uid
+import io.objectbox.build.BasicBuildTracker
 import io.objectbox.generator.BoxGenerator
 import io.objectbox.generator.idsync.IdSync
 import io.objectbox.generator.idsync.IdSyncException
@@ -89,7 +90,12 @@ open class ObjectBoxProcessor : AbstractProcessor() {
     }
 
     override fun process(annotations: Set<TypeElement>, env: RoundEnvironment): Boolean {
-        findAndParse(env)
+        try {
+            findAndParse(env)
+        } catch (e: Throwable) {
+            BasicBuildTracker("Processor").trackFatal("Processing failed", e)
+            throw e
+        }
         return false
     }
 

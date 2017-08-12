@@ -72,12 +72,6 @@ open class BuildTracker(toolName: String) : BasicBuildTracker(toolName) {
         return this
     }
 
-    internal fun hashBase64WithoutPadding(input: String): String {
-        val murmurHash = Murmur3F()
-        murmurHash.update(input.toByteArray())
-        return encodeBase64WithoutPadding(murmurHash.valueBytesBigEndian)
-    }
-
     // Allow stubbing for testing
     open internal fun androidAppId(project: Project): String? {
         val appPlugin = project.plugins.find { it is AppPlugin }

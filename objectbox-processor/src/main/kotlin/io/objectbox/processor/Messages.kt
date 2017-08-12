@@ -1,5 +1,6 @@
 package io.objectbox.processor
 
+import io.objectbox.build.BasicBuildTracker
 import io.objectbox.generator.model.HasParsedElement
 import javax.annotation.processing.Messager
 import javax.lang.model.element.Element
@@ -51,7 +52,9 @@ class Messages(val messager: Messager, val debug: Boolean) {
     private fun printAndTrackError(message: String, element: Element? = null) {
         errorCount++
         printMessage(Diagnostic.Kind.ERROR, message, element)
-        // TODO move BuildTracker to a reachable module and track
+        val buildTracker = BasicBuildTracker("Processor")
+        buildTracker.disconnect = false
+        buildTracker.trackError(message)
     }
 
     private fun printMessage(kind: Diagnostic.Kind, message: String, element: Element? = null) {

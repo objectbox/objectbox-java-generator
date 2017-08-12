@@ -20,11 +20,14 @@ import java.util.*
  */
 // Non-final for easier mocking
 open class BasicBuildTracker(val toolName: String) {
+    private companion object {
+        const val BASE_URL = "https://api.mixpanel.com/track/?data="
+        const val TOKEN = "REPLACE_WITH_TOKEN"
+        const val TIMEOUT_READ = 15000
+        const val TIMEOUT_CONNECT = 20000
+    }
 
-    private val BASE_URL = "https://api.mixpanel.com/track/?data="
-    private val TOKEN = "REPLACE_WITH_TOKEN"
-    private val TIMEOUT_READ = 15000
-    private val TIMEOUT_CONNECT = 20000
+    var disconnect = true
 
     fun trackError(message: String?, throwable: Throwable? = null) {
         sendEventAsync("Error", errorProperties(message, throwable))
@@ -50,13 +53,13 @@ open class BasicBuildTracker(val toolName: String) {
             con.readTimeout = TIMEOUT_READ
             con.requestMethod = "GET"
             con.responseCode
-            con.disconnect()
+            if (disconnect) con.disconnect()
         } catch (ignored: Exception) {
         }
     }
 
     // public for tests in another module
-    public fun eventData(eventName: String, properties: String): String {
+    fun eventData(eventName: String, properties: String): String {
         // https://mixpanel.com/help/reference/http#tracking-events
         val event = StringBuilder()
         event.append("{")
@@ -73,10 +76,10 @@ open class BasicBuildTracker(val toolName: String) {
         return event.toString()
     }
 
-    open protected fun version(): String? = "0.9.14?" //
+    open protected fun version(): String? = "0.9.14?" // TODO replace with generated property, or update frequently...
 
     // public for tests in another module
-    public fun errorProperties(message: String?, throwable: Throwable?): String {
+    fun errorProperties(message: String?, throwable: Throwable?): String {
         val event = StringBuilder()
         if (message != null) {
             event.key("Message").valueEscaped(message).comma()
@@ -128,14 +131,14 @@ open class BasicBuildTracker(val toolName: String) {
         return this
     }
 
-    internal fun hashBase64WithoutPadding(input: String): String {
+    fun hashBase64WithoutPadding(input: String): String {
         val murmurHash = Murmur3F()
         murmurHash.update(input.toByteArray())
         return encodeBase64WithoutPadding(murmurHash.valueBytesBigEndian)
     }
 
     // public for tests in another module
-    public fun uniqueIdentifier(): String {
+    fun uniqueIdentifier(): String {
         var file: File? = null
         val fileName = ".objectbox-build.properties"
         try {
