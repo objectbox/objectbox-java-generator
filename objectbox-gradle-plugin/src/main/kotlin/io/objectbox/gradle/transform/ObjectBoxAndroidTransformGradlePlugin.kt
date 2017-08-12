@@ -6,6 +6,9 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 
 class ObjectBoxAndroidTransformGradlePlugin : Plugin<Project> {
+    companion object {
+        const val DEBUG = false
+    }
 
     override fun apply(project: Project) {
         val buildTracker = BuildTracker("GradlePlugin")
@@ -13,9 +16,9 @@ class ObjectBoxAndroidTransformGradlePlugin : Plugin<Project> {
             val env = ProjectEnv(project)
             if (!env.hasAndroidPlugin) {
                 // throw RuntimeException("Use the ObjectBox plugin AFTER applying Android plugin")
-                project.logger.warn("ObjectBox: Use the ObjectBox plugin AFTER applying Android plugin. " +
+                project.logger.warn("${project.name}: Use the ObjectBox plugin AFTER applying Android plugin. " +
                         "There is NO TRANSFORM SUPPORT for plain Java/Kotlin projects yet. " +
-                        "Without transformations, functionality is limited, e.g. relations are unsupported.")
+                        "Without transformations, functionality is limited, e.g. relations are unsupported. ")
             }
             addDependencies(env, project)
 
@@ -25,17 +28,20 @@ class ObjectBoxAndroidTransformGradlePlugin : Plugin<Project> {
             }
 
             val task = project.task("objectboxVerifySetup")
-            task.dependsOn(project.configurations.getByName(env.dependencyScopeApiOrCompile))
+            if (DEBUG) println("### Created $task in $project")
+            var buildTask = project.tasks.findByName("preBuild") ?: project.tasks.getByName("build")
+            buildTask.dependsOn(task)
             task.doFirst {
+                val env = ProjectEnv(project) // Now Options are available
+                if (DEBUG) println("### Executing $task in $project")
                 buildTracker.trackBuild(env)
 
-                val env = ProjectEnv(project) // Now Options are available
                 if (ObjectBoxAndroidTransform.Registration.getAndroidExtensionClasses(project).isEmpty()) {
                     // TODO check
                 }
             }
         } catch(e: Throwable) {
-            if(e is TransformException) buildTracker.trackError("Transform preparation failed", e)
+            if (e is TransformException) buildTracker.trackError("Transform preparation failed", e)
             else buildTracker.trackFatal("Applying plugin failed", e)
             throw e
         }
@@ -48,7 +54,7 @@ class ObjectBoxAndroidTransformGradlePlugin : Plugin<Project> {
         val processorDep = "io.objectbox:objectbox-processor:$pluginVersion"
         val depScope = env.dependencyScopeApiOrCompile
         if (env.hasKotlinPlugin) {
-            if(!project.plugins.hasPlugin("kotlin-kapt")) {
+            if (!project.plugins.hasPlugin("kotlin-kapt")) {
                 project.plugins.apply("kotlin-kapt")
             }
             project.dependencies.add(depScope, "io.objectbox:objectbox-kotlin:$runtimeVersion")
