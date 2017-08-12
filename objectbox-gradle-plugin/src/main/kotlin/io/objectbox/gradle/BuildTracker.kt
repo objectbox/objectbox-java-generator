@@ -18,7 +18,7 @@ import java.io.PrintWriter
 import java.io.StringWriter
 import java.net.HttpURLConnection
 import java.net.URL
-import java.nio.ByteBuffer
+import java.security.SecureRandom
 import java.util.*
 import kotlin.reflect.KClass
 
@@ -85,7 +85,7 @@ open class BuildTracker(val toolName: String) {
 
     internal fun errorProperties(message: String?, throwable: Throwable?): String {
         val event = StringBuilder()
-        if(message != null) {
+        if (message != null) {
             event.key("Message").valueEscaped(message).comma()
         }
         event.key("Version").valueEscaped(ProjectEnv.Const.objectBoxVersion)
@@ -221,9 +221,9 @@ open class BuildTracker(val toolName: String) {
             }
         }
         if (uid.isNullOrBlank()) {
-            val uuid = UUID.randomUUID()
-            val buffer = ByteBuffer.allocate(16).putLong(uuid.mostSignificantBits).putLong(uuid.leastSignificantBits)
-            uid = encodeBase64WithoutPadding(buffer.array())
+            val bytes = ByteArray(8)
+            SecureRandom().nextBytes(bytes)
+            uid = encodeBase64WithoutPadding(bytes)
             properties.put(keyUid, uid)
             FileWriter(file).use {
                 properties.store(it, "Properties for ObjectBox build tools")
