@@ -10,8 +10,8 @@ class ProjectEnv(val project: Project) {
         const val packageName: String = "io/objectbox"
     }
 
-    // FIXME options do not pick up values!!
-    val options = project.extensions.create(Const.name, ObjectBoxOptions::class.java, project)!!
+    /** Works only if first called inside a Gradle task NOT plugin! */
+    val options by lazy { project.extensions.create(Const.name, ObjectBoxOptions::class.java, project)!! }
 
     val hasAndroidPlugin = listOf("android", "android-library", "com.android.application", "com.android.library")
             .any { project.plugins.hasPlugin(it) }
@@ -35,7 +35,7 @@ class ProjectEnv(val project: Project) {
      * https://docs.gradle.org/current/userguide/java_library_plugin.html#sec:java_library_configurations_graph
      */
     val dependencyScopeApiOrCompile: String by lazy {
-        if(project.configurations.findByName("api") != null) "api" else "compile"
+        if (project.configurations.findByName("api") != null) "api" else "compile"
     }
 
     fun logDebug(msg: String) = project.logger.debug(msg)

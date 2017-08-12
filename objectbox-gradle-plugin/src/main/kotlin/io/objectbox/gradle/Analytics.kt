@@ -26,7 +26,7 @@ import kotlin.reflect.KClass
  * - if Kotlin or only Java code is used
  */
 // Non-final for easier mocking
-open class Analytics(val env: ProjectEnv) {
+open class Analytics(val env: ProjectEnv, val toolName: String) {
 
     private val BASE_URL = "https://api.mixpanel.com/track/?data="
     private val TOKEN = "REPLACE_WITH_TOKEN"
@@ -71,6 +71,7 @@ open class Analytics(val env: ProjectEnv) {
 
         event.key("token").value(TOKEN).comma()
         event.key("distinct_id").value(uniqueIdentifier()).comma()
+
         // AAID: Anonymous App ID
         val appId = androidAppId()
         if (appId != null) {
@@ -78,6 +79,8 @@ open class Analytics(val env: ProjectEnv) {
         }
         event.key("BuildOS").value(os).comma()
         event.key("BuildOSVersion").value(osVersion).comma()
+        event.key("Tool").value(toolName).comma()
+
         val ci = checkCI()
         if (ci != null) {
             event.key("CI").value(ci).comma()

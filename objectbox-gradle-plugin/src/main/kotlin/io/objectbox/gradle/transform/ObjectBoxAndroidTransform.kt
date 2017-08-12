@@ -23,6 +23,14 @@ class ObjectBoxAndroidTransform(val project: Project) : Transform() {
         }
 
         fun getAllExtensions(project: Project): Set<BaseExtension> {
+            val exClasses = getAndroidExtensionClasses(project)
+            if (exClasses.isEmpty()) throw TransformException(
+                    "No Android plugin found - please apply ObjectBox plugins after the Android plugin")
+            val result = exClasses.map { project.extensions.getByType(it) as BaseExtension }.toSet()
+            return result
+        }
+
+        fun getAndroidExtensionClasses(project: Project): MutableList<Class<out BaseExtension>> {
             // Should be only one plugin, but let's assume there can be a combination just in case...
             val exClasses = mutableListOf<Class<out BaseExtension>>()
             val plugins = project.plugins
@@ -30,10 +38,7 @@ class ObjectBoxAndroidTransform(val project: Project) : Transform() {
             if (plugins.hasPlugin(TestPlugin::class.java)) exClasses += TestExtension::class.java
             if (plugins.hasPlugin(AppPlugin::class.java)) exClasses += AppExtension::class.java
             //if (plugins.hasPlugin(InstantAppPlugin::class.java)) exClasses += InstantAppExtension::class.java
-            if (exClasses.isEmpty()) throw TransformException(
-                    "No Android plugin found - please apply ObjectBox plugins after the Android plugin")
-            val result = exClasses.map { project.extensions.getByType(it) as BaseExtension }.toSet()
-            return result
+            return exClasses
         }
     }
 
