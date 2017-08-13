@@ -25,7 +25,8 @@ open class GradleBuildTracker(toolName: String) : BasicBuildTracker(toolName) {
         sendEventAsync("Build", buildEventProperties(env))
     }
 
-    internal fun buildEventProperties(env: ProjectEnv): String {
+    // Use internal once fixed (Kotlin 1.1.4?)
+    fun buildEventProperties(env: ProjectEnv): String {
         val event = StringBuilder()
 
         // AAID: Anonymous App ID
@@ -72,7 +73,8 @@ open class GradleBuildTracker(toolName: String) : BasicBuildTracker(toolName) {
     }
 
     // Allow stubbing for testing
-    open internal fun androidAppId(project: Project): String? {
+    // Use internal once fixed (Kotlin 1.1.4?)
+    open fun androidAppId(project: Project): String? {
         val appPlugin = project.plugins.find { it is AppPlugin }
         if (appPlugin != null) {
             val variants = project.extensions[AppExtension::class].applicationVariants

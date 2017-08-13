@@ -33,6 +33,19 @@ if (JavaVersion.current().isJava8Compatible()) {
     }
 }
 
+task cleanOut {
+    description 'Clears IntelliJ build folders "out/"'
+    doLast {
+        project.allprojects {
+            def outDir = file("out")
+            if(outDir.isDirectory()) {
+                def deleted = delete outDir
+                println "Deleted dir \"${outDir.getAbsolutePath()}\": $deleted"
+            }
+        }
+    }
+}
+
 subprojects {
     apply plugin: 'maven'
     apply plugin: 'signing'

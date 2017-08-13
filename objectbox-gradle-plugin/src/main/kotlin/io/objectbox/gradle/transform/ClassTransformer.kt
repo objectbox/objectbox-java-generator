@@ -13,7 +13,8 @@ import java.io.File
 
 class ClassTransformer(val debug: Boolean = false) {
 
-    internal class Context(val probedClasses: List<ProbedClass>, val outDir: File) {
+    // Use internal once fixed (Kotlin 1.1.4?)
+    class Context(val probedClasses: List<ProbedClass>, val outDir: File) {
         val classPool = ClassPool()
         val transformedClasses = mutableSetOf<ProbedClass>()
         val entityTypes: Set<String> = probedClasses.filter { it.isEntity }.map { it.name }.toHashSet()
