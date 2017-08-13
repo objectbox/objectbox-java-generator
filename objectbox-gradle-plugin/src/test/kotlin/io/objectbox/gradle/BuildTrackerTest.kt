@@ -46,6 +46,7 @@ class BuildTrackerTest {
 
         val eventData = analytics.eventData("Build", analytics.buildEventProperties(env))
         val json = parseJsonAndAssertBasics(eventData, "Build")
+        @Suppress("UNCHECKED_CAST")
         val properties = json["properties"] as Map<String, Any>
         val distinctId = properties["distinct_id"] as String
         assertEquals(analytics.hashBase64WithoutPadding(aid), properties["AAID"])
@@ -63,6 +64,7 @@ class BuildTrackerTest {
         val eventData = analytics.eventData("Error", analytics.errorProperties("Boo", Exception("Bad", cause)))
 
         val json = parseJsonAndAssertBasics(eventData, "Error")
+        @Suppress("UNCHECKED_CAST")
         val properties = json["properties"] as Map<String, Any>
 
         assertEquals(ProjectEnv.Const.objectBoxVersion, properties["Version"])
@@ -84,6 +86,7 @@ class BuildTrackerTest {
         val json = adapter.fromJson(eventData)
 
         assertEquals(expectedEvent, json["event"])
+        @Suppress("UNCHECKED_CAST")
         val properties = json["properties"] as Map<String, Any>
         assertNotNull(properties["token"])
         assertNotNull(properties["distinct_id"] as String)
