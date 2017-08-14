@@ -68,7 +68,8 @@ open class BasicBuildTracker(val toolName: String) {
 
         event.key("token").value(TOKEN).comma()
         event.key("distinct_id").value(uniqueIdentifier()).comma()
-        event.key("ip").value("1").comma()
+        event.key("ip").append("true").comma()
+//        event.key("ip").value("1").comma()
         event.key("Tool").value(toolName).comma()
 
         event.append(properties)
