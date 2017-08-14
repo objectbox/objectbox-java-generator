@@ -78,7 +78,7 @@ open class BasicBuildTracker(val toolName: String) {
         return event.toString()
     }
 
-    open protected fun version(): String? = "0.9.14?" // TODO replace with generated property, or update frequently...
+    open protected fun version(): String? = "0.9.15?" // TODO replace with generated property, or update frequently...
 
     // public for tests in another module
     fun errorProperties(message: String?, throwable: Throwable?): String {
