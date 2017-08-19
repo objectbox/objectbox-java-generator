@@ -2,6 +2,7 @@ package io.objectbox.gradle
 
 import com.squareup.moshi.JsonWriter
 import com.squareup.moshi.Moshi
+import io.objectbox.build.ObjectBoxBuildConfig
 import io.objectbox.gradle.transform.ObjectBoxAndroidTransform
 import io.objectbox.gradle.transform.TransformException
 import okio.Buffer
@@ -13,7 +14,6 @@ import java.io.File
 class ObjectBoxGradlePlugin : Plugin<Project> {
     companion object {
         const val DEBUG = false
-        const val CONFIG_FILE_NAME = "objectbox-build-config.json"
     }
 
     val buildTracker = GradleBuildTracker("GradlePlugin")
@@ -73,7 +73,7 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
     }
 
     private fun writeBuildConfig(env: ProjectEnv) {
-        val file = File(env.project.buildDir, CONFIG_FILE_NAME)
+        val file = File(env.project.buildDir, ObjectBoxBuildConfig.FILE_NAME)
         val options = ObjectBoxBuildConfig(env.project.projectDir.absolutePath)
         val adapter = Moshi.Builder().build().adapter<ObjectBoxBuildConfig>(ObjectBoxBuildConfig::class.java)
         val buffer = Buffer()

@@ -1,5 +1,6 @@
 package io.objectbox.processor
 
+import io.objectbox.build.ObjectBoxBuildConfig
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
@@ -55,10 +56,16 @@ fun findProjectRoot(filer: Filer): File {
         throw FileNotFoundException("parse failed: ${e.message}")
     }
 
-    val fileDummy = File(cleanURI)
-    // assuming structure like build/generated/source/apt/debug
-    val folderGeneratedSources = fileDummy.parentFile
-    val folderProjectRoot = folderGeneratedSources.parentFile.parentFile.parentFile.parentFile.parentFile
+    // going up structures like build/generated/source/apt/debug (+flavor, ...) until we hit our file
+    var dir = File(cleanURI)
+    var buildDir : File? = null
+    for (i in 1..9) {
+        dir = dir.parentFile
+        if(File(dir, ObjectBoxBuildConfig.FILE_NAME).exists()) {
+            buildDir = dir
+            break
+        }
+    }
 
-    return folderProjectRoot
+    return buildDir?.parentFile ?: throw FileNotFoundException("Could not determine build folder from $fileProbe")
 }
