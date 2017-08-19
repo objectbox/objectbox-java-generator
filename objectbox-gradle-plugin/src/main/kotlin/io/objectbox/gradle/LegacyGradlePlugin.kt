@@ -115,7 +115,7 @@ class LegacyGradlePlugin : Plugin<Project> {
         return generateTask
     }
 
-    private fun collectSchemaOptions(project: Project, genSrcDir: File, options: ObjectBoxOptions)
+    private fun collectSchemaOptions(project: Project, genSrcDir: File, options: LegacyOptions)
             : MutableMap<String, SchemaOptions> {
         val idModelDir = project.mkdir("objectbox-models")
         val defaultOptions = SchemaOptions(

@@ -12,7 +12,7 @@ import java.io.File
  *
  * NOTE class should be opened because gradle inherits from it
  */
-open class ObjectBoxOptions(val project: Project) {
+open class LegacyOptions(val project: Project) {
 
     /**
      * Base directory where generated DAO classes should be put (default: ${buildDir}/generated/source/objectbox).
@@ -244,31 +244,31 @@ class SchemasExtension(val project: Project) : GroovyObjectSupport() {
  * Collects per schema properties
  */
 class SchemaOptionsExtension(val project: Project) {
-    /** @see ObjectBoxOptions.schemaVersion */
+    /** @see LegacyOptions.schemaVersion */
     var version: Int? = null
 
-    /** @see ObjectBoxOptions.daoPackage */
+    /** @see LegacyOptions.daoPackage */
     var daoPackage: String? = null
 
-    /** @see ObjectBoxOptions.targetGenDirTests */
+    /** @see LegacyOptions.targetGenDirTests */
     var targetGenDirTests: File? = null
 
-    /** @see ObjectBoxOptions.schemaVersion */
+    /** @see LegacyOptions.schemaVersion */
     fun version(value: Int) {
         this.version = value
     }
 
-    /** @see ObjectBoxOptions.daoPackage */
+    /** @see LegacyOptions.daoPackage */
     fun daoPackage(value: String) {
         this.daoPackage = value
     }
 
-    /** @see ObjectBoxOptions.targetGenDirTests */
+    /** @see LegacyOptions.targetGenDirTests */
     fun targetGenDirTests(value: File) {
         this.targetGenDirTests = value
     }
 
-    /** @see ObjectBoxOptions.targetGenDirTests */
+    /** @see LegacyOptions.targetGenDirTests */
     fun targetGenDirTests(value: String) {
         this.targetGenDirTests = project.file(value)
     }

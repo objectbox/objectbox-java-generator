@@ -1,13 +1,19 @@
 package io.objectbox.gradle
 
+import com.squareup.moshi.JsonWriter
+import com.squareup.moshi.Moshi
 import io.objectbox.gradle.transform.ObjectBoxAndroidTransform
 import io.objectbox.gradle.transform.TransformException
+import okio.Buffer
+import okio.Okio
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import java.io.File
 
 class ObjectBoxGradlePlugin : Plugin<Project> {
     companion object {
         const val DEBUG = false
+        const val CONFIG_FILE_NAME = "objectbox-build-config.json"
     }
 
     val buildTracker = GradleBuildTracker("GradlePlugin")
@@ -29,19 +35,19 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
                 ObjectBoxAndroidTransform.Registration.to(project)
             }
 
-            createVerifySetupTask(env)
-        } catch(e: Throwable) {
+            createPrepareTask(env)
+        } catch (e: Throwable) {
             if (e is TransformException) buildTracker.trackError("Transform preparation failed", e)
             else buildTracker.trackFatal("Applying plugin failed", e)
             throw e
         }
     }
 
-    private fun createVerifySetupTask(env: ProjectEnv) {
+    private fun createPrepareTask(env: ProjectEnv) {
         val project = env.project
-        val task = project.task("objectboxVerifySetup")
+        val task = project.task("objectboxPrepareBuild")
         if (DEBUG) println("### Created $task in $project")
-        var buildTask = project.tasks.findByName("preBuild") ?: project.tasks.getByName("build")
+        val buildTask = project.tasks.findByName("preBuild") ?: project.tasks.getByName("build")
         buildTask.dependsOn(task)
         task.doFirst {
             val taskEnv = ProjectEnv(project) // Now Options are available
@@ -61,6 +67,22 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
                 if (!env.hasAndroidPlugin) msg += "Currently only Android projects are fully supported."
                 throw RuntimeException(msg)
             }
+
+            writeBuildConfig(env)
+        }
+    }
+
+    private fun writeBuildConfig(env: ProjectEnv) {
+        val file = File(env.project.buildDir, CONFIG_FILE_NAME)
+        val options = ObjectBoxBuildConfig(env.project.projectDir.absolutePath)
+        val adapter = Moshi.Builder().build().adapter<ObjectBoxBuildConfig>(ObjectBoxBuildConfig::class.java)
+        val buffer = Buffer()
+        val jsonWriter = JsonWriter.of(buffer)
+        jsonWriter.indent = "  "
+        adapter.toJson(jsonWriter, options)
+        val sink = Okio.sink(file)
+        sink.use {
+            buffer.readAll(it)
         }
     }
 

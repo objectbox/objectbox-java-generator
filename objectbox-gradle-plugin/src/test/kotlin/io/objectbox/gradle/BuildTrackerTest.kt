@@ -35,8 +35,8 @@ class BuildTrackerTest {
         val extensionContainer = mock(ExtensionContainer::class.java)
         `when`(project.extensions).thenReturn(extensionContainer)
 
-        val options = ObjectBoxOptions(project)
-        `when`(extensionContainer.create(ProjectEnv.Const.name, ObjectBoxOptions::class.java, project)).thenReturn(options)
+        val options = LegacyOptions(project)
+        `when`(extensionContainer.create(ProjectEnv.Const.name, LegacyOptions::class.java, project)).thenReturn(options)
 
         val env = ProjectEnv(project)
         val toolName = "TestTool"
