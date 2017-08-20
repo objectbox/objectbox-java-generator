@@ -10,6 +10,7 @@ class ClassTransformerStats {
 
     var toOnesFound = 0
     var toOnesInitializerAdded = 0
+    var constructorsCheckedForTransform = 0
 
     var toManyFound = 0
     var toManyInitializerAdded = 0

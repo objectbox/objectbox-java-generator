@@ -88,7 +88,8 @@ class ClassTransformerTest : AbstractTransformTest() {
         assertEquals(1, stats.boxStoreFieldsAdded)
         assertEquals(1, stats.toOnesFound)
         assertEquals(0, stats.toManyFound)
-        assertEquals(1, stats.toOnesInitializerAdded)
+        assertTrue(stats.constructorsCheckedForTransform >= 1)
+        assertEquals(stats.constructorsCheckedForTransform, stats.toOnesInitializerAdded)
     }
 
     @Test

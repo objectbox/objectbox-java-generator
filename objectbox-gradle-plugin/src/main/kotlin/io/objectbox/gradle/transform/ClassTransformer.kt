@@ -1,12 +1,14 @@
 package io.objectbox.gradle.transform
 
 import io.objectbox.BoxStoreBuilder
+import io.objectbox.build.BasicBuildTracker
 import javassist.ClassPool
 import javassist.CtClass
 import javassist.CtConstructor
 import javassist.CtField
 import javassist.Modifier
 import javassist.NotFoundException
+import javassist.bytecode.Descriptor
 import javassist.bytecode.Opcode
 import javassist.bytecode.SignatureAttribute
 import java.io.File
@@ -168,6 +170,8 @@ class ClassTransformer(val debug: Boolean = false) {
             : Boolean {
         var changed = false
         for (constructor in ctClass.constructors) {
+            checkMakeParamCtClasses(context, constructor)
+            context.stats.constructorsCheckedForTransform++
             val initializedFields = getInitializedFields(ctClass, constructor)
             for (field in relationFields) {
                 val fieldName = field.ctField.name
@@ -177,7 +181,7 @@ class ClassTransformer(val debug: Boolean = false) {
                     try {
                         constructor.insertBeforeBody(code)
                     } catch (e: Exception) {
-                        throw TransformException("Could not insert this code in constructor: $code", e)
+                        throw TransformException("Could not insert init code for field $fieldName in constructor", e)
                     }
                     if (field.relationType == ClassConst.toOne) context.stats.toOnesInitializerAdded++
                     else if (field.relationType == ClassConst.toMany) context.stats.toManyInitializerAdded++
@@ -186,6 +190,64 @@ class ClassTransformer(val debug: Boolean = false) {
             }
         }
         return changed
+    }
+
+    private fun checkMakeParamCtClasses(context: Context, constructor: CtConstructor) {
+        // Plan A
+        try {
+            val count = Descriptor.numOfParameters(constructor.signature)
+            // Start at 1, because 0 is '('
+            var charIndex = 1
+            for (i in 0 until count) {
+                val paramPair = getParamType(constructor.signature, charIndex)
+
+                if (paramPair.first != null) {
+                    if (context.classPool.getOrNull(paramPair.first) == null) {
+                        context.classPool.makeClass(paramPair.first)
+                    }
+                }
+
+                check(charIndex != paramPair.second)
+                charIndex = paramPair.second
+            }
+        } catch (e: Exception) {
+            BasicBuildTracker("Transformer").trackError("Could not define class for params: ${constructor.signature}")
+        }
+
+        // Plan B in case previous code failed to define all missing types (plan B could be remove if plan A is stable)
+        try {
+            var lastExMsg = ""
+            while (true) {
+                try {
+                    constructor.parameterTypes
+                    break
+                } catch (e: NotFoundException) {
+                    val message = e.message
+                    if (message != null && message != lastExMsg && !message.contains(' ')) {
+                        context.classPool.makeClass(message)
+                        lastExMsg = message
+                    } else break
+                }
+            }
+        } catch (e: Exception) {
+            BasicBuildTracker("Transformer")
+                    .trackError("Could not define class for params (2): ${constructor.signature}")
+        }
+    }
+
+    private fun getParamType(descriptor: String, charIndex: Int): Pair<String?, Int> {
+        var charIndex = charIndex
+        var c = descriptor[charIndex]
+        while (c == '[') {
+            c = descriptor[++charIndex]
+        }
+
+        return if (c == 'L') {
+            charIndex++
+            val endIndex = descriptor.indexOf(';', charIndex)
+            val name = descriptor.substring(charIndex, endIndex).replace('/', '.')
+            Pair(name, endIndex + 1)
+        } else Pair(null, charIndex + 1)
     }
 
     private fun getInitializedFields(ctClass: CtClass, constructor: CtConstructor): HashSet<String> {

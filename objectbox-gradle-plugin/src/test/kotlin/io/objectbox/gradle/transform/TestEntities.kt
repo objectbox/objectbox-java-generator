@@ -8,6 +8,7 @@ import io.objectbox.converter.PropertyConverter
 import io.objectbox.relation.RelationInfo
 import io.objectbox.relation.ToMany
 import io.objectbox.relation.ToOne
+import org.greenrobot.essentials.collections.LongHashSet
 import org.junit.Rule
 
 
@@ -84,7 +85,7 @@ object EntityToManyAndConverter_ : EntityInfo<EntityToOneLateInit> {
 }
 
 @Entity
-class EntityToOneAndConverter {
+class EntityToOneAndConverter(val someExternalType: LongHashSet? = LongHashSet(8)) {
     lateinit var entityEmpty: ToOne<EntityEmpty>
 
     @Convert(converter = TestConverter::class, dbType = String::class)
