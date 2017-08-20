@@ -74,6 +74,7 @@ open class GradleBuildTracker(toolName: String) : BasicBuildTracker(toolName) {
 
     // Allow stubbing for testing
     // Use internal once fixed (Kotlin 1.1.4?)
+    // TODO how are flavors handled here?
     open fun androidAppId(project: Project): String? {
         val appPlugin = project.plugins.find { it is AppPlugin }
         if (appPlugin != null) {

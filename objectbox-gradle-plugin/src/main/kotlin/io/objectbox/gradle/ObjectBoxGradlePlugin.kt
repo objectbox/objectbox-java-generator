@@ -5,6 +5,7 @@ import com.squareup.moshi.Moshi
 import io.objectbox.build.ObjectBoxBuildConfig
 import io.objectbox.gradle.transform.ObjectBoxAndroidTransform
 import io.objectbox.gradle.transform.TransformException
+import com.android.build.gradle.BaseExtension
 import okio.Buffer
 import okio.Okio
 import org.gradle.api.Plugin
@@ -74,7 +75,13 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
 
     private fun writeBuildConfig(env: ProjectEnv) {
         val file = File(env.project.buildDir, ObjectBoxBuildConfig.FILE_NAME)
-        val options = ObjectBoxBuildConfig(env.project.projectDir.absolutePath)
+        var flavor: String? = null
+//        val extClass = ObjectBoxAndroidTransform.Registration.getAndroidExtensionClasses(env.project).singleOrNull()
+//        if (extClass != null) {
+//            val ext = env.project.extensions.getByType(extClass) as BaseExtension
+//            flavor = ext?.defaultConfig?.dimension
+//        }
+        val options = ObjectBoxBuildConfig(env.project.projectDir.absolutePath, flavor)
         val adapter = Moshi.Builder().build().adapter<ObjectBoxBuildConfig>(ObjectBoxBuildConfig::class.java)
         val buffer = Buffer()
         val jsonWriter = JsonWriter.of(buffer)
