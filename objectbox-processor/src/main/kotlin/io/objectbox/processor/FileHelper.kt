@@ -67,5 +67,5 @@ fun findProjectRoot(filer: Filer): File {
         }
     }
 
-    return buildDir?.parentFile ?: throw FileNotFoundException("Could not determine build folder from $fileProbe")
+    return buildDir?.parentFile ?: throw FileNotFoundException("Could not determine build folder from $filePathProbe")
 }
