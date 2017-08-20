@@ -74,7 +74,9 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
     }
 
     private fun writeBuildConfig(env: ProjectEnv) {
-        val file = File(env.project.buildDir, ObjectBoxBuildConfig.FILE_NAME)
+        val buildDir = env.project.buildDir
+        if(!buildDir.exists()) buildDir.mkdirs()
+        val file = File(buildDir, ObjectBoxBuildConfig.FILE_NAME)
         var flavor: String? = null
 //        val extClass = ObjectBoxAndroidTransform.Registration.getAndroidExtensionClasses(env.project).singleOrNull()
 //        if (extClass != null) {
