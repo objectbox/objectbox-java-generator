@@ -174,7 +174,11 @@ class ClassTransformer(val debug: Boolean = false) {
                 if (!initializedFields.contains(fieldName)) {
                     val code = "\$0.$fieldName = new ${field.relationType}" +
                             "(\$0, ${ctClass.name}_#${field.relationName});"
-                    constructor.insertAfter(code)
+                    try {
+                        constructor.insertBeforeBody(code)
+                    } catch (e: Exception) {
+                        throw TransformException("Could not insert this code in constructor: $code", e)
+                    }
                     if (field.relationType == ClassConst.toOne) context.stats.toOnesInitializerAdded++
                     else if (field.relationType == ClassConst.toMany) context.stats.toManyInitializerAdded++
                     changed = true
