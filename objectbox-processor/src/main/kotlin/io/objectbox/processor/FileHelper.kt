@@ -56,16 +56,21 @@ fun findProjectRoot(filer: Filer): File {
         throw FileNotFoundException("parse failed: ${e.message}")
     }
 
-    // going up structures like build/generated/source/apt/debug (+flavor, ...) until we hit our file
+    // going up structures like build/generated/source/apt/debug (+flavor, ...) until we hit our file or "build/"
     var dir = File(cleanURI)
-    var buildDir : File? = null
+    var buildDir: File? = null
+    var buildDirWithoutConfigFile: File? = null
     for (i in 1..9) {
         dir = dir.parentFile
-        if(File(dir, ObjectBoxBuildConfig.FILE_NAME).exists()) {
+        if (File(dir, ObjectBoxBuildConfig.FILE_NAME).exists()) {
             buildDir = dir
             break
+        } else if (dir.name == "build" && buildDirWithoutConfigFile == null) {
+            buildDirWithoutConfigFile = dir
         }
     }
 
-    return buildDir?.parentFile ?: throw FileNotFoundException("Could not determine build folder from $filePathProbe")
+    return buildDir?.parentFile ?:
+            buildDirWithoutConfigFile?.parentFile ?:
+            throw FileNotFoundException("Could not determine build folder from $filePathProbe")
 }
