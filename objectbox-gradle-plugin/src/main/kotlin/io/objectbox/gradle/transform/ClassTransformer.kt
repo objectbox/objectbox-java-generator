@@ -19,6 +19,7 @@ class ClassTransformer(val debug: Boolean = false) {
     class Context(val probedClasses: List<ProbedClass>, val outDir: File) {
         val classPool = ClassPool()
         val transformedClasses = mutableSetOf<ProbedClass>()
+        val ctByProbedClass = mutableMapOf<ProbedClass, CtClass>()
         val entityTypes: Set<String> = probedClasses.filter { it.isEntity }.map { it.name }.toHashSet()
         val stats = ClassTransformerStats()
 
@@ -45,7 +46,10 @@ class ClassTransformer(val debug: Boolean = false) {
     fun transformOrCopyClasses(probedClasses: List<ProbedClass>, outDir: File): ClassTransformerStats {
         val context = Context(probedClasses, outDir)
 
+        // First define all EntityInfo (Entity_) and entity classes to ensure the real classes are used
+        // (E.g. constructor transformation may introduce dummy classes)
         probedClasses.forEach { if (it.isEntityInfo) makeCtClass(context, it) }
+        probedClasses.forEach { if (it.isEntity) makeCtClass(context, it) }
 
         transformEntities(context)
         // Transform Cursors after entities because this depends on entity CtClasses added to the ClassPool
@@ -65,7 +69,7 @@ class ClassTransformer(val debug: Boolean = false) {
 
     private fun transformEntities(context: Context) {
         context.probedClasses.filter { it.isEntity }.forEach { entityClass ->
-            val ctClass = makeCtClass(context, entityClass)
+            val ctClass = context.ctByProbedClass[entityClass] !!
             try {
                 if (transformEntity(context, ctClass, entityClass)) {
                     context.transformedClasses.add(entityClass)
@@ -78,7 +82,9 @@ class ClassTransformer(val debug: Boolean = false) {
 
     private fun makeCtClass(context: Context, entityClass: ProbedClass): CtClass {
         entityClass.file.inputStream().use {
-            return context.classPool.makeClass(it)
+            val ctClass = context.classPool.makeClass(it)
+            context.ctByProbedClass[entityClass] = ctClass
+            return ctClass
         }
     }
 
@@ -201,9 +207,10 @@ class ClassTransformer(val debug: Boolean = false) {
             for (i in 0 until count) {
                 val paramPair = getParamType(constructor.signature, charIndex)
 
-                if (paramPair.first != null) {
-                    if (context.classPool.getOrNull(paramPair.first) == null) {
-                        context.classPool.makeClass(paramPair.first)
+                val paramClass = paramPair.first
+                if (paramClass != null) {
+                    if (context.classPool.getOrNull(paramClass) == null) {
+                        context.classPool.makeClass(paramClass)
                     }
                 }
 
