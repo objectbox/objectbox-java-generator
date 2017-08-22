@@ -2,7 +2,7 @@ package io.objectbox.processor
 
 import io.objectbox.annotation.Backlink
 import io.objectbox.annotation.NameInDb
-import io.objectbox.annotation.Relation
+import io.objectbox.annotation.TargetIdProperty
 import io.objectbox.annotation.Uid
 import io.objectbox.codemodifier.nullIfBlank
 import io.objectbox.generator.IdUid
@@ -75,8 +75,8 @@ class Relations(private val messages: Messages) {
 
     fun parseRelation(entityModel: Entity, field: VariableElement) {
         val targetTypeMirror = field.asType() as DeclaredType
-        val relationAnnotation = field.getAnnotation(Relation::class.java)
-        val targetIdName = if (relationAnnotation.idProperty.isBlank()) null else relationAnnotation.idProperty
+        val relationAnnotation = field.getAnnotation(TargetIdProperty::class.java)
+        val targetIdName = relationAnnotation?.value?.nullIfBlank()
         val toOne = buildToOneRelation(field, targetTypeMirror, targetIdName, false)
 
         collectToOne(entityModel, toOne)

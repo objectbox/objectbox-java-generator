@@ -43,11 +43,11 @@ public final class RelationChildCursor extends Cursor<RelationChild> {
      */
     @Override
     public final long put(RelationChild entity) {
-        ToOne<RelationParent> parentToOne = entity.parentToOne;
-        if(parentToOne != null && parentToOne.internalRequiresPutTarget()) {
+        ToOne<RelationParent> parent = entity.parent;
+        if(parent != null && parent.internalRequiresPutTarget()) {
             Cursor<RelationParent> targetCursor = getRelationTargetCursor(RelationParent.class);
             try {
-                parentToOne.internalPutTarget(targetCursor);
+                parent.internalPutTarget(targetCursor);
             } finally {
                 targetCursor.close();
             }

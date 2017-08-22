@@ -4,7 +4,6 @@ import io.objectbox.annotation.Convert
 import io.objectbox.annotation.Id
 import io.objectbox.annotation.Index
 import io.objectbox.annotation.NameInDb
-import io.objectbox.annotation.Relation
 import io.objectbox.annotation.Transient
 import io.objectbox.annotation.Uid
 import io.objectbox.generator.IdUid
@@ -50,10 +49,7 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
             return
         }
 
-        if (field.hasAnnotation(Relation::class.java)) {
-            // @Relation property
-            relations.parseRelation(entityModel, field)
-        } else if (typeHelper.isTypeEqualTo(field.asType(), ToOne::class.java.name, eraseTypeParameters = true)) {
+        if (typeHelper.isTypeEqualTo(field.asType(), ToOne::class.java.name, eraseTypeParameters = true)) {
             // ToOne<TARGET> property
             relations.parseToOne(entityModel, field)
         } else if (!field.hasAnnotation(Convert::class.java)

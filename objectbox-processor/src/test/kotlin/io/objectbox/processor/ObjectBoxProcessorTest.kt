@@ -401,7 +401,7 @@ class ObjectBoxProcessorTest {
                     assertThat(prop.dbName).isEqualTo(prop.propertyName)
                     assertThat(prop.virtualTargetName).isNull()
                     assertPrimitiveType(prop, PropertyType.RelationId)
-                    assertToOneIndexAndRelation(child, parent, prop, toOneName = "parent", toOneFieldName = "parentToOne")
+                    assertToOneIndexAndRelation(child, parent, prop, toOneName = "parent", toOneFieldName = "parent")
                 }
                 else -> fail("Found stray property '${prop.propertyName}' in schema.")
             }
