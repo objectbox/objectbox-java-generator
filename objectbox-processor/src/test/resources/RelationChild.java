@@ -16,6 +16,6 @@ public class RelationChild {
     // need to add manually, as processor can not modify entity
     transient BoxStore __boxStore;
 
-    transient ToOne<RelationParent> parent = new ToOne<>(this, RelationChild_.parent);
+    ToOne<RelationParent> parent = new ToOne<>(this, RelationChild_.parent);
 
 }
