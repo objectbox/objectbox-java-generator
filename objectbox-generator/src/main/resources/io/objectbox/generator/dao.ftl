@@ -27,17 +27,11 @@ package ${entity.javaPackageDao};
 <#if entity.toOneRelations?has_content || entity.incomingToManyRelations?has_content>
 import java.util.List;
 </#if>
-<#if entity.toOneRelations?has_content>
-import java.util.ArrayList;
-</#if>
 
 import io.objectbox.daocompat.AbstractDao;
 import io.objectbox.daocompat.identityscope.IdentityScopeLong;
 import io.objectbox.Box;
 import io.objectbox.Property;
-<#if entity.toOneRelations?has_content>
-import org.greenrobot.greendao.internal.SqlUtils;
-</#if>
 <#if entity.incomingToManyRelations?has_content>
 import io.objectbox.daocompat.query.Query;
 import io.objectbox.daocompat.query.QueryBuilder;
