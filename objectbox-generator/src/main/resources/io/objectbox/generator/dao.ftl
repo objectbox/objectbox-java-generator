@@ -178,8 +178,5 @@ public class ${entity.classNameDao} extends AbstractDao<${entity.className}, Lon
         return query.list();
     }
 
-</#list>   
-<#if entity.toOneRelations?has_content>
-    <#include "dao-deep.ftl">
-</#if>
+</#list>
 }
