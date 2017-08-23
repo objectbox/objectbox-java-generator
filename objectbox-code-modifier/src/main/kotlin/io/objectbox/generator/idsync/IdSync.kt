@@ -1,22 +1,22 @@
 package io.objectbox.generator.idsync
 
+import com.squareup.moshi.FromJson
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.JsonWriter
 import com.squareup.moshi.Moshi
+import com.squareup.moshi.ToJson
+import io.objectbox.codemodifier.ParsedEntity
+import io.objectbox.codemodifier.ParsedProperty
+import io.objectbox.generator.IdUid
+import io.objectbox.generator.model.Schema
+import io.objectbox.generator.model.ToManyStandalone
 import okio.Buffer
 import okio.Okio
 import okio.Source
 import org.greenrobot.essentials.collections.LongHashSet
-import io.objectbox.codemodifier.ParsedEntity
-import io.objectbox.codemodifier.ParsedProperty
 import java.io.File
 import java.io.FileNotFoundException
 import java.util.*
-import com.squareup.moshi.FromJson
-import com.squareup.moshi.ToJson
-import io.objectbox.generator.IdUid
-import io.objectbox.generator.model.Schema
-import io.objectbox.generator.model.ToManyStandalone
 
 class IdSync(val jsonFile: File = File("objectmodel.json")) {
     private val noteSeeDocs = "Please read the docs how to resolve this."
@@ -61,9 +61,11 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
 
     class ModelIdAdapter {
         // Writing [0:0] for empty "last ID" values is OK, null would confuse Kotlin with its non-null types
-        @ToJson fun toJson(modelId: IdUid) = modelId.toString()
+        @ToJson
+        fun toJson(modelId: IdUid) = modelId.toString()
 
-        @FromJson fun fromJson(id: String) = IdUid(id)
+        @FromJson
+        fun fromJson(id: String) = IdUid(id)
     }
 
     init {
@@ -82,7 +84,7 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
                 validateIds(idSyncModel)
                 modelRead = idSyncModel
                 lastEntityId = idSyncModel.lastEntityId
-                @Suppress("USELESS_ELVIS")  // version 2 did not have this, provide non-null
+                @Suppress("USELESS_ELVIS") // version 2 did not have this, provide non-null
                 lastRelationId = idSyncModel.lastRelationId ?: IdUid()
                 lastIndexId = idSyncModel.lastIndexId
                 lastSequenceId = idSyncModel.lastSequenceId
@@ -488,7 +490,7 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
 
     fun findRelation(entity: Entity, name: String, uid: Long?): Relation? {
         @Suppress("SENSELESS_COMPARISON") // When read by Moshi, not-null requirement is not enforced
-        if(entity.relations == null) return null
+        if (entity.relations == null) return null
         if (uid != null && uid != -1L) {
             val filtered = entity.relations.filter { it.uid == uid }
             if (filtered.isEmpty()) {
@@ -535,7 +537,8 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
                     indexUids += it.indexId.uid
                 }
             }
-            it.relations.forEach { relationUids+= it.uid }
+            @Suppress("UNNECESSARY_SAFE_CALL") // read from JSON
+            it.relations?.forEach { relationUids += it.uid }
         }
         return Triple(propertyUids, indexUids, relationUids)
     }
