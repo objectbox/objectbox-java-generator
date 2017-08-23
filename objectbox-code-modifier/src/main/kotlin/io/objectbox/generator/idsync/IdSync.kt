@@ -517,6 +517,9 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
 
         oldPropertyUids.second.removeAll(newPropertyUids.second)
         retiredIndexUids.addAll(oldPropertyUids.second)
+
+        oldPropertyUids.third.removeAll(newPropertyUids.third)
+        retiredRelationUids.addAll(oldPropertyUids.third)
     }
 
     /** Collects a UID triple: property UIDs, index UIDs, and TODO relation UIDs.*/
@@ -532,6 +535,7 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
                     indexUids += it.indexId.uid
                 }
             }
+            it.relations.forEach { relationUids+= it.uid }
         }
         return Triple(propertyUids, indexUids, relationUids)
     }
