@@ -34,10 +34,12 @@ public final class ToOneChild_ implements EntityInfo<ToOneChild> {
     static final ToOneChildIdGetter __ID_GETTER = new ToOneChildIdGetter();
 
     public final static Property id = new Property(0, 1, Long.class, "id", true, "id");
-    public final static Property parentId = new Property(1, 2, long.class, "parentId");
+    public final static Property aParentId = new Property(1, 3, long.class, "aParentId");
+    public final static Property parentId = new Property(2, 2, long.class, "parentId");
 
     public final static Property[] __ALL_PROPERTIES = {
             id,
+            aParentId,
             parentId
     };
 
@@ -96,5 +98,8 @@ public final class ToOneChild_ implements EntityInfo<ToOneChild> {
 
     static final RelationInfo<ToOneParent> parent =
             new RelationInfo<>(ToOneChild_.__INSTANCE, ToOneParent_.__INSTANCE, null);
+
+    static final RelationInfo<ToOneParent> parentWithIdProperty =
+            new RelationInfo<>(ToOneChild_.__INSTANCE, ToOneParent_.__INSTANCE, aParentId);
 
 }

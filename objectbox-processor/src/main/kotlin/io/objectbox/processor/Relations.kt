@@ -73,20 +73,13 @@ class Relations(private val messages: Messages) {
         collectToMany(entityModel, toMany)
     }
 
-    fun parseRelation(entityModel: Entity, field: VariableElement) {
-        val targetTypeMirror = field.asType() as DeclaredType
-        val relationAnnotation = field.getAnnotation(TargetIdProperty::class.java)
-        val targetIdName = relationAnnotation?.value?.nullIfBlank()
-        val toOne = buildToOneRelation(field, targetTypeMirror, targetIdName, false)
-
-        collectToOne(entityModel, toOne)
-    }
-
     fun parseToOne(entityModel: Entity, field: VariableElement) {
         // assuming ToOne<TargetType>
         val toOneTypeMirror = field.asType() as DeclaredType
         val targetTypeMirror = toOneTypeMirror.typeArguments[0] as DeclaredType
-        val toOne = buildToOneRelation(field, targetTypeMirror, null, true)
+        val relationAnnotation = field.getAnnotation(TargetIdProperty::class.java)
+        val targetIdName = relationAnnotation?.value?.nullIfBlank()
+        val toOne = buildToOneRelation(field, targetTypeMirror, targetIdName, true)
 
         collectToOne(entityModel, toOne)
     }

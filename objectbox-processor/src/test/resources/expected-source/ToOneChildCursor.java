@@ -1,5 +1,6 @@
 package io.objectbox.processor.test;
 
+
 import io.objectbox.BoxStore;
 import io.objectbox.Cursor;
 import io.objectbox.Transaction;
@@ -27,6 +28,7 @@ public final class ToOneChildCursor extends Cursor<ToOneChild> {
     private static final ToOneChild_.ToOneChildIdGetter ID_GETTER = ToOneChild_.__ID_GETTER;
 
 
+    private final static int __ID_aParentId = ToOneChild_.aParentId.id;
     private final static int __ID_parentId = ToOneChild_.parentId.id;
 
     public ToOneChildCursor(Transaction tx, long cursor, BoxStore boxStore) {
@@ -54,11 +56,20 @@ public final class ToOneChildCursor extends Cursor<ToOneChild> {
                 targetCursor.close();
             }
         }
+        ToOne<ToOneParent> parentWithIdProperty = entity.parentWithIdProperty;
+        if(parentWithIdProperty != null && parentWithIdProperty.internalRequiresPutTarget()) {
+            Cursor<ToOneParent> targetCursor = getRelationTargetCursor(ToOneParent.class);
+            try {
+                parentWithIdProperty.internalPutTarget(targetCursor);
+            } finally {
+                targetCursor.close();
+            }
+        }
         Long id = entity.id;
         long __assignedId = collect313311(cursor, id != null ? id: 0, PUT_FLAG_FIRST | PUT_FLAG_COMPLETE,
                 0, null, 0, null,
                 0, null, 0, null,
-                __ID_parentId, entity.parent.getTargetId(), 0, 0,
+                __ID_aParentId, entity.aParentId, __ID_parentId, entity.parent.getTargetId(),
                 0, 0, 0, 0,
                 0, 0, 0, 0,
                 0, 0, 0, 0);
