@@ -75,8 +75,8 @@ open class BasicBuildTracker(val toolName: String) {
             val locale = Locale.getDefault()
             val language = locale.isO3Language
             val country = locale.isO3Country
-            event.key("lang").append(language).comma()
-            event.key("c").append(country).comma()
+            event.key("lang").append("\"$language\"").comma()
+            event.key("c").append("\"$country\"").comma()
         } catch (e: Exception) {
             // Ignore
         }
