@@ -71,6 +71,15 @@ open class BasicBuildTracker(val toolName: String) {
         event.key("ip").append("true").comma()
 //        event.key("ip").value("1").comma()
         event.key("Tool").value(toolName).comma()
+        try {
+            val locale = Locale.getDefault()
+            val language = locale.isO3Language
+            val country = locale.isO3Country
+            event.key("lang").append(language).comma()
+            event.key("c").append(country).comma()
+        } catch (e: Exception) {
+            // Ignore
+        }
 
         event.append(properties)
 
