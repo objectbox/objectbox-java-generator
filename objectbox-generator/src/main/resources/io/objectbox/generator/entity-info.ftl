@@ -31,9 +31,10 @@ import io.objectbox.internal.CursorFactory;
 import io.objectbox.internal.IdGetter;
 <#if entity.hasRelations()>
 import io.objectbox.relation.RelationInfo;
-<#if entity.toManyRelations?has_content>
 import io.objectbox.relation.ToOne;
-import io.objectbox.relation.ToOneGetter;
+import io.objectbox.internal.ToOneGetter;
+<#if entity.toManyRelations?has_content>
+import io.objectbox.internal.ToManyGetter;
 </#if>
 </#if>
 
@@ -146,21 +147,35 @@ property.converter??>, ${property.converterClassName}.class, ${property.customTy
 -->
 <#if entity.hasRelations() >
     <#list entity.toOneRelations as toOne>
+    /** to-one */
     static final RelationInfo<${toOne.targetEntity.className}> ${toOne.name} =
         new RelationInfo<>(${toOne.sourceEntity.className}_.__INSTANCE,<#--
     --> ${toOne.targetEntity.className}_.__INSTANCE,<#--
-    --> <#if toOne.targetIdProperty.virtual>null<#else>${toOne.targetIdProperty.propertyName}</#if>);
+    --> <#if toOne.targetIdProperty.virtual>null<#else>${toOne.targetIdProperty.propertyName}</#if>,<#--
+    --> new ToOneGetter<${toOne.sourceEntity.className}>() {
+            @Override
+            public ToOne<${toOne.targetEntity.className}> getToOne(${toOne.sourceEntity.className} entity) {
+                return entity.${toOne.toOneValueExpression};
+            }
+    });
 
     </#list>
     <#list entity.toManyRelations as toMany>
+    /** to-many */
     static final RelationInfo<${toMany.targetEntity.className}> ${toMany.name} =
         new RelationInfo<>(${toMany.sourceEntity.className}_.__INSTANCE,<#--
      --> ${toMany.targetEntity.className}_.__INSTANCE,<#--
-     --><#if toMany.targetProperties??>  ${toMany.targetEntity.className}_.${toMany.targetProperties[0].propertyName},<#--
+     -->  new ToManyGetter<${toMany.sourceEntity.className}>() {
+            @Override
+            public List<${toMany.targetEntity.className}> getToMany(${toMany.sourceEntity.className} entity) {
+                return entity.${toMany.valueExpression};
+            }
+    },
+        <#if toMany.targetProperties??>  ${toMany.targetEntity.className}_.${toMany.targetProperties[0].propertyName},<#--
      --> new ToOneGetter<${toMany.targetEntity.className}>() {
             @Override
             public ToOne<${toMany.sourceEntity.className}> getToOne(${toMany.targetEntity.className} entity) {
-                return entity.${toMany.backlinkToOne.nameToOne};
+                return entity.${toMany.backlinkToOne.toOneValueExpression};
             }
         });<#else> ${toMany.modelId.id});</#if>
 

@@ -27,7 +27,7 @@ class EntityToOne {
 
 object EntityToOne_ : EntityInfo<EntityToOneLateInit> {
     @JvmField
-    val entityEmpty = RelationInfo<EntityEmpty>(null, null, null)
+    val entityEmpty = RelationInfo<EntityEmpty>(null, null, null, null)
 }
 
 @Entity
@@ -37,7 +37,7 @@ class EntityToOneLateInit {
 
 object EntityToOneLateInit_ : EntityInfo<EntityToOneLateInit> {
     @JvmField
-    val entityEmpty = RelationInfo<EntityEmpty>(null, null, null)
+    val entityEmpty = RelationInfo<EntityEmpty>(null, null, null, null)
 }
 
 @Entity
@@ -47,7 +47,7 @@ class EntityToOneSuffix {
 
 object EntityToOneSuffix_ : EntityInfo<EntityToOneLateInit> {
     @JvmField
-    val entityEmpty = RelationInfo<EntityEmpty>(null, null, null)
+    val entityEmpty = RelationInfo<EntityEmpty>(null, null, null, null)
 }
 
 @Entity
@@ -58,7 +58,7 @@ class EntityToMany {
 
 object EntityToMany_ : EntityInfo<EntityToOneLateInit> {
     @JvmField
-    val entityEmpty = RelationInfo<EntityEmpty>(null, null, null)
+    val entityEmpty = RelationInfo<EntityEmpty>(null, null, null, null)
 }
 
 @Entity
@@ -68,7 +68,7 @@ class EntityToManyLateInit {
 
 object EntityToManyLateInit_ : EntityInfo<EntityToOneLateInit> {
     @JvmField
-    val entityEmpty = RelationInfo<EntityEmpty>(null, null, null)
+    val entityEmpty = RelationInfo<EntityEmpty>(null, null, null, null)
 }
 
 @Entity
@@ -81,7 +81,7 @@ class EntityToManyAndConverter {
 
 object EntityToManyAndConverter_ : EntityInfo<EntityToOneLateInit> {
     @JvmField
-    val entityEmpty = RelationInfo<EntityEmpty>(null, null, null)
+    val entityEmpty = RelationInfo<EntityEmpty>(null, null, null, null)
 }
 
 @Entity
@@ -94,7 +94,7 @@ class EntityToOneAndConverter(val someExternalType: LongHashSet? = LongHashSet(8
 
 object EntityToOneAndConverter_ : EntityInfo<EntityToOneLateInit> {
     @JvmField
-    val entityEmpty = RelationInfo<EntityEmpty>(null, null, null)
+    val entityEmpty = RelationInfo<EntityEmpty>(null, null, null, null)
 }
 
 @Entity
@@ -104,7 +104,7 @@ class EntityToManySuffix {
 
 object EntityToManySuffix_ : EntityInfo<EntityToOneLateInit> {
     @JvmField
-    val entityEmpty = RelationInfo<EntityEmpty>(null, null, null)
+    val entityEmpty = RelationInfo<EntityEmpty>(null, null, null, null)
 }
 
 @Entity
@@ -115,7 +115,7 @@ class EntityToManyListLateInit {
 
 object EntityToManyListLateInit_ : EntityInfo<EntityToOneLateInit> {
     @JvmField
-    val entityEmpty = RelationInfo<EntityEmpty>(null, null, null)
+    val entityEmpty = RelationInfo<EntityEmpty>(null, null, null, null)
 }
 
 @Entity
@@ -134,7 +134,7 @@ class EntityTransientList {
 
 object EntityTransientList_ : EntityInfo<EntityToOneLateInit> {
     @JvmField
-    val actualRelation = RelationInfo<EntityEmpty>(null, null, null)
+    val actualRelation = RelationInfo<EntityEmpty>(null, null, null, null)
 }
 
 class TestCursor : Cursor<EntityBoxStoreField>() {

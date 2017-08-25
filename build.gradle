@@ -62,8 +62,8 @@ subprojects {
             }
             url "https://example.org/mvnrepo/"
         }
-        maven { url "http://objectbox.net/beta-repo/" }
         mavenLocal()
+        maven { url "http://objectbox.net/beta-repo/" }
     }
 
     configurations {
