@@ -30,7 +30,7 @@ android {
 }
 
 dependencies {
-    compile 'io.objectbox:objectbox-android:0.9.14-SNAPSHOT'
+    compile 'io.objectbox:objectbox-android:0.9.16-RC'
     //compile "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
     testCompile 'junit:junit:4.12'
     testCompile 'org.mockito:mockito-core:2.7.22'
