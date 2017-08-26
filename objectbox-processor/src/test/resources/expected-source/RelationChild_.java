@@ -8,6 +8,8 @@ import io.objectbox.annotation.apihint.Internal;
 import io.objectbox.internal.CursorFactory;
 import io.objectbox.internal.IdGetter;
 import io.objectbox.relation.RelationInfo;
+import io.objectbox.relation.ToOne;
+import io.objectbox.internal.ToOneGetter;
 
 //////
 // NOTE: this is the EXPECTED generated source.
@@ -94,7 +96,13 @@ public final class RelationChild_ implements EntityInfo<RelationChild> {
         }
     }
 
+    /** to-one */
     static final RelationInfo<RelationParent> parent =
-            new RelationInfo<>(RelationChild_.__INSTANCE, RelationParent_.__INSTANCE, parentId);
+            new RelationInfo<>(RelationChild_.__INSTANCE, RelationParent_.__INSTANCE, parentId, new ToOneGetter<RelationChild>() {
+                @Override
+                public ToOne<RelationParent> getToOne(RelationChild entity) {
+                    return entity.parent;
+                }
+            });
 
 }

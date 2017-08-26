@@ -9,7 +9,10 @@ import io.objectbox.internal.CursorFactory;
 import io.objectbox.internal.IdGetter;
 import io.objectbox.relation.RelationInfo;
 import io.objectbox.relation.ToOne;
-import io.objectbox.relation.ToOneGetter;
+import io.objectbox.internal.ToOneGetter;
+import io.objectbox.internal.ToManyGetter;
+
+import java.util.List;
 
 //////
 // NOTE: this is the EXPECTED generated source.
@@ -94,8 +97,16 @@ public final class BacklinkToManyParent_ implements EntityInfo<BacklinkToManyPar
         }
     }
 
-    static final RelationInfo<BacklinkToManyChild> children =
-            new RelationInfo<>(BacklinkToManyParent_.__INSTANCE, BacklinkToManyChild_.__INSTANCE, BacklinkToManyChild_.parentId, new ToOneGetter<BacklinkToManyChild>() {
+    /** to-many */
+    static final RelationInfo<BacklinkToManyChild> children = new RelationInfo<>(BacklinkToManyParent_.__INSTANCE, BacklinkToManyChild_.__INSTANCE,
+            new ToManyGetter<BacklinkToManyParent>() {
+                @Override
+                public List<BacklinkToManyChild> getToMany(BacklinkToManyParent entity) {
+                    return entity.children;
+                }
+            },
+            BacklinkToManyChild_.parentId,
+            new ToOneGetter<BacklinkToManyChild>() {
                 @Override
                 public ToOne<BacklinkToManyParent> getToOne(BacklinkToManyChild entity) {
                     return entity.parent;
