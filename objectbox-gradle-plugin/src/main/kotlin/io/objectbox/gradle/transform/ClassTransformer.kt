@@ -242,8 +242,8 @@ class ClassTransformer(val debug: Boolean = false) {
         }
     }
 
-    private fun getParamType(descriptor: String, charIndex: Int): Pair<String?, Int> {
-        var charIndex = charIndex
+    private fun getParamType(descriptor: String, charIndexVal: Int): Pair<String?, Int> {
+        var charIndex = charIndexVal
         var c = descriptor[charIndex]
         while (c == '[') {
             c = descriptor[++charIndex]
