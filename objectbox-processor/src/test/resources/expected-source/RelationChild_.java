@@ -97,7 +97,7 @@ public final class RelationChild_ implements EntityInfo<RelationChild> {
     }
 
     /** to-one */
-    static final RelationInfo<RelationParent> parent =
+    public static final RelationInfo<RelationParent> parent =
             new RelationInfo<>(RelationChild_.__INSTANCE, RelationParent_.__INSTANCE, parentId, new ToOneGetter<RelationChild>() {
                 @Override
                 public ToOne<RelationParent> getToOne(RelationChild entity) {

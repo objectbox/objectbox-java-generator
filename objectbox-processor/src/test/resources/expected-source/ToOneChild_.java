@@ -99,7 +99,7 @@ public final class ToOneChild_ implements EntityInfo<ToOneChild> {
     }
 
     /** to-one */
-    static final RelationInfo<ToOneParent> parent =
+    public static final RelationInfo<ToOneParent> parent =
             new RelationInfo<>(ToOneChild_.__INSTANCE, ToOneParent_.__INSTANCE, null, new ToOneGetter<ToOneChild>() {
                 @Override
                 public ToOne<ToOneParent> getToOne(ToOneChild entity) {
@@ -108,7 +108,7 @@ public final class ToOneChild_ implements EntityInfo<ToOneChild> {
             });
 
     /** to-one */
-    static final RelationInfo<ToOneParent> parentWithIdProperty =
+    public static final RelationInfo<ToOneParent> parentWithIdProperty =
             new RelationInfo<>(ToOneChild_.__INSTANCE, ToOneParent_.__INSTANCE, aParentId, new ToOneGetter<ToOneChild>() {
                 @Override
                 public ToOne<ToOneParent> getToOne(ToOneChild entity) {

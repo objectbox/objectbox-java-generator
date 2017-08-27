@@ -97,7 +97,7 @@ public final class ToManyStandalone_ implements EntityInfo<ToManyStandalone> {
     }
 
     /** to-many */
-    static final RelationInfo<IdEntity> children = new RelationInfo<>(ToManyStandalone_.__INSTANCE, IdEntity_.__INSTANCE,
+    public static final RelationInfo<IdEntity> children = new RelationInfo<>(ToManyStandalone_.__INSTANCE, IdEntity_.__INSTANCE,
             new ToManyGetter<ToManyStandalone>() {
                 @Override
                 public List<IdEntity> getToMany(ToManyStandalone entity) {

@@ -98,7 +98,7 @@ public final class BacklinkListParent_ implements EntityInfo<BacklinkListParent>
     }
 
     /** to-many */
-    static final RelationInfo<BacklinkListChild> children = new RelationInfo<>(BacklinkListParent_.__INSTANCE, BacklinkListChild_.__INSTANCE,
+    public static final RelationInfo<BacklinkListChild> children = new RelationInfo<>(BacklinkListParent_.__INSTANCE, BacklinkListChild_.__INSTANCE,
             new ToManyGetter<BacklinkListParent>() {
                 @Override
                 public List<BacklinkListChild> getToMany(BacklinkListParent entity) {
