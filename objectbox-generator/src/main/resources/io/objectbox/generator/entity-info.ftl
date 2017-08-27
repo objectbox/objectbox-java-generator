@@ -149,8 +149,8 @@ property.converter??>, ${property.converterClassName}.class, ${property.customTy
 -->
 <#if entity.hasRelations() >
     <#list entity.toOneRelations as toOne>
-    /** to-one */
-    static final RelationInfo<${toOne.targetEntity.className}> ${toOne.name} =
+    /** To-one relation "${toOne.name}" to target entity "${toOne.targetEntity.className}". */
+    public static final RelationInfo<${toOne.targetEntity.className}> ${toOne.name} =
             new RelationInfo<>(${toOne.sourceEntity.className}_.__INSTANCE,<#--
     --> ${toOne.targetEntity.className}_.__INSTANCE,<#--
     --> <#if toOne.targetIdProperty.virtual>null<#else>${toOne.targetIdProperty.propertyName}</#if>,<#--
@@ -163,8 +163,8 @@ property.converter??>, ${property.converterClassName}.class, ${property.customTy
 
     </#list>
     <#list entity.toManyRelations as toMany>
-    /** to-many */
-    static final RelationInfo<${toMany.targetEntity.className}> ${toMany.name} =<#--
+    /** To-many relation "${toMany.name}" to target entity "${toMany.targetEntity.className}". */
+    public static final RelationInfo<${toMany.targetEntity.className}> ${toMany.name} =<#--
      --> new RelationInfo<>(${toMany.sourceEntity.className}_.__INSTANCE,<#--
      --> ${toMany.targetEntity.className}_.__INSTANCE,
             new ToManyGetter<${toMany.sourceEntity.className}>() {
