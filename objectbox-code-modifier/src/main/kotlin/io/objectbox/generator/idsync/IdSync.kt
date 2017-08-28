@@ -548,6 +548,7 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
     }
 
     private fun writeModel(model: IdSyncModel) {
+        validateBeforeWrite(model)
         val buffer = Buffer()
         val jsonWriter = JsonWriter.of(buffer)
         jsonWriter.indent = "  "
@@ -570,6 +571,25 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
         val sink = Okio.sink(jsonFile)
         sink.use {
             buffer.readAll(it)
+        }
+    }
+
+    /** We've seen duplicate names in written to the file before, so double check here.  */
+    private fun validateBeforeWrite(model: IdSyncModel) {
+        val entityNames = mutableSetOf<String>()
+        for (entity in model.entities) {
+            if (!entityNames.add(entity.name.toLowerCase())) {
+                throw IdSyncException("Could not write model file \"${jsonFile.name}\" - verification failed: " +
+                        "duplicate entity name \"${entity.name}\" (please report if you think this a bug)");
+            }
+            val propertyNames = mutableSetOf<String>()
+            for (property in entity.properties) {
+                if (!propertyNames.add(property.name.toLowerCase())) {
+                    throw IdSyncException("Could not write model file \"${jsonFile.name}\" - verification failed: " +
+                            "duplicate property name \"${property.name}\" in entity \"${entity.name}\" " +
+                            "(please report if you think this a bug)");
+                }
+            }
         }
     }
 
