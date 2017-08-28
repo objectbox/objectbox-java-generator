@@ -78,10 +78,6 @@ public class ${entity.classNameDao} extends AbstractDao<${entity.className}, Lon
 </#list>
     }
 
-<#if entity.active>
-    private ${schema.prefix}DaoSession daoSession;
-
-</#if>
 <#list entity.properties as property><#if property.customType?has_content><#--
 -->    private final ${property.converterClassName} ${property.propertyName}Converter = new ${property.converterClassName}();
 </#if></#list>
@@ -95,19 +91,7 @@ public class ${entity.classNameDao} extends AbstractDao<${entity.className}, Lon
     
     public ${entity.classNameDao}(${schema.prefix}DaoSession daoSession, Box<${entity.className}> box, IdentityScopeLong<${entity.className}> identityScope) {
         super(daoSession, box, BOX_PROPERTIES, identityScope);
-<#if entity.active>
-        this.daoSession = daoSession;
-</#if>
     }
-
-<#if entity.active && !entity.protobuf>
-    @Override
-    protected final void attachEntity(${entity.className} entity) {
-        super.attachEntity(entity);
-        entity.__setDaoSession(daoSession);
-    }
-
-</#if>
 
     @Override
     public void readEntity(${entity.className} from, ${entity.className} to) {
