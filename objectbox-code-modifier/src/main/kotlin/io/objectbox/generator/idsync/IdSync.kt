@@ -78,8 +78,9 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
         try {
             val idSyncModel = justRead()
             if (idSyncModel != null) {
-                if (idSyncModel.modelVersion < 2) {
-                    throw IdSyncException("This version requires model version 2 or 3, but found ${idSyncModel.modelVersion}")
+                if (idSyncModel.modelVersion != 2 && idSyncModel.modelVersion != 3) {
+                    throw IdSyncException(
+                            "This version requires model version 2 or 3, but found ${idSyncModel.modelVersion}")
                 }
                 validateIds(idSyncModel)
                 modelRead = idSyncModel
