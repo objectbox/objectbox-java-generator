@@ -20,6 +20,7 @@ along with greenDAO Generator.  If not, see <http://www.gnu.org/licenses/>.
 <#-- @ftlvariable name="entity" type="io.objectbox.generator.model.Entity" -->
 <#-- @ftlvariable name="schema" type="io.objectbox.generator.model.Schema" -->
 
+<#assign daoCompatPackage = "org.greenrobot.greendao.daocompat" >
 <#assign toBindType = {"Boolean":"Long", "Byte":"Long", "Short":"Long", "Int":"Long", "Long":"Long", "Float":"Double", "Double":"Double", "String":"String", "ByteArray":"Blob", "Date": "Long" } />
 <#assign toCursorType = {"Boolean":"Short", "Byte":"Short", "Short":"Short", "Int":"Int", "Long":"Long", "Float":"Float", "Double":"Double", "String":"String", "ByteArray":"Blob", "Date": "Long"  } />
 package ${entity.javaPackageDao};
@@ -28,13 +29,13 @@ package ${entity.javaPackageDao};
 import java.util.List;
 </#if>
 
-import io.objectbox.daocompat.AbstractDao;
-import io.objectbox.daocompat.identityscope.IdentityScopeLong;
 import io.objectbox.Box;
 import io.objectbox.Property;
+import ${daoCompatPackage}.AbstractDao;
+import ${daoCompatPackage}.identityscope.IdentityScopeLong;
 <#if entity.incomingToManyRelations?has_content>
-import io.objectbox.daocompat.query.Query;
-import io.objectbox.daocompat.query.QueryBuilder;
+import ${daoCompatPackage}.query.Query;
+import ${daoCompatPackage}.query.QueryBuilder;
 </#if>
 
 <#if entity.javaPackageDao != schema.defaultJavaPackageDao>

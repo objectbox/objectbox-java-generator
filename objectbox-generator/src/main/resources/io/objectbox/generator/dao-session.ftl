@@ -17,11 +17,12 @@ You should have received a copy of the GNU General Public License
 along with greenDAO Generator.  If not, see <http://www.gnu.org/licenses/>.
 
 -->
+<#assign daoCompatPackage = "org.greenrobot.greendao.daocompat" >
 package ${schema.defaultJavaPackageDao};
 
-import io.objectbox.daocompat.AbstractDaoSession;
-import io.objectbox.daocompat.identityscope.IdentityScopeLong;
 import io.objectbox.BoxStore;
+import ${daoCompatPackage}.AbstractDaoSession;
+import ${daoCompatPackage}.identityscope.IdentityScopeLong;
 
 <#list schema.entities as entity>
 import ${entity.javaPackage}.${entity.className};
@@ -36,7 +37,7 @@ import ${entity.javaPackageDao}.${entity.classNameDao};
 /**
  * {@inheritDoc}
  * 
- * @see io.objectbox.daocompat.AbstractDaoSession
+ * @see ${daoCompatPackage}.AbstractDaoSession
  */
 public class ${schema.prefix}DaoSession extends AbstractDaoSession {
 
