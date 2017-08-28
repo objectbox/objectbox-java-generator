@@ -101,7 +101,8 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
                     it.properties.forEach { uidHelper.addExistingId(it.uid) }
                     entitiesReadByUid.put(it.uid, it)
                     if (entitiesReadByName.put(it.name.toLowerCase(), it) != null) {
-                        throw IdSyncException("Duplicate entity name ${it.name}")
+                        throw IdSyncException("Malformed model file \"${jsonFile.name}\": " +
+                                "duplicate entity name ${it.name} - please edit the file to resolve the issue")
                     }
                 }
             }
