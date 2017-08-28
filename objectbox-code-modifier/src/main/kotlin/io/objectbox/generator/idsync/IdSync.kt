@@ -96,13 +96,13 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
                 uidHelper.addExistingIds(retiredPropertyUids)
                 uidHelper.addExistingIds(retiredIndexUids)
                 uidHelper.addExistingIds(retiredRelationUids)
-                idSyncModel.entities.forEach {
-                    uidHelper.addExistingId(it.uid)
-                    it.properties.forEach { uidHelper.addExistingId(it.uid) }
-                    entitiesReadByUid.put(it.uid, it)
-                    if (entitiesReadByName.put(it.name.toLowerCase(), it) != null) {
+                idSyncModel.entities.forEach { entity ->
+                    uidHelper.addExistingId(entity.uid)
+                    entity.properties.forEach { uidHelper.addExistingId(it.uid) }
+                    entitiesReadByUid.put(entity.uid, entity)
+                    if (entitiesReadByName.put(entity.name.toLowerCase(), entity) != null) {
                         throw IdSyncException("Malformed model file \"${jsonFile.name}\": " +
-                                "duplicate entity name ${it.name} - please edit the file to resolve the issue")
+                                "duplicate entity name ${entity.name} - please edit the file to resolve the issue")
                     }
                 }
             }
@@ -190,7 +190,9 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
 
         val schemaEntities = schema.entities
         try {
-            val entities = schemaEntities.map { syncEntity(it) }.sortedBy { it.id.id }
+            val entities = schemaEntities.map {
+                syncEntity(it)
+            }.sortedBy { it.id.id }
             updateRetiredUids(entities)
             val model = IdSyncModel(
                     version = 1,
