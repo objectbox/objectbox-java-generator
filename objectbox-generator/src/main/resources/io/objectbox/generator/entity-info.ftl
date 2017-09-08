@@ -38,6 +38,16 @@ import io.objectbox.internal.ToManyGetter;
 
 import java.util.List;
 </#if>
+<#list entity.toOneRelations as toOne>
+<#if toOne.targetEntity.javaPackageDao != entity.javaPackageDao>
+import ${toOne.targetEntity.javaPackageDao}.${toOne.targetEntity.className}_;
+</#if>
+</#list>
+<#list entity.toManyRelations as toMany>
+<#if toMany.targetEntity.javaPackageDao != entity.javaPackageDao>
+import ${toMany.targetEntity.javaPackageDao}.${toMany.targetEntity.className}_;
+</#if>
+</#list>
 </#if>
 
 <#-- For custom types only here. TODO: do not import relation stuff -->
