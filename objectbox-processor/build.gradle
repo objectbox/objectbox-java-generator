@@ -22,7 +22,6 @@ dependencies {
     testCompile 'com.google.testing.compile:compile-testing:0.11'
     // generated files during test need objectbox dependencies to compile
     testCompile "io.objectbox:objectbox-java:$objectbox_java_version"
-    testCompile "io.objectbox:objectbox-daocompat:$objectbox_java_version"
 }
 
 task sourcesJar(type: Jar) {
