@@ -16,6 +16,9 @@ import org.gradle.api.Project
 import java.io.File
 
 class ObjectBoxAndroidTransform(val project: Project) : Transform() {
+    companion object {
+        const val DEBUG = true
+    }
 
     object Registration {
         fun to(project: Project) {
@@ -66,19 +69,28 @@ class ObjectBoxAndroidTransform(val project: Project) : Transform() {
         super.transform(info)
         try {
             val allClassFiles = mutableSetOf<File>()
+            val outDir = info.outputProvider.getContentLocation("objectbox", inputTypes, scopes, Format.DIRECTORY)
             info.inputs.flatMap { it.directoryInputs }.forEach { directoryInput ->
                 // TODO incremental: directoryInput.changedFiles
 
-                allClassFiles.addAll(directoryInput.file.walk().filter { it.isFile && it.name.endsWith(".class") })
+                directoryInput.file.walk().filter { it.isFile }.forEach { file ->
+                    if (file.name.endsWith(".class")) {
+                        allClassFiles += file;
+                    } else {
+                        val relativePath = file.toRelativeString(directoryInput.file)
+                        val destFile = File (outDir, relativePath)
+                        file.copyTo(destFile, overwrite = true)
+                        if(DEBUG) println("Copied $file to $destFile")
+                    }
+                }
             }
 
-            val probedClasses = allClassFiles.map { classProber.probeClass(it) }.filterNotNull()
-            val outDir = info.outputProvider.getContentLocation("objectbox", inputTypes, scopes, Format.DIRECTORY)
-
+            val probedClasses = allClassFiles.mapNotNull { classProber.probeClass(it) }
             classTransformer.transformOrCopyClasses(probedClasses, outDir)
+
         } catch (e: Throwable) {
             val buildTracker = GradleBuildTracker("Transformer")
-            if(e is TransformException) buildTracker.trackError("Transform failed", e)
+            if (e is TransformException) buildTracker.trackError("Transform failed", e)
             else buildTracker.trackFatal("Transform failed", e)
             throw e
         }
