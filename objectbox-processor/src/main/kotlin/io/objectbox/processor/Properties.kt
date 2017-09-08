@@ -114,9 +114,11 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
 
         // @Uid
         val uidAnnotation = field.getAnnotation(Uid::class.java)
-        if (uidAnnotation != null && uidAnnotation.value != 0L) {
+        if (uidAnnotation != null) {
             // just storing uid, id model sync will replace with correct id+uid
-            propertyBuilder.modelId(IdUid(0, uidAnnotation.value))
+            // Note: UID values 0 and -1 are special: print current value and fail later
+            val uid = if(uidAnnotation.value == 0L) -1 else uidAnnotation.value
+            propertyBuilder.modelId(IdUid(0, uid))
         }
     }
 

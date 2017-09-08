@@ -166,8 +166,10 @@ open class ObjectBoxProcessor : AbstractProcessor() {
 
         // @Uid
         val uidAnnotation = entity.getAnnotation(Uid::class.java)
-        if (uidAnnotation != null && uidAnnotation.value != 0L) {
-            entityModel.modelUid = uidAnnotation.value
+        if (uidAnnotation != null) {
+            // Note: UID values 0 and -1 are special: print current value and fail later
+            val uid = if (uidAnnotation.value == 0L) -1 else uidAnnotation.value
+            entityModel.modelUid = uid
         }
 
         // parse properties
@@ -279,7 +281,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         val modelFolder = modelFile.parentFile
         if (!modelFolder.isDirectory) {
             if (useDefaultPath) {
-                if(!modelFolder.mkdirs()) {
+                if (!modelFolder.mkdirs()) {
                     messages.error("Could not create default model folder at '${modelFolder.absolutePath}'. " +
                             "Add absolute path to model file with processor option '$OPTION_MODEL_PATH'.")
                     return false

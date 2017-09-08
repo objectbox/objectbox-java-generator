@@ -67,7 +67,7 @@ class Relations(private val messages: Messages) {
                 backlinkTo = backlinkAnnotation?.to?.nullIfBlank(),
                 fieldAccessible = !field.modifiers.contains(Modifier.PRIVATE),
                 nameInDb = nameInDb,
-                uid = uid
+                uid = uid.let { if (it == 0L) -1L else it }
         )
 
         collectToMany(entityModel, toMany)
@@ -79,23 +79,18 @@ class Relations(private val messages: Messages) {
         val targetTypeMirror = toOneTypeMirror.typeArguments[0] as DeclaredType
         val relationAnnotation = field.getAnnotation(TargetIdProperty::class.java)
         val targetIdName = relationAnnotation?.value?.nullIfBlank()
-        val toOne = buildToOneRelation(field, targetTypeMirror, targetIdName, true)
-
-        collectToOne(entityModel, toOne)
-    }
-
-    private fun buildToOneRelation(field: VariableElement, targetType: DeclaredType, targetIdName: String?,
-                                   isExplicitToOne: Boolean): ToOneRelation {
-        return ToOneRelation(
+        val toOne = ToOneRelation(
                 propertyName = field.simpleName.toString(),
                 // can simply get as element as code would not have compiled if target type is not known
-                targetEntityName = targetType.asElement().simpleName.toString(),
+                targetEntityName = targetTypeMirror.asElement().simpleName.toString(),
                 targetIdName = targetIdName,
                 targetIdDbName = field.getAnnotation(NameInDb::class.java)?.value?.nullIfBlank(),
-                targetIdUid = field.getAnnotation(Uid::class.java)?.value?.let { if (it == 0L) null else it },
-                variableIsToOne = isExplicitToOne,
+                targetIdUid = field.getAnnotation(Uid::class.java)?.value?.let { if (it == 0L) -1L else it },
+                variableIsToOne = true,
                 variableFieldAccessible = !field.modifiers.contains(Modifier.PRIVATE)
         )
+
+        collectToOne(entityModel, toOne)
     }
 
     private fun collectToOne(entity: Entity, toOne: ToOneRelation) {

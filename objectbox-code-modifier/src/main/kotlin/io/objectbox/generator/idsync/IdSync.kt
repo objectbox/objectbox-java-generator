@@ -212,6 +212,7 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
             validateIds(model)
         } catch (e: Throwable) {
             // Repeat e.message so it shows up in gradle right away
+            if(e is IdSyncPrintUidException) throw e
             val message = "Could not sync parsed model with ID model file \"${jsonFile.absolutePath}\": ${e.message}"
             throw IdSyncException(message, e)
         }
@@ -225,13 +226,20 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
     private fun syncEntity(schemaEntity: io.objectbox.generator.model.Entity): Entity {
         val entityName = schemaEntity.dbName ?: schemaEntity.className
         val entityUid = schemaEntity.modelUid
-        val shouldGenerateNewIdUid = entityUid == -1L
-        if (entityUid != null && !shouldGenerateNewIdUid && !parsedUids.add(entityUid)) {
+        val printUid = entityUid == -1L
+        if (entityUid != null && !printUid && !parsedUids.add(entityUid)) {
             throw IdSyncException("Non-unique UID $entityUid in parsed entity " +
                     "${schemaEntity.javaPackage}.${schemaEntity.className}")
         }
         val existingEntity: Entity? = findEntity(entityName, entityUid)
-        val lastPropertyId = if (existingEntity?.lastPropertyId == null || shouldGenerateNewIdUid) {
+        if (printUid) {
+            if(existingEntity != null) {
+                throw IdSyncPrintUidException("entity \"$entityName\"", existingEntity.uid, uidHelper.create())
+            } else {
+                throw IdSyncException("Cannot use @Uid without a value for a new entity: $entityName")
+            }
+        }
+        val lastPropertyId = if (existingEntity?.lastPropertyId == null || printUid) {
             IdUid() // create empty id + uid
         } else {
             existingEntity.lastPropertyId.clone() // use existing id + uid
@@ -239,7 +247,7 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
         val properties = syncProperties(schemaEntity, existingEntity, lastPropertyId)
         val relations = syncRelations(schemaEntity, existingEntity)
 
-        val sourceId = if (existingEntity?.id == null || shouldGenerateNewIdUid) {
+        val sourceId = if (existingEntity?.id == null || printUid) {
             lastEntityId.incId(uidHelper.create()) // create new id + uid
         } else {
             existingEntity.id // use existing id + uid
@@ -468,7 +476,7 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
     }
 
     fun findEntity(name: String, uid: Long?): Entity? {
-        if (uid != null && uid != -1L) {
+        if (uid != null && uid != 0L && uid != -1L) {
             return entitiesReadByUid[uid] ?:
                     throw IdSyncException("No entity with UID $uid found")
         } else {
@@ -477,7 +485,7 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
     }
 
     fun findProperty(entity: Entity, name: String, uid: Long?): Property? {
-        if (uid != null && uid != -1L) {
+        if (uid != null && uid != 0L && uid != -1L) {
             val filtered = entity.properties.filter { it.uid == uid }
             if (filtered.isEmpty()) {
                 throw IdSyncException("In entity ${entity.name}, no property with UID $uid found")
@@ -495,7 +503,7 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
     fun findRelation(entity: Entity, name: String, uid: Long?): Relation? {
         @Suppress("SENSELESS_COMPARISON") // When read by Moshi, not-null requirement is not enforced
         if (entity.relations == null) return null
-        if (uid != null && uid != -1L) {
+        if (uid != null && uid != 0L && uid != -1L) {
             val filtered = entity.relations.filter { it.uid == uid }
             if (filtered.isEmpty()) {
                 throw IdSyncException("In entity ${entity.name}, no relation with UID $uid found")

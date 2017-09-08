@@ -305,6 +305,17 @@ class ObjectBoxProcessorTest {
     }
 
     @Test
+    fun testUidEmpty() {
+        val className = "UidEmptyEntity"
+
+        val environment = TestEnvironment("uid-empty.json")
+
+        val compilation = environment.compile(className)
+        CompilationSubject.assertThat(compilation).failed()
+        CompilationSubject.assertThat(compilation).hadErrorContaining("@Uid(4007236412584455984L)")
+    }
+
+    @Test
     fun testMultipleAnnotations() {
         // test multiple (non-conflicting) annotations on a single property
         val className = "MultipleEntity"
