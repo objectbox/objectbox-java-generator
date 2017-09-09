@@ -332,9 +332,8 @@ class ObjectBoxProcessorTest {
     fun testToManyUidEmpty() {
         val environment = TestEnvironment("uid-relation.json")
         val compilation = environment.compile("UidToManyEmptyEntity")
-        // TODO
-//        CompilationSubject.assertThat(compilation).failed()
-//        CompilationSubject.assertThat(compilation).hadErrorContaining("@Uid(823077930327936262L)")
+        CompilationSubject.assertThat(compilation).failed()
+        CompilationSubject.assertThat(compilation).hadErrorContaining("@Uid(823077930327936262L)")
     }
 
     @Test

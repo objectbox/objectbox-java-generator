@@ -393,10 +393,10 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
                              schemaRelation: ToManyStandalone): Relation {
         val name = schemaRelation.dbName ?: schemaRelation.name
         val relationUid = schemaRelation.modelId?.uid
-        val shouldGenerateNewIdUid = schemaEntity.modelUid == -1L || relationUid == -1L
+        val printUid = relationUid == -1L
         var existingRelation: Relation? = null
         if (existingEntity != null) {
-            if (relationUid != null && !shouldGenerateNewIdUid && !parsedUids.add(relationUid)) {
+            if (relationUid != null && !printUid && !parsedUids.add(relationUid)) {
                 throw IdSyncException("Non-unique UID $relationUid in parsed entity " +
                         "${schemaEntity.javaPackage}.${schemaEntity.className} " +
                         "for relation ${schemaRelation.name}")
@@ -404,7 +404,16 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
             existingRelation = findRelation(existingEntity, name, relationUid)
         }
 
-        val sourceId = if (existingRelation?.id == null || shouldGenerateNewIdUid) {
+        if (printUid) {
+            val relationName = "\"${schemaEntity.className}.${schemaRelation.name}\""
+            if (existingRelation != null) {
+                throw IdSyncPrintUidException("relation $relationName", existingRelation.uid, uidHelper.create())
+            } else {
+                throw IdSyncException("Cannot use @Uid without a value for a new relation: $relationName")
+            }
+        }
+
+        val sourceId = if (existingRelation?.id == null) {
             lastRelationId.incId(uidHelper.create()) // create a new id + uid
         } else {
             existingRelation.id // use existing id + uid
