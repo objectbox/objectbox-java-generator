@@ -9,7 +9,9 @@ data class IdSyncModel(
         val _note3: String = "If you have VCS merge conflicts, you must resolve them according to ObjectBox docs.",
 
         val version: Long,
-        var modelVersion: Int = MODEL_VERSION,
+        var modelVersion: Long = MODEL_VERSION,
+        /** Specify backward compatibility with older parsers.*/
+        var modelVersionParserMinimum: Long = MODEL_VERSION,
         val lastEntityId: IdUid,
         val lastIndexId: IdUid,
         val lastRelationId: IdUid,
@@ -17,6 +19,12 @@ data class IdSyncModel(
         val lastSequenceId: IdUid,
 
         val entities: List<Entity>,
+
+        /**
+         * Previously allocated UIDs (e.g. via "@Uid" without value) to use to provide UIDs for new entities,
+         * properties, or relations.
+         */
+        val newUidPool: List<Long>?,
 
         /** Previously used UIDs, which are now deleted. Archived to ensure no collisions. */
         val retiredEntityUids: List<Long>?,
@@ -31,7 +39,8 @@ data class IdSyncModel(
         val retiredRelationUids: List<Long>?
 ) {
     companion object {
-        val MODEL_VERSION = 3
+        const val MODEL_VERSION = 4L // !! When upgrading always check MODEL_VERSION_PARSER_MINIMUM !!
+        const val MODEL_VERSION_PARSER_MINIMUM = 4L
     }
 }
 

@@ -1,6 +1,9 @@
 package io.objectbox.generator.idsync
 
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertSame
+import org.junit.Assert.assertTrue
+import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Test
 import java.io.File
@@ -32,8 +35,31 @@ class IdSyncFileTest {
     }
 
     @Test
+    fun testFutureVersionIncompatible() {
+        val file = File(dir, "future-version-incompatible.json")
+        assertTrue(file.exists())
+        try {
+            IdSync(file)
+            fail("Should have thrown");
+        } catch (e: IdSyncException) {
+            assertEquals(IdSyncException::class.java, e.cause!!.javaClass)
+            val message = e.cause!!.message!!
+            assertTrue(message, message.contains("but found 9999999"))
+            assertTrue(message, message.contains("maximum supported version is"))
+        }
+    }
+
+    @Test
+    fun testFutureVersionCompatible() {
+        val file = File(dir, "future-version-compatible.json")
+        assertTrue(file.exists())
+        val idSyncModel = IdSync(file).justRead()!!
+        assertEquals(3, idSyncModel.modelVersionParserMinimum)
+    }
+
+    @Test
     fun testBadFiles() {
-        val badFiles = dir.listFiles().filter { it.name != "all-ok.json" }
+        val badFiles = dir.listFiles().filter { it.name != "all-ok.json" && !it.name.startsWith("future-version") }
         val expectedMessages = mapOf(
                 "duplicate-entity-id.json" to "Duplicate ID 1 for entity Note",
                 "duplicate-entity-uid.json" to "Duplicate UID 4858050548069557694",
