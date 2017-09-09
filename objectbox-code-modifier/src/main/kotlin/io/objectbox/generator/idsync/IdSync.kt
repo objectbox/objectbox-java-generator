@@ -46,7 +46,8 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
     var lastSequenceId: IdUid = IdUid()
         private set
 
-    private val newUidPool = mutableSetOf<Long>()
+    // visibility for test
+    val newUidPool = mutableSetOf<Long>()
 
     private val retiredEntityUids = ArrayList<Long>()
     private val retiredPropertyUids = ArrayList<Long>()

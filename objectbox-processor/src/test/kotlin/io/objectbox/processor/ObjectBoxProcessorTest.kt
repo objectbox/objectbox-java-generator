@@ -329,8 +329,22 @@ class ObjectBoxProcessorTest {
     @Test
     fun testPropertyUidNew() {
         val environment = TestEnvironment("uid-new-uid-pool.json", copyModelFile = true)
-        val compilation = environment.compile("UidPropertyNewEntity")
+        val entityName = "UidPropertyNewEntity"
+        val modelBefore = environment.readModel()
+        assertEquals(1, modelBefore.newUidPool.size)
+        val entityBefore = modelBefore.findEntity("UidEntity", null)!!
+
+        val compilation = environment.compile(entityName)
         CompilationSubject.assertThat(compilation).succeeded()
+        val model = environment.readModel()
+        val entity = model.findEntity("UidEntity", null)!!
+        assertEquals(entityBefore.lastPropertyId.id + 1, entity.lastPropertyId.id)
+
+        val property = entity.properties.single { it.name == "uidProperty" }
+        val newUid = modelBefore.newUidPool!!.single()
+        assertEquals(newUid, property.uid)
+
+        assertEquals(0, model.newUidPool.size)
     }
 
     @Test
