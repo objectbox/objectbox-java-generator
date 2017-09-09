@@ -6,9 +6,8 @@ import io.objectbox.annotation.NameInDb;
 import io.objectbox.annotation.Uid;
 
 @Entity
-@Uid
 @NameInDb("UidEntity") // just to re-use json model file
-public class UidEmptyEntity {
+public class UidPropertyEmptyEntity {
 
     @Id
     Long id;

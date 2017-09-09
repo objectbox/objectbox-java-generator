@@ -307,12 +307,19 @@ class ObjectBoxProcessorTest {
     @Test
     fun testUidEmpty() {
         val className = "UidEmptyEntity"
-
-        val environment = TestEnvironment("uid-empty.json")
-
+        val environment = TestEnvironment("uid.json")
         val compilation = environment.compile(className)
         CompilationSubject.assertThat(compilation).failed()
-        CompilationSubject.assertThat(compilation).hadErrorContaining("@Uid(4007236412584455984L)")
+        CompilationSubject.assertThat(compilation).hadErrorContaining("@Uid(2361091532752425885L)")
+    }
+
+    @Test
+    fun testPropertyUidEmpty() {
+        val className = "UidPropertyEmptyEntity"
+        val environment = TestEnvironment("uid.json")
+        val compilation = environment.compile(className)
+        CompilationSubject.assertThat(compilation).failed()
+        CompilationSubject.assertThat(compilation).hadErrorContaining("@Uid(7287685531948841886L)")
     }
 
     @Test

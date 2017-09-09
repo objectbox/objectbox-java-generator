@@ -212,7 +212,7 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
             validateIds(model)
         } catch (e: Throwable) {
             // Repeat e.message so it shows up in gradle right away
-            if(e is IdSyncPrintUidException) throw e
+            if (e is IdSyncPrintUidException) throw e
             val message = "Could not sync parsed model with ID model file \"${jsonFile.absolutePath}\": ${e.message}"
             throw IdSyncException(message, e)
         }
@@ -233,7 +233,7 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
         }
         val existingEntity: Entity? = findEntity(entityName, entityUid)
         if (printUid) {
-            if(existingEntity != null) {
+            if (existingEntity != null) {
                 throw IdSyncPrintUidException("entity \"$entityName\"", existingEntity.uid, uidHelper.create())
             } else {
                 throw IdSyncException("Cannot use @Uid without a value for a new entity: $entityName")
@@ -327,29 +327,33 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
                              schemaProperty: io.objectbox.generator.model.Property, lastPropertyId: IdUid): Property {
         val name = schemaProperty.dbName ?: schemaProperty.propertyName
         val propertyUid = schemaProperty.modelId?.uid
-        val shouldGenerateNewIdUid = schemaEntity.modelUid == -1L || propertyUid == -1L
+        val printUid = propertyUid == -1L
         var existingProperty: Property? = null
         if (existingEntity != null) {
-            if (propertyUid != null && !shouldGenerateNewIdUid && !parsedUids.add(propertyUid)) {
+            if (propertyUid != null && !printUid && !parsedUids.add(propertyUid)) {
                 throw IdSyncException("Non-unique UID $propertyUid in parsed entity " +
                         "${schemaEntity.javaPackage}.${schemaEntity.className} " +
                         "for property ${schemaProperty.propertyName}")
             }
             existingProperty = findProperty(existingEntity, name, propertyUid)
         }
+        if (printUid) {
+            val propertyName = "\"${schemaEntity.className}.${schemaProperty.propertyName}\""
+            if (existingProperty != null) {
+                throw IdSyncPrintUidException("property $propertyName", existingProperty.uid, uidHelper.create())
+            } else {
+                throw IdSyncException("Cannot use @Uid without a value for a new property: $propertyName")
+            }
+        }
 
         var sourceIndexId: IdUid? = null
         // check entity for index as Property.index is only auto-set for to-ones
         val index = schemaEntity.indexes.find { it.properties.size == 1 && it.properties[0] == schemaProperty }
         if (index != null) {
-            if (shouldGenerateNewIdUid) {
-                sourceIndexId = lastIndexId.incId(uidHelper.create())
-            } else {
-                sourceIndexId = existingProperty?.indexId ?: lastIndexId.incId(uidHelper.create())
-            }
+            sourceIndexId = existingProperty?.indexId ?: lastIndexId.incId(uidHelper.create())
         }
 
-        val sourceId = if (existingProperty?.id == null || shouldGenerateNewIdUid) {
+        val sourceId = if (existingProperty?.id == null) {
             lastPropertyId.incId(uidHelper.create()) // create a new id + uid
         } else {
             existingProperty.id // use existing id + uid
