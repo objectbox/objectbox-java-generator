@@ -240,7 +240,7 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
                 throw IdSyncException("Cannot use @Uid without a value for a new entity: $entityName")
             }
         }
-        val lastPropertyId = if (existingEntity?.lastPropertyId == null || printUid) {
+        val lastPropertyId = if (existingEntity?.lastPropertyId == null) {
             IdUid() // create empty id + uid
         } else {
             existingEntity.lastPropertyId.clone() // use existing id + uid
@@ -248,8 +248,14 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
         val properties = syncProperties(schemaEntity, existingEntity, lastPropertyId)
         val relations = syncRelations(schemaEntity, existingEntity)
 
-        val sourceId = if (existingEntity?.id == null || printUid) {
-            lastEntityId.incId(uidHelper.create()) // create new id + uid
+        val sourceId = if (existingEntity?.id == null) {
+            if(entityUid != null) {
+                if(!newUidPool.remove(entityUid)) {
+                    throw IdSyncException("Unexpected UID $entityUid was not in newUidPool")
+                }
+            }
+            val uid = entityUid ?: uidHelper.create()
+            lastEntityId.incId(uid) // create new id + uid
         } else {
             existingEntity.id // use existing id + uid
         }
@@ -497,7 +503,8 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
     fun findEntity(name: String, uid: Long?): Entity? {
         if (uid != null && uid != 0L && uid != -1L) {
             return entitiesReadByUid[uid] ?:
-                    throw IdSyncException("No entity with UID $uid found")
+                    if(newUidPool.contains(uid)) return null
+                    else throw IdSyncException("No entity with UID $uid found")
         } else {
             return entitiesReadByName[name.toLowerCase()]
         }
