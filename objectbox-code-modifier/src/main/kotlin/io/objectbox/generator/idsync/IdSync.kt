@@ -177,23 +177,7 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
                 }
             }.sortedBy { it.id.id }
             updateRetiredUids(entities)
-            val model = IdSyncModel(
-                    version = 1, // User-version
-                    modelVersion = IdSyncModel.MODEL_VERSION,
-                    modelVersionParserMinimum = IdSyncModel.MODEL_VERSION_PARSER_MINIMUM,
-                    lastEntityId = lastEntityId,
-                    lastIndexId = lastIndexId,
-                    lastRelationId = lastRelationId,
-                    lastSequenceId = lastSequenceId,
-                    newUidPool = null,
-                    entities = entities,
-                    retiredEntityUids = retiredEntityUids,
-                    retiredPropertyUids = retiredPropertyUids,
-                    retiredIndexUids = retiredIndexUids,
-                    retiredRelationUids = retiredRelationUids)
-            writeModel(model)
-            // Paranoia check, that synced model is OK (do this after writing because that's what the user sees)
-            validateIds(model)
+            writeModel(entities)
         } catch (e: Throwable) {
             // Repeat e.message so it shows up in gradle right away
             val message = "Could not sync parsed model with ID model file \"${jsonFile.absolutePath}\": ${e.message}"
@@ -212,22 +196,7 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
                 syncEntity(it)
             }.sortedBy { it.id.id }
             updateRetiredUids(entities)
-            val model = IdSyncModel(
-                    version = 1,
-                    modelVersion = IdSyncModel.MODEL_VERSION,
-                    lastEntityId = lastEntityId,
-                    lastIndexId = lastIndexId,
-                    lastRelationId = lastRelationId,
-                    lastSequenceId = lastSequenceId,
-                    newUidPool = null,
-                    entities = entities,
-                    retiredEntityUids = retiredEntityUids,
-                    retiredPropertyUids = retiredPropertyUids,
-                    retiredIndexUids = retiredIndexUids,
-                    retiredRelationUids = retiredRelationUids)
-            writeModel(model)
-            // Paranoia check, that synced model is OK (do this after writing because that's what the user sees)
-            validateIds(model)
+            writeModel(entities)
         } catch (e: Throwable) {
             // Repeat e.message so it shows up in gradle right away
             if (e is IdSyncPrintUidException) throw e
@@ -239,6 +208,26 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
         schema.lastEntityId = lastEntityId
         schema.lastIndexId = lastIndexId
         schema.lastRelationId = lastRelationId
+    }
+
+    private fun writeModel(entities: List<Entity>) {
+        val model = IdSyncModel(
+                version = 1, // User-version
+                modelVersion = IdSyncModel.MODEL_VERSION,
+                modelVersionParserMinimum = IdSyncModel.MODEL_VERSION_PARSER_MINIMUM,
+                lastEntityId = lastEntityId,
+                lastIndexId = lastIndexId,
+                lastRelationId = lastRelationId,
+                lastSequenceId = lastSequenceId,
+                newUidPool = null,
+                entities = entities,
+                retiredEntityUids = retiredEntityUids,
+                retiredPropertyUids = retiredPropertyUids,
+                retiredIndexUids = retiredIndexUids,
+                retiredRelationUids = retiredRelationUids)
+        writeModel(model)
+        // Paranoia check, that synced model is OK (do this after writing because that's what the user sees)
+        validateIds(model)
     }
 
     private fun syncEntity(schemaEntity: io.objectbox.generator.model.Entity): Entity {
