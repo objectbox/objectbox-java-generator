@@ -327,6 +327,13 @@ class ObjectBoxProcessorTest {
     }
 
     @Test
+    fun testPropertyUidNew() {
+        val environment = TestEnvironment("uid-new-uid-pool.json", copyModelFile = true)
+        val compilation = environment.compile("UidPropertyNewEntity")
+        CompilationSubject.assertThat(compilation).succeeded()
+    }
+
+    @Test
     fun testToOneUidEmpty() {
         val environment = TestEnvironment("uid-relation.json", copyModelFile = true)
         val compilation = environment.compile("UidToOneEmptyEntity")
