@@ -25,12 +25,18 @@ import javax.tools.JavaFileObject
 
 class ObjectBoxProcessorTest {
 
-    class TestEnvironment(modelFile: String, val optionDisableTransform: Boolean = false) {
-        val modelFilesPathModule = "src/test/resources/objectbox-models/"
-        val modelFilesPathProject = "objectbox-processor/$modelFilesPathModule"
+    class TestEnvironment(modelFile: String,
+                          val optionDisableTransform: Boolean = false,
+                          copyModelFile: Boolean = false) {
 
-        val modelFilePath: String
-        val modelFileProcessorOption: List<String>
+        // tests run from IntelliJ are relative to module directory
+        private val modelFilesPathModule = "src/test/resources/objectbox-models/"
+
+        // tests run from Gradle are relative to project directory
+        private val modelFilesPathProject = "objectbox-processor/$modelFilesPathModule"
+
+        private val modelFilePath: String
+        private val modelFileProcessorOption: List<String>
             get() {
                 val options = mutableListOf("-A${ObjectBoxProcessor.OPTION_MODEL_PATH}=$modelFilePath")
                 options += "-A${ObjectBoxProcessor.OPTION_DEBUG}=true"
@@ -43,17 +49,17 @@ class ObjectBoxProcessorTest {
             get() = processor.schema!!
 
         init {
-            // tests run from Gradle are relative to project directory
-            val modelFilePathProject = "$modelFilesPathProject$modelFile"
-            // tests run from IntelliJ are relative to module directory
-            val modelFilePathModule = "$modelFilesPathModule$modelFile"
-            if (File(modelFilePathProject).parentFile.isDirectory) {
-                modelFilePath = modelFilePathProject
-            } else if (File(modelFilePathModule).parentFile.isDirectory) {
-                modelFilePath = modelFilePathModule
-            } else {
-                throw FileNotFoundException("Can not find model file directory.")
-            }
+            val path = when {
+                File(modelFilesPathModule).isDirectory -> modelFilesPathModule
+                File(modelFilesPathProject).isDirectory -> modelFilesPathProject
+                else -> throw FileNotFoundException("Can not find model file directory.")
+            } + modelFile
+
+            modelFilePath = if (copyModelFile) {
+                val pathCopy = "$path.copy"
+                File(path).copyTo(File(pathCopy), overwrite = true)
+                pathCopy
+            } else path
         }
 
         fun compile(vararg files: String): Compilation {
@@ -306,7 +312,7 @@ class ObjectBoxProcessorTest {
 
     @Test
     fun testUidEmpty() {
-        val environment = TestEnvironment("uid.json")
+        val environment = TestEnvironment("uid.json", copyModelFile = true)
         val compilation = environment.compile("UidEmptyEntity")
         CompilationSubject.assertThat(compilation).failed()
         CompilationSubject.assertThat(compilation).hadErrorContaining("@Uid(2361091532752425885L)")
@@ -314,7 +320,7 @@ class ObjectBoxProcessorTest {
 
     @Test
     fun testPropertyUidEmpty() {
-        val environment = TestEnvironment("uid.json")
+        val environment = TestEnvironment("uid.json", copyModelFile = true)
         val compilation = environment.compile("UidPropertyEmptyEntity")
         CompilationSubject.assertThat(compilation).failed()
         CompilationSubject.assertThat(compilation).hadErrorContaining("@Uid(7287685531948841886L)")
@@ -322,7 +328,7 @@ class ObjectBoxProcessorTest {
 
     @Test
     fun testToOneUidEmpty() {
-        val environment = TestEnvironment("uid-relation.json")
+        val environment = TestEnvironment("uid-relation.json", copyModelFile = true)
         val compilation = environment.compile("UidToOneEmptyEntity")
         CompilationSubject.assertThat(compilation).failed()
         CompilationSubject.assertThat(compilation).hadErrorContaining("@Uid(4055646088440538446L)")
@@ -330,7 +336,7 @@ class ObjectBoxProcessorTest {
 
     @Test
     fun testToManyUidEmpty() {
-        val environment = TestEnvironment("uid-relation.json")
+        val environment = TestEnvironment("uid-relation.json", copyModelFile = true)
         val compilation = environment.compile("UidToManyEmptyEntity")
         CompilationSubject.assertThat(compilation).failed()
         CompilationSubject.assertThat(compilation).hadErrorContaining("@Uid(823077930327936262L)")
@@ -515,7 +521,7 @@ class ObjectBoxProcessorTest {
         assertThat(modelChild!!.properties.size).isAtLeast(1)
         for (property in modelChild.properties) {
             when (property.name) {
-                "parentId" , "aParentId"-> {
+                "parentId", "aParentId" -> {
                     assertThat(property.indexId).isNotNull()
                     assertThat(property.indexId).isNotEqualTo(IdUid())
                 }

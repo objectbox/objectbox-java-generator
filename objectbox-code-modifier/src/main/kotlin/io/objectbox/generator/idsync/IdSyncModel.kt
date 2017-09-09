@@ -24,7 +24,7 @@ data class IdSyncModel(
          * Previously allocated UIDs (e.g. via "@Uid" without value) to use to provide UIDs for new entities,
          * properties, or relations.
          */
-        val newUidPool: List<Long>?,
+        var newUidPool: List<Long>?,
 
         /** Previously used UIDs, which are now deleted. Archived to ensure no collisions. */
         val retiredEntityUids: List<Long>?,

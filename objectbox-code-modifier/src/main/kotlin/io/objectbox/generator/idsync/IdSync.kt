@@ -46,6 +46,8 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
     var lastSequenceId: IdUid = IdUid()
         private set
 
+    private val newUidPool = mutableSetOf<Long>()
+
     private val retiredEntityUids = ArrayList<Long>()
     private val retiredPropertyUids = ArrayList<Long>()
     private val retiredIndexUids = ArrayList<Long>()
@@ -108,6 +110,7 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
                 retiredPropertyUids += idSyncModel.retiredPropertyUids ?: emptyList()
                 retiredIndexUids += idSyncModel.retiredIndexUids ?: emptyList()
                 retiredRelationUids += idSyncModel.retiredRelationUids ?: emptyList()
+                newUidPool += idSyncModel.newUidPool ?: emptyList()
                 uidHelper.addExistingIds(retiredEntityUids)
                 uidHelper.addExistingIds(retiredPropertyUids)
                 uidHelper.addExistingIds(retiredIndexUids)
@@ -198,8 +201,18 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
             updateRetiredUids(entities)
             writeModel(entities)
         } catch (e: Throwable) {
+            if (e is IdSyncPrintUidException) {
+                try {
+                    // At this point model was already validated (at least partially)
+                    val model = justRead()!!
+                    model.newUidPool = listOf(e.randomNewUid)
+                    writeModel(model)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+                throw e
+            }
             // Repeat e.message so it shows up in gradle right away
-            if (e is IdSyncPrintUidException) throw e
             val message = "Could not sync parsed model with ID model file \"${jsonFile.absolutePath}\": ${e.message}"
             throw IdSyncException(message, e)
         }
@@ -208,26 +221,6 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
         schema.lastEntityId = lastEntityId
         schema.lastIndexId = lastIndexId
         schema.lastRelationId = lastRelationId
-    }
-
-    private fun writeModel(entities: List<Entity>) {
-        val model = IdSyncModel(
-                version = 1, // User-version
-                modelVersion = IdSyncModel.MODEL_VERSION,
-                modelVersionParserMinimum = IdSyncModel.MODEL_VERSION_PARSER_MINIMUM,
-                lastEntityId = lastEntityId,
-                lastIndexId = lastIndexId,
-                lastRelationId = lastRelationId,
-                lastSequenceId = lastSequenceId,
-                newUidPool = null,
-                entities = entities,
-                retiredEntityUids = retiredEntityUids,
-                retiredPropertyUids = retiredPropertyUids,
-                retiredIndexUids = retiredIndexUids,
-                retiredRelationUids = retiredRelationUids)
-        writeModel(model)
-        // Paranoia check, that synced model is OK (do this after writing because that's what the user sees)
-        validateIds(model)
     }
 
     private fun syncEntity(schemaEntity: io.objectbox.generator.model.Entity): Entity {
@@ -333,7 +326,7 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
     private fun syncProperty(existingEntity: Entity?, schemaEntity: io.objectbox.generator.model.Entity,
                              schemaProperty: io.objectbox.generator.model.Property, lastPropertyId: IdUid): Property {
         val name = schemaProperty.dbName ?: schemaProperty.propertyName
-        val propertyUid = schemaProperty.modelId?.uid
+        val propertyUid: Long? = schemaProperty.modelId?.uid
         val printUid = propertyUid == -1L
         var existingProperty: Property? = null
         if (existingEntity != null) {
@@ -361,7 +354,13 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
         }
 
         val sourceId = if (existingProperty?.id == null) {
-            lastPropertyId.incId(uidHelper.create()) // create a new id + uid
+            if(propertyUid != null) {
+                if(!newUidPool.remove(propertyUid)) {
+                    throw IdSyncException("Unexpected UID $propertyUid was not in newUidPool")
+                }
+            }
+            val uid = propertyUid ?: uidHelper.create()
+            lastPropertyId.incId(uid) // create a new id
         } else {
             existingProperty.id // use existing id + uid
         }
@@ -486,8 +485,7 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
         var source: Source? = null
         try {
             source = Okio.source(file)
-            val syncModel = modelJsonAdapter.fromJson(Okio.buffer(source))
-            return syncModel
+            return modelJsonAdapter.fromJson(Okio.buffer(source))
         } catch (e: FileNotFoundException) {
             return null
         } finally {
@@ -508,6 +506,9 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
         if (uid != null && uid != 0L && uid != -1L) {
             val filtered = entity.properties.filter { it.uid == uid }
             if (filtered.isEmpty()) {
+                if (newUidPool.contains(uid)) {
+                    return null
+                }
                 throw IdSyncException("In entity ${entity.name}, no property with UID $uid found")
             }
             check(filtered.size == 1, { "property name: $name, UID: $uid" })
@@ -575,12 +576,33 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
         return Triple(propertyUids, indexUids, relationUids)
     }
 
+    private fun writeModel(entities: List<Entity>) {
+        val model = IdSyncModel(
+                version = 1, // User-version
+                modelVersion = IdSyncModel.MODEL_VERSION,
+                modelVersionParserMinimum = IdSyncModel.MODEL_VERSION_PARSER_MINIMUM,
+                lastEntityId = lastEntityId,
+                lastIndexId = lastIndexId,
+                lastRelationId = lastRelationId,
+                lastSequenceId = lastSequenceId,
+                newUidPool = null,
+                entities = entities,
+                retiredEntityUids = retiredEntityUids,
+                retiredPropertyUids = retiredPropertyUids,
+                retiredIndexUids = retiredIndexUids,
+                retiredRelationUids = retiredRelationUids)
+        writeModel(model)
+        // Paranoia check, that synced model is OK (do this after writing because that's what the user sees)
+        validateIds(model)
+    }
+
     private fun writeModel(model: IdSyncModel) {
         validateBeforeWrite(model)
         val buffer = Buffer()
         val jsonWriter = JsonWriter.of(buffer)
         jsonWriter.indent = "  "
         model.modelVersion = IdSyncModel.MODEL_VERSION
+        model.modelVersionParserMinimum = IdSyncModel.MODEL_VERSION_PARSER_MINIMUM
         modelJsonAdapter.toJson(jsonWriter, model)
         if (jsonFile.exists()) {
             val existingContent = jsonFile.readBytes()
@@ -590,14 +612,13 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
                 return
             } else {
                 println("ID model file changed: " + jsonFile.name + ", creating backup (.bak)")
+                jsonFile.copyTo(backupFile, true)
             }
-            jsonFile.copyTo(backupFile, true)
         } else {
             println("ID model file created: " + jsonFile.name)
         }
 
-        val sink = Okio.sink(jsonFile)
-        sink.use {
+        Okio.sink(jsonFile).use {
             buffer.readAll(it)
         }
     }
