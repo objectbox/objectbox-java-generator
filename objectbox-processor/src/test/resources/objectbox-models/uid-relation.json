@@ -18,12 +18,17 @@
           "name": "toOneId"
         }
       ],
-      "relations": []
+      "relations": [
+        {
+          "id": "2:8287597359370393987",
+          "name": "toManyStandalone"
+        }
+      ]
     }
   ],
   "lastEntityId": "1:2361091532752425885",
   "lastIndexId": "1:6913000642538303411",
-  "lastRelationId": "0:0",
+  "lastRelationId": "2:8287597359370393987",
   "lastSequenceId": "0:0",
   "modelVersion": 3,
   "retiredEntityUids": [],
@@ -31,6 +36,8 @@
   "retiredPropertyUids": [
     7287685531948841886
   ],
-  "retiredRelationUids": [],
+  "retiredRelationUids": [
+    823077930327936262
+  ],
   "version": 1
 }
