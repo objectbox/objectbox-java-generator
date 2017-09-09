@@ -41,7 +41,8 @@
   "lastIndexId": "1:3805303550911331096",
   "lastRelationId": "2:89810976201674717",
   "lastSequenceId": "0:0",
-  "modelVersion": 3,
+  "modelVersion": 4,
+  "modelVersionParserMinimum": 4,
   "retiredEntityUids": [
     4031058995108974500
   ],
