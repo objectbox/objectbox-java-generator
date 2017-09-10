@@ -6,6 +6,7 @@ import io.objectbox.annotation.TargetIdProperty
 import io.objectbox.annotation.Uid
 import io.objectbox.codemodifier.nullIfBlank
 import io.objectbox.generator.IdUid
+import io.objectbox.generator.TextUtil
 import io.objectbox.generator.model.Entity
 import io.objectbox.generator.model.PropertyType
 import io.objectbox.generator.model.Schema
@@ -111,24 +112,24 @@ class Relations(private val messages: Messages) {
         toManys.add(toMany)
     }
 
-    fun ensureForeignKeys(entity: Entity) {
+    fun ensureTargetIdProperties(entity: Entity) {
         val toOnes = toOnesByEntity[entity]
         // only if entity has to-one relations
         if (toOnes != null) {
             for (toOne in toOnes) {
-                ensureForeignKeys(entity, toOne)
+                ensureTargetIdProperty(entity, toOne)
             }
         }
     }
 
-    private fun ensureForeignKeys(entityModel: Entity, toOne: ToOneRelation) {
+    private fun ensureTargetIdProperty(entityModel: Entity, toOne: ToOneRelation) {
         if (toOne.targetIdName == null) {
             toOne.targetIdName = "${toOne.propertyName}Id"
         }
 
-        val foreignKeyProperty = entityModel.findPropertyByName(toOne.targetIdName)
-        if (foreignKeyProperty == null) {
-            // foreign key property not explicitly defined in entity, create a virtual one
+        val targetIdProperty = entityModel.findPropertyByName(toOne.targetIdName)
+        if (targetIdProperty == null) {
+            // target ID property not explicitly defined in entity, create a virtual one
 
             val propertyBuilder = entityModel.addProperty(PropertyType.Long, toOne.targetIdName)
             propertyBuilder.notNull()
@@ -139,8 +140,16 @@ class Relations(private val messages: Messages) {
                 propertyBuilder.modelId(IdUid(0, toOne.targetIdUid))
             }
             // TODO mj: ensure generator's ToOne uses the same targetName (ToOne.nameToOne)
-            val targetName = if (toOne.variableIsToOne) toOne.propertyName else "${toOne.propertyName}ToOne"
-            propertyBuilder.virtualTargetName(targetName)
+            if (toOne.variableIsToOne) {
+                val targetName = toOne.propertyName
+                val targetValue =
+                        if (toOne.variableFieldAccessible) targetName
+                        else "get" + TextUtil.capFirst(targetName) + "()"
+                propertyBuilder.virtualTargetValueExpression(targetValue).virtualTargetName(targetName)
+            } else {
+                val targetName = "${toOne.propertyName}ToOne"
+                propertyBuilder.virtualTargetName(targetName)
+            }
         }
     }
 

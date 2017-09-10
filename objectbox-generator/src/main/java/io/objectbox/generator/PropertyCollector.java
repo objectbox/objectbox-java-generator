@@ -20,15 +20,12 @@ package io.objectbox.generator;
 
 import org.greenrobot.essentials.collections.Multimap;
 
+import java.util.List;
+
 import io.objectbox.generator.model.Entity;
 import io.objectbox.generator.model.Property;
 import io.objectbox.generator.model.PropertyType;
 
-import java.util.List;
-
-/**
- * Created by Markus on 20.09.2016.
- */
 class PropertyCollector {
     private final static String INDENT = "        ";
     private final static String INDENT_EX = "                ";
@@ -221,9 +218,14 @@ class PropertyCollector {
                 }
             } else {
                 sb.append(propertyId).append(", ").append("entity.");
-                if(property.isVirtual()) {
+                if (property.isVirtual()) {
                     // TODO this is hard-coded for to-ones, not really a generic "virtual property"
-                    sb.append(property.getVirtualTargetName()).append(".getTargetId()");
+                    if (property.getVirtualTargetValueExpression() != null) {
+                        sb.append(property.getVirtualTargetValueExpression());
+                    } else {
+                        sb.append(property.getVirtualTargetName());
+                    }
+                    sb.append(".getTargetId()");
                 } else {
                     sb.append(property.getDatabaseValueExpression());
                 }

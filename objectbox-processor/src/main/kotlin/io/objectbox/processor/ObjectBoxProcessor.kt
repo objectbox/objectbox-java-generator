@@ -185,8 +185,8 @@ open class ObjectBoxProcessor : AbstractProcessor() {
                     "add a field '__boxStore' of type 'BoxStore'.", entity)
         }
 
-        // add missing foreign key properties and indexes for to-one relations
-        relations.ensureForeignKeys(entityModel)
+        // add missing target ID properties and indexes for to-one relations
+        relations.ensureTargetIdProperties(entityModel)
 
         // signal if a constructor will be available
         entityModel.isConstructors = hasAllArgsConstructor(entity, entityModel)

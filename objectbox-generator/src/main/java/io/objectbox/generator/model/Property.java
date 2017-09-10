@@ -196,6 +196,11 @@ public class Property implements HasParsedElement {
             return this;
         }
 
+        public PropertyBuilder virtualTargetValueExpression(String virtualTargetValueExpression) {
+            property.virtualTargetValueExpression = virtualTargetValueExpression;
+            return this;
+        }
+
         public Property getProperty() {
             return property;
         }
@@ -247,6 +252,8 @@ public class Property implements HasParsedElement {
 
     /** For virtual properties, this is target host where the property actually is located (e.g. a {@link ToOne}). */
     private String virtualTargetName;
+
+    private String virtualTargetValueExpression;
 
     private Object parsedElement;
 
@@ -405,7 +412,11 @@ public class Property implements HasParsedElement {
         return virtualTargetName != null;
     }
 
-    public Object getVirtualTargetName() {
+    public String getVirtualTargetValueExpression() {
+        return virtualTargetValueExpression;
+    }
+
+    public String getVirtualTargetName() {
         return virtualTargetName;
     }
 
