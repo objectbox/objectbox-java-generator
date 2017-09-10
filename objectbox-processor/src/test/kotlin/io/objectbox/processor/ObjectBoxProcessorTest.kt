@@ -396,6 +396,27 @@ class ObjectBoxProcessorTest {
     }
 
     @Test
+    fun testToManyUidNew() {
+        val environment = TestEnvironment("uid-relation-new-uid-pool.json", copyModelFile = true)
+        val entityName = "UidToManyNewEntity"
+        val modelBefore = environment.readModel()
+        assertEquals(1, modelBefore.newUidPool.size)
+
+        val compilation = environment.compile(entityName)
+        CompilationSubject.assertThat(compilation).succeeded()
+        val model = environment.readModel()
+        val entity = model.findEntity("UidRelationNewEntity", null)!!
+
+        val relation = entity.relations.single { it.name == "toManyStandalone" }
+        val newUid = modelBefore.newUidPool.single()
+        assertEquals(newUid, relation.uid)
+        assertEquals(modelBefore.lastRelationId.id + 1, model.lastRelationId.id)
+        assertEquals(newUid,  model.lastRelationId.uid)
+
+        assertEquals(0, model.newUidPool.size)
+    }
+
+    @Test
     fun testToManyUidEmpty() {
         val environment = TestEnvironment("uid-relation.json", copyModelFile = true)
         val compilation = environment.compile("UidToManyEmptyEntity")

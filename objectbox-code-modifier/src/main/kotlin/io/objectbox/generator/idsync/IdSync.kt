@@ -249,13 +249,7 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
         val relations = syncRelations(schemaEntity, existingEntity)
 
         val sourceId = if (existingEntity?.id == null) {
-            if(entityUid != null) {
-                if(!newUidPool.remove(entityUid)) {
-                    throw IdSyncException("Unexpected UID $entityUid was not in newUidPool")
-                }
-            }
-            val uid = entityUid ?: uidHelper.create()
-            lastEntityId.incId(uid) // create new id + uid
+            lastEntityId.incId(newUid(entityUid)) // create new id
         } else {
             existingEntity.id // use existing id + uid
         }
@@ -361,13 +355,7 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
         }
 
         val sourceId = if (existingProperty?.id == null) {
-            if(propertyUid != null) {
-                if(!newUidPool.remove(propertyUid)) {
-                    throw IdSyncException("Unexpected UID $propertyUid was not in newUidPool")
-                }
-            }
-            val uid = propertyUid ?: uidHelper.create()
-            lastPropertyId.incId(uid) // create a new id
+            lastPropertyId.incId(newUid(propertyUid)) // create a new id
         } else {
             existingProperty.id // use existing id + uid
         }
@@ -386,6 +374,16 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
             throw IllegalStateException("Property collision: $schemaProperty vs. $collision")
         }
         return property
+    }
+
+    /** Check a given UID against newUidPool or create a new UID. UID will be removed from pool if found. */
+    private fun newUid(uidCandidate: Long?): Long {
+        if (uidCandidate != null) {
+            if (!newUidPool.remove(uidCandidate)) {
+                throw IdSyncException("Unexpected UID $uidCandidate was not in newUidPool")
+            }
+        }
+        return uidCandidate ?: uidHelper.create()
     }
 
     private fun syncRelations(schemaEntity: io.objectbox.generator.model.Entity, existingEntity: Entity?)
@@ -427,7 +425,7 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
         }
 
         val sourceId = if (existingRelation?.id == null) {
-            lastRelationId.incId(uidHelper.create()) // create a new id + uid
+            lastRelationId.incId(newUid(relationUid)) // create a new id
         } else {
             existingRelation.id // use existing id + uid
         }
@@ -503,7 +501,7 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
     fun findEntity(name: String, uid: Long?): Entity? {
         if (uid != null && uid != 0L && uid != -1L) {
             return entitiesReadByUid[uid] ?:
-                    if(newUidPool.contains(uid)) return null
+                    if (newUidPool.contains(uid)) return null
                     else throw IdSyncException("No entity with UID $uid found")
         } else {
             return entitiesReadByName[name.toLowerCase()]
@@ -535,6 +533,9 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
         if (uid != null && uid != 0L && uid != -1L) {
             val filtered = entity.relations.filter { it.uid == uid }
             if (filtered.isEmpty()) {
+                if (newUidPool.contains(uid)) {
+                    return null
+                }
                 throw IdSyncException("In entity ${entity.name}, no relation with UID $uid found")
             }
             check(filtered.size == 1, { "relation name: $name, UID: $uid" })
