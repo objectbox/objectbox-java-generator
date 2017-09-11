@@ -67,7 +67,11 @@ class ClassTransformer(val debug: Boolean = false) {
 
         probedClasses.filter { !context.wasTransformed(it) }.forEach { (file, name) ->
             val targetFile = File(outDir, name.replace('.', '/') + ".class")
-            file.copyTo(targetFile, overwrite = true)
+            // TODO ut: check for side-effects, quick fix as file ends up deleted if paths are the same
+            // probably because overwrite=true
+            if (file.path != targetFile.path) {
+                file.copyTo(targetFile, overwrite = true)
+            }
         }
 
         context.stats.countTransformed = context.transformedClasses.size
