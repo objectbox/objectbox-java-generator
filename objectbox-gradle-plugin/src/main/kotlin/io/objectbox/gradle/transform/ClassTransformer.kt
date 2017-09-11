@@ -67,8 +67,7 @@ class ClassTransformer(val debug: Boolean = false) {
 
         probedClasses.filter { !context.wasTransformed(it) }.forEach { (file, name) ->
             val targetFile = File(outDir, name.replace('.', '/') + ".class")
-            // TODO ut: check for side-effects, quick fix as file ends up deleted if paths are the same
-            // probably because overwrite=true
+            // do not copy if path is identical as overwrite would delete, then try to copy from file
             if (file.path != targetFile.path) {
                 file.copyTo(targetFile, overwrite = true)
             }
