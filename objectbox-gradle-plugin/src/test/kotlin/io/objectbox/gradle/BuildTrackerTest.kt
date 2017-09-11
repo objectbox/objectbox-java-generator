@@ -42,7 +42,7 @@ class BuildTrackerTest {
         val toolName = "TestTool"
         val analytics = spy(GradleBuildTracker(toolName))
         val aid = "my.test.app"
-        doReturn(aid).`when`(analytics).androidAppId(env.project)
+        doReturn(aid).`when`(analytics).androidAppId(env)
 
         val eventData = analytics.eventData("Build", analytics.buildEventProperties(env))
         val json = parseJsonAndAssertBasics(eventData, "Build")

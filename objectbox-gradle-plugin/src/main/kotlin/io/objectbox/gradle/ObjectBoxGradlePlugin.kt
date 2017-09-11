@@ -31,9 +31,12 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
             addDependenciesAnnotationProcessor(env)
             addDependencies(env)
 
-            // Cannot use afterEvaluate to register transform, thus our plugin must be applied after Android
-            if (ObjectBoxAndroidTransform.Registration.getAndroidExtensionClasses(project).isNotEmpty()) {
-                ObjectBoxAndroidTransform.Registration.to(project)
+            // ensure Android plugin API is available
+            if (env.hasAndroidPlugin) {
+                // Cannot use afterEvaluate to register Android transform, thus our plugin must be applied after Android
+                if (ObjectBoxAndroidTransform.Registration.getAndroidExtensionClasses(project).isNotEmpty()) {
+                    ObjectBoxAndroidTransform.Registration.to(project)
+                }
             }
 
             createPrepareTask(env)
