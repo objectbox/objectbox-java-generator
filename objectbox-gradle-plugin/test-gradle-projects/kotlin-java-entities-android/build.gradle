@@ -2,7 +2,8 @@
 plugins {
     id 'com.android.application'
     id 'kotlin-android'
-    id 'io.objectbox.legacy'
+    id 'kotlin-kapt'
+    id 'io.objectbox'
 }
 
 targetCompatibility = '1.7'
@@ -11,9 +12,8 @@ sourceCompatibility = '1.7'
 uploadArchives.enabled = false
 
 objectbox {
+    debug true
 }
-
-android.sourceSets.main.java.srcDirs += 'build/generated/source/objectbox'
 
 android {
     compileSdkVersion 25
@@ -29,8 +29,6 @@ android {
 }
 
 dependencies {
-    compile 'io.objectbox:objectbox-android:0.9.16-RC'
-    //compile "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
     testCompile 'junit:junit:4.12'
     testCompile 'org.mockito:mockito-core:2.7.22'
 }
