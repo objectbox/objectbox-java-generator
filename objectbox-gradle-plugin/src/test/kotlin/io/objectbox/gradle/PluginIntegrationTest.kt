@@ -68,7 +68,7 @@ class PluginIntegrationTest {
 
         assertNotNull(result)
 
-        val genSourceDir = File(dir, "build/generated/source/objectbox/")
+        val genSourceDir = File(dir, "build/generated/source/apt/main/")
         assertTrue(genSourceDir.exists())
 
         val packageDir = File(genSourceDir, expectedPackageDir)
