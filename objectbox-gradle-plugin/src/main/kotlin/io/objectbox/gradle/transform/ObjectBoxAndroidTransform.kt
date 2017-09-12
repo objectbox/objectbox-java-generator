@@ -44,8 +44,6 @@ class ObjectBoxAndroidTransform(val project: Project, val options: LegacyOptions
         }
     }
 
-    val classProber = ClassProber()
-    val classTransformer = ClassTransformer(options)
 
     override fun getName(): String {
         return "ObjectBoxAndroidTransform"
@@ -73,7 +71,7 @@ class ObjectBoxAndroidTransform(val project: Project, val options: LegacyOptions
 
                 directoryInput.file.walk().filter { it.isFile }.forEach { file ->
                     if (file.name.endsWith(".class")) {
-                        allClassFiles += file;
+                        allClassFiles += file
                     } else {
                         val relativePath = file.toRelativeString(directoryInput.file)
                         val destFile = File (outDir, relativePath)
@@ -83,8 +81,9 @@ class ObjectBoxAndroidTransform(val project: Project, val options: LegacyOptions
                 }
             }
 
-            val probedClasses = allClassFiles.mapNotNull { classProber.probeClass(it) }
-            classTransformer.transformOrCopyClasses(probedClasses, outDir)
+            val classProber = ClassProber()
+            val probedClasses = allClassFiles.map { classProber.probeClass(it) }
+            ClassTransformer(options.debug).transformOrCopyClasses(probedClasses, outDir)
 
         } catch (e: Throwable) {
             val buildTracker = GradleBuildTracker("Transformer")

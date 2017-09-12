@@ -2,7 +2,6 @@ package io.objectbox.gradle.transform
 
 import io.objectbox.BoxStoreBuilder
 import io.objectbox.build.BasicBuildTracker
-import io.objectbox.gradle.LegacyOptions
 import javassist.ClassPool
 import javassist.CtClass
 import javassist.CtConstructor
@@ -14,10 +13,7 @@ import javassist.bytecode.Opcode
 import javassist.bytecode.SignatureAttribute
 import java.io.File
 
-class ClassTransformer(val options: LegacyOptions) {
-
-    val debug: Boolean
-        get() = options.debug
+class ClassTransformer(val debug: Boolean = false) {
 
     // Use internal once fixed (Kotlin 1.1.4?)
     class Context(val probedClasses: List<ProbedClass>, val outDir: File) {
