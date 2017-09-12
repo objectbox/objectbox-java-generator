@@ -2,17 +2,20 @@ package io.objectbox.gradle
 
 import groovy.lang.Closure
 import groovy.lang.GroovyObjectSupport
-import org.gradle.api.Project
 import io.objectbox.codemodifier.FormattingOptions
 import io.objectbox.codemodifier.Tabulation
+import org.gradle.api.Project
 import java.io.File
 
 /**
  * Gradle plugin extension, which collects all ObjectBox options
  *
- * NOTE class should be opened because gradle inherits from it
+ * NOTE Requirements: open because Gradle inherits from it, Project as constructor param.
  */
 open class LegacyOptions(val project: Project) {
+
+    /** If detailed log output should be created. */
+    var debug: Boolean = false
 
     /**
      * Base directory where generated DAO classes should be put (default: ${buildDir}/generated/source/objectbox).

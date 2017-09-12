@@ -7,7 +7,7 @@ import java.io.DataInputStream
 import java.io.File
 
 
-class ClassProber(val debug: Boolean = false) {
+class ClassProber() {
 
     fun probeClass(file: File): ProbedClass {
         try {

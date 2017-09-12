@@ -35,11 +35,11 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
             if (env.hasAndroidPlugin) {
                 // Cannot use afterEvaluate to register Android transform, thus our plugin must be applied after Android
                 if (ObjectBoxAndroidTransform.Registration.getAndroidExtensionClasses(project).isNotEmpty()) {
-                    ObjectBoxAndroidTransform.Registration.to(project)
+                    ObjectBoxAndroidTransform.Registration.to(project, env.options)
                 }
             } else {
                 // fall back to Gradle task
-                createPlainJavaTransformTask(env.project)
+                createPlainJavaTransformTask(env)
             }
 
             createPrepareTask(env)
@@ -50,8 +50,9 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
         }
     }
 
-    private fun createPlainJavaTransformTask(project: Project) {
+    private fun createPlainJavaTransformTask(env: ProjectEnv) {
         // wait until after project evaluation so SourceSets defined in build configs are included
+        val project = env.project
         project.afterEvaluate {
             val javaPlugin = project.convention.getPlugin(JavaPluginConvention::class.java)
             javaPlugin.sourceSets.forEach {
@@ -62,7 +63,7 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
                 val task = project.task(taskName)
                 task.group = "objectbox"
                 task.description = "Transforms Java bytecode"
-                if (DEBUG) println("### Created $task in $project")
+                if (env.debug) println("### Created $task in $project")
 
                 // attach to lifecycle
                 // assumes that classes task depends on compileJava depends on compileKotlin
@@ -71,10 +72,10 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
                 task.mustRunAfter(compileJavaTask)
 
                 task.doLast {
-                    if (DEBUG) println("### Executing $task in $project")
+                    if (env.debug) println("### Executing $task in $project")
 
                     val compileJavaTaskOutputDir = compileJavaTask.destinationDir
-                    ObjectBoxJavaTransform(project).transform(compileJavaTaskOutputDir)
+                    ObjectBoxJavaTransform(project, env.options).transform(compileJavaTaskOutputDir)
                 }
             }
         }
@@ -88,9 +89,8 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
         val buildTask = project.tasks.findByName("preBuild") ?: project.tasks.getByName("build")
         buildTask.dependsOn(task)
         task.doFirst {
-            val taskEnv = ProjectEnv(project) // Now Options are available
-            if (DEBUG) println("### Executing $task in $project")
-            buildTracker.trackBuild(taskEnv)
+            if (env.debug) println("### Executing $task in $project")
+            buildTracker.trackBuild(env)
 
 //            if (ObjectBoxAndroidTransform.Registration.getAndroidExtensionClasses(project).isEmpty()) {
 //                // TODO check

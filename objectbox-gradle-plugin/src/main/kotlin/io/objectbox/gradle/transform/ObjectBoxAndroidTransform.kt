@@ -12,17 +12,15 @@ import com.android.build.gradle.LibraryPlugin
 import com.android.build.gradle.TestExtension
 import com.android.build.gradle.TestPlugin
 import io.objectbox.gradle.GradleBuildTracker
+import io.objectbox.gradle.LegacyOptions
 import org.gradle.api.Project
 import java.io.File
 
-class ObjectBoxAndroidTransform(val project: Project) : Transform() {
-    companion object {
-        const val DEBUG = true
-    }
+class ObjectBoxAndroidTransform(val project: Project, val options: LegacyOptions) : Transform() {
 
     object Registration {
-        fun to(project: Project) {
-            val transform = ObjectBoxAndroidTransform(project)
+        fun to(project: Project, options: LegacyOptions) {
+            val transform = ObjectBoxAndroidTransform(project, options)
             getAllExtensions(project).forEach { it.registerTransform(transform) }
         }
 
@@ -46,8 +44,8 @@ class ObjectBoxAndroidTransform(val project: Project) : Transform() {
         }
     }
 
-    val classProber = ClassProber(true) // TODO turn on debug temp
-    val classTransformer = ClassTransformer(true) // TODO turn on debug temp
+    val classProber = ClassProber()
+    val classTransformer = ClassTransformer(options)
 
     override fun getName(): String {
         return "ObjectBoxAndroidTransform"
@@ -80,7 +78,7 @@ class ObjectBoxAndroidTransform(val project: Project) : Transform() {
                         val relativePath = file.toRelativeString(directoryInput.file)
                         val destFile = File (outDir, relativePath)
                         file.copyTo(destFile, overwrite = true)
-                        if(DEBUG) println("Copied $file to $destFile")
+                        if(options.debug) println("Copied $file to $destFile")
                     }
                 }
             }
