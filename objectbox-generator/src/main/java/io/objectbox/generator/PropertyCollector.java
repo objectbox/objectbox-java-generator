@@ -46,7 +46,8 @@ class PropertyCollector {
         }
         idProperty = entity.getPkProperty();
         if (idProperty == null) {
-            throw new IllegalStateException("No ID property found for " + entity);
+            throw new IllegalStateException("No ID property found for \"" + entity + "\" " +
+                    "(use @Id on a property of type long)");
         }
     }
 
