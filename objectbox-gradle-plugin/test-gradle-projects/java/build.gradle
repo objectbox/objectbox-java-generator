@@ -8,8 +8,13 @@ plugins {
 targetCompatibility = '1.7'
 sourceCompatibility = '1.7'
 
+// enable ObjectBox plugin and processor debug output
 objectbox {
     debug true
+}
+
+tasks.withType(JavaCompile) {
+    options.compilerArgs += [ "-Aobjectbox.debug=true" ]
 }
 
 dependencies {

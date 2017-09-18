@@ -11,8 +11,15 @@ sourceCompatibility = '1.7'
 
 uploadArchives.enabled = false
 
+// enable ObjectBox plugin and processor debug output
 objectbox {
     debug true
+}
+
+kapt {
+    arguments {
+        arg("objectbox.debug", true)
+    }
 }
 
 android {
