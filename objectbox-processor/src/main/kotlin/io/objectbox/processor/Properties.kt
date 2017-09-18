@@ -150,7 +150,8 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
         val typeMirror = field.asType()
         val propertyType = typeHelper.getPropertyType(typeMirror)
         if (propertyType == null) {
-            messages.error("Field type is not supported, use @Convert or @Transient.", field)
+            messages.error("Field type \"$typeMirror\" is not supported. Consider making the target an @Entity, " +
+                    "or using @Convert or @Transient on the field (see docs).", field)
             return null
         }
 
