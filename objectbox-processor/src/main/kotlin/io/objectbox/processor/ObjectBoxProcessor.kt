@@ -138,12 +138,34 @@ open class ObjectBoxProcessor : AbstractProcessor() {
 
         this.schema = schema // make processed schema accessible for testing
 
+        var completed = false;
         try {
             BoxGenerator(daoCompat).generateAll(schema, filer)
+            completed = true
         } catch (e: Exception) {
             messages.error("Code generation failed: ${e.message}")
             e.printStackTrace()
         }
+        trackStats(schema, completed)
+    }
+
+    private fun trackStats(schema: Schema, completed: Boolean) {
+        var toOneCount = 0
+        var toManyCount = 0
+        var propertyCount = 0
+        for (entity in schema.entities) {
+            toManyCount += entity.toManyRelations?.size ?: 0
+            toOneCount += entity.toOneRelations?.size ?: 0
+            propertyCount += entity.properties?.size ?: 0
+        }
+        BasicBuildTracker("Processor").trackStats(
+                daoCompat = daoCompat,
+                completed = completed,
+                entityCount = schema.entities.size,
+                propertyCount = propertyCount,
+                toManyCount = toManyCount,
+                toOneCount = toOneCount
+        )
     }
 
     private fun parseEntity(schema: Schema, relations: Relations, entity: Element) {

@@ -37,6 +37,17 @@ open class BasicBuildTracker(val toolName: String) {
         sendEventAsync("Fatal", errorProperties(message, throwable))
     }
 
+    fun trackStats(completed: Boolean, daoCompat: Boolean, entityCount: Int, propertyCount: Int, toOneCount: Int, toManyCount: Int) {
+        val event = StringBuilder()
+        event.key("DC").value(daoCompat.toString()).comma()
+        event.key("EC").value(entityCount.toString()).comma()
+        event.key("PC").value(propertyCount.toString()).comma()
+        event.key("T1C").value(toOneCount.toString()).comma()
+        event.key("TMC").value(toManyCount.toString()).comma()
+        event.key("OK").value(completed.toString())
+        sendEventAsync("Stats", event.toString())
+    }
+
     fun sendEventAsync(eventName: String, eventProperties: String) {
         Thread(Runnable { sendEvent(eventName, eventProperties) }).start()
     }
