@@ -87,7 +87,7 @@ open class BasicBuildTracker(val toolName: String) {
         return event.toString()
     }
 
-    open protected fun version(): String? = "1.0.1" // TODO replace with generated property, or update frequently...
+    open protected fun version(): String? = "1.1.0?" // TODO replace with generated property, or update frequently...
 
     // public for tests in another module
     fun errorProperties(message: String?, throwable: Throwable?): String {
@@ -120,24 +120,24 @@ open class BasicBuildTracker(val toolName: String) {
         return event.toString()
     }
 
-    private fun StringBuilder.key(value: String): java.lang.StringBuilder {
+    protected fun StringBuilder.key(value: String): java.lang.StringBuilder {
         append("\"$value\": ")
         return this
     }
 
-    private fun StringBuilder.value(value: String): java.lang.StringBuilder {
+    protected fun StringBuilder.value(value: String): java.lang.StringBuilder {
         append("\"$value\"")
         return this
     }
 
-    private fun StringBuilder.valueEscaped(value: String): java.lang.StringBuilder {
+    protected fun StringBuilder.valueEscaped(value: String): java.lang.StringBuilder {
         val buffer = Buffer()
         JsonWriter.of(buffer).value(value)
         append(buffer.readUtf8())
         return this
     }
 
-    private fun StringBuilder.comma(): java.lang.StringBuilder {
+    protected fun StringBuilder.comma(): java.lang.StringBuilder {
         append(',')
         return this
     }

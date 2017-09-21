@@ -4,9 +4,7 @@ import com.android.build.gradle.AppExtension
 import com.android.build.gradle.AppPlugin
 import com.android.build.gradle.LibraryExtension
 import com.android.build.gradle.LibraryPlugin
-import com.squareup.moshi.JsonWriter
 import io.objectbox.build.BasicBuildTracker
-import okio.Buffer
 import org.gradle.api.Project
 import org.gradle.api.plugins.ExtensionContainer
 import kotlin.reflect.KClass
@@ -48,28 +46,6 @@ open class GradleBuildTracker(toolName: String) : BasicBuildTracker(toolName) {
         event.key("Version").value(env.objectBoxVersion).comma()
         event.key("Target").value(if (env.hasAndroidPlugin) "Android" else "Other")
         return event.toString()
-    }
-
-    private fun StringBuilder.key(value: String): java.lang.StringBuilder {
-        append("\"$value\": ")
-        return this
-    }
-
-    private fun StringBuilder.value(value: String): java.lang.StringBuilder {
-        append("\"$value\"")
-        return this
-    }
-
-    private fun StringBuilder.valueEscaped(value: String): java.lang.StringBuilder {
-        val buffer = Buffer()
-        JsonWriter.of(buffer).value(value)
-        append(buffer.readUtf8())
-        return this
-    }
-
-    private fun StringBuilder.comma(): java.lang.StringBuilder {
-        append(',')
-        return this
     }
 
     // Allow stubbing for testing
