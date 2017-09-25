@@ -20,7 +20,7 @@ class ProjectEnv(val project: Project) {
     }
 
     /** Note: Plugin extension, values only available after evaluation phase. */
-    val options = project.extensions.create(Const.name, LegacyOptions::class.java, project)
+    val options = project.extensions.create(Const.name, PluginOptions::class.java, project)
     /** Note: Extension value, only available after evaluation phase. */
     val debug: Boolean
         get() = options.debug

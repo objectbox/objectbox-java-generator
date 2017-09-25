@@ -12,14 +12,14 @@ import com.android.build.gradle.LibraryPlugin
 import com.android.build.gradle.TestExtension
 import com.android.build.gradle.TestPlugin
 import io.objectbox.gradle.GradleBuildTracker
-import io.objectbox.gradle.LegacyOptions
+import io.objectbox.gradle.PluginOptions
 import org.gradle.api.Project
 import java.io.File
 
-class ObjectBoxAndroidTransform(val project: Project, val options: LegacyOptions) : Transform() {
+class ObjectBoxAndroidTransform(val project: Project, val options: PluginOptions) : Transform() {
 
     object Registration {
-        fun to(project: Project, options: LegacyOptions) {
+        fun to(project: Project, options: PluginOptions) {
             val transform = ObjectBoxAndroidTransform(project, options)
             getAllExtensions(project).forEach { it.registerTransform(transform) }
         }
