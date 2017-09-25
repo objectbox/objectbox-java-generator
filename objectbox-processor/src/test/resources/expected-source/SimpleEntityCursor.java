@@ -116,17 +116,16 @@ public final class SimpleEntityCursor extends Cursor<SimpleEntity> {
                 __id8, __id8 != 0 ? simpleFloat : 0, __id10, __id10 != 0 ? simpleDouble : 0);
 
         Long id = entity.id;
-        Boolean simpleBoolean = entity.simpleBoolean;
+        Boolean simpleBoolean = entity.getSimpleBoolean();
         int __id12 = simpleBoolean != null ? __ID_simpleBoolean : 0;
 
         long __assignedId = collect004000(cursor, id != null ? id: 0, PUT_FLAG_COMPLETE,
-                __ID_simpleBooleanPrimitive, entity.simpleBooleanPrimitive ? 1 : 0, __id12, __id12 != 0 ? simpleBoolean ? 1 : 0 : 0,
+                __ID_simpleBooleanPrimitive, entity.isSimpleBooleanPrimitive() ? 1 : 0, __id12, __id12 != 0 ? simpleBoolean ? 1 : 0 : 0,
                 0, 0, 0, 0);
 
         entity.id = __assignedId;
 
         return __assignedId;
     }
-
 
 }
