@@ -16,11 +16,11 @@ import io.objectbox.gradle.PluginOptions
 import org.gradle.api.Project
 import java.io.File
 
-class ObjectBoxAndroidTransform(val project: Project, val options: PluginOptions) : Transform() {
+class ObjectBoxAndroidTransform(val options: PluginOptions) : Transform() {
 
     object Registration {
         fun to(project: Project, options: PluginOptions) {
-            val transform = ObjectBoxAndroidTransform(project, options)
+            val transform = ObjectBoxAndroidTransform(options)
             getAllExtensions(project).forEach { it.registerTransform(transform) }
         }
 

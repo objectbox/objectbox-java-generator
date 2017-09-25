@@ -4,7 +4,7 @@ import io.objectbox.gradle.GradleBuildTracker
 import org.gradle.api.Project
 import java.io.File
 
-class ObjectBoxJavaTransform(val project: Project, val debug: Boolean) {
+class ObjectBoxJavaTransform(val debug: Boolean) {
 
     fun transform(compileJavaTaskOutputDir: File) {
         try {

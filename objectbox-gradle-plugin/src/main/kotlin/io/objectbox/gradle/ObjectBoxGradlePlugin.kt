@@ -75,7 +75,7 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
                     if (env.debug) println("### Executing $task in $project")
 
                     val compileJavaTaskOutputDir = compileJavaTask.destinationDir
-                    ObjectBoxJavaTransform(project, env.debug).transform(compileJavaTaskOutputDir)
+                    ObjectBoxJavaTransform(env.debug).transform(compileJavaTaskOutputDir)
                 }
             }
         }
