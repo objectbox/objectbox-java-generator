@@ -201,6 +201,11 @@ public class Property implements HasParsedElement {
             return this;
         }
 
+        public PropertyBuilder getterMethodName(String getterMethodName) {
+            property.getterMethodName = getterMethodName;
+            return this;
+        }
+
         public Property getProperty() {
             return property;
         }
@@ -254,6 +259,8 @@ public class Property implements HasParsedElement {
     private String virtualTargetName;
 
     private String virtualTargetValueExpression;
+
+    private String getterMethodName;
 
     private Object parsedElement;
 
@@ -420,6 +427,10 @@ public class Property implements HasParsedElement {
         return virtualTargetName;
     }
 
+    public String getGetterMethodName() {
+        return getterMethodName;
+    }
+
     /**
      * Makes this property an relation ID - this is done after initial parsing once all entities and relations are
      * present;
@@ -442,7 +453,13 @@ public class Property implements HasParsedElement {
     }
 
     public String getValueExpression() {
-        return fieldAccessible ? propertyName : "get" + TextUtil.capFirst(propertyName) + "()";
+        if (fieldAccessible) {
+            return propertyName;
+        } else if (getterMethodName != null && getterMethodName.length() > 0) {
+            return getterMethodName + "()";
+        } else {
+            return "get" + TextUtil.capFirst(propertyName) + "()";
+        }
     }
 
     public String getSetValueExpression(String value) {

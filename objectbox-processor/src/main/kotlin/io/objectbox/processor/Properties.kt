@@ -30,6 +30,7 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
     val typeHelper = TypeHelper(typeUtils)
 
     val fields: List<VariableElement> = ElementFilter.fieldsIn(entityElement.enclosedElements)
+    val methods: List<String> = ElementFilter.methodsIn(entityElement.enclosedElements).map { it.simpleName.toString() }
 
     fun hasBoxStoreField(): Boolean {
         return fields.find { it.simpleName.toString() == "__boxStore" } != null
@@ -85,6 +86,8 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
         if (!field.modifiers.contains(Modifier.PRIVATE)) {
             propertyBuilder.fieldAccessible()
         }
+        // find getter method name
+        propertyBuilder.getterMethodName(getGetterMethodNameFor(propertyBuilder.property))
 
         // @Id
         val idAnnotation = field.getAnnotation(Id::class.java)
@@ -117,7 +120,7 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
         if (uidAnnotation != null) {
             // just storing uid, id model sync will replace with correct id+uid
             // Note: UID values 0 and -1 are special: print current value and fail later
-            val uid = if(uidAnnotation.value == 0L) -1 else uidAnnotation.value
+            val uid = if (uidAnnotation.value == 0L) -1 else uidAnnotation.value
             propertyBuilder.modelId(IdUid(0, uid))
         }
     }
@@ -195,6 +198,22 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
 
     fun <A : Annotation> Element.hasAnnotation(annotationType: Class<A>): Boolean {
         return getAnnotation(annotationType) != null
+    }
+
+    /**
+     * Tries to find a getter method name for the given property. Prefers isPropertyName over getPropertyName.
+     * If none is found, returns null.
+     */
+    private fun getGetterMethodNameFor(property: Property): String? {
+        // propertyName -> PropertyName
+        val propertyNameCapitalized = property.propertyName.capitalize()
+        // isPropertyName?
+        val isGetter = methods.find { it == "is$propertyNameCapitalized" }
+        if (isGetter != null) {
+            return isGetter
+        }
+        // getPropertyName?
+        return methods.find { it == "get$propertyNameCapitalized" }
     }
 
 }
