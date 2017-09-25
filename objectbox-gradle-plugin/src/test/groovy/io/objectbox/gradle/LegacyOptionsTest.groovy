@@ -2,7 +2,7 @@ package io.objectbox.gradle
 
 import org.gradle.api.Project
 
-import static org.mockito.Matchers.any
+import static org.mockito.ArgumentMatchers.any
 import static org.mockito.Mockito.mock
 import static org.mockito.Mockito.when
 
@@ -13,16 +13,9 @@ class LegacyOptionsTest extends GroovyTestCase {
 
         def options = new LegacyOptions(project)
         options.with {
-            schemas {
-                notes
-                orders {
-                    version 2
-                }
-            }
+            debug = true
         }
 
-        assert options.schemas.schemasMap.keySet() == ["notes", "orders"].toSet()
-        assert options.schemas.orders.version == 2
-        assert options.schemas.notes.version == null
+        assert options.debug
     }
 }
