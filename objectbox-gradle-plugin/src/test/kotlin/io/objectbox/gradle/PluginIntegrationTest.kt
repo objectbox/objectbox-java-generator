@@ -23,7 +23,7 @@ class PluginIntegrationTest {
     @Test
     fun buildTestProjectJavaAndroid() {
         val args = listOf("--stacktrace", "clean", "build", "-xlint")
-        buildTestProject("java-android", args, "io/objectbox/test", "apt/release/")
+        buildTestProject("java-android", args, "io/objectbox/test", "apt/release/", true)
     }
 
 //    @Test
@@ -31,10 +31,11 @@ class PluginIntegrationTest {
 //    fun buildTestProjectKotlinAndroid() {
 //        // Disable Lint, fails with kotlin-android
 //        val args = listOf("--stacktrace", "clean", "build", "-xlint")
-//        buildTestProject("kotlin-android", args, "io/objectbox/test/kotlin", "kapt/release/")
+//        buildTestProject("kotlin-android", args, "io/objectbox/test/kotlin", "kapt/release/", true)
 //    }
 
-    fun buildTestProject(name: String, args: List<String>, expectedPackageDir: String, genDirPath: String) {
+    fun buildTestProject(name: String, args: List<String>, expectedPackageDir: String, genDirPath: String,
+                         generateBuildFile: Boolean = false) {
         var dir = File("test-gradle-projects/" + name)
         if (!dir.exists()) {
             dir = File("objectbox-gradle-plugin/test-gradle-projects/" + name)
@@ -51,6 +52,26 @@ class PluginIntegrationTest {
         classpath.forEach {
             val path = it.absolutePath
             assertTrue(path, it.exists() || path.contains("/build/") || path.contains("\\build\\"))
+        }
+
+        if (generateBuildFile) {
+            // add buildscript block to build file template to support adding plugins using 'apply'
+            // this is required so the Android plugin is applied before the ObjectBox plugin
+            val classpathString = classpath.joinToString("', '", "'", "'").replace("\\", "\\\\")
+            val buildFile = File(dir, "build.gradle")
+            val buildFileTemplate = File(dir, "build.gradle.template")
+            buildFile.delete()
+            buildFile.appendText("""buildscript {
+    repositories {
+        mavenLocal()
+        jcenter()
+        maven { url "http://objectbox.net/beta-repo/" }
+    }
+    dependencies {
+        classpath files($classpathString)
+    }
+}""")
+            buildFile.appendText(buildFileTemplate.readText())
         }
 
         val result = GradleRunner.create()

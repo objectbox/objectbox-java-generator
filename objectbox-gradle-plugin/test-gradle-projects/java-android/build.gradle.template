@@ -1,19 +1,11 @@
-// Plugins must be in (test) classpath of objectbox-gradle-plugin
-plugins {
-    id 'com.android.application'
-    id 'kotlin-android'
-    id 'io.objectbox'
-}
+// WARNING: this file is prepended with a buildscript blog by PluginIntegrationTest
 
-// enable ObjectBox plugin and processor debug output
+apply plugin: 'com.android.application'
+apply plugin: 'io.objectbox'
+
+// enable ObjectBox plugin debug output
 objectbox {
     debug true
-}
-
-kapt {
-    arguments {
-        arg("objectbox.debug", true)
-    }
 }
 
 android {
@@ -21,11 +13,18 @@ android {
     buildToolsVersion "25.0.3"
 
     defaultConfig {
-        applicationId "io.objectbox.testgradleproject.kotlinandroid"
+        applicationId "io.objectbox.testgradleproject.javaandroid"
         minSdkVersion 15
         targetSdkVersion 25
         versionCode 1
         versionName "1.0"
+
+        // enable ObjectBox processor debug output
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments = [ 'objectbox.debug' : 'true' ]
+            }
+        }
     }
 }
 
