@@ -19,8 +19,11 @@ class ProjectEnv(val project: Project) {
         }
     }
 
-    /** Works only if first called inside a Gradle task NOT plugin! */
-    val options by lazy { project.extensions.create(Const.name, LegacyOptions::class.java, project)!! }
+    /** Note: Plugin extension, values only available after evaluation phase. */
+    val options = project.extensions.create(Const.name, PluginOptions::class.java, project)
+    /** Note: Extension value, only available after evaluation phase. */
+    val debug: Boolean
+        get() = options.debug
 
     val hasAndroidPlugin = listOf("android", "android-library", "com.android.application", "com.android.library")
             .any { project.plugins.hasPlugin(it) }

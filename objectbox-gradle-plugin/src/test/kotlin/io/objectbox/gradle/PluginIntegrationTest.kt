@@ -4,7 +4,6 @@ import org.gradle.testkit.runner.GradleRunner
 import org.greenrobot.essentials.StringUtils
 import org.greenrobot.essentials.io.IoUtils
 import org.junit.Assert.*
-import org.junit.Ignore
 import org.junit.Test
 import java.io.File
 import java.io.FileInputStream
@@ -18,25 +17,25 @@ class PluginIntegrationTest {
     @Test
     fun buildTestProjectJava() {
         val args = listOf("--stacktrace", "clean", "build")
-        buildTestProject("java", args, "io/objectbox/test/entityannotation")
+        buildTestProject("java", args, "io/objectbox/test/entityannotation", "apt/main/")
     }
 
     @Test
-    fun buildTestProjectKotlinJavaEntitiesAndroid() {
-        // Disable Lint, fails with kotlin-android
+    fun buildTestProjectJavaAndroid() {
         val args = listOf("--stacktrace", "clean", "build", "-xlint")
-        buildTestProject("kotlin-java-entities-android", args, "io/objectbox/test/kotlin")
+        buildTestProject("java-android", args, "io/objectbox/test", "apt/release/", true)
     }
 
 //    @Test
-//    @Ignore("FIXME")
+//    @Ignore("FIXME kapt does not run, works fine if used as standalone project")
 //    fun buildTestProjectKotlinAndroid() {
 //        // Disable Lint, fails with kotlin-android
-//        val args = listOf("--stacktrace", "--refresh-dependencies", "clean", "build", "-xlint")
-//        buildTestProject("kotlin-android", args, "io/objectbox/test/kotlin")
+//        val args = listOf("--stacktrace", "clean", "build", "-xlint")
+//        buildTestProject("kotlin-android", args, "io/objectbox/test/kotlin", "kapt/release/", true)
 //    }
 
-    fun buildTestProject(name: String, args: List<String>, expectedPackageDir: String) {
+    fun buildTestProject(name: String, args: List<String>, expectedPackageDir: String, genDirPath: String,
+                         generateBuildFile: Boolean = false) {
         var dir = File("test-gradle-projects/" + name)
         if (!dir.exists()) {
             dir = File("objectbox-gradle-plugin/test-gradle-projects/" + name)
@@ -55,6 +54,26 @@ class PluginIntegrationTest {
             assertTrue(path, it.exists() || path.contains("/build/") || path.contains("\\build\\"))
         }
 
+        if (generateBuildFile) {
+            // add buildscript block to build file template to support adding plugins using 'apply'
+            // this is required so the Android plugin is applied before the ObjectBox plugin
+            val classpathString = classpath.joinToString("', '", "'", "'").replace("\\", "\\\\")
+            val buildFile = File(dir, "build.gradle")
+            val buildFileTemplate = File(dir, "build.gradle.template")
+            buildFile.delete()
+            buildFile.appendText("""buildscript {
+    repositories {
+        mavenLocal()
+        jcenter()
+        maven { url "http://objectbox.net/beta-repo/" }
+    }
+    dependencies {
+        classpath files($classpathString)
+    }
+}""")
+            buildFile.appendText(buildFileTemplate.readText())
+        }
+
         val result = GradleRunner.create()
                 .withProjectDir(dir)
                 // to do: Make this work some time
@@ -68,7 +87,7 @@ class PluginIntegrationTest {
 
         assertNotNull(result)
 
-        val genSourceDir = File(dir, "build/generated/source/objectbox/")
+        val genSourceDir = File(dir, "build/generated/source/$genDirPath")
         assertTrue(genSourceDir.exists())
 
         val packageDir = File(genSourceDir, expectedPackageDir)

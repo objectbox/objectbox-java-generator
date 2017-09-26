@@ -1,4 +1,4 @@
-package io.objectbox.test.entityannotation;
+package io.objectbox.test;
 
 import io.objectbox.annotation.Entity;
 import io.objectbox.annotation.Id;
@@ -61,5 +61,5 @@ public class Order {
     public void setCustomerWithoutIdProperty(Customer customerWithoutIdProperty) {
         this.customerWithoutIdProperty.setTarget(customerWithoutIdProperty);
     }
-    
+
 }

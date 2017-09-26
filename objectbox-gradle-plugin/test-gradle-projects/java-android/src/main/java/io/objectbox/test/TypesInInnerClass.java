@@ -1,4 +1,4 @@
-package io.objectbox.test.entityannotation;
+package io.objectbox.test;
 
 import io.objectbox.annotation.Convert;
 import io.objectbox.annotation.Entity;

@@ -12,17 +12,15 @@ import com.android.build.gradle.LibraryPlugin
 import com.android.build.gradle.TestExtension
 import com.android.build.gradle.TestPlugin
 import io.objectbox.gradle.GradleBuildTracker
+import io.objectbox.gradle.PluginOptions
 import org.gradle.api.Project
 import java.io.File
 
-class ObjectBoxAndroidTransform(val project: Project) : Transform() {
-    companion object {
-        const val DEBUG = true
-    }
+class ObjectBoxAndroidTransform(val options: PluginOptions) : Transform() {
 
     object Registration {
-        fun to(project: Project) {
-            val transform = ObjectBoxAndroidTransform(project)
+        fun to(project: Project, options: PluginOptions) {
+            val transform = ObjectBoxAndroidTransform(options)
             getAllExtensions(project).forEach { it.registerTransform(transform) }
         }
 
@@ -46,8 +44,6 @@ class ObjectBoxAndroidTransform(val project: Project) : Transform() {
         }
     }
 
-    val classProber = ClassProber(true) // TODO turn on debug temp
-    val classTransformer = ClassTransformer(true) // TODO turn on debug temp
 
     override fun getName(): String {
         return "ObjectBoxAndroidTransform"
@@ -75,18 +71,19 @@ class ObjectBoxAndroidTransform(val project: Project) : Transform() {
 
                 directoryInput.file.walk().filter { it.isFile }.forEach { file ->
                     if (file.name.endsWith(".class")) {
-                        allClassFiles += file;
+                        allClassFiles += file
                     } else {
                         val relativePath = file.toRelativeString(directoryInput.file)
                         val destFile = File (outDir, relativePath)
                         file.copyTo(destFile, overwrite = true)
-                        if(DEBUG) println("Copied $file to $destFile")
+                        if(options.debug) println("Copied $file to $destFile")
                     }
                 }
             }
 
-            val probedClasses = allClassFiles.mapNotNull { classProber.probeClass(it) }
-            classTransformer.transformOrCopyClasses(probedClasses, outDir)
+            val classProber = ClassProber()
+            val probedClasses = allClassFiles.map { classProber.probeClass(it) }
+            ClassTransformer(options.debug).transformOrCopyClasses(probedClasses, outDir)
 
         } catch (e: Throwable) {
             val buildTracker = GradleBuildTracker("Transformer")

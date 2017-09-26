@@ -1,0 +1,51 @@
+// WARNING: this file is prepended with a buildscript blog by PluginIntegrationTest
+
+apply plugin: 'com.android.application'
+apply plugin: 'io.objectbox'
+
+// enable ObjectBox plugin debug output
+objectbox {
+    debug true
+}
+
+android {
+    compileSdkVersion 25
+    buildToolsVersion "25.0.3"
+
+    defaultConfig {
+        applicationId "io.objectbox.testgradleproject.javaandroid"
+        minSdkVersion 15
+        targetSdkVersion 25
+        versionCode 1
+        versionName "1.0"
+
+        // enable ObjectBox processor debug output
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments = [ 'objectbox.debug' : 'true' ]
+            }
+        }
+    }
+}
+
+dependencies {
+    testCompile 'junit:junit:4.12'
+    testCompile 'org.mockito:mockito-core:2.7.22'
+}
+
+
+repositories {
+    // Adding maven repo with custom credentials does not seem to work (user properties could not be read)
+
+    // Ensure to have the correct ObjectBox version deployed here
+    mavenLocal()
+
+    // Not the most current, but OK for now for Jenkins
+    maven {
+        url "http://objectbox.net/beta-repo/"
+    }
+
+    // For essentials
+    mavenCentral()
+
+}

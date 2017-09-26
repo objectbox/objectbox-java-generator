@@ -5,8 +5,6 @@ import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.JsonWriter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.ToJson
-import io.objectbox.codemodifier.ParsedEntity
-import io.objectbox.codemodifier.ParsedProperty
 import io.objectbox.generator.IdUid
 import io.objectbox.generator.model.Schema
 import io.objectbox.generator.model.ToManyStandalone
@@ -14,6 +12,7 @@ import okio.Buffer
 import okio.Okio
 import okio.Source
 import org.greenrobot.essentials.collections.LongHashSet
+import org.jetbrains.annotations.TestOnly
 import java.io.File
 import java.io.FileNotFoundException
 import java.util.*
@@ -55,11 +54,9 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
     private val retiredRelationUids = ArrayList<Long>()
 
     // Use IdentityHashMap here to avoid collisions (e.g. same name)
-    private val entitiesByParsedEntity = IdentityHashMap<ParsedEntity, Entity>()
     private val entitiesBySchemaEntity = IdentityHashMap<io.objectbox.generator.model.Entity, Entity>()
 
     // Use IdentityHashMap here to avoid collisions (e.g. same name)
-    private val propertiesByParsedProperty = IdentityHashMap<ParsedProperty, Property>()
     private val propertiesBySchemaProperty = IdentityHashMap<io.objectbox.generator.model.Property, Property>()
 
     companion object {
@@ -168,27 +165,6 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
         }
     }
 
-    fun sync(parsedEntities: List<ParsedEntity>) {
-        if (entitiesByParsedEntity.isNotEmpty() || propertiesByParsedProperty.isNotEmpty()) {
-            throw IllegalStateException("May be called only once")
-        }
-        try {
-            val entities = parsedEntities.map {
-                try {
-                    syncEntity(it)
-                } catch (e: Exception) {
-                    throw IdSyncException("Could not sync entity ${it.name}", e)
-                }
-            }.sortedBy { it.id.id }
-            updateRetiredUids(entities)
-            writeModel(entities)
-        } catch (e: Throwable) {
-            // Repeat e.message so it shows up in gradle right away
-            val message = "Could not sync parsed model with ID model file \"${jsonFile.absolutePath}\": ${e.message}"
-            throw IdSyncException(message, e)
-        }
-    }
-
     fun sync(schema: Schema) {
         if (entitiesBySchemaEntity.isNotEmpty() || propertiesBySchemaProperty.isNotEmpty()) {
             throw IllegalStateException("May be called only once")
@@ -267,46 +243,6 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
         schemaEntity.lastPropertyId = entity.lastPropertyId
 
         entitiesBySchemaEntity[schemaEntity] = entity
-        return entity
-    }
-
-    private fun syncEntity(parsedEntity: ParsedEntity): Entity {
-        val entityName = parsedEntity.dbName ?: parsedEntity.name
-        val entityUid = parsedEntity.uid
-        val shouldGenerateNewIdUid = parsedEntity.uid == -1L
-        if (entityUid != null && !shouldGenerateNewIdUid && !parsedUids.add(entityUid)) {
-            throw IdSyncException("Non-unique UID $entityUid in parsed entity ${parsedEntity.name} in file " +
-                    parsedEntity.sourceFile.absolutePath)
-        }
-        val existingEntity: Entity? = findEntity(entityName, entityUid)
-        val lastPropertyId = if (existingEntity?.lastPropertyId == null || shouldGenerateNewIdUid) {
-            IdUid() // create empty id + uid
-        } else {
-            existingEntity.lastPropertyId.clone() // use existing id + uid
-        }
-        val properties = ArrayList<Property>()
-        for (parsedProperty in parsedEntity.properties) {
-            val property = syncProperty(existingEntity, parsedEntity, parsedProperty, lastPropertyId)
-            if (property.modelId > lastPropertyId.id) {
-                lastPropertyId.set(property.id)
-            }
-            properties.add(property)
-        }
-        properties.sortBy { it.id.id }
-
-        val sourceId = if (existingEntity?.id == null || shouldGenerateNewIdUid) {
-            lastEntityId.incId(uidHelper.create()) // create new id + uid
-        } else {
-            existingEntity.id // use existing id + uid
-        }
-        val entity = Entity(
-                name = entityName,
-                id = sourceId.clone(),
-                properties = properties,
-                relations = emptyList(), // Unsupported for legacy plugin
-                lastPropertyId = lastPropertyId
-        )
-        entitiesByParsedEntity[parsedEntity] = entity
         return entity
     }
 
@@ -437,47 +373,6 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
         // update schema property
         schemaRelation.modelId = relation.id
         return relation
-    }
-
-    private fun syncProperty(existingEntity: Entity?, parsedEntity: ParsedEntity, parsedProperty: ParsedProperty,
-                             lastPropertyId: IdUid): Property {
-        val name = parsedProperty.dbName ?: parsedProperty.variable.name
-        val shouldGenerateNewIdUid = parsedEntity.uid == -1L || parsedProperty.uid == -1L
-        var existingProperty: Property? = null
-        if (existingEntity != null) {
-            val propertyUid = parsedProperty.uid
-            if (propertyUid != null && !shouldGenerateNewIdUid && !parsedUids.add(propertyUid)) {
-                throw IdSyncException("Non-unique UID $propertyUid in parsed entity ${parsedEntity.name} " +
-                        "and property ${parsedProperty.variable.name} in file " +
-                        parsedEntity.sourceFile.absolutePath)
-            }
-            existingProperty = findProperty(existingEntity, name, propertyUid)
-        }
-
-        var sourceIndexId: IdUid? = null
-        if (parsedProperty.index != null) {
-            if (shouldGenerateNewIdUid) {
-                sourceIndexId = lastIndexId.incId(uidHelper.create())
-            } else {
-                sourceIndexId = existingProperty?.indexId ?: lastIndexId.incId(uidHelper.create())
-            }
-        }
-
-        val sourceId = if (existingProperty?.id == null || shouldGenerateNewIdUid) {
-            lastPropertyId.incId(uidHelper.create()) // create a new id + uid
-        } else {
-            existingProperty.id // use existing id + uid
-        }
-        val property = Property(
-                name = name,
-                id = sourceId.clone(),
-                indexId = sourceIndexId?.clone()
-        )
-        val collision = propertiesByParsedProperty.put(parsedProperty, property)
-        if (collision != null) {
-            throw IllegalStateException("Property collision: " + parsedProperty + " vs. " + collision)
-        }
-        return property
     }
 
     /**
@@ -645,21 +540,17 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
                 if (!propertyNames.add(property.name.toLowerCase())) {
                     throw IdSyncException("Could not write model file \"${jsonFile.name}\" - verification failed: " +
                             "duplicate property name \"${property.name}\" in entity \"${entity.name}\" " +
-                            "(please report if you think this a bug)");
+                            "(please report if you think this a bug)")
                 }
             }
         }
     }
 
-    fun get(parsedEntity: ParsedEntity): Entity {
-        return entitiesByParsedEntity[parsedEntity] ?:
-                throw IllegalStateException("No ID model entity available for parsed entity " + parsedEntity.name)
-    }
-
-    fun get(parsedProperty: ParsedProperty): Property {
-        return propertiesByParsedProperty[parsedProperty] ?:
-                throw IllegalStateException("No ID model property available for parsed property " +
-                        parsedProperty.variable.name)
+    /** For unit testing only. */
+    @TestOnly
+    fun get(property: io.objectbox.generator.model.Property): Property {
+        return propertiesBySchemaProperty[property] ?:
+                throw IllegalStateException("No ID model property available for schema property ${property.propertyName}")
     }
 
 }

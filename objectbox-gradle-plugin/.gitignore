@@ -1,0 +1,3 @@
+# generated during tests
+/test-gradle-projects/kotlin-android/build.gradle
+/test-gradle-projects/java-android/build.gradle

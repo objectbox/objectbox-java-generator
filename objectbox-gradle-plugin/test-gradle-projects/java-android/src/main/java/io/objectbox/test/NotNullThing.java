@@ -1,7 +1,9 @@
-package io.objectbox.test.entityannotation;
+package io.objectbox.test;
 
 import io.objectbox.annotation.Entity;
+import io.objectbox.annotation.Generated;
 import io.objectbox.annotation.Id;
+import io.objectbox.annotation.apihint.Internal;
 
 @Entity
 public class NotNullThing {

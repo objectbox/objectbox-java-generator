@@ -1,23 +1,38 @@
-// Plugins must be in (test) classpath of objectbox-gradle-plugin
-plugins {
-    id "net.ltgt.apt" version "0.12"
-    id 'io.objectbox'
-    id 'java'
-}
+// WARNING: this file is prepended with a buildscript blog by PluginIntegrationTest
+
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'io.objectbox'
 
 // enable ObjectBox plugin and processor debug output
 objectbox {
     debug true
 }
 
-tasks.withType(JavaCompile) {
-    options.compilerArgs += [ "-Aobjectbox.debug=true" ]
+kapt {
+    arguments {
+        arg("objectbox.debug", true)
+    }
+}
+
+android {
+    compileSdkVersion 25
+    buildToolsVersion "25.0.3"
+
+    defaultConfig {
+        applicationId "io.objectbox.testgradleproject.kotlinandroid"
+        minSdkVersion 15
+        targetSdkVersion 25
+        versionCode 1
+        versionName "1.0"
+    }
 }
 
 dependencies {
     testCompile 'junit:junit:4.12'
     testCompile 'org.mockito:mockito-core:2.7.22'
 }
+
 
 repositories {
     // Adding maven repo with custom credentials does not seem to work (user properties could not be read)
@@ -32,4 +47,5 @@ repositories {
 
     // For essentials
     mavenCentral()
+
 }

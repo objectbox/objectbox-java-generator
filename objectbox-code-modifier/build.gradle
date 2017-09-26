@@ -11,7 +11,6 @@ dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     compile "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
     compile 'org.greenrobot:essentials:3.0.0-RC1'
-    compile 'org.greenrobot:greenrobot-jdt:3.12.2'
     compile 'com.squareup.moshi:moshi:1.4.0'
 
     compile "io.objectbox:objectbox-java-api:$objectbox_java_version"

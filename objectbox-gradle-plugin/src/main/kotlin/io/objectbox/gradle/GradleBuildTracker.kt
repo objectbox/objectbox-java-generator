@@ -28,7 +28,7 @@ open class GradleBuildTracker(toolName: String) : BasicBuildTracker(toolName) {
         val event = StringBuilder()
 
         // AAID: Anonymous App ID
-        val appId = androidAppId(env.project)
+        val appId = androidAppId(env)
         if (appId != null) {
             event.key("AAID").value(hashBase64WithoutPadding(appId)).comma()
         }
@@ -51,7 +51,11 @@ open class GradleBuildTracker(toolName: String) : BasicBuildTracker(toolName) {
     // Allow stubbing for testing
     // Use internal once fixed (Kotlin 1.1.4?)
     // TODO how are flavors handled here?
-    open fun androidAppId(project: Project): String? {
+    open fun androidAppId(env: ProjectEnv): String? {
+        if (!env.hasAndroidPlugin) {
+            return null // Android plugin API not available
+        }
+        val project = env.project
         val appPlugin = project.plugins.find { it is AppPlugin }
         if (appPlugin != null) {
             val variants = project.extensions[AppExtension::class].applicationVariants
