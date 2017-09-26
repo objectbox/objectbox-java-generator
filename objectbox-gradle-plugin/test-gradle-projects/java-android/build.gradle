@@ -4,12 +4,7 @@ plugins {
     id 'io.objectbox'
 }
 
-targetCompatibility = '1.7'
-sourceCompatibility = '1.7'
-
-uploadArchives.enabled = false
-
-// enable ObjectBox plugin and processor debug output
+// enable ObjectBox plugin debug output
 objectbox {
     debug true
 }
@@ -24,6 +19,13 @@ android {
         targetSdkVersion 25
         versionCode 1
         versionName "1.0"
+
+        // enable ObjectBox processor debug output
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments = [ 'objectbox.debug' : 'true' ]
+            }
+        }
     }
 }
 

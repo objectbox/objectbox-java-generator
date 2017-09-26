@@ -3,13 +3,7 @@ plugins {
     id 'com.android.application'
     id 'kotlin-android'
     id 'io.objectbox'
-    //id 'io.objectbox.android.transform'
 }
-
-targetCompatibility = '1.7'
-sourceCompatibility = '1.7'
-
-uploadArchives.enabled = false
 
 // enable ObjectBox plugin and processor debug output
 objectbox {

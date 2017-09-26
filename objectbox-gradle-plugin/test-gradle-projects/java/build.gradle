@@ -5,9 +5,6 @@ plugins {
     id 'java'
 }
 
-targetCompatibility = '1.7'
-sourceCompatibility = '1.7'
-
 // enable ObjectBox plugin and processor debug output
 objectbox {
     debug true
@@ -36,5 +33,3 @@ repositories {
     // For essentials
     mavenCentral()
 }
-
-uploadArchives.enabled = false
