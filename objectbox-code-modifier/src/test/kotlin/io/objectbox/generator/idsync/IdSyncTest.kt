@@ -1,12 +1,17 @@
 package io.objectbox.generator.idsync
 
-import io.objectbox.codemodifier.*
-import org.greenrobot.eclipse.jdt.core.dom.TypeDeclaration
+import io.objectbox.generator.IdUid
+import io.objectbox.generator.model.Entity
+import io.objectbox.generator.model.PropertyType
+import io.objectbox.generator.model.Schema
 import org.junit.After
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNotSame
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
-import org.mockito.Mockito
 import java.io.File
 
 class IdSyncTest {
@@ -74,12 +79,11 @@ class IdSyncTest {
         val entityRefId = model1.entities.first().uid
         val propertyRefId = model1.entities.first().properties.first().uid
 
-        val properties = listOf(
-                createParsedProperty(name = "bla", refId = propertyRefId)
-        )
-        val entity1 = createParsedEntity("Entity1A", properties, entityRefId)
+        val schema = basicSchema()
+        val entity1 = addEntityTo(schema, "Entity1A", entityRefId)
+        addPropertyTo(entity1, "bla", propertyRefId)
         idSync = IdSync(file)
-        idSync!!.sync(listOf(entity1))
+        idSync!!.sync(schema)
 
         val model2 = idSync!!.justRead()!!
         assertEquals(1, model2.entities.size)
@@ -91,27 +95,28 @@ class IdSyncTest {
 
     @Test
     fun testKeepIdsForMatchingNames() {
-        val entityParsed = createParsedEntity("Entity1", basicProperties())
-        testKeepIdsForMatchingNames(entityParsed)
+        val schema = basicSchema()
+        addBasicPropertiesTo(addEntityTo(schema, "Entity1"))
+
+        testKeepIdsForMatchingNames(schema)
     }
 
     @Test
     fun testKeepIdsForMatchingNames_differentCase() {
-        val properties = mutableListOf<ParsedProperty>(
-                createParsedProperty("FOO"),
-                createParsedProperty("bAr")
-        )
-        val entityParsed = createParsedEntity("ENTITY1", properties)
+        val schema = basicSchema()
+        val entity = addEntityTo(schema, "ENTITY1")
+        addPropertyTo(entity, "FOO")
+        addPropertyTo(entity, "bAr")
 
-        testKeepIdsForMatchingNames(entityParsed)
+        testKeepIdsForMatchingNames(schema)
     }
 
-    private fun testKeepIdsForMatchingNames(entityParsed: ParsedEntity) {
+    private fun testKeepIdsForMatchingNames(schema: Schema) {
         val model1 = syncBasicModel()
         val entity1 = model1.entities.first()
 
         idSync = IdSync(file)
-        idSync!!.sync(listOf(entityParsed))
+        idSync!!.sync(schema)
 
         val model2 = idSync!!.justRead()!!
         assertEquals(1, model2.entities.size)
@@ -130,11 +135,12 @@ class IdSyncTest {
     fun testAddEntity() {
         val model1 = syncBasicModel()
         val entityRefId = model1.entities.first().uid
+
+        val schema = basicSchema()
+        addBasicPropertiesTo(addEntityTo(schema, "Entity1A", entityRefId))
+        addBasicPropertiesTo(addEntityTo(schema, "Entity2"))
         idSync = IdSync(file)
-        val parsedEntities = listOf(
-                createParsedEntity("Entity1A", basicProperties(), entityRefId),
-                createParsedEntity("Entity2", basicProperties()))
-        idSync!!.sync(parsedEntities)
+        idSync!!.sync(schema)
 
         val model2 = idSync!!.justRead()!!
         assertEquals(2, model2.lastEntityId.id)
@@ -149,12 +155,12 @@ class IdSyncTest {
         val model1 = syncBasicModel()
         assertEquals(2, model1.entities.first().lastPropertyId.id)
 
+        val schema = basicSchema()
+        val entity = addEntityTo(schema, "Entity1")
+        addPropertyTo(entity, "newOne")
+        addPropertyTo(entity, "newTwo")
         idSync = IdSync(file)
-        val properties = listOf(createParsedProperty("newOne"), createParsedProperty("newTwo"))
-        val parsedEntities = listOf(
-                createParsedEntity("Entity1", properties)
-        )
-        idSync!!.sync(parsedEntities)
+        idSync!!.sync(schema)
 
         val model2 = idSync!!.justRead()!!
         val entity2 = model2.entities.first()
@@ -167,11 +173,11 @@ class IdSyncTest {
     fun testAddEntityWithDuplicateRefId() {
         val model1 = syncBasicModel()
         val entityRefId = model1.entities.first().uid
-        val parsedEntities = listOf(
-                createParsedEntity("Entity1A", basicProperties(), entityRefId),
-                createParsedEntity("Entity2", basicProperties(), entityRefId))
+        val schema = basicSchema()
+        addBasicPropertiesTo(addEntityTo(schema, "Entity1A", entityRefId))
+        addBasicPropertiesTo(addEntityTo(schema, "Entity2", entityRefId))
         idSync = IdSync(file)
-        idSync!!.sync(parsedEntities)
+        idSync!!.sync(schema)
     }
 
     @Test(expected = IdSyncException::class)
@@ -179,22 +185,22 @@ class IdSyncTest {
         val model1 = syncBasicModel()
         val propertyRefId = model1.entities.first().properties.first().uid
         val entityRefId = model1.entities.first().uid
-        val properties = basicProperties()
-        properties.forEach { it.uid = propertyRefId }
-        val parsedEntities = listOf(createParsedEntity("Entity1", properties, entityRefId))
+        val schema = basicSchema()
+        val entity = addEntityTo(schema, "Entity1", entityRefId)
+        addBasicPropertiesTo(entity, propertyRefId)
         idSync = IdSync(file)
-        idSync!!.sync(parsedEntities)
+        idSync!!.sync(schema)
     }
 
     @Test(expected = IdSyncException::class)
     fun testEntityPropertyRefIdCollision() {
         val model1 = syncBasicModel()
         val entityRefId = model1.entities.first().uid
-        val properties = basicProperties()
-        properties.last().uid = entityRefId
-        val parsedEntities = listOf(createParsedEntity("Entity1", properties, entityRefId))
+        val schema = basicSchema()
+        val entity = addEntityTo(schema, "Entity1", entityRefId)
+        addBasicPropertiesTo(entity, entityRefId, true)
         idSync = IdSync(file)
-        idSync!!.sync(parsedEntities)
+        idSync!!.sync(schema)
     }
 
     @Test
@@ -202,16 +208,13 @@ class IdSyncTest {
         val model1 = syncBasicModel()
         assertEquals(2, model1.entities.first().lastPropertyId.id)
 
+        val schema = basicSchema()
+        val entity = addEntityTo(schema, "Entity1")
+        addPropertyTo(entity, "foo")
+        addPropertyTo(entity, "bar", null, true)
+        addPropertyTo(entity, "newAndIndexed", null, true)
         idSync = IdSync(file)
-        val properties = listOf<ParsedProperty>(
-                createParsedProperty("foo"),
-                createParsedProperty("bar", null, true),
-                createParsedProperty("newAndIndexed", null, true)
-        )
-        val parsedEntities = listOf(
-                createParsedEntity("Entity1", properties)
-        )
-        idSync!!.sync(parsedEntities)
+        idSync!!.sync(schema)
 
         val model2 = idSync!!.justRead()!!
         assertEquals(2, model2.lastIndexId.id)
@@ -227,11 +230,11 @@ class IdSyncTest {
         val model1 = syncBasicModel()
         val entity1 = model1.entities.first()
 
-        val parsedEntities = listOf(
-                createParsedEntity("Entity2", basicProperties())
-        )
+        val schema = basicSchema()
+        addBasicPropertiesTo(addEntityTo(schema, "Entity2"))
         idSync = IdSync(file)
-        idSync!!.sync(parsedEntities)
+        idSync!!.sync(schema)
+
         val model2 = idSync!!.justRead()!!
         assertEquals(1, model2.retiredEntityUids!!.size)
         val entityRefIdDeleted = model2.retiredEntityUids!!.first()
@@ -244,70 +247,54 @@ class IdSyncTest {
 
     @Test
     fun testPropertiesWithSameNameIn2Entities() {
-        val entity1 = createParsedEntity("Entity1", basicProperties())
-        val entity2 = createParsedEntity("Entity2", basicProperties())
-        val parsedProperty1 = entity1.properties[0]
-        val parsedProperty2 = entity2.properties[0]
-        idSync!!.sync(listOf(entity1, entity2))
+        val schema = basicSchema()
+        val entity1 = addEntityTo(schema, "Entity1")
+        val entity2 = addEntityTo(schema, "Entity2")
+        addBasicPropertiesTo(entity1)
+        addBasicPropertiesTo(entity2)
+        val schemaProperty1 = entity1.properties[0]
+        val schemaProperty2 = entity2.properties[0]
+        idSync!!.sync(schema)
 
         val model = idSync!!.justRead()
         assertNotNull(model)
-        assertNotSame(parsedProperty1, parsedProperty2)
+        assertNotSame(schemaProperty1, schemaProperty2)
 
-        val property1 = idSync!!.get(parsedProperty1)
-        val property2 = idSync!!.get(parsedProperty2)
+        val property1 = idSync!!.get(schemaProperty1)
+        val property2 = idSync!!.get(schemaProperty2)
         assertNotSame(property1, property2)
     }
 
+    private fun basicSchema() = Schema("default", 1, "pac.me")
+
     private fun syncBasicModel(): IdSyncModel {
-        val entity1 = createParsedEntity("Entity1", basicProperties())
-        idSync!!.sync(listOf(entity1))
+        val schema = basicSchema()
+        val entity1 = addEntityTo(schema, "Entity1")
+        addBasicPropertiesTo(entity1)
+        idSync!!.sync(schema)
 
         val model = idSync!!.justRead()!!
         return model
     }
 
-    private fun basicProperties(): MutableList<ParsedProperty> {
-        val properties = mutableListOf<ParsedProperty>(
-                createParsedProperty("foo"),
-                createParsedProperty("bar")
-        )
-        return properties
+    private fun addBasicPropertiesTo(entity: Entity, uid: Long? = null, onlyUidForLast: Boolean = false) {
+        addPropertyTo(entity, "foo", if (onlyUidForLast) null else uid)
+        addPropertyTo(entity, "bar", uid)
     }
 
-    private fun createParsedProperty(name: String, refId: Long? = null, indexed: Boolean = false): ParsedProperty {
-        return ParsedProperty(
-                variable = Variable(VariableType("java.lang.String", false, "String"), name + "_"),
-                dbName = name,
-                index = if (indexed) PropertyIndex("dummyname", false) else null,
-                uid = refId
-        )
+    private fun addPropertyTo(entity: Entity, name: String, uid: Long? = null, indexed: Boolean = false) {
+        val builder = entity.addProperty(PropertyType.String, name)
+        if (uid != null) {
+            builder.modelId(IdUid(0, uid))
+        }
+        if (indexed) {
+            builder.indexAsc(null, false)
+        }
     }
 
-    private fun createParsedEntity(name: String, properties: List<ParsedProperty>, refId: Long? = null): ParsedEntity {
-        val typeDec = Mockito.mock(TypeDeclaration::class.java)
-        return ParsedEntity(
-                name = name + "_",
-                schema = "default",
-                properties = properties.toMutableList(),
-                transientFields = emptyList(),
-                constructors = emptyList(),
-                methods = emptyList(),
-                node = typeDec,
-                imports = emptyList(),
-                packageName = "pac.me",
-                dbName = name,
-                uid = refId,
-                toOneRelations = emptyList(),
-                toManyRelations = emptyList(),
-                sourceFile = File("dummy-src-$name"),
-                source = "dummy-src-$name",
-                keepSource = false,
-                createInDb = true,
-                generateConstructors = true,
-                protobufClassName = null,
-                notNullAnnotation = null,
-                lastFieldDeclaration = null
-        )
+    private fun addEntityTo(schema: Schema, name: String, uid: Long? = null): Entity {
+        val entity = schema.addEntity(name)
+        entity.modelUid = uid
+        return entity
     }
 }
