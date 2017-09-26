@@ -1,8 +1,6 @@
 // Plugins must be in (test) classpath of objectbox-gradle-plugin
 plugins {
     id 'com.android.application'
-    id 'kotlin-android'
-    id 'kotlin-kapt'
     id 'io.objectbox'
 }
 
@@ -16,18 +14,12 @@ objectbox {
     debug true
 }
 
-kapt {
-    arguments {
-        arg("objectbox.debug", true)
-    }
-}
-
 android {
     compileSdkVersion 25
     buildToolsVersion "25.0.3"
 
     defaultConfig {
-        applicationId "io.objectbox.testgradleproject.kotlinandroid"
+        applicationId "io.objectbox.testgradleproject.javaandroid"
         minSdkVersion 15
         targetSdkVersion 25
         versionCode 1

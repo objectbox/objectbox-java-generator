@@ -1,4 +1,4 @@
-package io.objectbox.test.kotlin;
+package io.objectbox.test;
 
 import io.objectbox.annotation.Entity;
 import io.objectbox.annotation.Id;

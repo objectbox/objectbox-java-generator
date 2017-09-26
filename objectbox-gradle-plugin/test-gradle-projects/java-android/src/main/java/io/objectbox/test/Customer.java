@@ -1,4 +1,4 @@
-package io.objectbox.test.kotlin;
+package io.objectbox.test;
 
 import java.util.List;
 
