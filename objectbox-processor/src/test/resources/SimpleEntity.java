@@ -35,8 +35,8 @@ public class SimpleEntity {
     double simpleDoublePrimitive;
     Double simpleDouble;
 
-    boolean simpleBooleanPrimitive;
-    Boolean simpleBoolean;
+    private boolean simpleBooleanPrimitive;
+    private Boolean simpleBoolean;
 
     byte simpleBytePrimitive;
     Byte simpleByte;
@@ -62,6 +62,22 @@ public class SimpleEntity {
 
     @Convert(converter = SimpleEnumListConverter.class, dbType = Integer.class)
     List<SimpleEnum> customTypes;
+
+    public boolean isSimpleBooleanPrimitive() {
+        return simpleBooleanPrimitive;
+    }
+
+    public void setSimpleBooleanPrimitive(boolean simpleBooleanPrimitive) {
+        this.simpleBooleanPrimitive = simpleBooleanPrimitive;
+    }
+
+    public Boolean getSimpleBoolean() {
+        return simpleBoolean;
+    }
+
+    public void setSimpleBoolean(Boolean simpleBoolean) {
+        this.simpleBoolean = simpleBoolean;
+    }
 
     public enum SimpleEnum {
         DEFAULT(0), A(1), B(2);
