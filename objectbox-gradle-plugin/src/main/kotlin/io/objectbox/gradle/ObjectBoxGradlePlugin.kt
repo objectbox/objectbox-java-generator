@@ -10,13 +10,14 @@ import okio.Buffer
 import okio.Okio
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.artifacts.Dependency
 import org.gradle.api.plugins.JavaPluginConvention
 import org.gradle.api.tasks.compile.JavaCompile
 import java.io.File
 
 class ObjectBoxGradlePlugin : Plugin<Project> {
     companion object {
-        const val DEBUG = false
+        const val DEBUG = true
     }
 
     val buildTracker = GradleBuildTracker("GradlePlugin")
@@ -166,11 +167,27 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
         }
 
         if (env.hasAndroidPlugin) {
-            project.dependencies.add(depScope, "io.objectbox:objectbox-android:$runtimeVersion")
+            if(!hasObjectBoxDependency(project, "objectbox-android") &&
+                    !hasObjectBoxDependency(project, "objectbox-android-objectbrowser")) {
+                project.dependencies.add(depScope, "io.objectbox:objectbox-android:$runtimeVersion")
+            }
             project.dependencies.add("androidTestCompile", "com.google.code.findbugs:jsr305:3.0.2")
         } else {
             project.dependencies.add(depScope, "io.objectbox:objectbox-java:$runtimeVersion")
         }
+    }
+
+    private fun hasObjectBoxDependency(project: Project, name: String): Boolean {
+        return findObjectBoxDependency(project, name) != null
+    }
+
+    private fun findObjectBoxDependency(project: Project, name: String): Dependency? {
+        project.configurations.asMap.values
+                .filterNot { it.name.contains("test", ignoreCase = true) }
+                .forEach { config ->
+                    return config.dependencies.find({ it.group == "io.objectbox" && it.name == name })
+                }
+        return null
     }
 
 }
