@@ -167,7 +167,7 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
         }
 
         if (env.hasAndroidPlugin) {
-            if(!hasObjectBoxDependency(project, "objectbox-android") &&
+            if (!hasObjectBoxDependency(project, "objectbox-android") &&
                     !hasObjectBoxDependency(project, "objectbox-android-objectbrowser")) {
                 project.dependencies.add(depScope, "io.objectbox:objectbox-android:$runtimeVersion")
             }
@@ -178,14 +178,19 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
     }
 
     private fun hasObjectBoxDependency(project: Project, name: String): Boolean {
-        return findObjectBoxDependency(project, name) != null
+        val dependency = findObjectBoxDependency(project, name)
+        if (DEBUG) println("### $name dep: $dependency")
+        return dependency != null
     }
 
     private fun findObjectBoxDependency(project: Project, name: String): Dependency? {
         project.configurations.asMap.values
                 .filterNot { it.name.contains("test", ignoreCase = true) }
                 .forEach { config ->
-                    return config.dependencies.find({ it.group == "io.objectbox" && it.name == name })
+                    val dependency = config.dependencies.find({ it.group == "io.objectbox" && it.name == name })
+                    if (dependency != null) {
+                        return dependency
+                    }
                 }
         return null
     }
