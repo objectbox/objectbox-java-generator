@@ -207,10 +207,12 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
     private fun getGetterMethodNameFor(property: Property): String? {
         // propertyName -> PropertyName
         val propertyNameCapitalized = property.propertyName.capitalize()
-        // isPropertyName?
-        val isGetter = methods.find { it == "is$propertyNameCapitalized" }
-        if (isGetter != null) {
-            return isGetter
+        if(property.propertyType == PropertyType.Boolean) {
+            // isPropertyName?
+            val isGetter = methods.find { it == "is$propertyNameCapitalized" }?.let { return it }
+            if (isGetter != null) {
+                return isGetter
+            }
         }
         // getPropertyName?
         return methods.find { it == "get$propertyNameCapitalized" }
