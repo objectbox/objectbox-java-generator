@@ -17,7 +17,7 @@ You should have received a copy of the GNU General Public License
 along with greenDAO Generator.  If not, see <http://www.gnu.org/licenses/>.
 
 -->
-<#assign daoCompatPackage = "org.greenrobot.greendao.daocompat" >
+<#assign daoCompatPackage = "org.greenrobot.daocompat" >
 package ${schema.defaultJavaPackageDao};
 
 import io.objectbox.BoxStore;
