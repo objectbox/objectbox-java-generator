@@ -122,40 +122,5 @@ public class ${entity.classNameDao} extends AbstractDao<${entity.className}, Lon
     protected final boolean isEntityUpdateable() {
         return ${(!entity.protobuf)?string};
     }
-    
-<#list entity.incomingToManyRelations as toMany>
-    /** Internal query to resolve the "${toMany.name}" to-many relationship of ${toMany.sourceEntity.className}. */
-    public List<${toMany.targetEntity.className}> _query${toMany.sourceEntity.className?cap_first}_${toMany.name?cap_first}(<#--
-    --><#if toMany.targetProperties??><#list toMany.targetProperties as property><#--
-    -->${property.javaType} ${property.propertyName}<#if property_has_next>, </#if></#list><#else><#--
-    -->${toMany.sourceProperty.javaType} ${toMany.sourceProperty.propertyName}</#if>) {
-        synchronized (this) {
-            if (${toMany.sourceEntity.className?uncap_first}_${toMany.name?cap_first}Query == null) {
-                QueryBuilder<${toMany.targetEntity.className}> queryBuilder = queryBuilder();
-<#if toMany.targetProperties??>
-    <#list toMany.targetProperties as property>
-                queryBuilder.where(Properties.${property.propertyName?cap_first}.eq(null));
-    </#list>
-<#else>
-                queryBuilder.join(${toMany.joinEntity.className}.class, ${toMany.joinEntity.classNameDao}.Properties.${toMany.targetProperty.propertyName?cap_first})
-                    .where(${toMany.joinEntity.classNameDao}.Properties.${toMany.sourceProperty.propertyName?cap_first}.eq(${toMany.sourceProperty.propertyName}));
-</#if>
-<#if toMany.order?has_content>
-                queryBuilder.orderRaw("${toMany.order}");
-</#if>
-                ${toMany.sourceEntity.className?uncap_first}_${toMany.name?cap_first}Query = queryBuilder.build();
-            }
-        }
-        Query<${toMany.targetEntity.className}> query = ${toMany.sourceEntity.className?uncap_first}_${toMany.name?cap_first}Query.forCurrentThread();
-<#if toMany.targetProperties??>
-    <#list toMany.targetProperties as property>
-        query.setParameter(${property_index}, ${property.propertyName});
-    </#list>
-<#else>
-        query.setParameter(0, ${toMany.sourceProperty.propertyName});
-</#if>
-        return query.list();
-    }
 
-</#list>
 }
