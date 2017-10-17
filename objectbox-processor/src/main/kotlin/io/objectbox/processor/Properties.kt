@@ -206,9 +206,18 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
      * If none is found, returns null.
      */
     private fun getGetterMethodNameFor(property: Property): String? {
-        val propertyNameCapitalized = property.propertyName.capitalize()
-        if(property.propertyType == PropertyType.Boolean) {
-            methods.find { it == "is$propertyNameCapitalized" }?.let { return it }
+        val propertyName = property.propertyName
+        val propertyNameCapitalized = propertyName.capitalize()
+        if (property.propertyType == PropertyType.Boolean) {
+            if (propertyName.startsWith("is") && propertyName[2].isUpperCase()) {
+                // Kotlin: 'isProperty' (not 'isproperty')
+                return propertyName // getter is called 'isProperty' (setter 'setProperty')
+            } else {
+                // Java Beans
+                methods.find { it == "is$propertyNameCapitalized" }?.let {
+                    return it // getter is called 'isPropertyName'
+                }
+            }
         }
         return methods.find { it == "get$propertyNameCapitalized" }
     }

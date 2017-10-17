@@ -805,6 +805,14 @@ class ObjectBoxProcessorTest {
                 "simpleShort" -> assertType(prop, PropertyType.Short)
                 "simpleInt" -> assertType(prop, PropertyType.Int)
                 "simpleLong" -> assertType(prop, PropertyType.Long)
+                "simpleFloat" -> assertType(prop, PropertyType.Float)
+                "simpleDouble" -> assertType(prop, PropertyType.Double)
+                "simpleBoolean" -> assertType(prop, PropertyType.Boolean)
+                "isBoolean" -> assertType(prop, PropertyType.Boolean)
+                "simpleByte" -> assertType(prop, PropertyType.Byte)
+                "simpleDate" -> assertType(prop, PropertyType.Date)
+                "simpleString" -> assertType(prop, PropertyType.String)
+                "simpleByteArray" -> assertType(prop, PropertyType.ByteArray)
                 else -> fail("Found stray field '${prop.propertyName}' in schema.")
             }
         }
