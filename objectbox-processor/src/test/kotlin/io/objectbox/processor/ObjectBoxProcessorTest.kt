@@ -768,7 +768,7 @@ class ObjectBoxProcessorTest {
         CompilationSubject.assertThat(compilation).failed()
 
         CompilationSubject.assertThat(compilation)
-                .hadErrorContaining("Could not find target property 'wrongParentId' in '$childName'")
+                .hadErrorContaining("Could not find target property 'wrongParent' in '$childName'")
     }
 
     @Test
