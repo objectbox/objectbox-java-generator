@@ -12,7 +12,7 @@ public class BacklinkWithToParent {
     @Id
     Long id;
 
-    @Backlink(to = "parentId")
+    @Backlink(to = "parent")
     ToMany<BacklinkWithToChild> children = new ToMany<>(this, BacklinkWithToParent_.children);
 
     // need to add manually, as processor can not modify entity

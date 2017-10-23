@@ -223,7 +223,7 @@ class Relations(private val messages: Messages) {
         } else {
             // explicit target name: find the related to-one relation
             val targetToOne = targetEntity.toOneRelations.singleOrNull {
-                it.targetEntity == entity && it.targetIdProperty.propertyName == toMany.backlinkTo
+                it.targetEntity == entity && it.name == toMany.backlinkTo
             }
             if (targetToOne == null) {
                 messages.error("Could not find target property '${toMany.backlinkTo}' in " +

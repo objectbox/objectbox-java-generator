@@ -12,7 +12,7 @@ public class BacklinkWrongToParent {
     @Id
     Long id;
 
-    @Backlink(to = "wrongParentId")
+    @Backlink(to = "wrongParent")
     ToMany<BacklinkWrongToChild> children = new ToMany<>(this, BacklinkWrongToParent_.children);
 
     // need to add manually, as processor can not modify entity
