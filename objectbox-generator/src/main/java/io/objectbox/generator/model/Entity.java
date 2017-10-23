@@ -716,13 +716,13 @@ public class Entity implements HasParsedElement {
         for (ToOne toOne : toOneRelations) {
             Entity targetEntity = toOne.getTargetEntity();
             checkAdditionalImportsEntityTargetEntity(targetEntity);
-            // For deep loading
             checkAdditionalImportsDaoTargetEntity(targetEntity);
         }
 
         for (ToManyBase toMany : toManyRelations) {
             Entity targetEntity = toMany.getTargetEntity();
             checkAdditionalImportsEntityTargetEntity(targetEntity);
+            checkAdditionalImportsDaoTargetEntity(targetEntity);
         }
 
         for (Property property : properties) {
