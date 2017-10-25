@@ -15,6 +15,9 @@ public class BacklinkWithToParent {
     @Backlink(to = "parent")
     ToMany<BacklinkWithToChild> children = new ToMany<>(this, BacklinkWithToParent_.children);
 
+    @Backlink(to = "parentOtherId") // with "Id" postfix for the property
+    ToMany<BacklinkWithToChild> childrenOther = new ToMany<>(this, BacklinkWithToParent_.childrenOther);
+
     // need to add manually, as processor can not modify entity
     transient BoxStore __boxStore;
 

@@ -411,7 +411,7 @@ class ObjectBoxProcessorTest {
         val newUid = modelBefore.newUidPool.single()
         assertEquals(newUid, relation.uid)
         assertEquals(modelBefore.lastRelationId.id + 1, model.lastRelationId.id)
-        assertEquals(newUid,  model.lastRelationId.uid)
+        assertEquals(newUid, model.lastRelationId.uid)
 
         assertEquals(0, model.newUidPool.size)
     }
@@ -870,6 +870,10 @@ class ObjectBoxProcessorTest {
                     assertThat(toMany.targetProperties).hasLength(1)
                     assertThat(toMany.targetProperties[0]).isEqualTo(prop)
                     // generator takes care of populating sourceProperties if we do not set them, so do not assert here
+                }
+                "childrenOther" -> {
+                    assertThat(toManyRelation.sourceEntity).isEqualTo(parent)
+                    assertThat(toManyRelation.targetEntity).isEqualTo(child)
                 }
                 else -> fail("Found stray toManyRelation '${toManyRelation.name}' in schema.")
             }

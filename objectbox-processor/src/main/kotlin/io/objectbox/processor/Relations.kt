@@ -203,7 +203,8 @@ class Relations(private val messages: Messages) {
     }
 
     private fun findBacklinkToOneOrRaiseError(entity: Entity, targetEntity: Entity, toMany: ToManyRelation): ToOne? {
-        if (toMany.backlinkTo.isNullOrEmpty()) {
+        val backlinkTo = toMany.backlinkTo
+        if (backlinkTo.isNullOrEmpty()) {
             // no explicit target name: just ensure a single to-one relation, then use that
             val targetToOne = targetEntity.toOneRelations.filter {
                 it.targetEntity == entity
@@ -223,10 +224,10 @@ class Relations(private val messages: Messages) {
         } else {
             // explicit target name: find the related to-one relation
             val targetToOne = targetEntity.toOneRelations.singleOrNull {
-                it.targetEntity == entity && it.name == toMany.backlinkTo
+                it.targetEntity == entity && (it.name == backlinkTo || it.targetIdProperty.propertyName == backlinkTo)
             }
             if (targetToOne == null) {
-                messages.error("Could not find target property '${toMany.backlinkTo}' in " +
+                messages.error("Could not find target property '$backlinkTo' in " +
                         "'${targetEntity.className}' of @Backlink in '${entity.className}'.", entity)
                 return null
             }
