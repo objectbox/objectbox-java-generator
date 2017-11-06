@@ -209,14 +209,15 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
         val propertyName = property.propertyName
         val propertyNameCapitalized = propertyName.capitalize()
         if (property.propertyType == PropertyType.Boolean) {
+            // Kotlin: 'isProperty' (not 'isproperty')
             if (propertyName.startsWith("is") && propertyName[2].isUpperCase()) {
-                // Kotlin: 'isProperty' (not 'isproperty')
-                return propertyName // getter is called 'isProperty' (setter 'setProperty')
-            } else {
-                // Java Beans
-                methods.find { it == "is$propertyNameCapitalized" }?.let {
-                    return it // getter is called 'isPropertyName'
+                methods.find { it == propertyName }?.let {
+                    return it // getter is called 'isProperty' (setter 'setProperty')
                 }
+            }
+            // Java Beans
+            methods.find { it == "is$propertyNameCapitalized" }?.let {
+                return it // getter is called 'isPropertyName'
             }
         }
         return methods.find { it == "get$propertyNameCapitalized" }
