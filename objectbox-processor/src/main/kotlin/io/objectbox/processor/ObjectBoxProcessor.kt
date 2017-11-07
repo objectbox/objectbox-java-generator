@@ -100,28 +100,28 @@ open class ObjectBoxProcessor : AbstractProcessor() {
     }
 
     private fun findAndParse(env: RoundEnvironment) {
-        var schema: Schema? = null
         val relations = Relations(messages)
         if (messages.errorRaised) {
             return
         }
 
-        for (entity in env.getElementsAnnotatedWith(Entity::class.java)) {
-            if (schema == null) {
-                val defaultJavaPackage = if (daoCompat && daoCompatPackage != null) {
-                    daoCompatPackage
-                } else {
-                    val elementPackage = elementUtils.getPackageOf(entity)
-                    elementPackage.qualifiedName.toString()
-                }
-                schema = Schema("default", 1, defaultJavaPackage)
-            }
-
-            parseEntity(schema, relations, entity)
+        val entities = env.getElementsAnnotatedWith(Entity::class.java)
+        if (entities.size == 0) {
+            return  // no entities found
         }
 
-        if (schema == null) {
-            return  // no entities found
+        val defaultJavaPackage = if (daoCompat && daoCompatPackage != null) {
+            daoCompatPackage
+        } else {
+            // entities may be in multiple packages
+            // get top-most, then lexicographically first package == sort lexicographically, choose first
+            val packages = entities.map { elementUtils.getPackageOf(it).qualifiedName.toString() }.toSet()
+            packages.sorted()[0]
+        }
+        val schema = Schema("default", 1, defaultJavaPackage)
+
+        for (entity in entities) {
+            parseEntity(schema, relations, entity)
         }
 
         if (!relations.resolve(schema)) {
@@ -138,7 +138,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
 
         this.schema = schema // make processed schema accessible for testing
 
-        var completed = false;
+        var completed = false
         try {
             BoxGenerator(daoCompat).generateAll(schema, filer)
             completed = true

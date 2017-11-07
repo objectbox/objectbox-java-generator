@@ -467,6 +467,24 @@ class ObjectBoxProcessorTest {
     }
 
     @Test
+    fun testMultiplePackages() {
+        // tests if entities are in multiple packages, code is generated in the highest, lexicographically first package
+        val entityTopFirstPackageName = "MultiPackageTopFirst"
+        val entityTopLastPackageName = "MultiPackageTopLast"
+        val entitySubPackageName = "MultiPackageSub"
+
+        val environment = TestEnvironment("multiple-packages-temp.json")
+        environment.cleanModelFile()
+
+        // add to compiler ordered by length of package (unsorted)
+        val compilation = environment.compile(entityTopLastPackageName, entityTopFirstPackageName, entitySubPackageName)
+        CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
+
+        val schema = environment.schema
+        assertThat(schema.defaultJavaPackage).isEqualTo("io.objectbox.processor.test.a_long")
+    }
+
+    @Test
     fun testAllArgsConstructor() {
         // tests if constructor with param for virtual property (to-one target id) and custom type is recognized
         // implicitly tests if all-args-constructor check can handle virtual and custom type properties
