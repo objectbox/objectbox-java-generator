@@ -36,8 +36,8 @@ open class ObjectBoxProcessor : AbstractProcessor() {
 
         // to make this smarter we could look for the most commonly used package prefix in the future
         internal fun selectPackage(packages: List<String>): String? {
-            if (packages.size >= 2) {
-                val packagesSorted = packages.toSortedSet()
+            val packagesSorted = packages.toSortedSet()
+            if (packagesSorted.size >= 2) {
                 val first = packagesSorted.first()
                 val indexP1 = first.indexOf('.')
                 val indexP2 = first.lastIndexOf('.')
@@ -51,10 +51,8 @@ open class ObjectBoxProcessor : AbstractProcessor() {
                         }
                     }
                 }
-                return packagesSorted.sorted()[0]
-            } else {
-                return packages[0]
             }
+            return packagesSorted.sorted()[0]
         }
     }
 
