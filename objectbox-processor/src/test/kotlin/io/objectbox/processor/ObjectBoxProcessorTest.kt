@@ -502,7 +502,8 @@ class ObjectBoxProcessorTest {
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
 
         val schema = environment.schema
-        assertThat(schema.defaultJavaPackage).isEqualTo("io.objectbox.processor.test")
+        // "io.objectbox.processor.test" would actually be better (common parent package)
+        assertThat(schema.defaultJavaPackage).isEqualTo("io.objectbox.processor.test.a_long")
     }
 
     @Test
