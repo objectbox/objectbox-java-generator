@@ -96,6 +96,20 @@ class ObjectBoxProcessorTest {
     }
 
     @Test
+    fun testSelectPackage() {
+        assertEquals("", ObjectBoxProcessor.selectPackage(listOf("")))
+        assertEquals("a", ObjectBoxProcessor.selectPackage(listOf("a")))
+        assertEquals("a", ObjectBoxProcessor.selectPackage(listOf("a", "b")))
+        assertEquals("a", ObjectBoxProcessor.selectPackage(listOf("b", "a")))
+        assertEquals("a.a", ObjectBoxProcessor.selectPackage(listOf("a.b", "a.a", "a.c")))
+        assertEquals("a.a", ObjectBoxProcessor.selectPackage(listOf("a.a.b", "a.a.a", "a.a.c")))
+        assertEquals("a.a", ObjectBoxProcessor.selectPackage(listOf("a.a.ab", "a.a.aa", "a.a.ac")))
+
+        // We could select a.b.c in the future...
+        assertEquals("a.b.c.x.a", ObjectBoxProcessor.selectPackage(listOf("a.b.c.x.a", "a.b.c.y.a", "a.b.c.z.a")))
+    }
+
+    @Test
     fun testSimpleEntity() {
         val className = "SimpleEntity"
 

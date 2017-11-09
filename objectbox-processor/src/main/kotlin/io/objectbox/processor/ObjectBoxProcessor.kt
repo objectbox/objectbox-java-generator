@@ -33,6 +33,29 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         /** Set by ObjectBox plugin */
         val OPTION_TRANSFORMATION_ENABLED: String = "objectbox.transformationEnabled"
         val OPTION_ALLOW_NUMBERED_CONSTRUCTOR_ARGS: String = "objectbox.allowNumberedConstructorArgs"
+
+        // to make this smarter we could look for the most commonly used package prefix in the future
+        internal fun selectPackage(packages: List<String>): String? {
+            if (packages.size >= 2) {
+                val packagesSorted = packages.toSortedSet()
+                val first = packagesSorted.first()
+                val indexP1 = first.indexOf('.')
+                val indexP2 = first.lastIndexOf('.')
+                // Minimum of 3 package parts (2x '.') needed to look into parent selection
+                if (indexP1 != -1 && indexP1 != indexP2) {
+                    val second = packagesSorted.iterator().let { it.next(); it.next() }
+                    if (indexP2 == second.lastIndexOf('.')) {
+                        val parent = first.substring(0, indexP2)
+                        if (parent == second.substring(0, indexP2)) {
+                            return parent
+                        }
+                    }
+                }
+                return packagesSorted.sorted()[0]
+            } else {
+                return packages[0]
+            }
+        }
     }
 
     // make processed schema accessible for testing
@@ -115,8 +138,8 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         } else {
             // entities may be in multiple packages
             // get top-most, then lexicographically first package == sort lexicographically, choose first
-            val packages = entities.map { elementUtils.getPackageOf(it).qualifiedName.toString() }.toSet()
-            packages.sorted()[0]
+            val packages = entities.map { elementUtils.getPackageOf(it).qualifiedName.toString() }
+            selectPackage(packages)
         }
         val schema = Schema("default", 1, defaultJavaPackage)
 
