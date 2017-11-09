@@ -34,22 +34,26 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         val OPTION_TRANSFORMATION_ENABLED: String = "objectbox.transformationEnabled"
         val OPTION_ALLOW_NUMBERED_CONSTRUCTOR_ARGS: String = "objectbox.allowNumberedConstructorArgs"
 
-        // to make this smarter we could look for the most commonly used package prefix in the future
+        // future improvement: to make this smarter we could look for the most commonly used package prefix
         internal fun selectPackage(packages: List<String>): String? {
             val packagesSorted = packages.toSortedSet()
             if (packagesSorted.size >= 2) {
                 val first = packagesSorted.first()
-                val indexP1 = first.indexOf('.')
-                val indexP2 = first.lastIndexOf('.')
-                // Minimum of 3 package parts (2x '.') needed to look into parent selection
-                if (indexP1 != -1 && indexP1 != indexP2) {
-                    val second = packagesSorted.iterator().let { it.next(); it.next() }
-                    if (indexP2 == second.lastIndexOf('.')) {
-                        val parent = first.substring(0, indexP2)
-                        if (parent == second.substring(0, indexP2)) {
-                            return parent
+                val second = packagesSorted.iterator().let { it.next(); it.next() }
+                var indexCommonDot = -1
+                for (commonDotCount in 0..Int.MAX_VALUE) {
+                    val indexSub = indexCommonDot + 1
+                    val indexDot1 = first.indexOf('.', indexSub)
+                    val indexDot2 = second.indexOf('.', indexSub)
+                    if (indexDot1 == -1 || indexDot2 != indexDot1
+                            || first.substring(indexSub, indexDot1) != second.substring(indexSub, indexDot1)) {
+                        if (commonDotCount >= 2) {
+                            return first.substring(0, indexCommonDot)
+                        } else {
+                            break
                         }
                     }
+                    indexCommonDot = indexDot1
                 }
             }
             return packagesSorted.sorted()[0]

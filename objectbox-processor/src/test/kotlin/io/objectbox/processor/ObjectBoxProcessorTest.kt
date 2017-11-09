@@ -105,8 +105,12 @@ class ObjectBoxProcessorTest {
         assertEquals("a.a", ObjectBoxProcessor.selectPackage(listOf("a.a.b", "a.a.a", "a.a.c")))
         assertEquals("a.a", ObjectBoxProcessor.selectPackage(listOf("a.a.ab", "a.a.aa", "a.a.ac")))
 
-        // We could select a.b.c in the future...
-        assertEquals("a.b.c.x.a", ObjectBoxProcessor.selectPackage(listOf("a.b.c.x.a", "a.b.c.y.a", "a.b.c.z.a")))
+        // Common parent package with different child hierarchy at the end
+        assertEquals("a.b.c", ObjectBoxProcessor.selectPackage(listOf("a.b.c.x.a", "a.b.c.y.a", "a.b.c.z.a")))
+        assertEquals("a.b.c", ObjectBoxProcessor.selectPackage(listOf("a.b.c.x", "a.b.c.y.a")))
+
+        // Min 2 level needed for parent selection
+        assertEquals("a.a", ObjectBoxProcessor.selectPackage(listOf("a.b", "a.a", "a.c")))
     }
 
     @Test
@@ -495,7 +499,7 @@ class ObjectBoxProcessorTest {
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
 
         val schema = environment.schema
-        assertThat(schema.defaultJavaPackage).isEqualTo("io.objectbox.processor.test.a_long")
+        assertThat(schema.defaultJavaPackage).isEqualTo("io.objectbox.processor.test")
     }
 
     @Test
