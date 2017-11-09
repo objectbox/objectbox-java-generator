@@ -111,6 +111,9 @@ class ObjectBoxProcessorTest {
 
         // Min 2 level needed for parent selection
         assertEquals("a.a", ObjectBoxProcessor.selectPackage(listOf("a.b", "a.a", "a.c")))
+
+        // Different number of sub packages
+        assertEquals("a.b.c", ObjectBoxProcessor.selectPackage(listOf("a.b.c", "a.b.c.d")))
     }
 
     @Test
