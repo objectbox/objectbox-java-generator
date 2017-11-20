@@ -277,27 +277,27 @@ open class ObjectBoxProcessor : AbstractProcessor() {
                         if (debug) messages.debug("Constructor param name alternative accepted: " +
                                 "$altName for ${parsedElement.simpleName}")
                     } else {
-                        if (debug) messages.debug("Constructor param names differ: " +
+                        if (debug) messages.debug("Constructor param name differs: " +
                                 "${param.simpleName} vs. ${parsedElement.simpleName} ($altName)")
                         return false
                     }
                 }
                 if (param.asType() != parsedElement.asType()) {
-                    messages.debug("Constructor param types differs: ${param.asType()} vs. ${parsedElement.asType()}")
+                    messages.debug("Constructor param type differs: ${param.asType()} vs. ${parsedElement.asType()}")
                     return false
                 }
             } else {
                 // special case: virtual property (to-one target id) that has no matching field
                 val paramPropertyType = typeHelper.getPropertyType(param.asType())
                 if (paramPropertyType != property.propertyType) {
-                    messages.debug("Constructor param types differs (virtual property)")
+                    messages.debug("Constructor param type differs (virtual property)")
                     return false
                 }
                 if (param.simpleName.toString() != property.propertyName) {
                     if (altName == property.propertyName) {
                         if (debug) messages.debug("Constructor param name alternative accepted: $altName for ${property.propertyName}")
                     }
-                    messages.debug("Constructor param names differs (virtual property)")
+                    messages.debug("Constructor param name differs (virtual property)")
                     return false
                 }
             }
