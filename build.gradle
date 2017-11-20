@@ -16,8 +16,9 @@ buildscript {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '3.5' // 4.x will require adjustments (Java and Kotlin in different dirs cause problems)
-    distributionType = Wrapper.DistributionType.ALL
+    group 'build setup'
+    gradleVersion '4.3'
+    distributionType Wrapper.DistributionType.ALL
 }
 
 if (JavaVersion.current().isJava8Compatible()) {
