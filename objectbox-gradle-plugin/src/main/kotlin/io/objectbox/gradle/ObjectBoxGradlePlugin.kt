@@ -68,8 +68,12 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
 
                 // attach to lifecycle
                 // assumes that classes task depends on compileJava depends on compileKotlin
-                project.tasks.findByName(it.classesTaskName).dependsOn(task)
-                val compileJavaTask = project.tasks.findByName(it.compileJavaTaskName) as JavaCompile
+                val classesTask = project.tasks.findByName(it.classesTaskName) ?:
+                        throw RuntimeException("Could not find classes task '${it.classesTaskName}'.")
+                val compileJavaTask = project.tasks.findByName(it.compileJavaTaskName) as JavaCompile? ?:
+                        throw RuntimeException("Could not find compileJava task '${it.compileJavaTaskName}'.")
+
+                classesTask.dependsOn(task)
                 task.mustRunAfter(compileJavaTask)
 
                 task.doLast {
