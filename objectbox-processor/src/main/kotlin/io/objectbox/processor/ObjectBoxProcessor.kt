@@ -268,6 +268,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
             val property = properties[idx]
             val altName = if (allowNumberedConstructorArgs) "arg$idx" else null
             if (property.parsedElement != null) {
+                // regular and custom type properties (have record of parsed field element)
                 val parsedElement = property.parsedElement as VariableElement
                 if (param.simpleName != parsedElement.simpleName) {
                     // note: Kotlin generates Java 6 bytecode and may not generate parameter names for any methods.
@@ -281,15 +282,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
                         return false
                     }
                 }
-                if (property.customType != null) {
-                    val converterType = elementUtils.getTypeElement(property.customType).asType()
-                    // Note: equality check does not work for TypeMirror
-                    if (!typeUtils.isSameType(converterType, param.asType())) {
-                        messages.debug("Constructor param types differs (custom type): " +
-                                "${param.asType()} vs. $converterType")
-                        return false
-                    }
-                } else if (param.asType() != parsedElement.asType()) {
+                if (param.asType() != parsedElement.asType()) {
                     messages.debug("Constructor param types differs: ${param.asType()} vs. ${parsedElement.asType()}")
                     return false
                 }
