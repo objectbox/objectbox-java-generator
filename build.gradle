@@ -1,7 +1,7 @@
 buildscript {
     ext.android_version = '2.3.3'
     ext.kotlin_version = '1.1.60'
-    ext.objectbox_plugin_version = '1.3.0-SNAPSHOT' // used to version this projects' artifacts
+    ext.objectbox_plugin_version = '1.2.2-RC' // used to version this projects' artifacts
 //    ext.objectbox_java_version = '0.9.13' // used for dependencies (runtime library)
     ext.objectbox_java_version = ext.objectbox_plugin_version // used for dependencies (runtime library)
 
