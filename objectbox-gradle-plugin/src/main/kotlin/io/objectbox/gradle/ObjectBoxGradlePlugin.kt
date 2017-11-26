@@ -17,7 +17,7 @@ import java.io.File
 
 class ObjectBoxGradlePlugin : Plugin<Project> {
     companion object {
-        const val DEBUG = true
+        const val DEBUG = false
     }
 
     val buildTracker = GradleBuildTracker("GradlePlugin")
@@ -183,7 +183,7 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
 
     private fun hasObjectBoxDependency(project: Project, name: String): Boolean {
         val dependency = findObjectBoxDependency(project, name)
-        if (DEBUG) println("### $name dep: $dependency")
+        if (DEBUG) println("### $name dependency: $dependency")
         return dependency != null
     }
 
