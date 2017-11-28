@@ -222,10 +222,8 @@ open class ObjectBoxProcessor : AbstractProcessor() {
             entityModel.modelUid = uid
         }
 
-        // parse properties
-        parseProperties(relations, entityModel, entity)
-        // parse properties of supertypes
-        parseSupertypeProperties(rootElements, relations, entityModel, entity)
+        // properties
+        parseProperties(rootElements, relations, entityModel, entity)
 
         // if not added automatically and relations are used, ensure there is a box store field
         if (!transformationEnabled && relations.hasRelations(entityModel) && !entityModel.hasBoxStoreField) {
@@ -240,17 +238,11 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         entityModel.isConstructors = hasAllArgsConstructor(entity, entityModel)
     }
 
-    private fun parseProperties(relations: Relations, entityModel: io.objectbox.generator.model.Entity, entity: Element) {
-        // parse properties
-        val properties = Properties(elementUtils, typeUtils, messages, relations, entityModel, entity)
-        properties.parseFields()
+    private fun parseProperties(rootElements: Set<Element>, relations: Relations, entityModel: io.objectbox.generator.model.Entity, entity: Element) {
+        // get all properties starting with root supertype to ensure constructor param order is as expected
+        // (from super class to subclass, then from first declared to last declared)
 
-        val hasBoxStoreField = properties.hasBoxStoreField()
-        entityModel.hasBoxStoreField = entityModel.hasBoxStoreField || hasBoxStoreField // keep true value
-    }
-
-    private fun parseSupertypeProperties(rootElements: Set<Element>, relations: Relations, entityModel: io.objectbox.generator.model.Entity, entity: Element) {
-        // walk inheritance chain and get all properties
+        // walk up inheritance chain
         val classSupertypes = typeUtils.directSupertypes(entity.asType()).mapNotNull { supertype ->
             rootElements.find { typeUtils.isSameType(it.asType(), supertype) }
         }
@@ -259,12 +251,16 @@ open class ObjectBoxProcessor : AbstractProcessor() {
             val element = classSupertypes[0]
             if (element.kind == ElementKind.CLASS) {
                 if (debug) messages.debug("Parsing super type of ${entity.simpleName}: ${element.simpleName}")
-
-                parseProperties(relations, entityModel, element)
-
-                parseSupertypeProperties(rootElements, relations, entityModel, element)
+                parseProperties(rootElements, relations, entityModel, element)
             }
         }
+
+        // parse properties
+        val properties = Properties(elementUtils, typeUtils, messages, relations, entityModel, entity)
+        properties.parseFields()
+
+        val hasBoxStoreField = properties.hasBoxStoreField()
+        entityModel.hasBoxStoreField = entityModel.hasBoxStoreField || hasBoxStoreField // keep true value
     }
 
     /**
