@@ -5,8 +5,8 @@ import java.io.File
 data class ProbedClass(
         val file: File,
         val name: String,
-        val superClass: String?,
         val javaPackage: String,
+        val superClass: String? = null,
         val isCursor: Boolean = false,
         val isEntity: Boolean = false,
         /** Fully qualified names (dot notation) of generic types in fields of List (non-transient only) */

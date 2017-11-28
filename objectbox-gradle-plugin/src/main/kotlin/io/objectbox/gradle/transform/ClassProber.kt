@@ -17,8 +17,7 @@ class ClassProber(val debug: Boolean) {
                 val javaPackage = name.substringBeforeLast('.', "")
                 if (!classFile.isAbstract) {
                     if (ClassConst.cursorClass == classFile.superclass) {
-                        return ProbedClass(file = file, name = name, superClass = null, javaPackage = javaPackage,
-                                isCursor = true)
+                        return ProbedClass(file = file, name = name, javaPackage = javaPackage, isCursor = true)
                     } else {
                         val annotation = classFile.exGetAnnotation(ClassConst.entityAnnotationName)
                         @Suppress("UNCHECKED_CAST")
