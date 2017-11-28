@@ -1,7 +1,6 @@
 package io.objectbox.gradle.transform
 
 import io.objectbox.gradle.GradleBuildTracker
-import org.gradle.api.Project
 import java.io.File
 
 class ObjectBoxJavaTransform(val debug: Boolean) {
@@ -14,8 +13,9 @@ class ObjectBoxJavaTransform(val debug: Boolean) {
                     allClassFiles += file
                 }
             }
-            val classProber = ClassProber()
+            val classProber = ClassProber(debug)
             val probedClasses = allClassFiles.map { classProber.probeClass(it) }
+            classProber.inheritSuperClassFlags(probedClasses)
             ClassTransformer(debug).transformOrCopyClasses(probedClasses, compileJavaTaskOutputDir)
         } catch (e: Throwable) {
             val buildTracker = GradleBuildTracker("Transformer")

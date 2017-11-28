@@ -7,7 +7,7 @@ import java.io.DataInputStream
 import java.io.File
 
 
-class ClassProber() {
+class ClassProber(val debug: Boolean) {
 
     fun probeClass(file: File): ProbedClass {
         try {
@@ -17,31 +17,56 @@ class ClassProber() {
                 val javaPackage = name.substringBeforeLast('.', "")
                 if (!classFile.isAbstract) {
                     if (ClassConst.cursorClass == classFile.superclass) {
-                        return ProbedClass(file = file, name = name, javaPackage = javaPackage, isCursor = true)
+                        return ProbedClass(file = file, name = name, superClass = null, javaPackage = javaPackage,
+                                isCursor = true)
                     } else {
-                        var annotation = classFile.exGetAnnotation(ClassConst.entityAnnotationName)
-                        if (annotation != null) {
-                            @Suppress("UNCHECKED_CAST")
-                            val fields = classFile.fields as List<FieldInfo>
-                            return ProbedClass(
-                                    file = file,
-                                    name = name,
-                                    javaPackage = javaPackage,
-                                    isEntity = true,
-                                    listFieldTypes = extractAllListTypes(fields),
-                                    hasBoxStoreField = fields.any { it.name == ClassConst.boxStoreFieldName },
-                                    hasToOneRef = hasClassRef(classFile, ClassConst.toOne, ClassConst.toOneDescriptor),
-                                    hasToManyRef = hasClassRef(classFile, ClassConst.toMany, ClassConst.toManyDescriptor)
-                            )
-                        }
+                        val annotation = classFile.exGetAnnotation(ClassConst.entityAnnotationName)
+                        @Suppress("UNCHECKED_CAST")
+                        val fields = classFile.fields as List<FieldInfo>
+                        return ProbedClass(
+                                file = file,
+                                name = name,
+                                superClass = classFile.superclass,
+                                javaPackage = javaPackage,
+                                isEntity = annotation != null,
+                                isEntityInfo = classFile.interfaces.any { it == ClassConst.entityInfo },
+                                listFieldTypes = extractAllListTypes(fields),
+                                hasBoxStoreField = fields.any { it.name == ClassConst.boxStoreFieldName },
+                                hasToOneRef = hasClassRef(classFile, ClassConst.toOne, ClassConst.toOneDescriptor),
+                                hasToManyRef = hasClassRef(classFile, ClassConst.toMany, ClassConst.toManyDescriptor)
+                        )
                     }
                 }
-                return ProbedClass(file = file, name = name, javaPackage = javaPackage,
+                return ProbedClass(file = file, name = name, superClass = classFile.superclass,
+                        javaPackage = javaPackage,
                         isEntityInfo = classFile.interfaces.any { it == ClassConst.entityInfo })
             }
-        } catch(e: Exception) {
+        } catch (e: Exception) {
             val msg = "Could not probe class file \"${file.absolutePath}\""
             throw TransformException(msg, e)
+        }
+    }
+
+    fun inheritSuperClassFlags(probedClasses: List<ProbedClass>) {
+        probedClasses.filter { it.isEntity }.forEach { entity ->
+            inheritSuperClassFlagsImpl(probedClasses, entity.superClass, entity)
+        }
+    }
+
+    private fun inheritSuperClassFlagsImpl(probedClasses: List<ProbedClass>, superClassName: String?, probedClass: ProbedClass) {
+        if (superClassName == null) {
+            return
+        }
+        probedClasses.find { it.name == superClassName }?.let { superClass ->
+            if (debug) println("Entity '${probedClass.name}' inherits from '${superClassName}'")
+
+            inheritSuperClassFlagsImpl(probedClasses, superClass.superClass, probedClass)
+
+            // TODO ut: make those fields immutable again
+            probedClass.listFieldTypes = probedClass.listFieldTypes.plus(superClass.listFieldTypes)
+            probedClass.hasBoxStoreField = probedClass.hasBoxStoreField || superClass.hasBoxStoreField
+            probedClass.hasToOneRef = probedClass.hasToOneRef || superClass.hasToOneRef
+            probedClass.hasToManyRef = probedClass.hasToManyRef || superClass.hasToManyRef
         }
     }
 
