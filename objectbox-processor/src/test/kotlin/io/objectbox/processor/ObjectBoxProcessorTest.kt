@@ -507,6 +507,96 @@ class ObjectBoxProcessorTest {
     }
 
     @Test
+    fun testInheritance() {
+        // tests if properties from base class are used in ObjectBox, interfaces are ignored
+        val nameBase = "InheritanceBase"
+        val nameSub = "InheritanceSub"
+        val nameSubSub = "InheritanceSubSub"
+        val nameInterface = "InheritanceInterface"
+
+        val environment = TestEnvironment("inheritance.json")
+
+        val compilation = environment.compile(nameBase, nameSub, nameSubSub, nameInterface)
+        CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
+
+        // assert schema
+        val schema = environment.schema
+        assertThat(schema).isNotNull()
+        assertThat(schema.entities).hasSize(2)
+
+        // assert entity
+        val schemaEntity = schema.entities.find { it.className == nameSub }
+        assertThat(schemaEntity!!.properties.size).isEqualTo(4)
+        for (prop in schemaEntity.properties) {
+            when (prop.propertyName) {
+                "id" -> {
+                    assertThat(prop.isPrimaryKey).isTrue()
+                    assertPrimitiveType(prop, PropertyType.Long)
+                }
+                "baseString" -> assertType(prop, PropertyType.String)
+                "subString" -> assertType(prop, PropertyType.String)
+                "overriddenString" -> assertType(prop, PropertyType.String)
+                else -> fail("Found stray field '${prop.propertyName}' in schema.")
+            }
+        }
+
+        val schemaEntity2 = schema.entities.find { it.className == nameSubSub }
+        assertThat(schemaEntity2!!.properties.size).isEqualTo(5)
+        for (prop in schemaEntity2.properties) {
+            when (prop.propertyName) {
+                "id" -> {
+                    assertThat(prop.isPrimaryKey).isTrue()
+                    assertPrimitiveType(prop, PropertyType.Long)
+                }
+                "baseString" -> assertType(prop, PropertyType.String)
+                "subString" -> assertType(prop, PropertyType.String)
+                "subSubString" -> assertType(prop, PropertyType.String)
+                "overriddenString" -> assertType(prop, PropertyType.String)
+                else -> fail("Found stray field '${prop.propertyName}' in schema.")
+            }
+        }
+
+        // assert model
+        val model = environment.readModel()
+
+        val modelEntity = model.findEntity(nameSub, null)
+        assertThat(modelEntity).isNotNull()
+        val modelProperties = modelEntity!!.properties
+        assertThat(modelProperties.size).isEqualTo(4)
+        val modelPropertyNames = listOf(
+                "id",
+                "baseString",
+                "subString",
+                "overriddenString"
+        )
+        modelProperties
+                .filterNot { modelPropertyNames.contains(it.name) }
+                .forEach { fail("Found stray property '${it.name}' in model file.") }
+
+        val modelEntity2 = model.findEntity(nameSubSub, null)
+        assertThat(modelEntity2).isNotNull()
+        val modelProperties2 = modelEntity2!!.properties
+        assertThat(modelProperties2.size).isEqualTo(5)
+        val modelPropertyNames2 = modelPropertyNames.plus("subSubString")
+        modelProperties2
+                .filterNot { modelPropertyNames2.contains(it.name) }
+                .forEach { fail("Found stray property '${it.name}' in model file.") }
+    }
+
+    @Test
+    fun testInheritanceOverriddenField() {
+        // tests that adding a duplicate property results in an error (and no crash)
+        val nameBase = "InheritanceBase"
+        val nameSub = "InheritanceSubOverride"
+
+        val environment = TestEnvironment("inheritance-overridden-temp.json")
+
+        val compilation = environment.compile(nameBase, nameSub)
+        CompilationSubject.assertThat(compilation).failed()
+        CompilationSubject.assertThat(compilation).hadErrorContaining("Duplicate name \"overriddenString\"")
+    }
+
+    @Test
     fun testAllArgsConstructor() {
         // tests if constructor with param for virtual property (to-one target id) and custom type is recognized
         // implicitly tests if all-args-constructor check can handle virtual and custom type properties
