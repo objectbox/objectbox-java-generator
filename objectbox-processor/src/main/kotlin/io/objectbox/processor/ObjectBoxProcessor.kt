@@ -17,6 +17,7 @@ import javax.annotation.processing.ProcessingEnvironment
 import javax.annotation.processing.RoundEnvironment
 import javax.lang.model.SourceVersion
 import javax.lang.model.element.Element
+import javax.lang.model.element.ElementKind
 import javax.lang.model.element.TypeElement
 import javax.lang.model.element.VariableElement
 import javax.lang.model.util.ElementFilter
@@ -148,7 +149,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         val schema = Schema("default", 1, defaultJavaPackage)
 
         for (entity in entities) {
-            parseEntity(schema, relations, entity)
+            parseEntity(env.rootElements, schema, relations, entity)
         }
 
         if (!relations.resolve(schema)) {
@@ -195,7 +196,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         )
     }
 
-    private fun parseEntity(schema: Schema, relations: Relations, entity: Element) {
+    private fun parseEntity(rootElements: Set<Element>, schema: Schema, relations: Relations, entity: Element) {
         val name = entity.simpleName.toString()
         if (debug) messages.debug("Parsing entity $name...")
         val entityModel = schema.addEntity(name)
@@ -222,14 +223,12 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         }
 
         // parse properties
-        val properties = Properties(elementUtils, typeUtils, messages, relations, entityModel, entity)
-        properties.parseFields()
-
-        val hasBoxStoreField = properties.hasBoxStoreField()
-        entityModel.hasBoxStoreField = hasBoxStoreField
+        parseProperties(relations, entityModel, entity)
+        // parse properties of supertypes
+        parseSupertypeProperties(rootElements, relations, entityModel, entity)
 
         // if not added automatically and relations are used, ensure there is a box store field
-        if (!transformationEnabled && relations.hasRelations(entityModel) && !hasBoxStoreField) {
+        if (!transformationEnabled && relations.hasRelations(entityModel) && !entityModel.hasBoxStoreField) {
             messages.error("To use relations in '${entityModel.className}' " +
                     "add a field '__boxStore' of type 'BoxStore'.", entity)
         }
@@ -239,6 +238,33 @@ open class ObjectBoxProcessor : AbstractProcessor() {
 
         // signal if a constructor will be available
         entityModel.isConstructors = hasAllArgsConstructor(entity, entityModel)
+    }
+
+    private fun parseProperties(relations: Relations, entityModel: io.objectbox.generator.model.Entity, entity: Element) {
+        // parse properties
+        val properties = Properties(elementUtils, typeUtils, messages, relations, entityModel, entity)
+        properties.parseFields()
+
+        val hasBoxStoreField = properties.hasBoxStoreField()
+        entityModel.hasBoxStoreField = entityModel.hasBoxStoreField || hasBoxStoreField // keep true value
+    }
+
+    private fun parseSupertypeProperties(rootElements: Set<Element>, relations: Relations, entityModel: io.objectbox.generator.model.Entity, entity: Element) {
+        // walk inheritance chain and get all properties
+        val classSupertypes = typeUtils.directSupertypes(entity.asType()).mapNotNull { supertype ->
+            rootElements.find { typeUtils.isSameType(it.asType(), supertype) }
+        }
+        if (classSupertypes.isNotEmpty()) {
+            // if any, classes are listed before interfaces: so just check first one
+            val element = classSupertypes[0]
+            if (element.kind == ElementKind.CLASS) {
+                if (debug) messages.debug("Parsing super type of ${entity.simpleName}: ${element.simpleName}")
+
+                parseProperties(relations, entityModel, element)
+
+                parseSupertypeProperties(rootElements, relations, entityModel, element)
+            }
+        }
     }
 
     /**
