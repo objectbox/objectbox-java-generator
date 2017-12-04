@@ -50,7 +50,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
                     if (indexDot1 == -1 || indexDot2 != indexDot1
                             || first.substring(indexSub, indexDot1) != second.substring(indexSub, indexDot1)) {
                         if (second.startsWith(first)) {
-                            return first; // Check for full match separately at the end (last part has no trailing dot)
+                            return first // Check for full match separately at the end (last part has no trailing dot)
                         } else if (commonDotCount >= 2) {
                             return first.substring(0, indexCommonDot)
                         } else {
