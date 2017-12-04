@@ -137,6 +137,16 @@ object EntityTransientList_ : EntityInfo<EntityToOneLateInit> {
     val actualRelation = RelationInfo<EntityEmpty>(null, null, null, null)
 }
 
+open class EntitySuper {
+    val __boxStore = Object()
+    lateinit var entityEmptyToMany: ToMany<EntityEmpty>
+    lateinit var entityEmptyToOne: ToOne<EntityEmpty>
+    lateinit var entityEmptyList: List<EntityEmpty>
+}
+
+@Entity
+class EntitySub : EntitySuper()
+
 class TestCursor : Cursor<EntityBoxStoreField>() {
     private fun attachEntity(@Suppress("UNUSED_PARAMETER") entity: EntityBoxStoreField) {}
 }

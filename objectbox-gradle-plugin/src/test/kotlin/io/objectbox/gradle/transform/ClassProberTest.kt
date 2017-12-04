@@ -53,6 +53,22 @@ class ClassProberTest : AbstractTransformTest() {
     }
 
     @Test
+    fun testProbeEntityInheritance() {
+        val probedSuper = probeClass(EntitySuper::class)
+        val probedSub = probeClass(EntitySub::class)
+        assertFalse(probedSub.hasBoxStoreField)
+        assertFalse(probedSub.hasToOneRef)
+        assertFalse(probedSub.hasToManyRef)
+        assertTrue(probedSub.listFieldTypes.isEmpty())
+
+        prober.inheritSuperClassFlags(listOf(probedSuper, probedSub))
+        assertTrue(probedSub.hasBoxStoreField)
+        assertTrue(probedSub.hasToOneRef)
+        assertTrue(probedSub.hasToManyRef)
+        assertFalse(probedSub.listFieldTypes.isEmpty())
+    }
+
+    @Test
     fun testProbeCursor() {
         val probed = probeClass(TestCursor::class)
         assertTrue(probed.isCursor)
