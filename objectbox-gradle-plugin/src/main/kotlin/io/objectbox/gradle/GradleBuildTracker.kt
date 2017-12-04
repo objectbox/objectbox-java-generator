@@ -85,7 +85,7 @@ open class GradleBuildTracker(toolName: String) : BasicBuildTracker(toolName) {
     }
 
     private operator fun <T : Any> ExtensionContainer.get(type: KClass<T>): T {
-        return getByType(type.java)!!
+        return getByType(type.java)
     }
 
 }
