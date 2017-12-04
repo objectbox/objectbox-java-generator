@@ -1,5 +1,6 @@
 package io.objectbox.processor
 
+import io.objectbox.annotation.BaseEntity
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.NameInDb
 import io.objectbox.annotation.Uid
@@ -239,7 +240,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
     }
 
     private fun parseProperties(rootElements: Set<Element>, relations: Relations, entityModel: io.objectbox.generator.model.Entity, entity: Element) {
-        // get all properties starting with root supertype to ensure constructor param order is as expected
+        // get properties starting with root supertype to ensure constructor param order is as expected
         // (from super class to subclass, then from first declared to last declared)
 
         // walk up inheritance chain
@@ -255,12 +256,15 @@ open class ObjectBoxProcessor : AbstractProcessor() {
             }
         }
 
-        // parse properties
-        val properties = Properties(elementUtils, typeUtils, messages, relations, entityModel, entity)
-        properties.parseFields()
+        // only include properties for classes with @Entity or @BaseEntity
+        if (entity.getAnnotation(Entity::class.java) != null || entity.getAnnotation(BaseEntity::class.java) != null) {
+            // parse properties
+            val properties = Properties(elementUtils, typeUtils, messages, relations, entityModel, entity)
+            properties.parseFields()
 
-        val hasBoxStoreField = properties.hasBoxStoreField()
-        entityModel.hasBoxStoreField = entityModel.hasBoxStoreField || hasBoxStoreField // keep true value
+            val hasBoxStoreField = properties.hasBoxStoreField()
+            entityModel.hasBoxStoreField = entityModel.hasBoxStoreField || hasBoxStoreField // keep true value
+        }
     }
 
     /**

@@ -1,7 +1,9 @@
 package io.objectbox.processor.test;
 
+import io.objectbox.annotation.BaseEntity;
 import io.objectbox.annotation.Id;
 
+@BaseEntity
 public abstract class InheritanceBase {
 
     @Id
