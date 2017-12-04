@@ -2,6 +2,7 @@ package io.objectbox.gradle.transform
 
 import io.objectbox.Cursor
 import io.objectbox.EntityInfo
+import io.objectbox.annotation.BaseEntity
 import io.objectbox.annotation.Convert
 import io.objectbox.annotation.Entity
 import io.objectbox.converter.PropertyConverter
@@ -137,7 +138,15 @@ object EntityTransientList_ : EntityInfo<EntityToOneLateInit> {
     val actualRelation = RelationInfo<EntityEmpty>(null, null, null, null)
 }
 
-open class EntitySuper {
+@BaseEntity
+open class EntityBase {
+    val __boxStore = Object()
+    lateinit var entityEmptyToMany: ToMany<EntityEmpty>
+    lateinit var entityEmptyToOne: ToOne<EntityEmpty>
+    lateinit var entityEmptyList: List<EntityEmpty>
+}
+
+open class EntityNoBase {
     val __boxStore = Object()
     lateinit var entityEmptyToMany: ToMany<EntityEmpty>
     lateinit var entityEmptyToOne: ToOne<EntityEmpty>
@@ -145,7 +154,7 @@ open class EntitySuper {
 }
 
 @Entity
-class EntitySub : EntitySuper()
+class EntitySub : EntityBase()
 
 class TestCursor : Cursor<EntityBoxStoreField>() {
     private fun attachEntity(@Suppress("UNUSED_PARAMETER") entity: EntityBoxStoreField) {}

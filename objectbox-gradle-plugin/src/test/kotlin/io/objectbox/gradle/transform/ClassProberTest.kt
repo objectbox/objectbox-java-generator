@@ -53,19 +53,30 @@ class ClassProberTest : AbstractTransformTest() {
     }
 
     @Test
-    fun testProbeEntityInheritance() {
-        val probedSuper = probeClass(EntitySuper::class)
-        val probedSub = probeClass(EntitySub::class)
-        assertFalse(probedSub.hasBoxStoreField)
-        assertFalse(probedSub.hasToOneRef)
-        assertFalse(probedSub.hasToManyRef)
-        assertTrue(probedSub.listFieldTypes.isEmpty())
-
-        prober.inheritSuperClassFlags(listOf(probedSuper, probedSub))
-        assertTrue(probedSub.hasBoxStoreField)
-        assertTrue(probedSub.hasToOneRef)
-        assertTrue(probedSub.hasToManyRef)
-        assertFalse(probedSub.listFieldTypes.isEmpty())
+    fun testProbeBaseEntity() {
+        // detects fields if @BaseEntity
+        probeClass(EntityBase::class).let {
+            assertFalse(it.isEntity)
+            assertTrue(it.isBaseEntity)
+            assertTrue(it.hasBoxStoreField)
+            assertTrue(it.hasToOneRef)
+            assertTrue(it.hasToManyRef)
+            assertFalse(it.listFieldTypes.isEmpty())
+        }
+        // ignores fields if non-@BaseEntity
+        probeClass(EntityNoBase::class).let {
+            assertFalse(it.isEntity)
+            assertFalse(it.isBaseEntity)
+            assertFalse(it.hasBoxStoreField)
+            assertFalse(it.hasToOneRef)
+            assertFalse(it.hasToManyRef)
+            assertTrue(it.listFieldTypes.isEmpty())
+        }
+        // sets superclass property
+        probeClass(EntitySub::class).let {
+            assertNotNull(it.superClass)
+            assertEquals(EntityBase::class.java.canonicalName, it.superClass)
+        }
     }
 
     @Test

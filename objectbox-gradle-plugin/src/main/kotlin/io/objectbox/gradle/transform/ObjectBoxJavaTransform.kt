@@ -13,9 +13,8 @@ class ObjectBoxJavaTransform(val debug: Boolean) {
                     allClassFiles += file
                 }
             }
-            val classProber = ClassProber(debug)
+            val classProber = ClassProber()
             val probedClasses = allClassFiles.map { classProber.probeClass(it) }
-            classProber.inheritSuperClassFlags(probedClasses)
             ClassTransformer(debug).transformOrCopyClasses(probedClasses, compileJavaTaskOutputDir)
         } catch (e: Throwable) {
             val buildTracker = GradleBuildTracker("Transformer")

@@ -16,7 +16,7 @@ abstract class AbstractTransformTest {
     )
     val classDir = classDirs.map(::File).first { it.exists() }
 
-    val prober = ClassProber(true)
+    val prober = ClassProber()
 
     @Test
     fun testClassDir() {

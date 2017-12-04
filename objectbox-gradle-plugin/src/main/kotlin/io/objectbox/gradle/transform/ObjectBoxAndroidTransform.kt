@@ -81,9 +81,8 @@ class ObjectBoxAndroidTransform(val options: PluginOptions) : Transform() {
                 }
             }
 
-            val classProber = ClassProber(options.debug)
+            val classProber = ClassProber()
             val probedClasses = allClassFiles.map { classProber.probeClass(it) }
-            classProber.inheritSuperClassFlags(probedClasses)
             ClassTransformer(options.debug).transformOrCopyClasses(probedClasses, outDir)
 
         } catch (e: Throwable) {
