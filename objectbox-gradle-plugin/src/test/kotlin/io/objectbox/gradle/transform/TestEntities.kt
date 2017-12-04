@@ -156,6 +156,13 @@ open class EntityNoBase {
 @Entity
 class EntitySub : EntityBase()
 
+class EntitySub_ : EntityInfo<EntitySub> {
+    @JvmField
+    val entityEmptyToOne = RelationInfo<EntityEmpty>(null, null, null, null)
+    @JvmField
+    val entityEmptyToMany = RelationInfo<EntityEmpty>(null, null, null, null)
+}
+
 class TestCursor : Cursor<EntityBoxStoreField>() {
     private fun attachEntity(@Suppress("UNUSED_PARAMETER") entity: EntityBoxStoreField) {}
 }

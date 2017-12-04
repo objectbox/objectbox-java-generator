@@ -26,6 +26,15 @@ class ClassTransformerTest : AbstractTransformTest() {
     }
 
     @Test
+    fun testTransformEntity_inheritance() {
+        val classes = listOf(EntitySub::class, EntitySub_::class, EntityBase::class)
+        val (stats) = testTransformOrCopy(classes, 1, 2)
+        assertEquals(1, stats.toManyFound)
+        assertEquals(1, stats.toOnesFound)
+        assertEquals(1, stats.toOnesInitializerAdded)
+    }
+
+    @Test
     fun testTransformEntity_toOne() {
         val classes = listOf(EntityToOne::class, EntityToOne_::class)
         val (stats) = testTransformOrCopy(classes, 1, 1)

@@ -59,6 +59,7 @@ class ClassTransformer(val debug: Boolean = false) {
         // First define all EntityInfo (Entity_) and entity classes to ensure the real classes are used
         // (E.g. constructor transformation may introduce dummy classes)
         probedClasses.forEach { if (it.isEntityInfo) makeCtClass(context, it) }
+        probedClasses.forEach { if (it.isBaseEntity) makeCtClass(context, it) }
         probedClasses.forEach { if (it.isEntity) makeCtClass(context, it) }
 
         transformEntities(context)
@@ -83,8 +84,11 @@ class ClassTransformer(val debug: Boolean = false) {
     private fun transformEntities(context: Context) {
         context.probedClasses.filter { it.isEntity }.forEach { entityClass ->
             val ctClass = context.ctByProbedClass[entityClass]!!
+
+            transformBaseEntities(context, ctClass, entityClass)
+
             try {
-                if (transformEntity(context, ctClass, entityClass)) {
+                if (transformEntity(context, ctClass, ctClass, entityClass)) {
                     context.transformedClasses.add(entityClass)
                 }
             } catch (e: Exception) {
@@ -93,26 +97,48 @@ class ClassTransformer(val debug: Boolean = false) {
         }
     }
 
-    private fun makeCtClass(context: Context, entityClass: ProbedClass): CtClass {
-        entityClass.file.inputStream().use {
+    // TODO ut roll into transformEntities
+    private fun transformBaseEntities(context: Context, entityCtClass: CtClass, probedClass: ProbedClass) {
+        // walk inheritance chain and transform all @BaseEntity classes starting from the top
+        if (probedClass.superClass != null) {
+            val superClass = context.probedClasses.find { it.name == probedClass.superClass }
+            if (superClass != null) {
+                transformBaseEntities(context, entityCtClass, superClass)
+
+                if (superClass.isBaseEntity) {
+                    val ctClass = context.ctByProbedClass[superClass]!!
+                    try {
+                        if (transformEntity(context, entityCtClass, ctClass, superClass)) {
+                            context.transformedClasses.add(superClass)
+                        }
+                    } catch (e: Exception) {
+                        throw TransformException("Could not transform entity class \"${ctClass.name}\" (${e.message})", e)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun makeCtClass(context: Context, probedClass: ProbedClass): CtClass {
+        probedClass.file.inputStream().use {
             val ctClass = context.classPool.makeClass(it)
-            context.ctByProbedClass[entityClass] = ctClass
+            context.ctByProbedClass[probedClass] = ctClass
             return ctClass
         }
     }
 
-    private fun transformEntity(context: Context, ctClass: CtClass, entityClass: ProbedClass): Boolean {
+    private fun transformEntity(context: Context, ctClassEntity: CtClass, ctClass: CtClass, entityClass: ProbedClass): Boolean {
         val hasRelations = entityClass.hasRelation(context.entityTypes)
         if (debug) println("Checking to transform entity \"${ctClass.name}\" (has relations: $hasRelations)")
         var changed = checkBoxStoreField(ctClass, context, hasRelations)
         if (hasRelations) {
-            val toOneFields = findRelationFields(context, ctClass, ClassConst.toOneDescriptor, ClassConst.toOne)
+            val toOneFields = findRelationFields(context, ctClassEntity, ctClass, ClassConst.toOneDescriptor, ClassConst.toOne)
             context.stats.toOnesFound += toOneFields.size
-            val toManyFields = findRelationFields(context, ctClass, ClassConst.toManyDescriptor, ClassConst.toMany)
-            val listToEntityFields = findRelationFields(context, ctClass, ClassConst.listDescriptor, ClassConst.toMany)
+            val toManyFields = findRelationFields(context, ctClassEntity, ctClass, ClassConst.toManyDescriptor, ClassConst.toMany)
+            val listToEntityFields = findRelationFields(context, ctClassEntity, ctClass, ClassConst.listDescriptor, ClassConst.toMany)
             toManyFields += listToEntityFields
             context.stats.toManyFound += toManyFields.size
-            if (transformConstructors(context, ctClass, toOneFields + toManyFields)) changed = true
+            if (transformConstructors(context, ctClassEntity, ctClass, toOneFields + toManyFields)) changed = true
         }
         if (changed) {
             if (debug) println("Writing transformed entity \"${ctClass.name}\"")
@@ -138,8 +164,8 @@ class ClassTransformer(val debug: Boolean = false) {
         return changed
     }
 
-    private fun findRelationFields(context: Context, ctClass: CtClass, fieldTypeDescriptor: String,
-                                   relationType: String)
+    private fun findRelationFields(context: Context, ctClassEntity: CtClass, ctClass: CtClass,
+                                   fieldTypeDescriptor: String, relationType: String)
             : MutableList<RelationField> {
         val fields = mutableListOf<RelationField>()
         ctClass.declaredFields.filter { it.fieldInfo.descriptor == fieldTypeDescriptor }.forEach { field ->
@@ -151,7 +177,7 @@ class ClassTransformer(val debug: Boolean = false) {
                     return@forEach
                 }
             }
-            val name = findRelationNameInEntityInfo(context, ctClass, field, relationType)
+            val name = findRelationNameInEntityInfo(context, ctClassEntity, field, relationType)
             fields += RelationField(field, name, relationType, targetClassType)
         }
         return fields
@@ -185,8 +211,8 @@ class ClassTransformer(val debug: Boolean = false) {
         return name
     }
 
-    private fun transformConstructors(context: Context, ctClass: CtClass, relationFields: List<RelationField>)
-            : Boolean {
+    private fun transformConstructors(context: Context, ctClassEntity: CtClass, ctClass: CtClass,
+                                      relationFields: List<RelationField>): Boolean {
         var changed = false
         for (constructor in ctClass.constructors) {
             checkMakeParamCtClasses(context, constructor)
@@ -196,7 +222,7 @@ class ClassTransformer(val debug: Boolean = false) {
                 val fieldName = field.ctField.name
                 if (!initializedFields.contains(fieldName)) {
                     val code = "\$0.$fieldName = new ${field.relationType}" +
-                            "(\$0, ${ctClass.name}_#${field.relationName});"
+                            "(\$0, ${ctClassEntity.name}_#${field.relationName});"
                     try {
                         constructor.insertBeforeBody(code)
                     } catch (e: Exception) {
