@@ -508,15 +508,16 @@ class ObjectBoxProcessorTest {
 
     @Test
     fun testInheritance() {
-        // tests if properties from base class are used in ObjectBox, interfaces are ignored
+        // tests if properties from @BaseEntity class are used in ObjectBox, other super class and interface are ignored
         val nameBase = "InheritanceBase"
+        val nameNoBase = "InheritanceNoBase"
         val nameSub = "InheritanceSub"
         val nameSubSub = "InheritanceSubSub"
         val nameInterface = "InheritanceInterface"
 
         val environment = TestEnvironment("inheritance.json")
 
-        val compilation = environment.compile(nameBase, nameSub, nameSubSub, nameInterface)
+        val compilation = environment.compile(nameBase, nameNoBase, nameSub, nameSubSub, nameInterface)
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
 
         // assert schema
@@ -536,6 +537,7 @@ class ObjectBoxProcessorTest {
                 "baseString" -> assertType(prop, PropertyType.String)
                 "subString" -> assertType(prop, PropertyType.String)
                 "overriddenString" -> assertType(prop, PropertyType.String)
+                "noBaseString" -> fail("Found non-@BaseEntity field '${prop.propertyName}' in schema.")
                 else -> fail("Found stray field '${prop.propertyName}' in schema.")
             }
         }
@@ -552,6 +554,7 @@ class ObjectBoxProcessorTest {
                 "subString" -> assertType(prop, PropertyType.String)
                 "subSubString" -> assertType(prop, PropertyType.String)
                 "overriddenString" -> assertType(prop, PropertyType.String)
+                "noBaseString" -> fail("Found non-@BaseEntity field '${prop.propertyName}' in schema.")
                 else -> fail("Found stray field '${prop.propertyName}' in schema.")
             }
         }

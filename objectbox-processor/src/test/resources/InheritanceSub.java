@@ -3,7 +3,7 @@ package io.objectbox.processor.test;
 import io.objectbox.annotation.Entity;
 
 @Entity
-public class InheritanceSub extends InheritanceBase implements InheritanceInterface {
+public class InheritanceSub extends InheritanceNoBase implements InheritanceInterface {
 
     private String subString;
 
