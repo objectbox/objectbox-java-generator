@@ -151,8 +151,13 @@ open class EntityNoBase {
     lateinit var entityEmptyList: List<EntityEmpty>
 }
 
+interface EntityInterface {
+    @Suppress("unused")
+    fun foo() {}
+}
+
 @Entity
-class EntitySub : EntityBase()
+class EntitySub : EntityBase(), EntityInterface
 
 class EntitySub_ : EntityInfo<EntitySub> {
     @JvmField
