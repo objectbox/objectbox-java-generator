@@ -59,8 +59,7 @@ class ClassTransformer(val debug: Boolean = false) {
         // First define all EntityInfo (Entity_) and entity classes to ensure the real classes are used
         // (E.g. constructor transformation may introduce dummy classes)
         probedClasses.forEach { if (it.isEntityInfo) makeCtClass(context, it) }
-        probedClasses.forEach { if (it.isBaseEntity) makeCtClass(context, it) }
-        probedClasses.forEach { if (it.isEntity) makeCtClass(context, it) }
+        probedClasses.forEach { if (it.isEntity) makeCtClasses(context, probedClasses, it) }
 
         transformEntities(context)
         // Transform Cursors after entities because this depends on entity CtClasses added to the ClassPool
@@ -125,6 +124,21 @@ class ClassTransformer(val debug: Boolean = false) {
             context.ctByProbedClass[probedClass] = ctClass
             return ctClass
         }
+    }
+
+    /**
+     * Walks up inheritance chain and creates a CtClass for each super class as well as the given class. This ensures
+     * all fields of super classes are known when transforming entities and entity base classes.
+     */
+    private fun makeCtClasses(context: Context, probedClasses: List<ProbedClass>, probedClass: ProbedClass) {
+        if (probedClass.superClass != null && probedClass.superClass.isNotEmpty()) {
+            val superClass = probedClasses.find { it.name == probedClass.superClass }
+            if (superClass != null) {
+                makeCtClasses(context, probedClasses, superClass)
+            }
+        }
+
+        makeCtClass(context, probedClass)
     }
 
     private fun transformEntity(context: Context, ctClassEntity: CtClass, ctClass: CtClass, entityClass: ProbedClass): Boolean {
