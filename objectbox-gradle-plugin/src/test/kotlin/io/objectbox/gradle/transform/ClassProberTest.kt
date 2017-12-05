@@ -58,7 +58,7 @@ class ClassProberTest : AbstractTransformTest() {
         probeClass(EntityBase::class).let {
             assertFalse(it.isEntity)
             assertTrue(it.isBaseEntity)
-            assertTrue(it.hasBoxStoreField)
+            assertFalse(it.hasBoxStoreField)
             assertTrue(it.hasToOneRef)
             assertTrue(it.hasToManyRef)
             assertFalse(it.listFieldTypes.isEmpty())
