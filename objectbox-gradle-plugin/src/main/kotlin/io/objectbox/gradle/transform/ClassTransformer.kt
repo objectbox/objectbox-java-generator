@@ -83,37 +83,28 @@ class ClassTransformer(val debug: Boolean = false) {
     private fun transformEntities(context: Context) {
         context.probedClasses.filter { it.isEntity }.forEach { entityClass ->
             val ctClass = context.ctByProbedClass[entityClass]!!
-
-            transformBaseEntities(context, ctClass, entityClass)
-
-            try {
-                if (transformEntity(context, ctClass, ctClass, entityClass)) {
-                    context.transformedClasses.add(entityClass)
-                }
-            } catch (e: Exception) {
-                throw TransformException("Could not transform entity class \"${ctClass.name}\" (${e.message})", e)
-            }
+            transformEntityAndBases(context, ctClass, entityClass)
         }
     }
 
-    // TODO ut roll into transformEntities
-    private fun transformBaseEntities(context: Context, entityCtClass: CtClass, probedClass: ProbedClass) {
-        // walk inheritance chain and transform all @BaseEntity classes starting from the top
+    /**
+     * Walks the inheritance chain and transforms the @Entity and all its @BaseEntity classes starting from the top.
+     */
+    private fun transformEntityAndBases(context: Context, entityCtClass: CtClass, probedClass: ProbedClass) {
         if (probedClass.superClass != null) {
-            val superClass = context.probedClasses.find { it.name == probedClass.superClass }
-            if (superClass != null) {
-                transformBaseEntities(context, entityCtClass, superClass)
+            context.probedClasses.find { it.name == probedClass.superClass }?.let { superClass ->
+                transformEntityAndBases(context, entityCtClass, superClass)
+            }
+        }
 
-                if (superClass.isBaseEntity) {
-                    val ctClass = context.ctByProbedClass[superClass]!!
-                    try {
-                        if (transformEntity(context, entityCtClass, ctClass, superClass)) {
-                            context.transformedClasses.add(superClass)
-                        }
-                    } catch (e: Exception) {
-                        throw TransformException("Could not transform entity class \"${ctClass.name}\" (${e.message})", e)
-                    }
+        val ctClass = context.ctByProbedClass[probedClass]
+        if (ctClass != null && (ctClass == entityCtClass || probedClass.isBaseEntity)) {
+            try {
+                if (transformEntity(context, entityCtClass, ctClass, probedClass)) {
+                    context.transformedClasses.add(probedClass)
                 }
+            } catch (e: Exception) {
+                throw TransformException("Could not transform entity class \"${ctClass.name}\" (${e.message})", e)
             }
         }
     }
