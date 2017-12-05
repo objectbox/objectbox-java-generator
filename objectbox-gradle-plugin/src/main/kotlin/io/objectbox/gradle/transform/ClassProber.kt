@@ -32,7 +32,8 @@ class ClassProber {
                                 listFieldTypes = extractAllListTypes(fields),
                                 hasBoxStoreField = fields.any { it.name == ClassConst.boxStoreFieldName },
                                 hasToOneRef = hasClassRef(classFile, ClassConst.toOne, ClassConst.toOneDescriptor),
-                                hasToManyRef = hasClassRef(classFile, ClassConst.toMany, ClassConst.toManyDescriptor)
+                                hasToManyRef = hasClassRef(classFile, ClassConst.toMany, ClassConst.toManyDescriptor),
+                                interfaces = classFile.interfaces.toList()
                         )
                     }
                 }
