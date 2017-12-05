@@ -163,6 +163,10 @@ class EntitySub_ : EntityInfo<EntitySub> {
     val entityEmptyToMany = RelationInfo<EntityEmpty>(null, null, null, null)
 }
 
+class EntitySubCursor : Cursor<EntitySub>() {
+    private fun attachEntity(@Suppress("UNUSED_PARAMETER") entity: EntitySub) {}
+}
+
 class TestCursor : Cursor<EntityBoxStoreField>() {
     private fun attachEntity(@Suppress("UNUSED_PARAMETER") entity: EntityBoxStoreField) {}
 }
