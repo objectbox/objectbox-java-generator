@@ -140,14 +140,12 @@ object EntityTransientList_ : EntityInfo<EntityToOneLateInit> {
 
 @BaseEntity
 open class EntityBase {
-    val __boxStore = Object()
     lateinit var entityEmptyToMany: ToMany<EntityEmpty>
     lateinit var entityEmptyToOne: ToOne<EntityEmpty>
     lateinit var entityEmptyList: List<EntityEmpty>
 }
 
 open class EntityNoBase {
-    val __boxStore = Object()
     lateinit var entityEmptyToMany: ToMany<EntityEmpty>
     lateinit var entityEmptyToOne: ToOne<EntityEmpty>
     lateinit var entityEmptyList: List<EntityEmpty>
