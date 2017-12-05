@@ -362,6 +362,7 @@ class ClassTransformer(val debug: Boolean = false) {
 
             val code = "\$1.${ClassConst.boxStoreFieldName} = \$0.boxStoreForEntities;"
             attachCtMethod.setBody(code)
+            if (debug) println("Writing transformed cursor '${ctClass.name}'")
             ctClass.writeFile(outDir.absolutePath)
             return true
         } else return false
