@@ -19,6 +19,10 @@ sourceSets {
     }
 }
 
+repositories {
+    google()
+}
+
 dependencies {
     compile gradleApi()
     compile project(':objectbox-code-modifier')
