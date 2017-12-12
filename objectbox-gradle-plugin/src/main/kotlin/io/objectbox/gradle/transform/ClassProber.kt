@@ -16,43 +16,29 @@ class ClassProber {
                 val name = classFile.name
                 val javaPackage = name.substringBeforeLast('.', "")
 
-                // (non-abstract) Cursor or @Entity class
-                if (!classFile.isAbstract) {
-                    if (ClassConst.cursorClass == classFile.superclass) {
-                        return ProbedClass(file = file, name = name, javaPackage = javaPackage, isCursor = true)
-                    } else if (classFile.exGetAnnotation(ClassConst.entityAnnotationName) != null) {
-                        @Suppress("UNCHECKED_CAST")
-                        val fields = classFile.fields as List<FieldInfo>
-                        return ProbedClass(
-                                file = file,
-                                name = name,
-                                superClass = classFile.superclass,
-                                javaPackage = javaPackage,
-                                isEntity = true,
-                                listFieldTypes = extractAllListTypes(fields),
-                                hasBoxStoreField = fields.any { it.name == ClassConst.boxStoreFieldName },
-                                hasToOneRef = hasClassRef(classFile, ClassConst.toOne, ClassConst.toOneDescriptor),
-                                hasToManyRef = hasClassRef(classFile, ClassConst.toMany, ClassConst.toManyDescriptor),
-                                interfaces = classFile.interfaces.toList()
-                        )
-                    }
+                // Cursor class
+                if (!classFile.isAbstract && ClassConst.cursorClass == classFile.superclass) {
+                    return ProbedClass(file = file, name = name, javaPackage = javaPackage, isCursor = true)
                 }
 
-                // @BaseEntity class
-                val baseAnnotation = classFile.exGetAnnotation(ClassConst.baseEntityAnnotationName)
-                if (baseAnnotation != null) {
-                    @Suppress("UNCHECKED_CAST")
-                    val fields = classFile.fields as List<FieldInfo>
+                // @Entity or @BaseEntity class
+                val entityAnnotation = classFile.exGetAnnotation(ClassConst.entityAnnotationName)
+                val isEntity = !classFile.isAbstract && entityAnnotation != null
+                val isBaseEntity = classFile.exGetAnnotation(ClassConst.baseEntityAnnotationName) != null
+                if (isEntity || isBaseEntity) {
+                    @Suppress("UNCHECKED_CAST") val fields = classFile.fields as List<FieldInfo>
                     return ProbedClass(
                             file = file,
                             name = name,
                             superClass = classFile.superclass,
                             javaPackage = javaPackage,
-                            isBaseEntity = true,
+                            isEntity = isEntity,
+                            isBaseEntity = !isEntity,
                             listFieldTypes = extractAllListTypes(fields),
                             hasBoxStoreField = fields.any { it.name == ClassConst.boxStoreFieldName },
                             hasToOneRef = hasClassRef(classFile, ClassConst.toOne, ClassConst.toOneDescriptor),
-                            hasToManyRef = hasClassRef(classFile, ClassConst.toMany, ClassConst.toManyDescriptor)
+                            hasToManyRef = hasClassRef(classFile, ClassConst.toMany, ClassConst.toManyDescriptor),
+                            interfaces = if (isEntity) classFile.interfaces.toList() else listOf()
                     )
                 }
 
