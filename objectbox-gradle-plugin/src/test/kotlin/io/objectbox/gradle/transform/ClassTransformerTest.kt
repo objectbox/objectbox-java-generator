@@ -3,12 +3,17 @@ package io.objectbox.gradle.transform
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
+import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.ExpectedException
 import java.io.File
 import kotlin.reflect.KClass
 
 class ClassTransformerTest : AbstractTransformTest() {
     val transformer = ClassTransformer(true)
+
+    @Rule @JvmField
+    val thrown : ExpectedException = ExpectedException.none()
 
     @Test
     fun testClassInPool() {
@@ -26,7 +31,7 @@ class ClassTransformerTest : AbstractTransformTest() {
     }
 
     @Test
-    fun testTransformEntity_inheritance() {
+    fun testTransformEntityInheritance() {
         val classes = listOf(EntitySub::class, EntitySub_::class, EntityBase::class, EntitySubCursor::class,
                 EntityInterface::class)
         val (stats) = testTransformOrCopy(classes, 2, 3)
@@ -35,11 +40,20 @@ class ClassTransformerTest : AbstractTransformTest() {
         assertEquals(1, stats.toOnesInitializerAdded)
     }
 
-    @Test(expected = TransformException::class)
-    fun testTransformEntity_inheritanceRelations() {
-        // relations in entity super classes are (currently) not supported
-        val classes = listOf(EntitySuperRelations::class, EntityBaseWithRelations::class)
-        testTransformOrCopy(classes, 2, 3)
+    @Test
+    fun testTransformEntityRelationsInBaseEntity() {
+        thrown.expectMessage("Relations in an entity super class are not supported")
+        // relations in super classes are (currently) not supported
+        val classes = listOf(EntityRelationsInSuperBase::class, EntityBaseWithRelations::class)
+        testTransformOrCopy(classes, 0, 0)
+    }
+
+    @Test
+    fun testTransformEntityRelationsInSuperEntity() {
+        thrown.expectMessage("Relations in an entity super class are not supported")
+        // relations in super classes are (currently) not supported
+        val classes = listOf(EntityRelationsInSuperEntity::class, EntitySub::class)
+        testTransformOrCopy(classes, 0, 0)
     }
 
     @Test

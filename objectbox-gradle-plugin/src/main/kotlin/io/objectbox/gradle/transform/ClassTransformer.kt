@@ -99,21 +99,30 @@ class ClassTransformer(val debug: Boolean = false) {
     /**
      * Walks the inheritance chain and transforms the @Entity and all its @BaseEntity classes starting from the top.
      */
-    private fun transformEntityAndBases(context: Context, entityCtClass: CtClass, probedClass: ProbedClass) {
+    private fun transformEntityAndBases(context: Context, ctClassEntity: CtClass, probedClass: ProbedClass) {
         if (probedClass.superClass != null) {
             context.probedClasses.find { it.name == probedClass.superClass }?.let { superClass ->
-                transformEntityAndBases(context, entityCtClass, superClass)
+                transformEntityAndBases(context, ctClassEntity, superClass)
             }
         }
 
         val ctClass = context.ctByProbedClass[probedClass]
-        if (ctClass != null && (ctClass == entityCtClass || probedClass.isBaseEntity)) {
-            try {
-                if (transformEntity(context, entityCtClass, ctClass, probedClass)) {
-                    context.transformedClasses.add(probedClass)
+        if (ctClass != null) {
+            // relations in entity super classes are (currently) not supported, see #104
+            if (ctClass != ctClassEntity && probedClass.hasRelation(context.entityTypes)
+                    && (probedClass.isEntity || probedClass.isBaseEntity)) {
+                throw TransformException("Relations in an entity super class are not supported, but " +
+                        "'${ctClass.name}' is super of entity '${ctClassEntity.name}' and has relations")
+            }
+
+            if (ctClass == ctClassEntity || probedClass.isBaseEntity) {
+                try {
+                    if (transformEntity(context, ctClassEntity, ctClass, probedClass)) {
+                        context.transformedClasses.add(probedClass)
+                    }
+                } catch (e: Exception) {
+                    throw TransformException("Could not transform class \"${ctClass.name}\" (${e.message})", e)
                 }
-            } catch (e: Exception) {
-                throw TransformException("Could not transform class \"${ctClass.name}\" (${e.message})", e)
             }
         }
     }
@@ -144,13 +153,6 @@ class ClassTransformer(val debug: Boolean = false) {
     private fun transformEntity(context: Context, ctClassEntity: CtClass, ctClass: CtClass, entityClass: ProbedClass): Boolean {
         val hasRelations = entityClass.hasRelation(context.entityTypes)
         if (debug) println("Checking to transform \"${ctClass.name}\" (has relations: $hasRelations)")
-
-        // relations in entity super classes are (currently) not supported, see #104
-        if (hasRelations && ctClass != ctClassEntity) {
-            throw TransformException("Relations in an entity super class are not supported, " +
-                    "'${ctClass.simpleName}' is super class of entity '${ctClassEntity.name}'")
-        }
-
         var changed = checkBoxStoreField(ctClass, context, hasRelations)
         if (hasRelations) {
             val toOneFields = findRelationFields(context, ctClassEntity, ctClass, ClassConst.toOneDescriptor, ClassConst.toOne)

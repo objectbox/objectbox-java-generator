@@ -164,14 +164,17 @@ interface EntityInterface {
 }
 
 @Entity
-class EntitySuperRelations : EntityBaseWithRelations()
-
-@Entity
-class EntitySub : EntityBase(), EntityInterface {
+open class EntitySub : EntityBase(), EntityInterface {
     lateinit var entityEmptyToMany: ToMany<EntityEmpty>
     lateinit var entityEmptyToOne: ToOne<EntityEmpty>
     lateinit var entityEmptyList: List<EntityEmpty>
 }
+
+@Entity
+class EntityRelationsInSuperEntity : EntitySub()
+
+@Entity
+class EntityRelationsInSuperBase : EntityBaseWithRelations()
 
 class EntitySub_ : EntityInfo<EntitySub> {
     @JvmField
