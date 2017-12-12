@@ -1,3 +1,5 @@
+@file:Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS", "unused")
+
 package io.objectbox.gradle.transform
 
 import io.objectbox.Cursor
