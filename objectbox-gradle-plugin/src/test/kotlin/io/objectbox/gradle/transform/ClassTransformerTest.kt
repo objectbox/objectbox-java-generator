@@ -35,6 +35,13 @@ class ClassTransformerTest : AbstractTransformTest() {
         assertEquals(1, stats.toOnesInitializerAdded)
     }
 
+    @Test(expected = TransformException::class)
+    fun testTransformEntity_inheritanceRelations() {
+        // relations in entity super classes are (currently) not supported
+        val classes = listOf(EntitySuperRelations::class, EntityBaseWithRelations::class)
+        testTransformOrCopy(classes, 2, 3)
+    }
+
     @Test
     fun testTransformEntity_toOne() {
         val classes = listOf(EntityToOne::class, EntityToOne_::class)

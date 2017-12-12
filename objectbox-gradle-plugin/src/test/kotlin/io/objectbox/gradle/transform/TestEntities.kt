@@ -139,16 +139,22 @@ object EntityTransientList_ : EntityInfo<EntityToOneLateInit> {
 }
 
 @BaseEntity
-open class EntityBase {
-    lateinit var entityEmptyToMany: ToMany<EntityEmpty>
-    lateinit var entityEmptyToOne: ToOne<EntityEmpty>
-    lateinit var entityEmptyList: List<EntityEmpty>
+open class EntityBaseWithRelations {
+    lateinit var entityBaseToMany: ToMany<EntityEmpty>
+    lateinit var entityBaseToOne: ToOne<EntityEmpty>
+    lateinit var entityBaseList: List<EntityEmpty>
 }
 
 open class EntityNoBase {
     lateinit var entityEmptyToMany: ToMany<EntityEmpty>
     lateinit var entityEmptyToOne: ToOne<EntityEmpty>
     lateinit var entityEmptyList: List<EntityEmpty>
+    var baseString: String? = null
+}
+
+@BaseEntity
+open class EntityBase {
+    var baseString: String? = null
 }
 
 interface EntityInterface {
@@ -157,7 +163,14 @@ interface EntityInterface {
 }
 
 @Entity
-class EntitySub : EntityBase(), EntityInterface
+class EntitySuperRelations : EntityBaseWithRelations()
+
+@Entity
+class EntitySub : EntityBase(), EntityInterface {
+    lateinit var entityEmptyToMany: ToMany<EntityEmpty>
+    lateinit var entityEmptyToOne: ToOne<EntityEmpty>
+    lateinit var entityEmptyList: List<EntityEmpty>
+}
 
 class EntitySub_ : EntityInfo<EntitySub> {
     @JvmField
