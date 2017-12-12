@@ -147,11 +147,10 @@ open class EntityBaseWithRelations {
     lateinit var entityBaseList: List<EntityEmpty>
 }
 
-open class EntityNoBase {
-    lateinit var entityEmptyToMany: ToMany<EntityEmpty>
-    lateinit var entityEmptyToOne: ToOne<EntityEmpty>
-    lateinit var entityEmptyList: List<EntityEmpty>
-    var baseString: String? = null
+open class EntityBaseNoAnnotation : EntityBaseWithRelations() {
+    lateinit var entityNoBaseToMany: ToMany<EntityEmpty>
+    lateinit var entityNoBaseToOne: ToOne<EntityEmpty>
+    lateinit var entityNoBaseList: List<EntityEmpty>
 }
 
 @BaseEntity

@@ -55,7 +55,7 @@ class ClassProberTest : AbstractTransformTest() {
     @Test
     fun testProbeBaseEntity() {
         // detects fields if @BaseEntity
-        probeClass(EntityBase::class).let {
+        probeClass(EntityBaseWithRelations::class).let {
             assertFalse(it.isEntity)
             assertTrue(it.isBaseEntity)
             assertFalse(it.hasBoxStoreField)
@@ -63,19 +63,21 @@ class ClassProberTest : AbstractTransformTest() {
             assertTrue(it.hasToManyRef)
             assertFalse(it.listFieldTypes.isEmpty())
         }
-        // ignores fields if non-@BaseEntity
-        probeClass(EntityNoBase::class).let {
+        // ignores fields if non-@BaseEntity, sets superclass property
+        probeClass(EntityBaseNoAnnotation::class).let {
             assertFalse(it.isEntity)
             assertFalse(it.isBaseEntity)
             assertFalse(it.hasBoxStoreField)
             assertFalse(it.hasToOneRef)
             assertFalse(it.hasToManyRef)
             assertTrue(it.listFieldTypes.isEmpty())
+            assertEquals(EntityBaseWithRelations::class.java.canonicalName, it.superClass)
         }
-        // sets superclass property
+        // sets superclass property, adds interfaces if @Entity
         probeClass(EntitySub::class).let {
             assertNotNull(it.superClass)
             assertEquals(EntityBase::class.java.canonicalName, it.superClass)
+            assertFalse(it.interfaces.isEmpty())
         }
     }
 
