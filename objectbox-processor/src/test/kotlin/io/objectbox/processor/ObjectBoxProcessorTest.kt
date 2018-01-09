@@ -587,6 +587,76 @@ class ObjectBoxProcessorTest {
     }
 
     @Test
+    fun testInheritanceBetweenEntities() {
+        // tests if both entities are used, properties from super @Entity class are inherited, the interface is ignored
+        val nameSuper = "InheritanceEntity"
+        val nameSub = "InheritanceSubEntity"
+        val nameInterface = "InheritanceInterface"
+
+        val environment = TestEnvironment("inheritance-entities.json")
+
+        val compilation = environment.compile(nameSuper, nameSub, nameInterface)
+        CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
+
+        // assert schema
+        val schema = environment.schema
+        assertThat(schema).isNotNull()
+        assertThat(schema.entities).hasSize(2)
+
+        // assert entity
+        val schemaEntity = schema.entities.find { it.className == nameSuper }
+        assertThat(schemaEntity!!.properties.size).isEqualTo(2)
+        for (prop in schemaEntity.properties) {
+            when (prop.propertyName) {
+                "id" -> {
+                    assertThat(prop.isPrimaryKey).isTrue()
+                    assertPrimitiveType(prop, PropertyType.Long)
+                }
+                "simpleString" -> assertType(prop, PropertyType.String)
+                else -> fail("Found stray field '${prop.propertyName}' in schema.")
+            }
+        }
+
+        val schemaEntity2 = schema.entities.find { it.className == nameSub }
+        assertThat(schemaEntity2!!.properties.size).isEqualTo(3)
+        for (prop in schemaEntity2.properties) {
+            when (prop.propertyName) {
+                "id" -> {
+                    assertThat(prop.isPrimaryKey).isTrue()
+                    assertPrimitiveType(prop, PropertyType.Long)
+                }
+                "simpleString" -> assertType(prop, PropertyType.String)
+                "subString" -> assertType(prop, PropertyType.String)
+                else -> fail("Found stray field '${prop.propertyName}' in schema.")
+            }
+        }
+
+        // assert model
+        val model = environment.readModel()
+
+        val modelEntity = model.findEntity(nameSuper, null)
+        assertThat(modelEntity).isNotNull()
+        val modelProperties = modelEntity!!.properties
+        assertThat(modelProperties.size).isEqualTo(2)
+        val modelPropertyNames = listOf(
+                "id",
+                "simpleString"
+        )
+        modelProperties
+                .filterNot { modelPropertyNames.contains(it.name) }
+                .forEach { fail("Found stray property '${it.name}' in model file.") }
+
+        val modelEntity2 = model.findEntity(nameSub, null)
+        assertThat(modelEntity2).isNotNull()
+        val modelProperties2 = modelEntity2!!.properties
+        assertThat(modelProperties2.size).isEqualTo(3)
+        val modelPropertyNames2 = modelPropertyNames.plus("subString")
+        modelProperties2
+                .filterNot { modelPropertyNames2.contains(it.name) }
+                .forEach { fail("Found stray property '${it.name}' in model file.") }
+    }
+
+    @Test
     fun testInheritanceOverriddenField() {
         // tests that adding a duplicate property results in an error (and no crash)
         val nameBase = "InheritanceBase"
