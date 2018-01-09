@@ -1,7 +1,6 @@
 package io.objectbox.gradle.transform
 
 import io.objectbox.gradle.GradleBuildTracker
-import org.gradle.api.Project
 import java.io.File
 
 class ObjectBoxJavaTransform(val debug: Boolean) {

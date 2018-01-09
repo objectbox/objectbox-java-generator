@@ -1,5 +1,6 @@
 package io.objectbox.processor
 
+import io.objectbox.annotation.BaseEntity
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.NameInDb
 import io.objectbox.annotation.Uid
@@ -17,6 +18,7 @@ import javax.annotation.processing.ProcessingEnvironment
 import javax.annotation.processing.RoundEnvironment
 import javax.lang.model.SourceVersion
 import javax.lang.model.element.Element
+import javax.lang.model.element.ElementKind
 import javax.lang.model.element.TypeElement
 import javax.lang.model.element.VariableElement
 import javax.lang.model.util.ElementFilter
@@ -148,7 +150,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         val schema = Schema("default", 1, defaultJavaPackage)
 
         for (entity in entities) {
-            parseEntity(schema, relations, entity)
+            parseEntity(env.rootElements, schema, relations, entity)
         }
 
         if (!relations.resolve(schema)) {
@@ -195,7 +197,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         )
     }
 
-    private fun parseEntity(schema: Schema, relations: Relations, entity: Element) {
+    private fun parseEntity(rootElements: Set<Element>, schema: Schema, relations: Relations, entity: Element) {
         val name = entity.simpleName.toString()
         if (debug) messages.debug("Parsing entity $name...")
         val entityModel = schema.addEntity(name)
@@ -221,15 +223,11 @@ open class ObjectBoxProcessor : AbstractProcessor() {
             entityModel.modelUid = uid
         }
 
-        // parse properties
-        val properties = Properties(elementUtils, typeUtils, messages, relations, entityModel, entity)
-        properties.parseFields()
-
-        val hasBoxStoreField = properties.hasBoxStoreField()
-        entityModel.hasBoxStoreField = hasBoxStoreField
+        // properties
+        parseProperties(rootElements, relations, entityModel, entity)
 
         // if not added automatically and relations are used, ensure there is a box store field
-        if (!transformationEnabled && relations.hasRelations(entityModel) && !hasBoxStoreField) {
+        if (!transformationEnabled && relations.hasRelations(entityModel) && !entityModel.hasBoxStoreField) {
             messages.error("To use relations in '${entityModel.className}' " +
                     "add a field '__boxStore' of type 'BoxStore'.", entity)
         }
@@ -239,6 +237,34 @@ open class ObjectBoxProcessor : AbstractProcessor() {
 
         // signal if a constructor will be available
         entityModel.isConstructors = hasAllArgsConstructor(entity, entityModel)
+    }
+
+    private fun parseProperties(rootElements: Set<Element>, relations: Relations, entityModel: io.objectbox.generator.model.Entity, entity: Element) {
+        // get properties starting with root supertype to ensure constructor param order is as expected
+        // (from super class to subclass, then from first declared to last declared)
+
+        // walk up inheritance chain
+        val classSupertypes = typeUtils.directSupertypes(entity.asType()).mapNotNull { supertype ->
+            rootElements.find { typeUtils.isSameType(it.asType(), supertype) }
+        }
+        if (classSupertypes.isNotEmpty()) {
+            // if any, classes are listed before interfaces: so just check first one
+            val element = classSupertypes[0]
+            if (element.kind == ElementKind.CLASS) {
+                if (debug) messages.debug("Parsing super type of ${entity.simpleName}: ${element.simpleName}")
+                parseProperties(rootElements, relations, entityModel, element)
+            }
+        }
+
+        // only include properties for classes with @Entity or @BaseEntity
+        if (entity.getAnnotation(Entity::class.java) != null || entity.getAnnotation(BaseEntity::class.java) != null) {
+            // parse properties
+            val properties = Properties(elementUtils, typeUtils, messages, relations, entityModel, entity)
+            properties.parseFields()
+
+            val hasBoxStoreField = properties.hasBoxStoreField()
+            entityModel.hasBoxStoreField = entityModel.hasBoxStoreField || hasBoxStoreField // keep true value
+        }
     }
 
     /**

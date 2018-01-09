@@ -7,7 +7,7 @@ import java.io.DataInputStream
 import java.io.File
 
 
-class ClassProber() {
+class ClassProber {
 
     fun probeClass(file: File): ProbedClass {
         try {
@@ -15,31 +15,43 @@ class ClassProber() {
                 val classFile = ClassFile(it)
                 val name = classFile.name
                 val javaPackage = name.substringBeforeLast('.', "")
-                if (!classFile.isAbstract) {
-                    if (ClassConst.cursorClass == classFile.superclass) {
-                        return ProbedClass(file = file, name = name, javaPackage = javaPackage, isCursor = true)
-                    } else {
-                        var annotation = classFile.exGetAnnotation(ClassConst.entityAnnotationName)
-                        if (annotation != null) {
-                            @Suppress("UNCHECKED_CAST")
-                            val fields = classFile.fields as List<FieldInfo>
-                            return ProbedClass(
-                                    file = file,
-                                    name = name,
-                                    javaPackage = javaPackage,
-                                    isEntity = true,
-                                    listFieldTypes = extractAllListTypes(fields),
-                                    hasBoxStoreField = fields.any { it.name == ClassConst.boxStoreFieldName },
-                                    hasToOneRef = hasClassRef(classFile, ClassConst.toOne, ClassConst.toOneDescriptor),
-                                    hasToManyRef = hasClassRef(classFile, ClassConst.toMany, ClassConst.toManyDescriptor)
-                            )
-                        }
-                    }
+
+                // Cursor class
+                if (!classFile.isAbstract && ClassConst.cursorClass == classFile.superclass) {
+                    return ProbedClass(file = file, name = name, javaPackage = javaPackage, isCursor = true)
                 }
-                return ProbedClass(file = file, name = name, javaPackage = javaPackage,
-                        isEntityInfo = classFile.interfaces.any { it == ClassConst.entityInfo })
+
+                // @Entity or @BaseEntity class
+                val entityAnnotation = classFile.exGetAnnotation(ClassConst.entityAnnotationName)
+                val isEntity = !classFile.isAbstract && entityAnnotation != null
+                val isBaseEntity = classFile.exGetAnnotation(ClassConst.baseEntityAnnotationName) != null
+                if (isEntity || isBaseEntity) {
+                    @Suppress("UNCHECKED_CAST") val fields = classFile.fields as List<FieldInfo>
+                    return ProbedClass(
+                            file = file,
+                            name = name,
+                            superClass = classFile.superclass,
+                            javaPackage = javaPackage,
+                            isEntity = isEntity,
+                            isBaseEntity = !isEntity,
+                            listFieldTypes = extractAllListTypes(fields),
+                            hasBoxStoreField = fields.any { it.name == ClassConst.boxStoreFieldName },
+                            hasToOneRef = hasClassRef(classFile, ClassConst.toOne, ClassConst.toOneDescriptor),
+                            hasToManyRef = hasClassRef(classFile, ClassConst.toMany, ClassConst.toManyDescriptor),
+                            interfaces = if (isEntity) classFile.interfaces.toList() else listOf()
+                    )
+                }
+
+                // non-@BaseEntity entity super class, EntityInfo class, any other class
+                return ProbedClass(
+                        file = file,
+                        name = name,
+                        superClass = classFile.superclass,
+                        javaPackage = javaPackage,
+                        isEntityInfo = classFile.interfaces.any { it == ClassConst.entityInfo }
+                )
             }
-        } catch(e: Exception) {
+        } catch (e: Exception) {
             val msg = "Could not probe class file \"${file.absolutePath}\""
             throw TransformException(msg, e)
         }

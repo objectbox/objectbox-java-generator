@@ -143,7 +143,13 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
         // may be a parameterized type like List<CustomType>, so erase any type parameters
         val customType = typeUtils.erasure(field.asType())
 
-        val propertyBuilder = entityModel.addProperty(propertyType, field.simpleName.toString())
+        val propertyBuilder: Property.PropertyBuilder
+        try {
+            propertyBuilder = entityModel.addProperty(propertyType, field.simpleName.toString())
+        } catch (e: RuntimeException) {
+            messages.error("Could not add field: ${e.message}")
+            return null
+        }
         propertyBuilder.customType(customType.toString(), converter.toString())
         // note: custom types are already assumed non-primitive by Property#isNonPrimitiveType()
         return propertyBuilder
@@ -158,7 +164,13 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
             return null
         }
 
-        val propertyBuilder = entityModel.addProperty(propertyType, field.simpleName.toString())
+        val propertyBuilder: Property.PropertyBuilder
+        try {
+            propertyBuilder = entityModel.addProperty(propertyType, field.simpleName.toString())
+        } catch (e: RuntimeException) {
+            messages.error("Could not add field: ${e.message}")
+            return null
+        }
 
         val isPrimitive = typeMirror.kind.isPrimitive
         if (isPrimitive) {
