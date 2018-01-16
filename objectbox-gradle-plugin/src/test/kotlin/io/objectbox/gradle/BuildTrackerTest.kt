@@ -51,7 +51,7 @@ class BuildTrackerTest {
         val distinctId = properties["distinct_id"] as String
         assertEquals(analytics.hashBase64WithoutPadding(aid), properties["AAID"])
         assertEquals(toolName, properties["Tool"])
-        assertEquals(ProjectEnv.Const.objectBoxVersion, properties["Version"])
+        assertEquals(ProjectEnv.Const.pluginVersion, properties["Version"])
 
         val analytics2 = spy(GradleBuildTracker(toolName))
         assertEquals(distinctId, analytics2.uniqueIdentifier())
@@ -67,7 +67,7 @@ class BuildTrackerTest {
         @Suppress("UNCHECKED_CAST")
         val properties = json["properties"] as Map<String, Any>
 
-        assertEquals(ProjectEnv.Const.objectBoxVersion, properties["Version"])
+        assertEquals(ProjectEnv.Const.pluginVersion, properties["Version"])
 
         val exStack = properties["ExStack"] as String
         assertTrue(exStack, exStack.contains("Banana"))
@@ -81,7 +81,7 @@ class BuildTrackerTest {
     }
 
     private fun parseJsonAndAssertBasics(eventData: String, expectedEvent:String): Map<String, Any> {
-        val parameterizedType = Types.newParameterizedType(Map::class.java, String::class.java, Any::class.java);
+        val parameterizedType = Types.newParameterizedType(Map::class.java, String::class.java, Any::class.java)
         val adapter = Moshi.Builder().build().adapter<Map<String, Any>>(parameterizedType)
         val json = adapter.fromJson(eventData)
 

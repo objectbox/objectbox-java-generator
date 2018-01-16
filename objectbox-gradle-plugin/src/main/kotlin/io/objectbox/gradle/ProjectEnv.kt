@@ -8,14 +8,21 @@ class ProjectEnv(val project: Project) {
     object Const {
         const val name: String = "objectbox"
         const val packageName: String = "io/objectbox"
-        val objectBoxVersion: String by lazy {
+        private val properties: Properties by lazy {
             val properties = Properties()
             val stream = javaClass.getResourceAsStream("/${Const.packageName}/gradle/version.properties")
             stream?.use {
                 properties.load(it)
             }
+            properties
+        }
+        val pluginVersion: String by lazy {
             properties.getProperty("version").nullIfBlank()
-                    ?: throw RuntimeException("Version unavailable (bad Gradle build?)")
+                    ?: throw RuntimeException("Plugin version unavailable (bad Gradle build?)")
+        }
+        val runtimeVersion: String by lazy {
+            properties.getProperty("version-runtime").nullIfBlank()
+                    ?: throw RuntimeException("Runtime version unavailable (bad Gradle build?)")
         }
     }
 
@@ -31,10 +38,6 @@ class ProjectEnv(val project: Project) {
     val hasKotlinAndroidPlugin = project.plugins.hasPlugin("kotlin-android")
     val hasKotlinPlugin = project.plugins.hasPlugin("kotlin")
     val hasJavaPlugin = project.plugins.hasPlugin("java")
-
-    val objectBoxVersion: String by lazy {
-        Const.objectBoxVersion
-    }
 
     /**
      * See https://developer.android.com/studio/build/gradle-plugin-3-0-0-migration.html#new_configurations and

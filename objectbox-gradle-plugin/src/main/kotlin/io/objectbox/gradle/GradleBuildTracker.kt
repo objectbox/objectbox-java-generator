@@ -5,7 +5,6 @@ import com.android.build.gradle.AppPlugin
 import com.android.build.gradle.LibraryExtension
 import com.android.build.gradle.LibraryPlugin
 import io.objectbox.build.BasicBuildTracker
-import org.gradle.api.Project
 import org.gradle.api.plugins.ExtensionContainer
 import kotlin.reflect.KClass
 
@@ -16,7 +15,7 @@ import kotlin.reflect.KClass
 open class GradleBuildTracker(toolName: String) : BasicBuildTracker(toolName) {
 
     override fun version(): String? {
-        return ProjectEnv.Const.objectBoxVersion
+        return ProjectEnv.Const.pluginVersion
     }
 
     fun trackBuild(env: ProjectEnv) {
@@ -43,7 +42,7 @@ open class GradleBuildTracker(toolName: String) : BasicBuildTracker(toolName) {
         val hasKotlinPlugin = env.hasKotlinAndroidPlugin || env.hasKotlinPlugin
         event.key("Kotlin").value(hasKotlinPlugin.toString()).comma()
         event.key("Java").value(env.hasJavaPlugin.toString()).comma()
-        event.key("Version").value(env.objectBoxVersion).comma()
+        event.key("Version").value(ProjectEnv.Const.pluginVersion).comma()
         event.key("Target").value(if (env.hasAndroidPlugin) "Android" else "Other")
         return event.toString()
     }
