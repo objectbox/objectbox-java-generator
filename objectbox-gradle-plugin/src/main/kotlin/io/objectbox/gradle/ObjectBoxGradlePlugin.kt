@@ -139,7 +139,7 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
 
     private fun addDependenciesAnnotationProcessor(env: ProjectEnv) {
         // Does not seem to work with Android projects; project should do that themselves:
-        val processorDep = "io.objectbox:objectbox-processor:${env.objectBoxVersion}"
+        val processorDep = "io.objectbox:objectbox-processor:${ProjectEnv.Const.pluginVersion}"
         val project = env.project
         if (project.configurations.findByName("kapt") != null) {
             project.dependencies.add("kapt", processorDep)
@@ -161,8 +161,7 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
     }
 
     private fun addDependencies(env: ProjectEnv) {
-        val pluginVersion = env.objectBoxVersion
-        val runtimeVersion = pluginVersion
+        val runtimeVersion = ProjectEnv.Const.runtimeVersion
         val depScope = env.dependencyScopeApiOrCompile
         val project = env.project
         if (env.hasKotlinPlugin) {
