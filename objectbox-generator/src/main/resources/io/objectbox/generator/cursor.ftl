@@ -130,18 +130,7 @@ ${propertyCollector}
     </#if>
 </#if>
 <#list entity.toManyRelations as toMany>
-        List<${toMany.targetEntity.className}> ${toMany.name} = entity.${toMany.valueExpression};
-        if (${toMany.name} instanceof ToMany) {
-            ToMany<${toMany.targetEntity.className}> toMany = (ToMany<${toMany.targetEntity.className}>) ${toMany.name};
-            if (toMany.internalCheckApplyToDbRequired()) {
-                Cursor<${toMany.targetEntity.className}> targetCursor = getRelationTargetCursor(${toMany.targetEntity.className}.class);
-                try {
-                    toMany.internalApplyToDb(this, targetCursor);
-                } finally {
-                    targetCursor.close();
-                }
-            }
-        }
+        checkApplyToManyToDb(entity.${toMany.valueExpression}, ${toMany.targetEntity.className}.class);
 </#list>
         return __assignedId;
     }
