@@ -78,9 +78,6 @@ public final class ${entity.classNameDao} extends Cursor<${entity.className}> {
 <#list entity.properties as property><#if property.customType?has_content><#--
 -->    private final ${property.converterClassName} ${property.propertyName}Converter = new ${property.converterClassName}();
 </#if></#list>
-<#list entity.incomingToManyRelations as toMany>
-    // TODO private Query<${toMany.targetEntity.className}> ${toMany.sourceEntity.className?uncap_first}_${toMany.name?cap_first}Query;
-</#list>
 
 <#-- Property IDs get verified in Cursor base class -->
 <#list entity.properties as property>
@@ -152,7 +149,7 @@ ${propertyCollector}
 <#if entity.active && !entity.hasBoxStoreField>
     private void attachEntity(${entity.className} entity) {
         // Transformer will create __boxStore field in entity and init it here:
-        //entity.__boxStore = boxStoreForEntities;
+        // entity.__boxStore = boxStoreForEntities;
     }
 
 </#if>
