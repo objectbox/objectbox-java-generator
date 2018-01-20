@@ -51,18 +51,7 @@ public final class ToManyStandaloneCursor extends Cursor<ToManyStandalone> {
         entity.id = __assignedId;
 
         attachEntity(entity);
-        List<IdEntity> children = entity.children;
-        if (children instanceof ToMany) {
-            ToMany<IdEntity> toMany = (ToMany<IdEntity>) children;
-            if (toMany.internalCheckApplyToDbRequired()) {
-                Cursor<IdEntity> targetCursor = getRelationTargetCursor(IdEntity.class);
-                try {
-                    toMany.internalApplyToDb(this, targetCursor);
-                } finally {
-                    targetCursor.close();
-                }
-            }
-        }
+        checkApplyToManyToDb(entity.children, IdEntity.class);
         return __assignedId;
     }
 

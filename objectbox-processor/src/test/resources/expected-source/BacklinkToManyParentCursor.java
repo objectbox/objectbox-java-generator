@@ -51,18 +51,7 @@ public final class BacklinkToManyParentCursor extends Cursor<BacklinkToManyParen
         entity.id = __assignedId;
 
         entity.__boxStore = boxStoreForEntities;
-        List<BacklinkToManyChild> children = entity.children;
-        if (children instanceof ToMany) {
-            ToMany<BacklinkToManyChild> toMany = (ToMany<BacklinkToManyChild>) children;
-            if (toMany.internalCheckApplyToDbRequired()) {
-                Cursor<BacklinkToManyChild> targetCursor = getRelationTargetCursor(BacklinkToManyChild.class);
-                try {
-                    toMany.internalApplyToDb(this, targetCursor);
-                } finally {
-                    targetCursor.close();
-                }
-            }
-        }
+        checkApplyToManyToDb(entity.children, BacklinkToManyChild.class);
         return __assignedId;
     }
 
