@@ -1,5 +1,7 @@
 apply plugin: 'kotlin'
 apply plugin: 'maven'
+apply plugin: 'de.fuerstenau.buildconfig'
+apply plugin: 'idea' // to pick up generated BuildConfig in IntelliJ
 
 group = 'io.objectbox'
 archivesBaseName = 'objectbox-code-modifier'
@@ -19,6 +21,11 @@ dependencies {
     testCompile 'junit:junit:4.12'
     testCompile 'org.mockito:mockito-core:2.7.22'
     testCompile 'com.natpryce:hamkrest:1.4.0.0'
+}
+
+buildConfig {
+    // rename to avoid conflict with other build config files (modules use same root package)
+    clsName = 'CodeModifierBuildConfig'
 }
 
 task javadocJar(type: Jar) {
