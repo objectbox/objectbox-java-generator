@@ -24,6 +24,8 @@ import io.objectbox.annotation.NameInDb
 import io.objectbox.annotation.Uid
 import io.objectbox.build.BasicBuildTracker
 import io.objectbox.generator.BoxGenerator
+import io.objectbox.generator.GeneratorJob
+import io.objectbox.generator.GeneratorOutput
 import io.objectbox.generator.idsync.IdSync
 import io.objectbox.generator.idsync.IdSyncException
 import io.objectbox.generator.model.Property
@@ -187,7 +189,9 @@ open class ObjectBoxProcessor : AbstractProcessor() {
 
         var completed = false
         try {
-            BoxGenerator(daoCompat).generateAll(schema, filer)
+            val job = GeneratorJob(schema, GeneratorOutput.create(filer))
+            job.isDaoCompat = daoCompat
+            BoxGenerator().generateAll(job)
             completed = true
         } catch (e: Exception) {
             messages.error("Code generation failed: ${e.message}")

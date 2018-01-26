@@ -30,25 +30,29 @@ import javax.tools.JavaFileObject;
  * Abstraction for output used by {@link io.objectbox.generator.BoxGenerator}.
  * Can refer to a directory or a annotation processor Filer.
  */
-class GeneratorOutput {
+public class GeneratorOutput {
+    public static GeneratorOutput create(String outDir) throws IOException {
+        return create(toFileForceExists(outDir));
+    }
+
+    public static GeneratorOutput create(File outDirFile) {
+        return new GeneratorOutput(null, outDirFile);
+    }
+
+    public static GeneratorOutput create(Filer filer) {
+        return new GeneratorOutput(filer, null);
+    }
+
     final Filer filer;
     final File outDirFile;
 
-    GeneratorOutput(Filer filer) {
+    private GeneratorOutput(Filer filer, File outDirFile) {
         this.filer = filer;
-        this.outDirFile = null;
-    }
-
-    GeneratorOutput(File outDirFile) {
-        this.filer = null;
         this.outDirFile = outDirFile;
     }
 
-    GeneratorOutput(String outDir) throws IOException {
-        this(toFileForceExists(outDir));
-    }
 
-    Writer createWriter(String javaPackage, String javaClassName) throws IOException {
+    protected Writer createWriter(String javaPackage, String javaClassName) throws IOException {
         if (outDirFile != null) {
             return new FileWriter(getFileOrNull(javaPackage, javaClassName));
         } else if (filer != null) {
@@ -60,7 +64,7 @@ class GeneratorOutput {
         }
     }
 
-    File getFileOrNull(String javaPackage, String javaClassName) {
+    protected File getFileOrNull(String javaPackage, String javaClassName) {
         if (outDirFile != null) {
             File file = toJavaFilename(outDirFile, javaPackage, javaClassName);
             //noinspection ResultOfMethodCallIgnored

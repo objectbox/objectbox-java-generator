@@ -42,8 +42,6 @@ import io.objectbox.generator.model.Schema;
 
 /**
  * Once you have your model created, use this class to generate box cursors as required by ObjectBox.
- *
- * @author Markus
  */
 public class BoxGenerator {
 
@@ -62,18 +60,10 @@ public class BoxGenerator {
     private final Template templateEntityInfo;
     private final Template templateBoxUnitTest;
 
-    private boolean daoCompat;
-
     public BoxGenerator() throws IOException {
-        this(false);
-    }
-
-    public BoxGenerator(boolean daoCompat) throws IOException {
         System.out.println("ObjectBox Generator");
-        System.out.println("Copyright 2017 Markus Junginger, objectbox.io. Licensed under GPL V3.");
+        System.out.println("Copyright 2017-2018 ObjectBox Ltd, objectbox.io. Licensed under GPL V3.");
         System.out.println("This program comes with ABSOLUTELY NO WARRANTY");
-
-        this.daoCompat = daoCompat;
 
         patternKeepIncludes = compilePattern("INCLUDES");
         patternKeepFields = compilePattern("FIELDS");
@@ -120,15 +110,23 @@ public class BoxGenerator {
                 + " END.*?\n", flags);
     }
 
-    /** Generates all entities and DAOs for the given schema. */
+    /** Generates all classes and other artifacts for the schema into the given directory. */
     public void generateAll(Schema schema, String outDir) throws Exception {
-        generateAll(schema, new GeneratorOutput(outDir), null);
+        GeneratorJob job = new GeneratorJob(schema, GeneratorOutput.create(outDir));
+        generateAll(job);
     }
 
-    /** Generates all entities and DAOs for the given schema. */
-    public void generateAll(Schema schema, GeneratorOutput output, GeneratorOutput outputTest) throws Exception {
+    /** Generates all classes and other artifacts for the schema using the given Filer (annotation processing). */
+    public void generateAll(Schema schema, Filer filer) throws Exception {
+        GeneratorJob job = new GeneratorJob(schema, GeneratorOutput.create(filer));
+        generateAll(job);
+    }
+
+    /** Generates all classes and other artifacts for the given job. */
+    public void generateAll(GeneratorJob job) throws Exception {
         long start = System.currentTimeMillis();
 
+        Schema schema = job.getSchema();
         List<Entity> entities = schema.getEntities();
         for (Entity entity : entities) {
             if (entity.getClassNameDao() == null) {
@@ -141,8 +139,9 @@ public class BoxGenerator {
 
         System.out.println("Processing schema version " + schema.getVersion() + "...");
 
+        GeneratorOutput output = job.getOutput();
         for (Entity entity : entities) {
-            Map<String, Object> additionalData = createAdditionalDataForCursor(schema, entity);
+            Map<String, Object> additionalData = createAdditionalDataForCursor(entity);
             generate(templateCursor, output, entity.getJavaPackageDao(), entity.getClassNameDao(), schema, entity,
                     additionalData);
             if (!entity.isProtobuf() && !entity.isSkipGeneration()) {
@@ -150,6 +149,7 @@ public class BoxGenerator {
             }
             generate(templateEntityInfo, output, entity.getJavaPackageDao(), entity.getClassName() + "_",
                     schema, entity);
+            GeneratorOutput outputTest = job.getOutputTest();
             if (outputTest != null && !entity.isSkipGenerationTest()) {
                 String javaPackageTest = entity.getJavaPackageTest();
                 String classNameTest = entity.getClassNameTest();
@@ -164,7 +164,7 @@ public class BoxGenerator {
         generate(templateMyObjectBox, output, schema.getDefaultJavaPackageDao(),
                 "My" + schema.getPrefix() + "ObjectBox", schema, null);
 
-        if (daoCompat) {
+        if (job.isDaoCompat()) {
             // generate DAO classes
             for (Entity entity : entities) {
                 // change Dao class name
@@ -178,10 +178,6 @@ public class BoxGenerator {
 
         long time = System.currentTimeMillis() - start;
         System.out.println("Processed " + entities.size() + " entities in " + time + "ms");
-    }
-
-    public void generateAll(Schema schema, Filer filer) throws Exception {
-        generateAll(schema, new GeneratorOutput(filer), null);
     }
 
     private Map<PropertyType, String> propertyToDbTypes() {
@@ -200,7 +196,7 @@ public class BoxGenerator {
         return map;
     }
 
-    private Map<String, Object> createAdditionalDataForCursor(Schema schema, Entity entity) {
+    private Map<String, Object> createAdditionalDataForCursor(Entity entity) {
         final HashMap<String, Object> map = new HashMap<>();
         map.put("propertyCollector", new PropertyCollector(entity).createPropertyCollector());
         return map;
