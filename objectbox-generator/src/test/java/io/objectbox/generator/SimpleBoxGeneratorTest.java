@@ -18,26 +18,26 @@
 
 package io.objectbox.generator;
 
-import io.objectbox.generator.model.Entity;
-import io.objectbox.generator.model.Property;
-import io.objectbox.generator.model.Schema;
-
+import org.greenrobot.essentials.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.File;
 
-import org.greenrobot.essentials.io.FileUtils;
+import io.objectbox.generator.model.Entity;
+import io.objectbox.generator.model.Property;
+import io.objectbox.generator.model.Schema;
 
 import static org.junit.Assert.*;
 
+@SuppressWarnings("ResultOfMethodCallIgnored")
 public class SimpleBoxGeneratorTest {
 
     @Test
     public void testMinimalSchema() throws Exception {
         Schema schema = new Schema(1, "io.objectbox.test.minimalbox");
         Entity miniEntity = schema.addEntity("MiniBox");
-        miniEntity.addIdProperty().getProperty();
+        miniEntity.addIdProperty();
         miniEntity.addIntProperty("count").index();
         miniEntity.addIntProperty("dummy").notNull();
         assertEquals(1, schema.getEntities().size());
@@ -47,12 +47,8 @@ public class SimpleBoxGeneratorTest {
         outputDir.mkdirs();
 
         String baseName = "io/objectbox/test/minimalbox/" + miniEntity.getClassName();
-        File cursorFile = new File(outputDir, baseName + "Cursor.java");
-        cursorFile.delete();
-        assertFalse(cursorFile.exists());
-        File propertiesFile = new File(outputDir, baseName + "_.java");
-        propertiesFile.delete();
-        assertFalse(propertiesFile.exists());
+        File cursorFile = fileDeleteIfExists(outputDir, baseName + "Cursor.java");
+        File entityInfoFile = fileDeleteIfExists(outputDir, baseName + "_.java");
 
         assignIdsUids(schema);
         new BoxGenerator().generateAll(schema, outputDir.getPath());
@@ -69,11 +65,18 @@ public class SimpleBoxGeneratorTest {
         assertEquals(-1, cursorContentLower.indexOf("sql"));
 
         // Assert Properties file
-        assertTrue(propertiesFile.toString(), propertiesFile.exists());
-        final String propertiesContent = FileUtils.readUtf8(propertiesFile);
+        assertTrue(entityInfoFile.toString(), entityInfoFile.exists());
+        final String propertiesContent = FileUtils.readUtf8(entityInfoFile);
         assertContains(propertiesContent, "class " + miniEntity.getClassName() + "_");
         assertContains(propertiesContent, "__ALL_PROPERTIES");
         assertContains(propertiesContent, "getAllProperties()");
+    }
+
+    private File fileDeleteIfExists(File outputDir, String fileName) {
+        File file = new File(outputDir, fileName);
+        file.delete();
+        assertFalse(file.exists());
+        return file;
     }
 
     private void assignIdsUids(Schema schema) {
@@ -89,7 +92,7 @@ public class SimpleBoxGeneratorTest {
     public void testSchemaWithTwoCollects() throws Exception {
         Schema schema = new Schema(1, "io.objectbox.test.multicollect");
         Entity multiCollectEntity = schema.addEntity("MultiCollectBox");
-        multiCollectEntity.addIdProperty().getProperty();
+        multiCollectEntity.addIdProperty();
         multiCollectEntity.addFloatProperty("foo").index();
         multiCollectEntity.addFloatProperty("bar").notNull();
         multiCollectEntity.addFloatProperty("box");
@@ -99,9 +102,8 @@ public class SimpleBoxGeneratorTest {
         File outputDir = new File("build/test-out");
         outputDir.mkdirs();
 
-        File cursorFile = new File(outputDir, "io/objectbox/test/multicollect/" + multiCollectEntity.getClassName() + "Cursor.java");
-        cursorFile.delete();
-        assertFalse(cursorFile.exists());
+        String fileNameCursor = "io/objectbox/test/multicollect/" + multiCollectEntity.getClassName() + "Cursor.java";
+        File cursorFile = fileDeleteIfExists(outputDir, fileNameCursor);
 
         assignIdsUids(schema);
         new BoxGenerator().generateAll(schema, outputDir.getPath());
@@ -116,7 +118,7 @@ public class SimpleBoxGeneratorTest {
     public void testSchemaWithTwoCollects_StringsBeforePrimitives() throws Exception {
         Schema schema = new Schema(1, "io.objectbox.test.multicollect");
         Entity multiCollectEntity = schema.addEntity("MultiCollectBox_StringsBeforePrimitives");
-        multiCollectEntity.addIdProperty().getProperty();
+        multiCollectEntity.addIdProperty();
         multiCollectEntity.addStringProperty("string1");
         multiCollectEntity.addStringProperty("string2");
         multiCollectEntity.addStringProperty("string3");
@@ -126,9 +128,8 @@ public class SimpleBoxGeneratorTest {
         File outputDir = new File("build/test-out");
         outputDir.mkdirs();
 
-        File cursorFile = new File(outputDir, "io/objectbox/test/multicollect/" + multiCollectEntity.getClassName() + "Cursor.java");
-        cursorFile.delete();
-        assertFalse(cursorFile.exists());
+        String fileNameCursor = "io/objectbox/test/multicollect/" + multiCollectEntity.getClassName() + "Cursor.java";
+        File cursorFile = fileDeleteIfExists(outputDir, fileNameCursor);
 
         assignIdsUids(schema);
         new BoxGenerator().generateAll(schema, outputDir.getPath());
@@ -171,7 +172,7 @@ public class SimpleBoxGeneratorTest {
     }
 
     @Test(expected = RuntimeException.class)
-    public void testInterfacesError() throws Exception {
+    public void testInterfacesError() {
         Schema schema = new Schema(1, "io.objectbox.test");
         Entity addressTable = schema.addEntity("FooBar");
         addressTable.implementsInterface("Dummy");
