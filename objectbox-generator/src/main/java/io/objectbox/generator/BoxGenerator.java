@@ -139,30 +139,29 @@ public class BoxGenerator {
 
         System.out.println("Processing schema version " + schema.getVersion() + "...");
 
-        GeneratorOutput output = job.getOutput();
         for (Entity entity : entities) {
             Map<String, Object> additionalData = createAdditionalDataForCursor(entity);
-            generate(templateCursor, output, entity.getJavaPackageDao(), entity.getClassNameDao(), schema, entity,
-                    additionalData);
+            generate(templateCursor, job.getOutput(), entity.getJavaPackageDao(), entity.getClassNameDao(), schema,
+                    entity, additionalData);
             if (!entity.isProtobuf() && !entity.isSkipGeneration()) {
-                generate(templateEntity, output, entity.getJavaPackage(), entity.getClassName(), schema, entity);
+                generate(templateEntity, job, entity.getJavaPackage(), entity.getClassName(), entity);
             }
-            generate(templateEntityInfo, output, entity.getJavaPackageDao(), entity.getClassName() + "_",
-                    schema, entity);
+            generate(templateEntityInfo, job, entity.getJavaPackageDao(), entity.getClassName() + "_",
+                    entity);
             GeneratorOutput outputTest = job.getOutputTest();
             if (outputTest != null && !entity.isSkipGenerationTest()) {
                 String javaPackageTest = entity.getJavaPackageTest();
                 String classNameTest = entity.getClassNameTest();
                 File testFile = outputTest.getFileOrNull(javaPackageTest, classNameTest);
                 if (testFile != null && !testFile.exists()) {
-                    generate(templateBoxUnitTest, outputTest, javaPackageTest, classNameTest, schema, entity);
+                    generate(templateBoxUnitTest, outputTest, javaPackageTest, classNameTest, schema, entity, null);
                 } else {
                     System.out.println("Skipped " + (testFile != null ? testFile.getCanonicalPath() : classNameTest));
                 }
             }
         }
-        generate(templateMyObjectBox, output, schema.getDefaultJavaPackageDao(),
-                "My" + schema.getPrefix() + "ObjectBox", schema, null);
+        generate(templateMyObjectBox, job, schema.getDefaultJavaPackageDao(), "My" + schema.getPrefix() + "ObjectBox",
+                null);
 
         if (job.isDaoCompat()) {
             // generate DAO classes
@@ -170,10 +169,10 @@ public class BoxGenerator {
                 // change Dao class name
                 entity.setClassNameDao(entity.getClassName() + "Dao");
 
-                generate(templateDao, output, entity.getJavaPackageDao(), entity.getClassNameDao(), schema, entity);
+                generate(templateDao, job, entity.getJavaPackageDao(), entity.getClassNameDao(), entity);
             }
-            generate(templateDaoSession, output, schema.getDefaultJavaPackageDao(),
-                    schema.getPrefix() + "DaoSession", schema, null);
+            generate(templateDaoSession, job, schema.getDefaultJavaPackageDao(), schema.getPrefix() + "DaoSession",
+                    null);
         }
 
         long time = System.currentTimeMillis() - start;
@@ -203,9 +202,9 @@ public class BoxGenerator {
     }
 
 
-    private void generate(Template template, GeneratorOutput output, String javaPackage, String javaClassName, Schema schema,
-                          Entity entity) throws Exception {
-        generate(template, output, javaPackage, javaClassName, schema, entity, null);
+    private void generate(Template template, GeneratorJob job, String javaPackage, String javaClassName, Entity entity)
+            throws Exception {
+        generate(template, job.getOutput(), javaPackage, javaClassName, job.getSchema(), entity, null);
     }
 
     private void generate(Template template, GeneratorOutput output, String javaPackage, String javaClassName, Schema schema,
