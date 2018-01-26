@@ -21,7 +21,6 @@ package io.objectbox.generator;
 import org.greenrobot.essentials.io.FileUtils;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.EnumMap;
@@ -32,12 +31,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.annotation.processing.Filer;
-import javax.tools.JavaFileObject;
 
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateNotFoundException;
-
 import io.objectbox.generator.model.Entity;
 import io.objectbox.generator.model.InternalAccess;
 import io.objectbox.generator.model.PropertyType;
@@ -125,16 +122,12 @@ public class BoxGenerator {
 
     /** Generates all entities and DAOs for the given schema. */
     public void generateAll(Schema schema, String outDir) throws Exception {
-        generateAll(schema, outDir, null, null);
+        generateAll(schema, new GeneratorOutput(outDir), null);
     }
 
     /** Generates all entities and DAOs for the given schema. */
-    public void generateAll(Schema schema, String outDir, String outDirEntity, String outDirTest) throws Exception {
+    public void generateAll(Schema schema, GeneratorOutput output, GeneratorOutput outputTest) throws Exception {
         long start = System.currentTimeMillis();
-
-        File outDirFile = toFileForceExists(outDir);
-        File outDirEntityFile = outDirEntity != null ? toFileForceExists(outDirEntity) : outDirFile;
-        File outDirTestFile = outDirTest != null ? toFileForceExists(outDirTest) : null;
 
         List<Entity> entities = schema.getEntities();
         for (Entity entity : entities) {
@@ -150,25 +143,25 @@ public class BoxGenerator {
 
         for (Entity entity : entities) {
             Map<String, Object> additionalData = createAdditionalDataForCursor(schema, entity);
-            generate(templateCursor, outDirFile, entity.getJavaPackageDao(), entity.getClassNameDao(), schema, entity,
+            generate(templateCursor, output, entity.getJavaPackageDao(), entity.getClassNameDao(), schema, entity,
                     additionalData);
             if (!entity.isProtobuf() && !entity.isSkipGeneration()) {
-                generate(templateEntity, outDirEntityFile, entity.getJavaPackage(), entity.getClassName(), schema, entity);
+                generate(templateEntity, output, entity.getJavaPackage(), entity.getClassName(), schema, entity);
             }
-            generate(templateEntityInfo, outDirFile, entity.getJavaPackageDao(), entity.getClassName() + "_",
+            generate(templateEntityInfo, output, entity.getJavaPackageDao(), entity.getClassName() + "_",
                     schema, entity);
-            if (outDirTestFile != null && !entity.isSkipGenerationTest()) {
+            if (outputTest != null && !entity.isSkipGenerationTest()) {
                 String javaPackageTest = entity.getJavaPackageTest();
                 String classNameTest = entity.getClassNameTest();
-                File javaFilename = toJavaFilename(outDirTestFile, javaPackageTest, classNameTest);
-                if (!javaFilename.exists()) {
-                    generate(templateBoxUnitTest, outDirTestFile, javaPackageTest, classNameTest, schema, entity);
+                File testFile = outputTest.getFileOrNull(javaPackageTest, classNameTest);
+                if (testFile != null && !testFile.exists()) {
+                    generate(templateBoxUnitTest, outputTest, javaPackageTest, classNameTest, schema, entity);
                 } else {
-                    System.out.println("Skipped " + javaFilename.getCanonicalPath());
+                    System.out.println("Skipped " + (testFile != null ? testFile.getCanonicalPath() : classNameTest));
                 }
             }
         }
-        generate(templateMyObjectBox, outDirFile, schema.getDefaultJavaPackageDao(),
+        generate(templateMyObjectBox, output, schema.getDefaultJavaPackageDao(),
                 "My" + schema.getPrefix() + "ObjectBox", schema, null);
 
         if (daoCompat) {
@@ -177,9 +170,9 @@ public class BoxGenerator {
                 // change Dao class name
                 entity.setClassNameDao(entity.getClassName() + "Dao");
 
-                generate(templateDao, outDirFile, entity.getJavaPackageDao(), entity.getClassNameDao(), schema, entity);
+                generate(templateDao, output, entity.getJavaPackageDao(), entity.getClassNameDao(), schema, entity);
             }
-            generate(templateDaoSession, outDirFile, schema.getDefaultJavaPackageDao(),
+            generate(templateDaoSession, output, schema.getDefaultJavaPackageDao(),
                     schema.getPrefix() + "DaoSession", schema, null);
         }
 
@@ -188,58 +181,7 @@ public class BoxGenerator {
     }
 
     public void generateAll(Schema schema, Filer filer) throws Exception {
-        long start = System.currentTimeMillis();
-
-        List<Entity> entities = schema.getEntities();
-        for (Entity entity : entities) {
-            if (entity.getClassNameDao() == null) {
-                entity.setClassNameDao(entity.getClassName() + "Cursor");
-            }
-        }
-
-        InternalAccess.setPropertyToDbType(schema, propertyToDbTypes());
-        InternalAccess.init2ndAnd3rdPass(schema);
-
-        System.out.println("Processing schema version " + schema.getVersion() + "...");
-
-        for (Entity entity : entities) {
-            Map<String, Object> additionalData = createAdditionalDataForCursor(schema, entity);
-            generate(templateCursor, filer, entity.getJavaPackageDao(), entity.getClassNameDao(), schema, entity,
-                    additionalData);
-            if (!entity.isProtobuf() && !entity.isSkipGeneration()) {
-                generate(templateEntity, filer, entity.getJavaPackage(), entity.getClassName(), schema, entity);
-            }
-            generate(templateEntityInfo, filer, entity.getJavaPackageDao(), entity.getClassName() + "_",
-                    schema, entity);
-            // TODO ut: can not generate tests, processor filer does not have access to test directory
-//            if (outDirTestFile != null && !entity.isSkipGenerationTest()) {
-//                String javaPackageTest = entity.getJavaPackageTest();
-//                String classNameTest = entity.getClassNameTest();
-//                File javaFilename = toJavaFilename(outDirTestFile, javaPackageTest, classNameTest);
-//                if (!javaFilename.exists()) {
-//                    generate(templateBoxUnitTest, outDirTestFile, javaPackageTest, classNameTest, schema, entity);
-//                } else {
-//                    System.out.println("Skipped " + javaFilename.getCanonicalPath());
-//                }
-//            }
-        }
-        generate(templateMyObjectBox, filer, schema.getDefaultJavaPackageDao(),
-                "My" + schema.getPrefix() + "ObjectBox", schema, null);
-
-        if (daoCompat) {
-            // generate DAO classes
-            for (Entity entity : entities) {
-                // change Dao class name
-                entity.setClassNameDao(entity.getClassName() + "Dao");
-
-                generate(templateDao, filer, entity.getJavaPackageDao(), entity.getClassNameDao(), schema, entity);
-            }
-            generate(templateDaoSession, filer, schema.getDefaultJavaPackageDao(),
-                    schema.getPrefix() + "DaoSession", schema, null);
-        }
-
-        long time = System.currentTimeMillis() - start;
-        System.out.println("Processed " + entities.size() + " entities in " + time + "ms");
+        generateAll(schema, new GeneratorOutput(filer), null);
     }
 
     private Map<PropertyType, String> propertyToDbTypes() {
@@ -264,22 +206,13 @@ public class BoxGenerator {
         return map;
     }
 
-    protected File toFileForceExists(String filename) throws IOException {
-        File file = new File(filename);
-        if (!file.exists()) {
-            throw new IOException(String.format("%s does not exist. " +
-                            "This check is to prevent accidental file generation into a wrong path. (resolved path=%s)",
-                    filename, file.getAbsolutePath()));
-        }
-        return file;
-    }
 
-    private void generate(Template template, File outDirFile, String javaPackage, String javaClassName, Schema schema,
+    private void generate(Template template, GeneratorOutput output, String javaPackage, String javaClassName, Schema schema,
                           Entity entity) throws Exception {
-        generate(template, outDirFile, javaPackage, javaClassName, schema, entity, null);
+        generate(template, output, javaPackage, javaClassName, schema, entity, null);
     }
 
-    private void generate(Template template, File outDirFile, String javaPackage, String javaClassName, Schema schema,
+    private void generate(Template template, GeneratorOutput output, String javaPackage, String javaClassName, Schema schema,
                           Entity entity, Map<String, Object> additionalObjectsForTemplate) throws Exception {
         Map<String, Object> root = new HashMap<>();
         root.put("schema", schema);
@@ -287,72 +220,32 @@ public class BoxGenerator {
         if (additionalObjectsForTemplate != null) {
             root.putAll(additionalObjectsForTemplate);
         }
+        String filePath = javaPackage + "." + javaClassName;
         try {
-            File file = toJavaFilename(outDirFile, javaPackage, javaClassName);
-            //noinspection ResultOfMethodCallIgnored
-            file.getParentFile().mkdirs();
-
-            if (entity != null && entity.getHasKeepSections()) {
-                checkKeepSections(file, root);
+            File file = output.getFileOrNull(javaPackage, javaClassName);
+            if (file != null) {
+                filePath = file.getCanonicalPath();
+                if (entity != null && entity.getHasKeepSections()) {
+                    checkKeepSections(file, root);
+                }
             }
 
-            Writer writer = new FileWriter(file);
+            Writer writer = output.createWriter(javaPackage, javaClassName);
             try {
                 template.process(root, writer);
                 writer.flush();
-                System.out.println("Written " + file.getCanonicalPath());
             } finally {
                 writer.close();
             }
+            System.out.println("Written " + filePath);
         } catch (Exception ex) {
             System.err.println("Data map for template: " + root);
-            System.err.println("Error while generating " + javaPackage + "." + javaClassName + " ("
-                    + outDirFile.getCanonicalPath() + ")");
+            System.err.println("Error while generating " + filePath);
             throw ex;
         }
     }
 
-    private void generate(Template template, Filer filer, String javaPackage, String javaClassName, Schema schema,
-            Entity entity) throws Exception {
-        generate(template, filer, javaPackage, javaClassName, schema, entity, null);
-    }
-
-    private void generate(Template template, Filer filer, String javaPackage, String javaClassName, Schema schema,
-            Entity entity, Map<String, Object> additionalObjectsForTemplate) throws Exception {
-        Map<String, Object> root = new HashMap<>();
-        root.put("schema", schema);
-        root.put("entity", entity);
-        if (additionalObjectsForTemplate != null) {
-            root.putAll(additionalObjectsForTemplate);
-        }
-
-        String fileName = javaPackage + "." + javaClassName;
-        try {
-            JavaFileObject sourceFile = filer.createSourceFile(fileName);
-
-            // TODO ut: keep section check for objectbox should not be needed
-//            if (entity != null && entity.getHasKeepSections()) {
-//                checkKeepSections(file, root);
-//            }
-
-            try (Writer writer = sourceFile.openWriter()) {
-                template.process(root, writer);
-                writer.flush();
-                System.out.println("Written " + sourceFile.getName());
-            } catch (Exception e) {
-                try {
-                    sourceFile.delete();
-                } catch (Exception ignored) {
-                }
-                throw e;
-            }
-        } catch (Exception ex) {
-            System.err.println("Data map for template: " + root);
-            System.err.println("Error while generating " + fileName);
-            throw ex;
-        }
-    }
-
+    /** Not really useful at the moment, future version may drop this completely. */
     private void checkKeepSections(File file, Map<String, Object> root) {
         if (file.exists()) {
             try {
@@ -376,12 +269,6 @@ public class BoxGenerator {
                 e.printStackTrace();
             }
         }
-    }
-
-    protected File toJavaFilename(File outDirFile, String javaPackage, String javaClassName) {
-        String packageSubPath = javaPackage.replace('.', '/');
-        File packagePath = new File(outDirFile, packageSubPath);
-        return new File(packagePath, javaClassName + ".java");
     }
 
 }
