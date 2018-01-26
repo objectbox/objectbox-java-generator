@@ -221,4 +221,23 @@ public class SimpleBoxGeneratorTest {
         assertContains(myBoxContent, ".indexId(1, 1100L)");
     }
 
+    @Test
+    public void testFbs() throws Exception {
+        Schema schema = new Schema(1, "io.objectbox.test.fbs");
+        Entity entity = schema.addEntity("Flaty");
+        entity.addIdProperty();
+        entity.addIntProperty("inty");
+        entity.addStringProperty("stringy");
+
+        File outputDir = new File("build/test-out");
+        outputDir.mkdirs();
+
+        assignIdsUids(schema);
+        GeneratorJob job = new GeneratorJob(schema, GeneratorOutput.create(outputDir));
+        File outputDirFbs = new File(outputDir, "fbs-src");
+        job.setOutputFlatbuffersSchema(GeneratorOutput.create(outputDirFbs));
+        new BoxGenerator().generateAll(job);
+    }
+
+
 }

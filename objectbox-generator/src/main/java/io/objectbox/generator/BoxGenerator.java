@@ -58,6 +58,7 @@ public class BoxGenerator {
     private final Template templateDaoSession;
     private final Template templateEntity;
     private final Template templateEntityInfo;
+    private final Template templateFlatbuffersSchema;
     private final Template templateBoxUnitTest;
 
     public BoxGenerator() throws IOException {
@@ -76,6 +77,7 @@ public class BoxGenerator {
         templateDaoSession = config.getTemplate("dao-session.ftl");
         templateEntity = config.getTemplate("entity.ftl");
         templateEntityInfo = config.getTemplate("entity-info.ftl");
+        templateFlatbuffersSchema = config.getTemplate("flatbuffers-schema.ftl");
         templateBoxUnitTest = config.getTemplate("box-unit-test.ftl");
     }
 
@@ -160,6 +162,10 @@ public class BoxGenerator {
                 }
             }
         }
+        if (job.getOutputFlatbuffersSchema() != null) {
+            generate(templateFlatbuffersSchema, job.getOutputFlatbuffersSchema(), schema.getDefaultJavaPackage(),
+                    "flatbuffers.fbs", job.getSchema(), null, null);
+        }
         generate(templateMyObjectBox, job, schema.getDefaultJavaPackageDao(), "My" + schema.getPrefix() + "ObjectBox",
                 null);
 
@@ -207,8 +213,9 @@ public class BoxGenerator {
         generate(template, job.getOutput(), javaPackage, javaClassName, job.getSchema(), entity, null);
     }
 
-    private void generate(Template template, GeneratorOutput output, String javaPackage, String javaClassName, Schema schema,
-                          Entity entity, Map<String, Object> additionalObjectsForTemplate) throws Exception {
+    private void generate(Template template, GeneratorOutput output, String javaPackage, String javaClassName,
+                          Schema schema, Entity entity, Map<String, Object> additionalObjectsForTemplate)
+            throws Exception {
         Map<String, Object> root = new HashMap<>();
         root.put("schema", schema);
         root.put("entity", entity);
