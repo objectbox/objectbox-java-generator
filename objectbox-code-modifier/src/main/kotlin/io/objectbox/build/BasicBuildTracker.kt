@@ -19,6 +19,7 @@
 package io.objectbox.build
 
 import com.squareup.moshi.JsonWriter
+import io.objectbox.CodeModifierBuildConfig
 import okio.Buffer
 import org.greenrobot.essentials.Base64
 import org.greenrobot.essentials.hash.Murmur3F
@@ -116,7 +117,7 @@ open class BasicBuildTracker(val toolName: String) {
         return event.toString()
     }
 
-    open protected fun version(): String? = "1.4.1" // TODO replace with generated property, or update frequently...
+    open protected fun version(): String? = CodeModifierBuildConfig.VERSION
 
     // public for tests in another module
     fun errorProperties(message: String?, throwable: Throwable?): String {

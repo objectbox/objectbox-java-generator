@@ -18,30 +18,14 @@
 
 package io.objectbox.gradle
 
-import io.objectbox.codemodifier.nullIfBlank
+import io.objectbox.GradlePluginBuildConfig
 import org.gradle.api.Project
-import java.util.*
 
 class ProjectEnv(val project: Project) {
     object Const {
         const val name: String = "objectbox"
-        const val packageName: String = "io/objectbox"
-        private val properties: Properties by lazy {
-            val properties = Properties()
-            val stream = javaClass.getResourceAsStream("/${Const.packageName}/gradle/version.properties")
-            stream?.use {
-                properties.load(it)
-            }
-            properties
-        }
-        val pluginVersion: String by lazy {
-            properties.getProperty("version").nullIfBlank()
-                    ?: throw RuntimeException("Plugin version unavailable (bad Gradle build?)")
-        }
-        val runtimeVersion: String by lazy {
-            properties.getProperty("version-runtime").nullIfBlank()
-                    ?: throw RuntimeException("Runtime version unavailable (bad Gradle build?)")
-        }
+        const val pluginVersion = GradlePluginBuildConfig.VERSION
+        const val runtimeVersion = GradlePluginBuildConfig.VERSION_RUNTIME
     }
 
     /** Note: Plugin extension, values only available after evaluation phase. */
