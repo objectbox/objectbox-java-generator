@@ -31,7 +31,7 @@ task sourcesJar(type: Jar) {
 
 artifacts {
     archives jar
-    // Not yet: archives sourcesJar
+    archives sourcesJar
 }
 
 uploadArchives {
