@@ -51,6 +51,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         val OPTION_MODEL_PATH: String = "objectbox.modelPath"
         val OPTION_DAO_COMPAT: String = "objectbox.daoCompat"
         val OPTION_DAO_PACKAGE: String = "objectbox.daoPackage"
+        val OPTION_FLATBUFFERS_SCHEMA_PATH: String = "objectbox.flatbuffersSchemaPath"
         val OPTION_DEBUG: String = "objectbox.debug"
         /** Set by ObjectBox plugin */
         val OPTION_TRANSFORMATION_ENABLED: String = "objectbox.transformationEnabled"
@@ -95,6 +96,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
     private var daoCompat: Boolean = false
     private var transformationEnabled: Boolean = false
     private var daoCompatPackage: String? = null
+    private var flatbuffersSchemaPath: String? = null
     private var debug: Boolean = false
     private var allowNumberedConstructorArgs: Boolean = false
 
@@ -110,6 +112,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         daoCompat = "true" == options[OPTION_DAO_COMPAT]
         debug = "true" == options[OPTION_DEBUG]
         daoCompatPackage = options[OPTION_DAO_PACKAGE]
+        flatbuffersSchemaPath = options[OPTION_FLATBUFFERS_SCHEMA_PATH]
         transformationEnabled = "false" != options[OPTION_TRANSFORMATION_ENABLED] // default true
         allowNumberedConstructorArgs = "false" != options[OPTION_ALLOW_NUMBERED_CONSTRUCTOR_ARGS] // default true
 
@@ -128,6 +131,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         options.add(OPTION_MODEL_PATH)
         options.add(OPTION_DAO_COMPAT)
         options.add(OPTION_DAO_PACKAGE)
+        options.add(OPTION_FLATBUFFERS_SCHEMA_PATH)
         options.add(OPTION_TRANSFORMATION_ENABLED)
         options.add(OPTION_DEBUG)
         options.add(OPTION_ALLOW_NUMBERED_CONSTRUCTOR_ARGS)
@@ -191,6 +195,9 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         try {
             val job = GeneratorJob(schema, GeneratorOutput.create(filer))
             job.isDaoCompat = daoCompat
+            flatbuffersSchemaPath?.let {
+                job.outputFlatbuffersSchema = GeneratorOutput.create(File(it))
+            }
             BoxGenerator().generateAll(job)
             completed = true
         } catch (e: Exception) {
