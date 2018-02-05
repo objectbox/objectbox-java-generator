@@ -143,8 +143,8 @@ public class BoxGenerator {
 
         for (Entity entity : entities) {
             Map<String, Object> additionalData = createAdditionalDataForCursor(entity);
-            generate(templateCursor, job.getOutput(), entity.getJavaPackageDao(), entity.getClassNameDao(), schema,
-                    entity, additionalData);
+            generate(templateCursor, job.getOutput(), entity.getJavaPackageDao(), entity.getClassNameDao(), ".java",
+                    schema, entity, additionalData);
             if (!entity.isProtobuf() && !entity.isSkipGeneration()) {
                 generate(templateEntity, job, entity.getJavaPackage(), entity.getClassName(), entity);
             }
@@ -154,9 +154,10 @@ public class BoxGenerator {
             if (outputTest != null && !entity.isSkipGenerationTest()) {
                 String javaPackageTest = entity.getJavaPackageTest();
                 String classNameTest = entity.getClassNameTest();
-                File testFile = outputTest.getFileOrNull(javaPackageTest, classNameTest);
+                File testFile = outputTest.getFileOrNull(javaPackageTest, classNameTest, ".java");
                 if (testFile != null && !testFile.exists()) {
-                    generate(templateBoxUnitTest, outputTest, javaPackageTest, classNameTest, schema, entity, null);
+                    generate(templateBoxUnitTest, outputTest, javaPackageTest, classNameTest, ".java",
+                            schema, entity, null);
                 } else {
                     System.out.println("Skipped " + (testFile != null ? testFile.getCanonicalPath() : classNameTest));
                 }
@@ -164,7 +165,7 @@ public class BoxGenerator {
         }
         if (job.getOutputFlatbuffersSchema() != null) {
             generate(templateFlatbuffersSchema, job.getOutputFlatbuffersSchema(), schema.getDefaultJavaPackage(),
-                    "flatbuffers.fbs", job.getSchema(), null, null);
+                    "flatbuffers", ".fbs", job.getSchema(), null, null);
         }
         generate(templateMyObjectBox, job, schema.getDefaultJavaPackageDao(), "My" + schema.getPrefix() + "ObjectBox",
                 null);
@@ -210,11 +211,12 @@ public class BoxGenerator {
 
     private void generate(Template template, GeneratorJob job, String javaPackage, String javaClassName, Entity entity)
             throws Exception {
-        generate(template, job.getOutput(), javaPackage, javaClassName, job.getSchema(), entity, null);
+        generate(template, job.getOutput(), javaPackage, javaClassName, ".java", job.getSchema(), entity, null);
     }
 
-    private void generate(Template template, GeneratorOutput output, String javaPackage, String javaClassName,
-                          Schema schema, Entity entity, Map<String, Object> additionalObjectsForTemplate)
+    private void generate(Template template, GeneratorOutput output,
+            String javaPackage, String fileName, String fileExtension,
+            Schema schema, Entity entity, Map<String, Object> additionalObjectsForTemplate)
             throws Exception {
         Map<String, Object> root = new HashMap<>();
         root.put("schema", schema);
@@ -222,9 +224,9 @@ public class BoxGenerator {
         if (additionalObjectsForTemplate != null) {
             root.putAll(additionalObjectsForTemplate);
         }
-        String filePath = javaPackage + "." + javaClassName;
+        String filePath = javaPackage + "." + fileName + fileExtension;
         try {
-            File file = output.getFileOrNull(javaPackage, javaClassName);
+            File file = output.getFileOrNull(javaPackage, fileName, fileExtension);
             if (file != null) {
                 filePath = file.getCanonicalPath();
                 if (entity != null && entity.getHasKeepSections()) {
@@ -232,7 +234,7 @@ public class BoxGenerator {
                 }
             }
 
-            Writer writer = output.createWriter(javaPackage, javaClassName);
+            Writer writer = output.createWriter(javaPackage, fileName, fileExtension);
             try {
                 template.process(root, writer);
                 writer.flush();

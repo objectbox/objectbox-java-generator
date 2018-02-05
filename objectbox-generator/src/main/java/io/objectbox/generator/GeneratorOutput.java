@@ -51,12 +51,12 @@ public class GeneratorOutput {
         this.outDirFile = outDirFile;
     }
 
-
-    protected Writer createWriter(String javaPackage, String javaClassName) throws IOException {
+    protected Writer createWriter(String javaPackage, String fileOrJavaClassName, String fileExtension) throws IOException {
         if (outDirFile != null) {
-            return new FileWriter(getFileOrNull(javaPackage, javaClassName));
-        } else if (filer != null) {
-            String fileName = javaPackage + "." + javaClassName;
+            return new FileWriter(getFileOrNull(javaPackage, fileOrJavaClassName, fileExtension));
+        } else if (filer != null && ".java".equals(fileExtension)) {
+            // note: filer could write to files with other extensions, but warns about it, so we do not
+            String fileName = javaPackage + "." + fileOrJavaClassName;
             JavaFileObject sourceFile = filer.createSourceFile(fileName);
             return sourceFile.openWriter();
         } else {
@@ -64,9 +64,9 @@ public class GeneratorOutput {
         }
     }
 
-    protected File getFileOrNull(String javaPackage, String javaClassName) {
+    protected File getFileOrNull(String javaPackage, String fileName, String fileExtension) {
         if (outDirFile != null) {
-            File file = toJavaFilename(outDirFile, javaPackage, javaClassName);
+            File file = toFile(outDirFile, javaPackage, fileName, fileExtension);
             //noinspection ResultOfMethodCallIgnored
             file.getParentFile().mkdirs();
             return file;
@@ -85,10 +85,10 @@ public class GeneratorOutput {
         return file;
     }
 
-    private File toJavaFilename(File outDirFile, String javaPackage, String javaClassName) {
+    private File toFile(File outDirFile, String javaPackage, String fileName, String fileExtension) {
         String packageSubPath = javaPackage.replace('.', '/');
         File packagePath = new File(outDirFile, packageSubPath);
-        return new File(packagePath, javaClassName + ".java");
+        return new File(packagePath, fileName + fileExtension);
     }
 
 }
