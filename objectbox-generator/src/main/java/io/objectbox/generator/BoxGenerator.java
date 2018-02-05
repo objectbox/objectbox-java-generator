@@ -164,8 +164,8 @@ public class BoxGenerator {
             }
         }
         if (job.getOutputFlatbuffersSchema() != null) {
-            generate(templateFlatbuffersSchema, job.getOutputFlatbuffersSchema(), schema.getDefaultJavaPackage(),
-                    "flatbuffers", ".fbs", job.getSchema(), null, null);
+            generate(templateFlatbuffersSchema, job.getOutputFlatbuffersSchema(), "", "flatbuffers", ".fbs",
+                    job.getSchema(), null, null);
         }
         generate(templateMyObjectBox, job, schema.getDefaultJavaPackageDao(), "My" + schema.getPrefix() + "ObjectBox",
                 null);

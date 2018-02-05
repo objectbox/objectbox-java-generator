@@ -19,7 +19,7 @@ along with ObjectBox Generator.  If not, see <http://www.gnu.org/licenses/>.
 -->
 <#-- @ftlvariable name="schema" type="io.objectbox.generator.model.Schema" -->
 <#assign toFlatbuffersType = {"Boolean":"bool", "Byte":"byte", "Short":"short", "Int":"int", "Long":"long", "Float":"float", "Double":"double", "String":"string", "ByteArray":"[byte]", "Date": "long"  } />
-namespace ${schema.defaultJavaPackage};
+namespace ${schema.defaultJavaPackage}.fbs;
 
 <#list schema.entities as entity>
 table ${entity.dbName} {

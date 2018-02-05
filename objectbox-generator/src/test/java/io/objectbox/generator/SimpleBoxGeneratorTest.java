@@ -223,7 +223,7 @@ public class SimpleBoxGeneratorTest {
 
     @Test
     public void testFbs() throws Exception {
-        Schema schema = new Schema(1, "io.objectbox.test.fbs");
+        Schema schema = new Schema(1, "io.objectbox.test");
         Entity entity = schema.addEntity("Flaty");
         entity.addIdProperty();
         entity.addIntProperty("inty");
