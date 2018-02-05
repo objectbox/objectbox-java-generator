@@ -18,13 +18,13 @@ along with ObjectBox Generator.  If not, see <http://www.gnu.org/licenses/>.
 
 -->
 <#-- @ftlvariable name="schema" type="io.objectbox.generator.model.Schema" -->
-<#assign toFlatbuffersType = {"Boolean":"bool", "Byte":"byte", "Short":"short", "Int":"int", "Long":"long", "Float":"float", "Double":"double", "String":"string", "ByteArray":"[byte]", "Date": "Long"  } />
+<#assign toFlatbuffersType = {"Boolean":"bool", "Byte":"byte", "Short":"short", "Int":"int", "Long":"long", "Float":"float", "Double":"double", "String":"string", "ByteArray":"[byte]", "Date": "long"  } />
 namespace ${schema.defaultJavaPackage};
 
 <#list schema.entities as entity>
 table ${entity.dbName} {
 <#list entity.propertiesColumns as property>
-    <#assign fbsType>${toFlatbuffersType[property.javaType]!property.javaType}</#assign>
+    <#assign fbsType>${toFlatbuffersType[property.propertyType]!property.javaType}</#assign>
     ${property.propertyName}:${fbsType}; <#if property.modelId??>// ID = ${property.modelId}</#if>
 </#list>
 }

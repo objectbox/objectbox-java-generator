@@ -228,6 +228,8 @@ public class SimpleBoxGeneratorTest {
         entity.addIdProperty();
         entity.addIntProperty("inty");
         entity.addStringProperty("stringy");
+        entity.addByteArrayProperty("bytearrayly");
+        entity.addDateProperty("datey");
 
         File outputDir = new File("build/test-out");
         outputDir.mkdirs();
