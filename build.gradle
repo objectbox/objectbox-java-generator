@@ -1,9 +1,10 @@
 buildscript {
     ext.ob_expected_version = project.hasProperty('expectedVersion') ? project.property('expectedVersion') : 'UNDEFINED'
     ext.android_version = '3.0.0'
-    ext.kotlin_version = '1.2.20'
-    ext.objectbox_plugin_version = '1.4.2-instant-app-SNAPSHOT' // used to version this projects' artifacts
-    ext.objectbox_java_version = '1.4.1' // used for dependencies (runtime library)
+    ext.kotlin_version = '1.2.21'
+    ext.objectbox_plugin_version = '1.4.2' // used to version this projects' artifacts
+    ext.objectbox_java_version = objectbox_plugin_version // used for dependencies (runtime library)
+    // ext.objectbox_java_version = '1.4.2' // used for dependencies (runtime library)
 
     repositories {
         jcenter()
@@ -172,6 +173,6 @@ task verifyVersion {
 
 task wrapper(type: Wrapper) {
     group 'build setup'
-    gradleVersion '4.5'
+    gradleVersion '4.5.1'
     distributionType Wrapper.DistributionType.ALL
 }
