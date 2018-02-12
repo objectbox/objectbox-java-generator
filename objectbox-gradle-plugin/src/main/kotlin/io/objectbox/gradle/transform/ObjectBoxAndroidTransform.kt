@@ -25,6 +25,8 @@ import com.android.build.api.transform.TransformInvocation
 import com.android.build.gradle.AppExtension
 import com.android.build.gradle.AppPlugin
 import com.android.build.gradle.BaseExtension
+import com.android.build.gradle.FeatureExtension
+import com.android.build.gradle.FeaturePlugin
 import com.android.build.gradle.LibraryExtension
 import com.android.build.gradle.LibraryPlugin
 import com.android.build.gradle.TestExtension
@@ -57,7 +59,7 @@ class ObjectBoxAndroidTransform(val options: PluginOptions) : Transform() {
             if (plugins.hasPlugin(LibraryPlugin::class.java)) exClasses += LibraryExtension::class.java
             if (plugins.hasPlugin(TestPlugin::class.java)) exClasses += TestExtension::class.java
             if (plugins.hasPlugin(AppPlugin::class.java)) exClasses += AppExtension::class.java
-            //if (plugins.hasPlugin(InstantAppPlugin::class.java)) exClasses += InstantAppExtension::class.java
+            if (plugins.hasPlugin(FeaturePlugin::class.java)) exClasses += FeatureExtension::class.java
             return exClasses
         }
     }
