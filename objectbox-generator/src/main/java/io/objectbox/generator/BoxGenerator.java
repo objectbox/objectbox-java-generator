@@ -190,6 +190,7 @@ public class BoxGenerator {
         Map<PropertyType, String> map = new EnumMap<>(PropertyType.class);
         map.put(PropertyType.Boolean, "Bool");
         map.put(PropertyType.Byte, "Byte");
+        map.put(PropertyType.Char, "Char");
         map.put(PropertyType.Short, "Short");
         map.put(PropertyType.Int, "Int");
         map.put(PropertyType.Long, "Long");
