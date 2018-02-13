@@ -84,6 +84,7 @@ public class Schema {
         propertyToJavaTypeNotNull.put(PropertyType.Boolean, "boolean");
         propertyToJavaTypeNotNull.put(PropertyType.Byte, "byte");
         propertyToJavaTypeNotNull.put(PropertyType.Short, "short");
+        propertyToJavaTypeNotNull.put(PropertyType.Char, "char");
         propertyToJavaTypeNotNull.put(PropertyType.Int, "int");
         propertyToJavaTypeNotNull.put(PropertyType.Long, "long");
         propertyToJavaTypeNotNull.put(PropertyType.Float, "float");
@@ -97,6 +98,7 @@ public class Schema {
         propertyToJavaTypeNullable.put(PropertyType.Boolean, "Boolean");
         propertyToJavaTypeNullable.put(PropertyType.Byte, "Byte");
         propertyToJavaTypeNullable.put(PropertyType.Short, "Short");
+        propertyToJavaTypeNullable.put(PropertyType.Char, "Character");
         propertyToJavaTypeNullable.put(PropertyType.Int, "Integer");
         propertyToJavaTypeNullable.put(PropertyType.Long, "Long");
         propertyToJavaTypeNullable.put(PropertyType.Float, "Float");

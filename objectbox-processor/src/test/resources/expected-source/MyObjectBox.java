@@ -28,7 +28,7 @@ public class MyObjectBox {
         EntityBuilder entityBuilder;
 
         entityBuilder = modelBuilder.entity("A");
-        entityBuilder.id(1, 4858050548069557694L).lastPropertyId(22, 4772590935549770830L);
+        entityBuilder.id(1, 4858050548069557694L).lastPropertyId(24, 2870459311547136401L);
         entityBuilder.flags(io.objectbox.model.EntityFlags.USE_NO_ARG_CONSTRUCTOR);
         entityBuilder.property("id", PropertyType.Long).id(1, 8303367770402050741L)
                 .flags(PropertyFlags.ID | PropertyFlags.ID_SELF_ASSIGNABLE | PropertyFlags.NON_PRIMITIVE_TYPE);
@@ -61,6 +61,10 @@ public class MyObjectBox {
         entityBuilder.property("simpleByte", PropertyType.Byte).id(15, 1331388668561714029L)
                 .flags(PropertyFlags.NON_PRIMITIVE_TYPE);
         entityBuilder.property("simpleDate", PropertyType.Date).id(16, 3711768428068804965L);
+        entityBuilder.property("simpleCharPrimitive", PropertyType.Char).id(23, 1838261170942203646L)
+                .flags(PropertyFlags.NOT_NULL);
+        entityBuilder.property("simpleChar", PropertyType.Char).id(24, 2870459311547136401L)
+                .flags(PropertyFlags.NON_PRIMITIVE_TYPE);
         entityBuilder.property("simpleString", PropertyType.String).id(17, 6798801512033870238L);
         entityBuilder.property("simpleByteArray", PropertyType.ByteVector).id(18, 5561205097618864485L);
         entityBuilder.property("indexedProperty", PropertyType.Int).id(19, 267919077724297667L)

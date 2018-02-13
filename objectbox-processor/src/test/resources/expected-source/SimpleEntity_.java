@@ -54,12 +54,14 @@ public final class SimpleEntity_ implements EntityInfo<SimpleEntity> {
     public final static Property simpleBytePrimitive = new Property(13, 14, byte.class, "simpleBytePrimitive");
     public final static Property simpleByte = new Property(14, 15, Byte.class, "simpleByte");
     public final static Property simpleDate = new Property(15, 16, java.util.Date.class, "simpleDate");
-    public final static Property simpleString = new Property(16, 17, String.class, "simpleString");
-    public final static Property simpleByteArray = new Property(17, 18, byte[].class, "simpleByteArray");
-    public final static Property indexedProperty = new Property(18, 19, Integer.class, "indexedProperty");
-    public final static Property namedProperty = new Property(19, 20, String.class, "namedProperty", false, "B");
-    public final static Property customType = new Property(20, 21, int.class, "customType", false, "customType", SimpleEnumConverter.class, SimpleEnum.class);
-    public final static Property customTypes = new Property(21, 22, int.class, "customTypes", false, "customTypes", SimpleEnumListConverter.class, List.class);
+    public final static Property simpleCharPrimitive = new Property(16, 23, char.class, "simpleCharPrimitive");
+    public final static Property simpleChar = new Property(17, 24, Character.class, "simpleChar");
+    public final static Property simpleString = new Property(18, 17, String.class, "simpleString");
+    public final static Property simpleByteArray = new Property(19, 18, byte[].class, "simpleByteArray");
+    public final static Property indexedProperty = new Property(20, 19, Integer.class, "indexedProperty");
+    public final static Property namedProperty = new Property(21, 20, String.class, "namedProperty", false, "B");
+    public final static Property customType = new Property(22, 21, int.class, "customType", false, "customType", SimpleEnumConverter.class, SimpleEnum.class);
+    public final static Property customTypes = new Property(23, 22, int.class, "customTypes", false, "customTypes", SimpleEnumListConverter.class, List.class);
 
     public final static Property[] __ALL_PROPERTIES = {
             id,
@@ -78,6 +80,8 @@ public final class SimpleEntity_ implements EntityInfo<SimpleEntity> {
             simpleBytePrimitive,
             simpleByte,
             simpleDate,
+            simpleCharPrimitive,
+            simpleChar,
             simpleString,
             simpleByteArray,
             indexedProperty,

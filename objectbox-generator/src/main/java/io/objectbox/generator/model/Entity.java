@@ -146,6 +146,10 @@ public class Entity implements HasParsedElement {
         return addProperty(PropertyType.Short, propertyName);
     }
 
+    public Property.PropertyBuilder addCharProperty(String propertyName) {
+        return addProperty(PropertyType.Char, propertyName);
+    }
+
     public Property.PropertyBuilder addIntProperty(String propertyName) {
         return addProperty(PropertyType.Int, propertyName);
     }

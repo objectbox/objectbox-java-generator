@@ -78,6 +78,9 @@ class TypeHelper(val typeUtils: Types) {
         if (isTypeEqualTo(typeMirror, Date::class.java.name)) {
             return PropertyType.Date
         }
+        if (isTypeEqualTo(typeMirror, java.lang.Character::class.java.name) || kind == TypeKind.CHAR) {
+            return PropertyType.Char
+        }
         if (isTypeEqualTo(typeMirror, java.lang.String::class.java.name)) {
             return PropertyType.String
         }

@@ -211,6 +211,8 @@ class ObjectBoxProcessorTest {
                 "simpleBytePrimitive" -> assertPrimitiveType(prop, PropertyType.Byte)
                 "simpleByte" -> assertType(prop, PropertyType.Byte)
                 "simpleDate" -> assertType(prop, PropertyType.Date)
+                "simpleCharPrimitive" -> assertPrimitiveType(prop, PropertyType.Char)
+                "simpleChar" -> assertType(prop, PropertyType.Char)
                 "simpleString" -> assertType(prop, PropertyType.String)
                 "simpleByteArray" -> assertType(prop, PropertyType.ByteArray)
                 "transientField", "transientField2", "transientField3" ->
@@ -277,6 +279,8 @@ class ObjectBoxProcessorTest {
                 "simpleBytePrimitive",
                 "simpleByte",
                 "simpleDate",
+                "simpleCharPrimitive",
+                "simpleChar",
                 "simpleString",
                 "simpleByteArray",
                 "indexedProperty", // indexed

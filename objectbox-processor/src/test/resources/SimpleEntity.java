@@ -42,6 +42,10 @@ public class SimpleEntity {
     Byte simpleByte;
 
     Date simpleDate;
+
+    char simpleCharPrimitive;
+    Character simpleChar;
+
     String simpleString;
 
     byte[] simpleByteArray;

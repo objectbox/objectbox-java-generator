@@ -48,6 +48,8 @@ public final class SimpleEntityCursor extends Cursor<SimpleEntity> {
     private final static int __ID_simpleBytePrimitive = SimpleEntity_.simpleBytePrimitive.id;
     private final static int __ID_simpleByte = SimpleEntity_.simpleByte.id;
     private final static int __ID_simpleDate = SimpleEntity_.simpleDate.id;
+    private final static int __ID_simpleCharPrimitive = SimpleEntity_.simpleCharPrimitive.id;
+    private final static int __ID_simpleChar = SimpleEntity_.simpleChar.id;
     private final static int __ID_simpleString = SimpleEntity_.simpleString.id;
     private final static int __ID_simpleByteArray = SimpleEntity_.simpleByteArray.id;
     private final static int __ID_indexedProperty = SimpleEntity_.indexedProperty.id;
@@ -72,11 +74,11 @@ public final class SimpleEntityCursor extends Cursor<SimpleEntity> {
     @Override
     public final long put(SimpleEntity entity) {
         String simpleString = entity.simpleString;
-        int __id16 = simpleString != null ? __ID_simpleString : 0;
+        int __id18 = simpleString != null ? __ID_simpleString : 0;
         String namedProperty = entity.namedProperty;
-        int __id19 = namedProperty != null ? __ID_namedProperty : 0;
+        int __id21 = namedProperty != null ? __ID_namedProperty : 0;
         byte[] simpleByteArray = entity.simpleByteArray;
-        int __id17 = simpleByteArray != null ? __ID_simpleByteArray : 0;
+        int __id19 = simpleByteArray != null ? __ID_simpleByteArray : 0;
         Long simpleLong = entity.simpleLong;
         int __id6 = simpleLong != null ? __ID_simpleLong : 0;
         java.util.Date simpleDate = entity.simpleDate;
@@ -84,24 +86,24 @@ public final class SimpleEntityCursor extends Cursor<SimpleEntity> {
         Integer simpleInt = entity.simpleInt;
         int __id4 = simpleInt != null ? __ID_simpleInt : 0;
         Integer indexedProperty = entity.indexedProperty;
-        int __id18 = indexedProperty != null ? __ID_indexedProperty : 0;
+        int __id20 = indexedProperty != null ? __ID_indexedProperty : 0;
 
         collect313311(cursor, 0, PUT_FLAG_FIRST,
-                __id16, simpleString, __id19, namedProperty,
-                0, null, __id17, simpleByteArray,
+                __id18, simpleString, __id21, namedProperty,
+                0, null, __id19, simpleByteArray,
                 __ID_simpleLongPrimitive, entity.simpleLongPrimitive, __id6, __id6 != 0 ? simpleLong : 0,
                 __id15, __id15 != 0 ? simpleDate.getTime() : 0, __ID_simpleIntPrimitive, entity.simpleIntPrimitive,
-                __id4, __id4 != 0 ? simpleInt : 0, __id18, __id18 != 0 ? indexedProperty : 0,
+                __id4, __id4 != 0 ? simpleInt : 0, __id20, __id20 != 0 ? indexedProperty : 0,
                 __ID_simpleFloatPrimitive, entity.simpleFloatPrimitive, __ID_simpleDoublePrimitive, entity.simpleDoublePrimitive);
 
         SimpleEnum customType = entity.customType;
-        int __id20 = customType != null ? __ID_customType : 0;
+        int __id22 = customType != null ? __ID_customType : 0;
         List customTypes = entity.customTypes;
-        int __id21 = customTypes != null ? __ID_customTypes : 0;
+        int __id23 = customTypes != null ? __ID_customTypes : 0;
         Short simpleShort = entity.simpleShort;
         int __id2 = simpleShort != null ? __ID_simpleShort : 0;
-        Byte simpleByte = entity.simpleByte;
-        int __id14 = simpleByte != null ? __ID_simpleByte : 0;
+        Character simpleChar = entity.simpleChar;
+        int __id17 = simpleChar != null ? __ID_simpleChar : 0;
         Float simpleFloat = entity.simpleFloat;
         int __id8 = simpleFloat != null ? __ID_simpleFloat : 0;
         Double simpleDouble = entity.simpleDouble;
@@ -110,18 +112,20 @@ public final class SimpleEntityCursor extends Cursor<SimpleEntity> {
         collect313311(cursor, 0, 0,
                 0, null, 0, null,
                 0, null, 0, null,
-                __id20, __id20 != 0 ? customTypeConverter.convertToDatabaseValue(customType) : 0, __id21, __id21 != 0 ? customTypesConverter.convertToDatabaseValue(customTypes) : 0,
+                __id22, __id22 != 0 ? customTypeConverter.convertToDatabaseValue(customType) : 0, __id23, __id23 != 0 ? customTypesConverter.convertToDatabaseValue(customTypes) : 0,
                 __ID_simpleShortPrimitive, entity.simpleShortPrimitive, __id2, __id2 != 0 ? simpleShort : 0,
-                __ID_simpleBytePrimitive, entity.simpleBytePrimitive, __id14, __id14 != 0 ? simpleByte : 0,
+                __ID_simpleCharPrimitive, entity.simpleCharPrimitive, __id17, __id17 != 0 ? simpleChar : 0,
                 __id8, __id8 != 0 ? simpleFloat : 0, __id10, __id10 != 0 ? simpleDouble : 0);
 
         Long id = entity.id;
+        Byte simpleByte = entity.simpleByte;
+        int __id14 = simpleByte != null ? __ID_simpleByte : 0;
         Boolean simpleBoolean = entity.getSimpleBoolean();
         int __id12 = simpleBoolean != null ? __ID_simpleBoolean : 0;
 
         long __assignedId = collect004000(cursor, id != null ? id: 0, PUT_FLAG_COMPLETE,
-                __ID_simpleBooleanPrimitive, entity.isSimpleBooleanPrimitive() ? 1 : 0, __id12, __id12 != 0 ? simpleBoolean ? 1 : 0 : 0,
-                0, 0, 0, 0);
+                __ID_simpleBytePrimitive, entity.simpleBytePrimitive, __id14, __id14 != 0 ? simpleByte : 0,
+                __ID_simpleBooleanPrimitive, entity.isSimpleBooleanPrimitive() ? 1 : 0, __id12, __id12 != 0 ? simpleBoolean ? 1 : 0 : 0);
 
         entity.id = __assignedId;
 
