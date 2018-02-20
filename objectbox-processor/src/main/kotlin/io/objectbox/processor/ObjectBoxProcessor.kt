@@ -57,8 +57,12 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         val OPTION_TRANSFORMATION_ENABLED: String = "objectbox.transformationEnabled"
         val OPTION_ALLOW_NUMBERED_CONSTRUCTOR_ARGS: String = "objectbox.allowNumberedConstructorArgs"
 
-        // future improvement: to make this smarter we could look for the most commonly used package prefix
+        /**
+         * Typically selects the top most and lexicographically first package. If entities are in different packages and
+         * at least 3 packages deep, selects the first common parent package instead.
+         */
         internal fun selectPackage(packages: List<String>): String? {
+            // future improvement: to make this smarter we could look for the most commonly used package prefix
             val packagesSorted = packages.toSortedSet()
             if (packagesSorted.size >= 2) {
                 val first = packagesSorted.first()
@@ -166,8 +170,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         val defaultJavaPackage = if (daoCompat && daoCompatPackage != null) {
             daoCompatPackage
         } else {
-            // entities may be in multiple packages
-            // get top-most, then lexicographically first package == sort lexicographically, choose first
+            // entities may be in multiple packages, so generate MyObjectBox in one that is least likely to change
             val packages = entities.map { elementUtils.getPackageOf(it).qualifiedName.toString() }
             selectPackage(packages)
         }
