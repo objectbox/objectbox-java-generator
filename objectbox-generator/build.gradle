@@ -48,8 +48,9 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
 }
 
 task sourcesJar(type: Jar) {
-    from sourceSets.main.allSource
     classifier = 'sources'
+//    from sourceSets.main.allSource
+    from 'README'
 }
 
 artifacts {
