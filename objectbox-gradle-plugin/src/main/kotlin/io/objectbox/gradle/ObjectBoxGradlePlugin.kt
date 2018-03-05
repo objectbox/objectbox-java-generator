@@ -192,6 +192,8 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
                     !hasObjectBoxDependency(project, "objectbox-android-objectbrowser")) {
                 project.dependencies.add(depScope, "io.objectbox:objectbox-android:$runtimeVersion")
             }
+            // add jsr305 to prevent conflict with other versions added by test dependencies, like espresso
+            // https://github.com/objectbox/objectbox-java/issues/73
             project.dependencies.add(env.configAndroidTestImplOrCompile,
                     "com.google.code.findbugs:jsr305:3.0.2")
         } else {
