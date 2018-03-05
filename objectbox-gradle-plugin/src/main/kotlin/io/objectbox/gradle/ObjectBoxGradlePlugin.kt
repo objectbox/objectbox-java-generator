@@ -192,7 +192,8 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
                     !hasObjectBoxDependency(project, "objectbox-android-objectbrowser")) {
                 project.dependencies.add(depScope, "io.objectbox:objectbox-android:$runtimeVersion")
             }
-            project.dependencies.add("androidTestCompile", "com.google.code.findbugs:jsr305:3.0.2")
+            project.dependencies.add(env.configAndroidTestImplOrCompile,
+                    "com.google.code.findbugs:jsr305:3.0.2")
         } else {
             project.dependencies.add(depScope, "io.objectbox:objectbox-java:$runtimeVersion")
             // add native dependency for current OS

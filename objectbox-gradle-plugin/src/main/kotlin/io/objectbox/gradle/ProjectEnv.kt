@@ -62,6 +62,13 @@ class ProjectEnv(val project: Project) {
     val dependencyScopeApiOrCompile: String by lazy {
         if (project.configurations.findByName("api") != null) "api" else "compile"
     }
+    val configAndroidTestImplOrCompile: String by lazy {
+        if (project.configurations.findByName("androidTestImplementation") != null) {
+            "androidTestImplementation"
+        } else {
+            "androidTestCompile"
+        }
+    }
 
     fun logDebug(msg: String) = project.logger.debug(msg)
     fun logInfo(msg: String) = project.logger.info(msg)
