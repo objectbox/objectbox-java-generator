@@ -20,6 +20,7 @@ package io.objectbox.gradle
 
 import io.objectbox.GradlePluginBuildConfig
 import org.gradle.api.Project
+import java.util.*
 
 class ProjectEnv(val project: Project) {
     object Const {
@@ -42,6 +43,17 @@ class ProjectEnv(val project: Project) {
     val hasKotlinAndroidPlugin = project.plugins.hasPlugin("kotlin-android")
     val hasKotlinPlugin = project.plugins.hasPlugin("kotlin")
     val hasJavaPlugin = project.plugins.hasPlugin("java")
+
+    val osName = System.getProperty("os.name")
+    val is64Bit = System.getProperty("sun.arch.data.model") == "64"
+    private val osNameLowerCase = osName.toLowerCase(Locale.US)
+    val isLinux = osNameLowerCase.contains("linux")
+    val isMac = osNameLowerCase.contains("mac")
+    val isWindows = osNameLowerCase.contains("windows")
+    val isLinux64 = isLinux && is64Bit
+    val isMac64 = isMac && is64Bit
+    val isWindows64 = isWindows && is64Bit
+
 
     /**
      * See https://developer.android.com/studio/build/gradle-plugin-3-0-0-migration.html#new_configurations and

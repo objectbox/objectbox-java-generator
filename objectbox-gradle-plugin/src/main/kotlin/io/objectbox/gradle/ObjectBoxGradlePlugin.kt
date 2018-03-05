@@ -195,6 +195,18 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
             project.dependencies.add("androidTestCompile", "com.google.code.findbugs:jsr305:3.0.2")
         } else {
             project.dependencies.add(depScope, "io.objectbox:objectbox-java:$runtimeVersion")
+            // add native dependency for current OS
+            if (DEBUG) println("### Detected OS: ${env.osName} is64=${env.is64Bit} " +
+                    "isLinux64=${env.isLinux64} isWindows64=${env.isWindows64} isMac64=${env.isMac64}")
+            if (env.isLinux64) {
+                project.dependencies.add(depScope, "io.objectbox:objectbox-linux:$runtimeVersion")
+            } else if (env.isWindows64) {
+                project.dependencies.add(depScope, "io.objectbox:objectbox-windows:$runtimeVersion")
+            } else if (env.isMac64) {
+                project.dependencies.add(depScope, "io.objectbox:objectbox-macos:$runtimeVersion")
+            } else {
+                env.logInfo("Could not set up native dependency for ${env.osName}")
+            }
         }
     }
 
