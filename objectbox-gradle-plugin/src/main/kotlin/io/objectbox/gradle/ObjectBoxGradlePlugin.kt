@@ -188,8 +188,9 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
         }
 
         if (env.hasAndroidPlugin) {
-            if (!hasObjectBoxDependency(project, "objectbox-android") &&
-                    !hasObjectBoxDependency(project, "objectbox-android-objectbrowser")) {
+            // for this detection to work apply the plugin after the dependencies block
+            if (!project.hasObjectBoxDependency("objectbox-android") &&
+                    !project.hasObjectBoxDependency("objectbox-android-objectbrowser")) {
                 project.dependencies.add(depScope, "io.objectbox:objectbox-android:$runtimeVersion")
             }
             // add jsr305 to prevent conflict with other versions added by test dependencies, like espresso
@@ -201,20 +202,31 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
             // add native dependency for current OS
             if (DEBUG) println("### Detected OS: ${env.osName} is64=${env.is64Bit} " +
                     "isLinux64=${env.isLinux64} isWindows64=${env.isWindows64} isMac64=${env.isMac64}")
-            if (env.isLinux64) {
-                project.dependencies.add(depScope, "io.objectbox:objectbox-linux:$runtimeVersion")
-            } else if (env.isWindows64) {
-                project.dependencies.add(depScope, "io.objectbox:objectbox-windows:$runtimeVersion")
-            } else if (env.isMac64) {
-                project.dependencies.add(depScope, "io.objectbox:objectbox-macos:$runtimeVersion")
-            } else {
-                env.logInfo("Could not set up native dependency for ${env.osName}")
+
+            // note: for this detection to work apply the plugin after the dependencies block
+            if (project.hasObjectBoxDependency("objectbox-linux")
+                    || project.hasObjectBoxDependency("objectbox-windows")
+                    || project.hasObjectBoxDependency("objectbox-macos")) {
+                if (DEBUG) println("### Detected native dependency, not auto-adding one.")
+            }   else {
+                if (env.isLinux64) {
+                    project.dependencies.add(depScope, "io.objectbox:objectbox-linux:$runtimeVersion")
+                } else if (env.isWindows64) {
+                    project.dependencies.add(depScope, "io.objectbox:objectbox-windows:$runtimeVersion")
+                } else if (env.isMac64) {
+                    project.dependencies.add(depScope, "io.objectbox:objectbox-macos:$runtimeVersion")
+                } else {
+                    env.logInfo("Could not set up native dependency for ${env.osName}")
+                }
             }
         }
     }
 
-    private fun hasObjectBoxDependency(project: Project, name: String): Boolean {
-        val dependency = findObjectBoxDependency(project, name)
+    /**
+     * Note: for this detection to work apply this plugin after the dependencies block.
+     */
+    private fun Project.hasObjectBoxDependency(name: String): Boolean {
+        val dependency = findObjectBoxDependency(this, name)
         if (DEBUG) println("### $name dependency: $dependency")
         return dependency != null
     }
