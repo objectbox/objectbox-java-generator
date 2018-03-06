@@ -43,9 +43,9 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
     override fun apply(project: Project) {
         try {
             val env = ProjectEnv(project)
-            if (!env.hasAndroidPlugin) {
-                project.logger.warn("${project.name}: If this is an Android project, " +
-                        "apply the ObjectBox plugin AFTER the Android plugin. ")
+            if (!(env.hasAndroidPlugin || env.hasJavaPlugin || env.hasKotlinPlugin)) {
+                project.logger.warn("${project.name}: No Android, Java or Kotlin plugin detected, " +
+                        "apply the ObjectBox plugin AFTER those plugins. ")
             }
             addDependenciesAnnotationProcessor(env)
             addDependencies(env)
