@@ -69,7 +69,7 @@ public class MyObjectBox {
         entityBuilder.property("simpleByteArray", PropertyType.ByteVector).id(18, 5561205097618864485L);
         entityBuilder.property("indexedProperty", PropertyType.Int).id(19, 267919077724297667L)
                 .flags(PropertyFlags.NON_PRIMITIVE_TYPE | PropertyFlags.INDEXED).indexId(1, 4551328960004588074L);
-        entityBuilder.property("B", PropertyType.String).id(20, 8754346312277232208L);
+        entityBuilder.property("B", PropertyType.String).secondaryName("namedProperty").id(20, 8754346312277232208L);
         entityBuilder.property("customType", PropertyType.Int).id(21, 8133069888579241668L)
                 .flags(PropertyFlags.NON_PRIMITIVE_TYPE);
         entityBuilder.property("customTypes", PropertyType.Int).id(22, 4772590935549770830L)
