@@ -41,10 +41,10 @@ abstract class AbstractTransformTest {
         assertTrue(classDir.absolutePath, classDir.exists())
     }
 
-    protected fun probeClass(kclass: KClass<*>): ProbedClass {
+    protected fun probeClass(kclass: KClass<*>, outDir: File = File(".")): ProbedClass {
         val file = File(classDir, kclass.qualifiedName!!.replace('.', '/') + ".class")
         assertTrue(file.absolutePath, file.exists())
-        return prober.probeClass(file)
+        return prober.probeClass(file, outDir)
     }
 
 }

@@ -34,7 +34,7 @@ import java.io.File
 class ClassTransformer(val debug: Boolean = false) {
 
     // Use internal once fixed (Kotlin 1.1.4?)
-    class Context(val probedClasses: List<ProbedClass>, val outDir: File) {
+    class Context(val probedClasses: List<ProbedClass>) {
         val classPool = ClassPool()
         val transformedClasses = mutableSetOf<ProbedClass>()
         val ctByProbedClass = mutableMapOf<ProbedClass, CtClass>()
@@ -71,8 +71,8 @@ class ClassTransformer(val debug: Boolean = false) {
                                 val targetTypeSignature: SignatureAttribute.ClassType?
     )
 
-    fun transformOrCopyClasses(probedClasses: List<ProbedClass>, outDir: File): ClassTransformerStats {
-        val context = Context(probedClasses, outDir)
+    fun transformOrCopyClasses(probedClasses: List<ProbedClass>): ClassTransformerStats {
+        val context = Context(probedClasses)
 
         // First define all EntityInfo (Entity_) and entity classes to ensure the real classes are used
         // (E.g. constructor transformation may introduce dummy classes)
@@ -92,7 +92,7 @@ class ClassTransformer(val debug: Boolean = false) {
         // Transform Cursors after entities because this depends on entity CtClasses added to the ClassPool
         transformCursors(context)
 
-        probedClasses.filter { !context.wasTransformed(it) }.forEach { (file, name) ->
+        probedClasses.filter { !context.wasTransformed(it) }.forEach { (outDir, file, name) ->
             val targetFile = File(outDir, name.replace('.', '/') + ".class")
             // do not copy if path is identical as overwrite would delete, then try to copy from file
             if (file.path != targetFile.path) {
@@ -183,7 +183,7 @@ class ClassTransformer(val debug: Boolean = false) {
         }
         if (changed) {
             if (debug) println("Writing transformed entity \"${ctClass.name}\"")
-            ctClass.writeFile(context.outDir.absolutePath)
+            ctClass.writeFile(entityClass.outDir.absolutePath)
         }
         return changed
     }
@@ -360,7 +360,7 @@ class ClassTransformer(val debug: Boolean = false) {
         context.probedClasses.filter { it.isCursor }.forEach { cursorClass ->
             val ctClass = makeCtClass(context, cursorClass)
             try {
-                if (transformCursor(ctClass, context.outDir, context.classPool)) {
+                if (transformCursor(ctClass, cursorClass.outDir, context.classPool)) {
                     context.transformedClasses.add(cursorClass)
                 }
             } catch (e: Exception) {

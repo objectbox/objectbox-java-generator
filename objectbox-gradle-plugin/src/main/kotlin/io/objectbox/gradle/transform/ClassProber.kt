@@ -27,7 +27,12 @@ import java.io.File
 
 class ClassProber {
 
-    fun probeClass(file: File): ProbedClass {
+    /**
+     * Probes the class inside a byte code [file] for properties used during transformation.
+     *
+     * @param outDir See [ProbedClass.outDir]
+     */
+    fun probeClass(file: File, outDir: File): ProbedClass {
         try {
             DataInputStream(BufferedInputStream(file.inputStream())).use {
                 val classFile = ClassFile(it)
@@ -36,7 +41,8 @@ class ClassProber {
 
                 // Cursor class
                 if (!classFile.isAbstract && ClassConst.cursorClass == classFile.superclass) {
-                    return ProbedClass(file = file, name = name, javaPackage = javaPackage, isCursor = true)
+                    return ProbedClass(outDir = outDir, file = file,
+                            name = name, javaPackage = javaPackage, isCursor = true)
                 }
 
                 // @Entity or @BaseEntity class
@@ -46,6 +52,7 @@ class ClassProber {
                 if (isEntity || isBaseEntity) {
                     @Suppress("UNCHECKED_CAST") val fields = classFile.fields as List<FieldInfo>
                     return ProbedClass(
+                            outDir = outDir,
                             file = file,
                             name = name,
                             superClass = classFile.superclass,
@@ -62,6 +69,7 @@ class ClassProber {
 
                 // non-@BaseEntity entity super class, EntityInfo class, any other class
                 return ProbedClass(
+                        outDir = outDir,
                         file = file,
                         name = name,
                         superClass = classFile.superclass,

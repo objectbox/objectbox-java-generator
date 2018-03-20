@@ -35,7 +35,7 @@ class ClassTransformerTest : AbstractTransformTest() {
 
     @Test
     fun testClassInPool() {
-        val classPool = ClassTransformer.Context(emptyList(), File(".")).classPool
+        val classPool = ClassTransformer.Context(emptyList()).classPool
 
         // Ensure we have the real java.lang.Object (a fake would have itself as superclass)
         assertNull(classPool.get("java.lang.Object").superclass)
@@ -196,12 +196,12 @@ class ClassTransformerTest : AbstractTransformTest() {
 
     fun testTransformOrCopy(kClasses: List<KClass<*>>, expectedTransformed: Int, expectedCopied: Int)
             : Pair<ClassTransformerStats, List<File>> {
-        val probedClasses = kClasses.map { probeClass(it) }
         val tempDir = File.createTempFile(this.javaClass.name, "")
         tempDir.delete()
         assertTrue(tempDir.mkdir())
+        val probedClasses = kClasses.map { probeClass(it, tempDir) }
         try {
-            val stats = transformer.transformOrCopyClasses(probedClasses, tempDir)
+            val stats = transformer.transformOrCopyClasses(probedClasses)
             assertEquals(expectedTransformed, stats.countTransformed)
             assertEquals(expectedCopied, stats.countCopied)
             val createdFiles = tempDir.walkBottomUp().toList().filter { it.isFile }

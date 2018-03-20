@@ -31,9 +31,12 @@ import com.android.build.gradle.LibraryExtension
 import com.android.build.gradle.LibraryPlugin
 import com.android.build.gradle.TestExtension
 import com.android.build.gradle.TestPlugin
+import com.android.build.gradle.api.BaseVariant
+import com.android.build.gradle.api.UnitTestVariant
 import io.objectbox.gradle.GradleBuildTracker
 import io.objectbox.gradle.PluginOptions
 import org.gradle.api.Project
+import org.gradle.api.tasks.compile.AbstractCompile
 import java.io.File
 
 class ObjectBoxAndroidTransform(val options: PluginOptions) : Transform() {
@@ -41,15 +44,35 @@ class ObjectBoxAndroidTransform(val options: PluginOptions) : Transform() {
     object Registration {
         fun to(project: Project, options: PluginOptions) {
             val transform = ObjectBoxAndroidTransform(options)
-            getAllExtensions(project).forEach { it.registerTransform(transform) }
+            getAllExtensions(project).forEach {
+                // for regular build and instrumentation tests
+                it.registerTransform(transform)
+                // for local unit tests
+                // a transform registered like above does only run when dexing is required (!= for local unit tests)
+                // so inject our own transform task before local unit tests are compiled
+                @Suppress("DEPRECATION") // There is always a Java compile task -- the deprecation was for Jack
+                when (it) {
+                    is AppExtension -> it.applicationVariants.all {
+                        injectTransformTask(project, options, it, it.unitTestVariant)
+                    }
+                    is LibraryExtension -> it.libraryVariants.all {
+                        injectTransformTask(project, options, it, it.unitTestVariant)
+                    }
+                    is FeatureExtension -> it.featureVariants.all {
+                        injectTransformTask(project, options, it, it.unitTestVariant)
+                    }
+                    is TestExtension -> it.applicationVariants.all {
+                        injectTransformTask(project, options, it, it.unitTestVariant)
+                    }
+                }
+            }
         }
 
-        fun getAllExtensions(project: Project): Set<BaseExtension> {
+        private fun getAllExtensions(project: Project): Set<BaseExtension> {
             val exClasses = getAndroidExtensionClasses(project)
             if (exClasses.isEmpty()) throw TransformException(
                     "No Android plugin found - please apply ObjectBox plugins after the Android plugin")
-            val result = exClasses.map { project.extensions.getByType(it) as BaseExtension }.toSet()
-            return result
+            return exClasses.map { project.extensions.getByType(it) as BaseExtension }.toSet()
         }
 
         fun getAndroidExtensionClasses(project: Project): MutableList<Class<out BaseExtension>> {
@@ -61,6 +84,45 @@ class ObjectBoxAndroidTransform(val options: PluginOptions) : Transform() {
             if (plugins.hasPlugin(AppPlugin::class.java)) exClasses += AppExtension::class.java
             if (plugins.hasPlugin(FeaturePlugin::class.java)) exClasses += FeatureExtension::class.java
             return exClasses
+        }
+
+        /**
+         * Creates a task that transforms the variants JavaCompile and if available KotlinCompile output before the unit
+         * test JavaCompile task for that variant runs. Unlike a regular [Transform] this overwrites the variants
+         * JavaCompile and KotlinCompile output.
+         */
+        private fun injectTransformTask(project: Project, options: PluginOptions,
+                                        baseVariant: BaseVariant, unitTestVariant: UnitTestVariant?) {
+            if (unitTestVariant == null) {
+                return
+            }
+
+            val transformTask = project.task("objectboxTransform${unitTestVariant.name.capitalize()}")
+            transformTask.group = "objectbox"
+            transformTask.description = "Transforms Java bytecode for local unit tests"
+
+            // There is always a Java compile task -- the deprecation was for Jack
+            @Suppress("DEPRECATION")
+            val baseJavaCompile = baseVariant.javaCompile
+
+            transformTask.mustRunAfter(baseJavaCompile)
+            @Suppress("DEPRECATION")
+            unitTestVariant.javaCompile.dependsOn(transformTask)
+
+            // using naming scheme promised by https://kotlinlang.org/docs/reference/using-gradle.html#compiler-options
+            val kotlinTaskName = "compile${baseVariant.name.capitalize()}Kotlin"
+            val compileAppOutput = baseJavaCompile.destinationDir
+            transformTask.doLast {
+                // Kotlin tasks are currently added after project evaluation, so detect them at runtime
+                val kotlinCompile = project.tasks.findByName(kotlinTaskName)
+                if (kotlinCompile != null && kotlinCompile is AbstractCompile) {
+                    // Kotlin + Java
+                    ObjectBoxJavaTransform(options.debug).transform(listOf(kotlinCompile.destinationDir, compileAppOutput))
+                } else {
+                    // Java
+                    ObjectBoxJavaTransform(options.debug).transform(listOf(compileAppOutput))
+                }
+            }
         }
     }
 
@@ -84,26 +146,28 @@ class ObjectBoxAndroidTransform(val options: PluginOptions) : Transform() {
     override fun transform(info: TransformInvocation) {
         super.transform(info)
         try {
-            val allClassFiles = mutableSetOf<File>()
+            val probedClasses = mutableListOf<ProbedClass>()
+
+            // write transformed files to directory unique for this transform
             val outDir = info.outputProvider.getContentLocation("objectbox", inputTypes, scopes, Format.DIRECTORY)
+
+            val classProber = ClassProber()
             info.inputs.flatMap { it.directoryInputs }.forEach { directoryInput ->
                 // TODO incremental: directoryInput.changedFiles
 
                 directoryInput.file.walk().filter { it.isFile }.forEach { file ->
                     if (file.name.endsWith(".class")) {
-                        allClassFiles += file
+                        probedClasses += classProber.probeClass(file, outDir)
                     } else {
                         val relativePath = file.toRelativeString(directoryInput.file)
-                        val destFile = File (outDir, relativePath)
+                        val destFile = File(outDir, relativePath)
                         file.copyTo(destFile, overwrite = true)
-                        if(options.debug) println("Copied $file to $destFile")
+                        if (options.debug) println("Copied $file to $destFile")
                     }
                 }
             }
 
-            val classProber = ClassProber()
-            val probedClasses = allClassFiles.map { classProber.probeClass(it) }
-            ClassTransformer(options.debug).transformOrCopyClasses(probedClasses, outDir)
+            ClassTransformer(options.debug).transformOrCopyClasses(probedClasses)
 
         } catch (e: Throwable) {
             val buildTracker = GradleBuildTracker("Transformer")

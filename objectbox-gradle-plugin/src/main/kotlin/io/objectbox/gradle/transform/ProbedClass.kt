@@ -21,6 +21,14 @@ package io.objectbox.gradle.transform
 import java.io.File
 
 data class ProbedClass(
+        /**
+         * Directory to write the transformed class file into. Must be above the top-most package as subdirectories for
+         * packages are auto-created by the transformer.
+         * Background: Class files may have to be written to different directories (notably JavaCompile output dir is
+         * different from KotlinCompile output dir).
+         */
+        val outDir: File,
+        /** The file containing the byte-code for this class. */
         val file: File,
         val name: String,
         val javaPackage: String,
