@@ -159,23 +159,31 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
         // Does not seem to work with Android projects; project should do that themselves:
         val processorDep = "io.objectbox:objectbox-processor:${ProjectEnv.Const.pluginVersion}"
         val project = env.project
-        if (project.configurations.findByName("kapt") != null) {
-            project.dependencies.add("kapt", processorDep)
-        } else if (project.configurations.findByName("annotationProcessor") != null) {
+        if (project.hasConfig("kapt")) {
+            project.addDep("kapt", processorDep)
+        } else if (project.hasConfig("annotationProcessor")) {
             // Android uses annotationProcessor
-            project.dependencies.add("annotationProcessor", processorDep)
-        } else if (project.configurations.findByName("apt") != null) {
+            project.addDep("annotationProcessor", processorDep)
+        } else if (project.hasConfig("apt")) {
             // https://bitbucket.org/hvisser/android-apt or custom apt
             // https://docs.gradle.org/current/userguide/java_plugin.html#sec:java_compile_avoidance
-            project.dependencies.add("apt", processorDep)
+            project.addDep("apt", processorDep)
         } else if (env.hasKotlinPlugin) {
             if (!project.plugins.hasPlugin("kotlin-kapt")) {
                 // Does not seem to work reliable; project should do that themselves:
                 project.plugins.apply("kotlin-kapt")
-                project.dependencies.add("kapt", processorDep)
+                project.addDep("kapt", processorDep)
                 if (DEBUG) println("### Kotlin KAPT plugin added")
             }
         }
+    }
+
+    private fun Project.hasConfig(name: String): Boolean {
+        return configurations.findByName(name) != null
+    }
+
+    private fun Project.addDep(configurationName: String, dep: String) {
+        dependencies.add(configurationName, dep)
     }
 
     private fun addDependencies(env: ProjectEnv) {
@@ -185,22 +193,22 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
 
         if (env.hasKotlinPlugin) {
             if (DEBUG) println("### Kotlin plugin detected")
-            project.dependencies.add(compileConfig, "io.objectbox:objectbox-kotlin:$runtimeVersion")
+            project.addDep(compileConfig, "io.objectbox:objectbox-kotlin:$runtimeVersion")
         }
 
         if (env.hasAndroidPlugin) {
             // for this detection to work apply the plugin after the dependencies block
-            if (!project.hasObjectBoxDependency("objectbox-android") &&
-                    !project.hasObjectBoxDependency("objectbox-android-objectbrowser")) {
-                project.dependencies.add(compileConfig, "io.objectbox:objectbox-android:$runtimeVersion")
+            if (!project.hasObjectBoxDep("objectbox-android") &&
+                    !project.hasObjectBoxDep("objectbox-android-objectbrowser")) {
+                project.addDep(compileConfig, "io.objectbox:objectbox-android:$runtimeVersion")
             }
             val testConfig = env.configAndroidTestImplOrCompile
             addNativeDependency(env, testConfig)
             // add jsr305 to prevent conflict with other versions added by test dependencies, like espresso
             // https://github.com/objectbox/objectbox-java/issues/73
-            project.dependencies.add(testConfig, "com.google.code.findbugs:jsr305:3.0.2")
+            project.addDep(testConfig, "com.google.code.findbugs:jsr305:3.0.2")
         } else {
-            project.dependencies.add(compileConfig, "io.objectbox:objectbox-java:$runtimeVersion")
+            project.addDep(compileConfig, "io.objectbox:objectbox-java:$runtimeVersion")
             addNativeDependency(env, compileConfig)
         }
     }
@@ -213,15 +221,15 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
                 "isLinux64=${env.isLinux64} isWindows64=${env.isWindows64} isMac64=${env.isMac64}")
 
         // note: for this detection to work apply the plugin after the dependencies block
-        if (project.hasObjectBoxDependency("objectbox-linux")
-                || project.hasObjectBoxDependency("objectbox-windows")
-                || project.hasObjectBoxDependency("objectbox-macos")) {
+        if (project.hasObjectBoxDep("objectbox-linux")
+                || project.hasObjectBoxDep("objectbox-windows")
+                || project.hasObjectBoxDep("objectbox-macos")) {
             if (DEBUG) println("### Detected native dependency, not auto-adding one.")
         } else {
             when {
-                env.isLinux64 -> project.dependencies.add(config, "io.objectbox:objectbox-linux:$runtimeVersion")
-                env.isWindows64 -> project.dependencies.add(config, "io.objectbox:objectbox-windows:$runtimeVersion")
-                env.isMac64 -> project.dependencies.add(config, "io.objectbox:objectbox-macos:$runtimeVersion")
+                env.isLinux64 -> project.addDep(config, "io.objectbox:objectbox-linux:$runtimeVersion")
+                env.isWindows64 -> project.addDep(config, "io.objectbox:objectbox-windows:$runtimeVersion")
+                env.isMac64 -> project.addDep(config, "io.objectbox:objectbox-macos:$runtimeVersion")
                 else -> env.logInfo("Could not set up native dependency for ${env.osName}")
             }
         }
@@ -230,7 +238,7 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
     /**
      * Note: for this detection to work apply this plugin after the dependencies block.
      */
-    private fun Project.hasObjectBoxDependency(name: String): Boolean {
+    private fun Project.hasObjectBoxDep(name: String): Boolean {
         val dependency = findObjectBoxDependency(this, name)
         if (DEBUG) println("### $name dependency: $dependency")
         return dependency != null
