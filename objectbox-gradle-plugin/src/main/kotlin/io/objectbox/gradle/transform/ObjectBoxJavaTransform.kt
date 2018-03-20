@@ -25,17 +25,19 @@ class ObjectBoxJavaTransform(val debug: Boolean) {
 
     fun transform(byteCodeDirs: List<File>) {
         try {
-            val allClassFiles = mutableSetOf<ObClassFile>()
-            byteCodeDirs.forEach {
-                if (debug) println("Detected byte code dir ${it.path}")
-                it.walk().filter { it.isFile }.forEach { file ->
+            val probedClasses = mutableListOf<ProbedClass>()
+
+            val classProber = ClassProber()
+            byteCodeDirs.forEach { byteCodeDir ->
+                if (debug) println("Detected byte code dir ${byteCodeDir.path}")
+                byteCodeDir.walk().filter { it.isFile }.forEach { file ->
                     if (file.name.endsWith(".class")) {
-                        allClassFiles += ObClassFile(it, file)
+                        // overwrite original files with transformed files: so outDir == byteCodeDir
+                        probedClasses += classProber.probeClass(file, byteCodeDir)
                     }
                 }
             }
-            val classProber = ClassProber()
-            val probedClasses = allClassFiles.map { classProber.probeClass(it) }
+
             ClassTransformer(debug).transformOrCopyClasses(probedClasses)
         } catch (e: Throwable) {
             val buildTracker = GradleBuildTracker("Transformer")

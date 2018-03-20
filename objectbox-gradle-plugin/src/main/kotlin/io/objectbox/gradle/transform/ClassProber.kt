@@ -22,20 +22,26 @@ import javassist.bytecode.ClassFile
 import javassist.bytecode.FieldInfo
 import java.io.BufferedInputStream
 import java.io.DataInputStream
+import java.io.File
 
 
 class ClassProber {
 
-    fun probeClass(obClass: ObClassFile): ProbedClass {
+    /**
+     * Probes the class inside a byte code [file] for properties used during transformation.
+     *
+     * @param outDir See [ProbedClass.outDir]
+     */
+    fun probeClass(file: File, outDir: File): ProbedClass {
         try {
-            DataInputStream(BufferedInputStream(obClass.file.inputStream())).use {
+            DataInputStream(BufferedInputStream(file.inputStream())).use {
                 val classFile = ClassFile(it)
                 val name = classFile.name
                 val javaPackage = name.substringBeforeLast('.', "")
 
                 // Cursor class
                 if (!classFile.isAbstract && ClassConst.cursorClass == classFile.superclass) {
-                    return ProbedClass(outDir = obClass.outDir, file = obClass.file,
+                    return ProbedClass(outDir = outDir, file = file,
                             name = name, javaPackage = javaPackage, isCursor = true)
                 }
 
@@ -46,8 +52,8 @@ class ClassProber {
                 if (isEntity || isBaseEntity) {
                     @Suppress("UNCHECKED_CAST") val fields = classFile.fields as List<FieldInfo>
                     return ProbedClass(
-                            outDir = obClass.outDir,
-                            file = obClass.file,
+                            outDir = outDir,
+                            file = file,
                             name = name,
                             superClass = classFile.superclass,
                             javaPackage = javaPackage,
@@ -63,8 +69,8 @@ class ClassProber {
 
                 // non-@BaseEntity entity super class, EntityInfo class, any other class
                 return ProbedClass(
-                        outDir = obClass.outDir,
-                        file = obClass.file,
+                        outDir = outDir,
+                        file = file,
                         name = name,
                         superClass = classFile.superclass,
                         javaPackage = javaPackage,
@@ -72,7 +78,7 @@ class ClassProber {
                 )
             }
         } catch (e: Exception) {
-            val msg = "Could not probe class file \"${obClass.file.absolutePath}\""
+            val msg = "Could not probe class file \"${file.absolutePath}\""
             throw TransformException(msg, e)
         }
     }
