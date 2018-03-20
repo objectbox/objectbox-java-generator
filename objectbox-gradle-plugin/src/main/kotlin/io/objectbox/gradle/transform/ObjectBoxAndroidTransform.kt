@@ -53,16 +53,16 @@ class ObjectBoxAndroidTransform(val options: PluginOptions) : Transform() {
                 @Suppress("DEPRECATION") // There is always a Java compile task -- the deprecation was for Jack
                 when (it) {
                     is AppExtension -> it.applicationVariants.all {
-                        injectTransformTask(project, it, it.unitTestVariant)
+                        injectTransformTask(project, options, it, it.unitTestVariant)
                     }
                     is LibraryExtension -> it.libraryVariants.all {
-                        injectTransformTask(project, it, it.unitTestVariant)
+                        injectTransformTask(project, options, it, it.unitTestVariant)
                     }
                     is FeatureExtension -> it.featureVariants.all {
-                        injectTransformTask(project, it, it.unitTestVariant)
+                        injectTransformTask(project, options, it, it.unitTestVariant)
                     }
                     is TestExtension -> it.applicationVariants.all {
-                        injectTransformTask(project, it, it.unitTestVariant)
+                        injectTransformTask(project, options, it, it.unitTestVariant)
                     }
                 }
             }
@@ -91,7 +91,8 @@ class ObjectBoxAndroidTransform(val options: PluginOptions) : Transform() {
          * test JavaCompile task for that variant runs. Unlike a regular [Transform] this overwrites the variants
          * JavaCompile and KotlinCompile output.
          */
-        private fun injectTransformTask(project: Project, baseVariant: BaseVariant, unitTestVariant: UnitTestVariant?) {
+        private fun injectTransformTask(project: Project, options: PluginOptions,
+                                        baseVariant: BaseVariant, unitTestVariant: UnitTestVariant?) {
             if (unitTestVariant == null) {
                 return
             }
@@ -116,10 +117,10 @@ class ObjectBoxAndroidTransform(val options: PluginOptions) : Transform() {
                 val kotlinCompile = project.tasks.findByName(kotlinTaskName)
                 if (kotlinCompile != null && kotlinCompile is AbstractCompile) {
                     // Kotlin + Java
-                    ObjectBoxJavaTransform(true).transform(listOf(kotlinCompile.destinationDir, compileAppOutput))
+                    ObjectBoxJavaTransform(options.debug).transform(listOf(kotlinCompile.destinationDir, compileAppOutput))
                 } else {
                     // Java
-                    ObjectBoxJavaTransform(true).transform(listOf(compileAppOutput))
+                    ObjectBoxJavaTransform(options.debug).transform(listOf(compileAppOutput))
                 }
             }
         }
