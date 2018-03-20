@@ -105,7 +105,7 @@ class ObjectBoxAndroidTransform(val options: PluginOptions) : Transform() {
 
             val compileAppOutput = variantJavaCompile.destinationDir
             transformTask.doLast {
-                ObjectBoxJavaTransform(true).transform(compileAppOutput)
+                ObjectBoxJavaTransform(true).transform(listOf(compileAppOutput))
             }
         }
     }
@@ -130,14 +130,14 @@ class ObjectBoxAndroidTransform(val options: PluginOptions) : Transform() {
     override fun transform(info: TransformInvocation) {
         super.transform(info)
         try {
-            val allClassFiles = mutableSetOf<File>()
+            val allClassFiles = mutableSetOf<ObClassFile>()
             val outDir = info.outputProvider.getContentLocation("objectbox", inputTypes, scopes, Format.DIRECTORY)
             info.inputs.flatMap { it.directoryInputs }.forEach { directoryInput ->
                 // TODO incremental: directoryInput.changedFiles
 
                 directoryInput.file.walk().filter { it.isFile }.forEach { file ->
                     if (file.name.endsWith(".class")) {
-                        allClassFiles += file
+                        allClassFiles += ObClassFile(outDir, file)
                     } else {
                         val relativePath = file.toRelativeString(directoryInput.file)
                         val destFile = File(outDir, relativePath)
@@ -149,7 +149,7 @@ class ObjectBoxAndroidTransform(val options: PluginOptions) : Transform() {
 
             val classProber = ClassProber()
             val probedClasses = allClassFiles.map { classProber.probeClass(it) }
-            ClassTransformer(options.debug).transformOrCopyClasses(probedClasses, outDir)
+            ClassTransformer(options.debug).transformOrCopyClasses(probedClasses)
 
         } catch (e: Throwable) {
             val buildTracker = GradleBuildTracker("Transformer")

@@ -113,8 +113,8 @@ class ClassProberTest : AbstractTransformTest() {
 
     @Test
     fun testProbedClassHasRelation() {
-        assertFalse(ProbedClass(File("."), "", "", listFieldTypes = listOf("Nope")).hasRelation(setOf("Yes")))
-        assertTrue(ProbedClass(File("."), "", "", listFieldTypes = listOf("Yes")).hasRelation(setOf("Yes")))
+        assertFalse(ProbedClass(File("."), File("."), "", "", listFieldTypes = listOf("Nope")).hasRelation(setOf("Yes")))
+        assertTrue(ProbedClass(File("."), File("."), "", "", listFieldTypes = listOf("Yes")).hasRelation(setOf("Yes")))
     }
 
 }

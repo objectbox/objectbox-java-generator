@@ -21,6 +21,7 @@ package io.objectbox.gradle.transform
 import java.io.File
 
 data class ProbedClass(
+        val outDir: File,
         val file: File,
         val name: String,
         val javaPackage: String,
