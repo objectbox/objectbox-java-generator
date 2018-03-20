@@ -27,6 +27,7 @@ class ObjectBoxJavaTransform(val debug: Boolean) {
         try {
             val allClassFiles = mutableSetOf<ObClassFile>()
             byteCodeDirs.forEach {
+                if (debug) println("Detected byte code dir ${it.path}")
                 it.walk().filter { it.isFile }.forEach { file ->
                     if (file.name.endsWith(".class")) {
                         allClassFiles += ObClassFile(it, file)
