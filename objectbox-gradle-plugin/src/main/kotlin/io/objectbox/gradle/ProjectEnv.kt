@@ -59,7 +59,7 @@ class ProjectEnv(val project: Project) {
      * See https://developer.android.com/studio/build/gradle-plugin-3-0-0-migration.html#new_configurations and
      * https://docs.gradle.org/current/userguide/java_library_plugin.html#sec:java_library_configurations_graph
      */
-    val dependencyScopeApiOrCompile: String by lazy {
+    val configApiOrCompile: String by lazy {
         if (project.configurations.findByName("api") != null) "api" else "compile"
     }
     val configAndroidTestImplOrCompile: String by lazy {
