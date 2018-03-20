@@ -20,6 +20,12 @@ package io.objectbox.gradle.transform
 
 import java.io.File
 
+/**
+ * Stores properties about a class (byte code) file to be used during transformation.
+ *
+ * @see ClassProber
+ * @see ClassTransformer
+ */
 data class ProbedClass(
         /**
          * Directory to write the transformed class file into. Must be above the top-most package as subdirectories for

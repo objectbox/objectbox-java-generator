@@ -18,6 +18,11 @@
 
 package io.objectbox.gradle.transform
 
+/**
+ * Thrown if a problem occurred while transforming a class (byte code).
+ *
+ * @see ClassTransformer
+ */
 class TransformException : RuntimeException {
     constructor(msg: String) : super(msg)
     constructor(msg: String, th: Throwable) : super(msg, th)

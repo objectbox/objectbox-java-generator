@@ -18,6 +18,9 @@
 
 package io.objectbox.gradle.transform
 
+/**
+ * Used by [ClassTransformer] to store and log some statistics about the transform process. Useful for testing.
+ */
 class ClassTransformerStats {
     val startTime = System.currentTimeMillis()
     var endTime = 0L

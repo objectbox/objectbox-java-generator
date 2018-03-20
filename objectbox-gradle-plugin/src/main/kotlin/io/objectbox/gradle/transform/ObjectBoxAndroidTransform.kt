@@ -39,6 +39,14 @@ import org.gradle.api.Project
 import org.gradle.api.tasks.compile.AbstractCompile
 import java.io.File
 
+/**
+ * A byte-code [Transform] to be registered with the Android plugin to run before dexing (regular builds or instrumented
+ * unit test builds). The transform results are stored in a directory assigned to this Transform.
+ * To also support transformation for local unit test builds the registration code injects custom transform tasks
+ * for each build variant with unit tests. They run an [ObjectBoxJavaTransform] before unit test code is compiled.
+ *
+ * @see ClassTransformer
+ */
 class ObjectBoxAndroidTransform(val options: PluginOptions) : Transform() {
 
     object Registration {

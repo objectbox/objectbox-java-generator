@@ -23,6 +23,13 @@ import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Transient
 import javassist.bytecode.SignatureAttribute
 
+/**
+ * Expected string representations of types, fields and methods used for probing and transforming entity and cursor
+ * byte code.
+ *
+ * @see ClassProber
+ * @see ClassTransformer
+ */
 object ClassConst {
     val entityAnnotationName = Entity::class.qualifiedName!!
     val baseEntityAnnotationName = BaseEntity::class.qualifiedName!!

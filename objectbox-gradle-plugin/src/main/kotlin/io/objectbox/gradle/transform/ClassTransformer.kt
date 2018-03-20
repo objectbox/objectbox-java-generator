@@ -31,6 +31,10 @@ import javassist.bytecode.Opcode
 import javassist.bytecode.SignatureAttribute
 import java.io.File
 
+/**
+ * Transforms entity class files: adds a BoxStore field and adds relation field (ToOne, ToMany) initialization to
+ * constructors. Transforms cursor class files: adds a body to the attach method.
+ */
 class ClassTransformer(val debug: Boolean = false) {
 
     // Use internal once fixed (Kotlin 1.1.4?)

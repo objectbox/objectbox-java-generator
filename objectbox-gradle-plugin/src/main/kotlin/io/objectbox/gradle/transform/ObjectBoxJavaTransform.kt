@@ -21,6 +21,12 @@ package io.objectbox.gradle.transform
 import io.objectbox.gradle.GradleBuildTracker
 import java.io.File
 
+/**
+ * Transforms class (byte code) files from multiple directories, overwriting the original class files.
+ *
+ * @see ClassTransformer
+ * @see ObjectBoxAndroidTransform
+ */
 class ObjectBoxJavaTransform(val debug: Boolean) {
 
     fun transform(byteCodeDirs: List<File>) {

@@ -25,6 +25,12 @@ import java.io.DataInputStream
 import java.io.File
 
 
+/**
+ * Probes a class (byte code) for properties required during transformation, notably determines if it is an entity
+ * or cursor class.
+ *
+ * @see ClassTransformer
+ */
 class ClassProber {
 
     /**
