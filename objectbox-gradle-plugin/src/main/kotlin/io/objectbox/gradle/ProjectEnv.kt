@@ -69,6 +69,13 @@ class ProjectEnv(val project: Project) {
             "androidTestCompile"
         }
     }
+    val configTestImplOrCompile: String by lazy {
+        if (project.configurations.findByName("testImplementation") != null) {
+            "testImplementation"
+        } else {
+            "testCompile"
+        }
+    }
 
     fun logDebug(msg: String) = project.logger.debug(msg)
     fun logInfo(msg: String) = project.logger.info(msg)

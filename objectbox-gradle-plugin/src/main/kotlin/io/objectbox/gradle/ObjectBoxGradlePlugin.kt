@@ -202,11 +202,14 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
                     !project.hasObjectBoxDep("objectbox-android-objectbrowser")) {
                 project.addDep(compileConfig, "io.objectbox:objectbox-android:$runtimeVersion")
             }
-            val testConfig = env.configAndroidTestImplOrCompile
-            addNativeDependency(env, testConfig)
+
+            // for instrumented unit tests
             // add jsr305 to prevent conflict with other versions added by test dependencies, like espresso
             // https://github.com/objectbox/objectbox-java/issues/73
-            project.addDep(testConfig, "com.google.code.findbugs:jsr305:3.0.2")
+            project.addDep(env.configAndroidTestImplOrCompile, "com.google.code.findbugs:jsr305:3.0.2")
+
+            // for local unit tests
+            addNativeDependency(env, env.configTestImplOrCompile)
         } else {
             project.addDep(compileConfig, "io.objectbox:objectbox-java:$runtimeVersion")
             addNativeDependency(env, compileConfig)
