@@ -3,7 +3,6 @@ package io.objectbox.processor.test;
 import io.objectbox.processor.test.RelationChildCursor.Factory;
 
 import io.objectbox.EntityInfo;
-import io.objectbox.Property;
 import io.objectbox.annotation.apihint.Internal;
 import io.objectbox.internal.CursorFactory;
 import io.objectbox.internal.IdGetter;
@@ -35,15 +34,15 @@ public final class RelationChild_ implements EntityInfo<RelationChild> {
     @Internal
     static final RelationChildIdGetter __ID_GETTER = new RelationChildIdGetter();
 
-    public final static Property id = new Property(0, 1, Long.class, "id", true, "id");
-    public final static Property parentId = new Property(1, 2, long.class, "parentId");
+    public final static io.objectbox.Property id = new io.objectbox.Property(0, 1, Long.class, "id", true, "id");
+    public final static io.objectbox.Property parentId = new io.objectbox.Property(1, 2, long.class, "parentId");
 
-    public final static Property[] __ALL_PROPERTIES = {
+    public final static io.objectbox.Property[] __ALL_PROPERTIES = {
             id,
             parentId
     };
 
-    public final static Property __ID_PROPERTY = id;
+    public final static io.objectbox.Property __ID_PROPERTY = id;
 
     public final static RelationChild_ __INSTANCE = new RelationChild_();
 
@@ -68,12 +67,12 @@ public final class RelationChild_ implements EntityInfo<RelationChild> {
     }
 
     @Override
-    public Property[] getAllProperties() {
+    public io.objectbox.Property[] getAllProperties() {
         return __ALL_PROPERTIES;
     }
 
     @Override
-    public Property getIdProperty() {
+    public io.objectbox.Property getIdProperty() {
         return __ID_PROPERTY;
     }
 

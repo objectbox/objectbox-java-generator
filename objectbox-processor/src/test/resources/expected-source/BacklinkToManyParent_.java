@@ -3,7 +3,6 @@ package io.objectbox.processor.test;
 import io.objectbox.processor.test.BacklinkToManyParentCursor.Factory;
 
 import io.objectbox.EntityInfo;
-import io.objectbox.Property;
 import io.objectbox.annotation.apihint.Internal;
 import io.objectbox.internal.CursorFactory;
 import io.objectbox.internal.IdGetter;
@@ -38,13 +37,13 @@ public final class BacklinkToManyParent_ implements EntityInfo<BacklinkToManyPar
     @Internal
     static final BacklinkToManyParentIdGetter __ID_GETTER = new BacklinkToManyParentIdGetter();
 
-    public final static Property id = new Property(0, 1, Long.class, "id", true, "id");
+    public final static io.objectbox.Property id = new io.objectbox.Property(0, 1, Long.class, "id", true, "id");
 
-    public final static Property[] __ALL_PROPERTIES = {
+    public final static io.objectbox.Property[] __ALL_PROPERTIES = {
             id
     };
 
-    public final static Property __ID_PROPERTY = id;
+    public final static io.objectbox.Property __ID_PROPERTY = id;
 
     public final static BacklinkToManyParent_ __INSTANCE = new BacklinkToManyParent_();
 
@@ -69,12 +68,12 @@ public final class BacklinkToManyParent_ implements EntityInfo<BacklinkToManyPar
     }
 
     @Override
-    public Property[] getAllProperties() {
+    public io.objectbox.Property[] getAllProperties() {
         return __ALL_PROPERTIES;
     }
 
     @Override
-    public Property getIdProperty() {
+    public io.objectbox.Property getIdProperty() {
         return __ID_PROPERTY;
     }
 
