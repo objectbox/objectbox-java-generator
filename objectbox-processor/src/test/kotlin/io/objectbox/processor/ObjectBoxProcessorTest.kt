@@ -379,4 +379,18 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
         }
     }
 
+    /**
+     * Tests if using an entity named like the io.objectbox.Property class works.
+     */
+    @Test
+    fun entityNameConflictWithObjectBoxClass() {
+        val parentName = "NameConflict"
+        val childName = "Property" // <-- named like ObjectBox class io.objectbox.Property imported in generated classes
+
+        val environment = TestEnvironment("name-conflict-temp.json")
+
+        val compilation = environment.compile(parentName, childName)
+        CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
+    }
+
 }
