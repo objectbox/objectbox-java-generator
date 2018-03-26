@@ -13,6 +13,8 @@ import javax.tools.JavaFileObject
 /**
  * Helps test processor with custom model file directory, easy access to verify schema and model.
  * Uses the compile-testing library (https://github.com/google/compile-testing).
+ *
+ * If model file name ends in "-temp.json" it will be ignored by source control.
  */
 class TestEnvironment(modelFile: String,
                       val optionDisableTransform: Boolean = false,
