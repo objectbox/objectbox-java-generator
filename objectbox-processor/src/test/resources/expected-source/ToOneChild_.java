@@ -3,7 +3,6 @@ package io.objectbox.processor.test;
 import io.objectbox.processor.test.ToOneChildCursor.Factory;
 
 import io.objectbox.EntityInfo;
-import io.objectbox.Property;
 import io.objectbox.annotation.apihint.Internal;
 import io.objectbox.internal.CursorFactory;
 import io.objectbox.internal.IdGetter;
@@ -35,17 +34,17 @@ public final class ToOneChild_ implements EntityInfo<ToOneChild> {
     @Internal
     static final ToOneChildIdGetter __ID_GETTER = new ToOneChildIdGetter();
 
-    public final static Property id = new Property(0, 1, Long.class, "id", true, "id");
-    public final static Property aParentId = new Property(1, 3, long.class, "aParentId");
-    public final static Property parentId = new Property(2, 2, long.class, "parentId");
+    public final static io.objectbox.Property id = new io.objectbox.Property(0, 1, Long.class, "id", true, "id");
+    public final static io.objectbox.Property aParentId = new io.objectbox.Property(1, 3, long.class, "aParentId");
+    public final static io.objectbox.Property parentId = new io.objectbox.Property(2, 2, long.class, "parentId");
 
-    public final static Property[] __ALL_PROPERTIES = {
+    public final static io.objectbox.Property[] __ALL_PROPERTIES = {
             id,
             aParentId,
             parentId
     };
 
-    public final static Property __ID_PROPERTY = id;
+    public final static io.objectbox.Property __ID_PROPERTY = id;
 
     public final static ToOneChild_ __INSTANCE = new ToOneChild_();
 
@@ -70,12 +69,12 @@ public final class ToOneChild_ implements EntityInfo<ToOneChild> {
     }
 
     @Override
-    public Property[] getAllProperties() {
+    public io.objectbox.Property[] getAllProperties() {
         return __ALL_PROPERTIES;
     }
 
     @Override
-    public Property getIdProperty() {
+    public io.objectbox.Property getIdProperty() {
         return __ID_PROPERTY;
     }
 

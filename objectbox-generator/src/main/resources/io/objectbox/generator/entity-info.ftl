@@ -24,8 +24,9 @@ package ${entity.javaPackageDao};
 
 import ${entity.javaPackageDao}.${entity.classNameDao}.Factory;
 
+<#-- Note: Using fully qualified imports for ObjectBox classes which names are likely
+to conflict with user-defined entity classes. -->
 import io.objectbox.EntityInfo;
-import io.objectbox.Property;
 import io.objectbox.annotation.apihint.Internal;
 import io.objectbox.internal.CursorFactory;
 import io.objectbox.internal.IdGetter;
@@ -81,19 +82,19 @@ public final class ${entity.className}_ implements EntityInfo<${entity.className
     static final ${entity.className}IdGetter __ID_GETTER = new ${entity.className}IdGetter();
 
 <#list entity.propertiesColumns as property>
-    public final static Property ${property.propertyName} = new Property(${property_index}, <#if
+    public final static io.objectbox.Property ${property.propertyName} = new io.objectbox.Property(${property_index}, <#if
     property.modelId??>${property.modelId.id?c}<#else>0</#if>, ${property.javaType}.class, "${property.propertyName}"<#if
     property.primaryKey || (property.dbName?? && property.dbName != property.propertyName) || property.converter??>, ${property.primaryKey?string}, "${property.dbName}"<#if
 property.converter??>, ${property.converterClassName}.class, ${property.customTypeClassName}.class</#if></#if>);
 </#list>
 
-    public final static Property[] __ALL_PROPERTIES = {
+    public final static io.objectbox.Property[] __ALL_PROPERTIES = {
 <#list entity.propertiesColumns as property>
         ${property.propertyName}<#if property?has_next>,</#if>
 </#list>
     };
 
-    public final static Property __ID_PROPERTY = ${entity.pkProperty.propertyName};
+    public final static io.objectbox.Property __ID_PROPERTY = ${entity.pkProperty.propertyName};
 
     public final static ${entity.className}_ __INSTANCE = new ${entity.className}_();
 
@@ -118,12 +119,12 @@ property.converter??>, ${property.converterClassName}.class, ${property.customTy
     }
 
     @Override
-    public Property[] getAllProperties() {
+    public io.objectbox.Property[] getAllProperties() {
         return __ALL_PROPERTIES;
     }
 
     @Override
-    public Property getIdProperty() {
+    public io.objectbox.Property getIdProperty() {
         return __ID_PROPERTY;
     }
 

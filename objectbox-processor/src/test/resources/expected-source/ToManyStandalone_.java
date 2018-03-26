@@ -3,7 +3,6 @@ package io.objectbox.processor.test;
 import io.objectbox.processor.test.ToManyStandaloneCursor.Factory;
 
 import io.objectbox.EntityInfo;
-import io.objectbox.Property;
 import io.objectbox.annotation.apihint.Internal;
 import io.objectbox.internal.CursorFactory;
 import io.objectbox.internal.IdGetter;
@@ -37,13 +36,13 @@ public final class ToManyStandalone_ implements EntityInfo<ToManyStandalone> {
     @Internal
     static final ToManyStandaloneIdGetter __ID_GETTER = new ToManyStandaloneIdGetter();
 
-    public final static Property id = new Property(0, 1, Long.class, "id", true, "id");
+    public final static io.objectbox.Property id = new io.objectbox.Property(0, 1, Long.class, "id", true, "id");
 
-    public final static Property[] __ALL_PROPERTIES = {
+    public final static io.objectbox.Property[] __ALL_PROPERTIES = {
             id
     };
 
-    public final static Property __ID_PROPERTY = id;
+    public final static io.objectbox.Property __ID_PROPERTY = id;
 
     public final static ToManyStandalone_ __INSTANCE = new ToManyStandalone_();
 
@@ -68,12 +67,12 @@ public final class ToManyStandalone_ implements EntityInfo<ToManyStandalone> {
     }
 
     @Override
-    public Property[] getAllProperties() {
+    public io.objectbox.Property[] getAllProperties() {
         return __ALL_PROPERTIES;
     }
 
     @Override
-    public Property getIdProperty() {
+    public io.objectbox.Property getIdProperty() {
         return __ID_PROPERTY;
     }
 

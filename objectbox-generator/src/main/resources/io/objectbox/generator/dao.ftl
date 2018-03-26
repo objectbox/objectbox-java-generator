@@ -29,8 +29,8 @@ package ${entity.javaPackageDao};
 import java.util.List;
 </#if>
 
-import io.objectbox.Box;
-import io.objectbox.Property;
+<#-- Note: Using fully qualified imports for ObjectBox classes which names are likely
+to conflict with user-defined entity classes. -->
 import ${daoCompatPackage}.AbstractDao;
 import ${daoCompatPackage}.identityscope.IdentityScopeLong;
 <#if entity.incomingToManyRelations?has_content>
@@ -75,7 +75,7 @@ public class ${entity.classNameDao} extends AbstractDao<${entity.className}, Lon
      */
     public static class Properties {
 <#list entity.propertiesColumns as property>
-        public final static Property ${property.propertyName?cap_first} = ${entity.className}_.${property.propertyName};
+        public final static io.objectbox.Property ${property.propertyName?cap_first} = ${entity.className}_.${property.propertyName};
 </#list>
     }
 
@@ -86,11 +86,11 @@ public class ${entity.classNameDao} extends AbstractDao<${entity.className}, Lon
     private Query<${toMany.targetEntity.className}> ${toMany.sourceEntity.className?uncap_first}_${toMany.name?cap_first}Query;
 </#list>
 
-    public ${entity.classNameDao}(Box<${entity.className}> box, IdentityScopeLong<${entity.className}> identityScope) {
+    public ${entity.classNameDao}(io.objectbox.Box<${entity.className}> box, IdentityScopeLong<${entity.className}> identityScope) {
         super(box, BOX_PROPERTIES, identityScope);
     }
     
-    public ${entity.classNameDao}(${schema.prefix}DaoSession daoSession, Box<${entity.className}> box, IdentityScopeLong<${entity.className}> identityScope) {
+    public ${entity.classNameDao}(${schema.prefix}DaoSession daoSession, io.objectbox.Box<${entity.className}> box, IdentityScopeLong<${entity.className}> identityScope) {
         super(daoSession, box, BOX_PROPERTIES, identityScope);
     }
 
