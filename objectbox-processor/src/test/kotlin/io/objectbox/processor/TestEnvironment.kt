@@ -17,6 +17,7 @@ import javax.tools.JavaFileObject
  * If model file name ends in "-temp.json" it will be ignored by source control.
  */
 class TestEnvironment(modelFile: String,
+                      val myObjectBoxPackage: String? = null,
                       val optionDisableTransform: Boolean = false,
                       copyModelFile: Boolean = false) {
 
@@ -32,6 +33,7 @@ class TestEnvironment(modelFile: String,
             val options = mutableListOf("-A${ObjectBoxProcessor.OPTION_MODEL_PATH}=$modelFilePath")
             options += "-A${ObjectBoxProcessor.OPTION_DEBUG}=true"
             if (optionDisableTransform) options += "-A${ObjectBoxProcessor.OPTION_TRANSFORMATION_ENABLED}=false"
+            if (myObjectBoxPackage != null) options += "-A${ObjectBoxProcessor.OPTION_MYOBJECTBOX_PACKAGE}=$myObjectBoxPackage"
             return options
         }
 

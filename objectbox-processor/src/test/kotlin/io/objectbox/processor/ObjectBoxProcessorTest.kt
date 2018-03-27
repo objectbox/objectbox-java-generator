@@ -232,6 +232,27 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
     }
 
     @Test
+    fun simpleEntity_customMyObjectBoxPackage() {
+        val className = "SimpleEntity"
+
+        // need stable model file + ids to verify sources match
+        val environment = TestEnvironment("default.json", "io.objectbox.processor.custom")
+
+        val compilation = environment.compile(className)
+        CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
+
+        // assert generated files source trees
+        // MyObjectBox package and imports should be different
+        val generatedFile = CompilationSubject.assertThat(compilation)
+                .generatedSourceFile("io.objectbox.processor.custom.MyObjectBox")
+        generatedFile.isNotNull()
+        generatedFile.hasSourceEquivalentTo(JavaFileObjects.forResource("expected-source/MyObjectBox-custom.java"))
+        // all other files should stay the same
+        assertGeneratedSourceMatches(compilation, "${className}_")
+        assertGeneratedSourceMatches(compilation, "${className}Cursor")
+    }
+
+    @Test
     fun testIdNotLong() {
         // test that instead of just failing compilation, processor warns if @Id is not Long
         val source = """
