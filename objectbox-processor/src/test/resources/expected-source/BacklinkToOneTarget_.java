@@ -1,6 +1,6 @@
 package io.objectbox.processor.test;
 
-import io.objectbox.processor.test.BacklinkListParentCursor.Factory;
+import io.objectbox.processor.test.BacklinkToOneTargetCursor.Factory;
 
 import io.objectbox.EntityInfo;
 import io.objectbox.annotation.apihint.Internal;
@@ -18,24 +18,24 @@ import java.util.List;
 //////
 
 /**
- * Properties for entity "BacklinkListParent". Can be used for QueryBuilder and for referencing DB names.
+ * Properties for entity "BacklinkToOneTarget". Can be used for QueryBuilder and for referencing DB names.
  */
-public final class BacklinkListParent_ implements EntityInfo<BacklinkListParent> {
+public final class BacklinkToOneTarget_ implements EntityInfo<BacklinkToOneTarget> {
 
     // Leading underscores for static constants to avoid naming conflicts with property names
 
-    public static final String __ENTITY_NAME = "BacklinkListParent";
+    public static final String __ENTITY_NAME = "BacklinkToOneTarget";
 
     public static final int __ENTITY_ID = 1;
 
-    public static final Class<BacklinkListParent> __ENTITY_CLASS = BacklinkListParent.class;
+    public static final Class<BacklinkToOneTarget> __ENTITY_CLASS = BacklinkToOneTarget.class;
 
-    public static final String __DB_NAME = "BacklinkListParent";
+    public static final String __DB_NAME = "BacklinkToOneTarget";
 
-    public static final CursorFactory<BacklinkListParent> __CURSOR_FACTORY = new Factory();
+    public static final CursorFactory<BacklinkToOneTarget> __CURSOR_FACTORY = new Factory();
 
     @Internal
-    static final BacklinkListParentIdGetter __ID_GETTER = new BacklinkListParentIdGetter();
+    static final BacklinkToOneTargetIdGetter __ID_GETTER = new BacklinkToOneTargetIdGetter();
 
     public final static io.objectbox.Property id = new io.objectbox.Property(0, 1, Long.class, "id", true, "id");
 
@@ -45,7 +45,7 @@ public final class BacklinkListParent_ implements EntityInfo<BacklinkListParent>
 
     public final static io.objectbox.Property __ID_PROPERTY = id;
 
-    public final static BacklinkListParent_ __INSTANCE = new BacklinkListParent_();
+    public final static BacklinkToOneTarget_ __INSTANCE = new BacklinkToOneTarget_();
 
     @Override
     public String getEntityName() {
@@ -58,7 +58,7 @@ public final class BacklinkListParent_ implements EntityInfo<BacklinkListParent>
     }
 
     @Override
-    public Class<BacklinkListParent> getEntityClass() {
+    public Class<BacklinkToOneTarget> getEntityClass() {
         return __ENTITY_CLASS;
     }
 
@@ -78,37 +78,37 @@ public final class BacklinkListParent_ implements EntityInfo<BacklinkListParent>
     }
 
     @Override
-    public IdGetter<BacklinkListParent> getIdGetter() {
+    public IdGetter<BacklinkToOneTarget> getIdGetter() {
         return __ID_GETTER;
     }
 
     @Override
-    public CursorFactory<BacklinkListParent> getCursorFactory() {
+    public CursorFactory<BacklinkToOneTarget> getCursorFactory() {
         return __CURSOR_FACTORY;
     }
 
     @Internal
-    static final class BacklinkListParentIdGetter implements IdGetter<BacklinkListParent> {
+    static final class BacklinkToOneTargetIdGetter implements IdGetter<BacklinkToOneTarget> {
         @Override
-        public long getId(BacklinkListParent object) {
+        public long getId(BacklinkToOneTarget object) {
             Long id = object.id;
             return id != null? id : 0;
         }
     }
 
     /** to-many */
-    public static final RelationInfo<BacklinkListChild> children = new RelationInfo<>(BacklinkListParent_.__INSTANCE, BacklinkListChild_.__INSTANCE,
-            new ToManyGetter<BacklinkListParent>() {
+    public static final RelationInfo<BacklinkToOneSource> sources = new RelationInfo<>(BacklinkToOneTarget_.__INSTANCE, BacklinkToOneSource_.__INSTANCE,
+            new ToManyGetter<BacklinkToOneTarget>() {
                 @Override
-                public List<BacklinkListChild> getToMany(BacklinkListParent entity) {
-                    return entity.children;
+                public List<BacklinkToOneSource> getToMany(BacklinkToOneTarget entity) {
+                    return entity.sources;
                 }
             },
-            BacklinkListChild_.parentId,
-            new ToOneGetter<BacklinkListChild>() {
+            BacklinkToOneSource_.targetId,
+            new ToOneGetter<BacklinkToOneSource>() {
                 @Override
-                public ToOne<BacklinkListParent> getToOne(BacklinkListChild entity) {
-                    return entity.parent;
+                public ToOne<BacklinkToOneTarget> getToOne(BacklinkToOneSource entity) {
+                    return entity.target;
                 }
             });
 

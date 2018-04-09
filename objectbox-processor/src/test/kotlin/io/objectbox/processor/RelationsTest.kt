@@ -163,37 +163,99 @@ class RelationsTest : BaseProcessorTest() {
     }
 
     @Test
-    fun testBacklinkList() {
-        // tested relation: a parent has children
-        val parentName = "BacklinkListParent"
-        val childName = "BacklinkListChild"
+    fun backlink_toOne_list() {
+        // tested relation: a source has ONE target, a target a BACKLINK to its sources
+        val targetName = "BacklinkToOneListTarget"
+        val sourceName = "BacklinkToOneListSource"
 
         val environment = TestEnvironment("backlink-list.json")
 
-        val compilation = environment.compile(parentName, childName)
+        val compilation = environment.compile(targetName, sourceName)
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
 
-        assertGeneratedSourceMatches(compilation, "${parentName}_")
-        assertGeneratedSourceMatches(compilation, "${parentName}Cursor")
+        assertGeneratedSourceMatches(compilation, "${targetName}_")
+        assertGeneratedSourceMatches(compilation, "${targetName}Cursor")
 
-        assertToManySchema(environment.schema, parentName, childName)
+        assertToManySchema(environment.schema, targetName, sourceName)
     }
 
     @Test
-    fun testBacklinkToMany() {
-        // tested relation: a parent has children
-        val parentName = "BacklinkToManyParent"
-        val childName = "BacklinkToManyChild"
+    fun backlink_toOne_toMany() {
+        // tested relation: a source has ONE target, a target a BACKLINK to its sources
+        val targetName = "BacklinkToOneTarget"
+        val sourceName = "BacklinkToOneSource"
 
         val environment = TestEnvironment("backlink-to-many.json")
 
-        val compilation = environment.compile(parentName, childName)
+        val compilation = environment.compile(targetName, sourceName)
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
 
-        assertGeneratedSourceMatches(compilation, "${parentName}_")
-        assertGeneratedSourceMatches(compilation, "${parentName}Cursor")
+        assertGeneratedSourceMatches(compilation, "${targetName}_")
+        assertGeneratedSourceMatches(compilation, "${targetName}Cursor")
 
-        assertToManySchema(environment.schema, parentName, childName)
+        assertToManySchema(environment.schema, targetName, sourceName)
+    }
+
+    @Test
+    fun backlink_multiple() {
+        // test if multiple to-one fields for one @Backlink (without 'to' value) are detected
+        val targetName = "BacklinkMultipleTarget"
+        val sourceName = "BacklinkMultipleSource"
+
+        val environment = TestEnvironment("not-generated.json")
+
+        val compilation = environment.compile(targetName, sourceName)
+        CompilationSubject.assertThat(compilation).failed()
+
+        CompilationSubject.assertThat(compilation).hadErrorContaining("Set name of one to-one relation of '$sourceName'")
+    }
+
+    @Test
+    fun backlink_withTo() {
+        // test if correct to-one of @Backlink (with 'to' value) is detected
+        val targetName = "BacklinkWithToTarget"
+        val sourceName = "BacklinkWithToSource"
+
+        val environment = TestEnvironment("backlink-with-to-temp.json")
+        environment.cleanModelFile()
+
+        val compilation = environment.compile(targetName, sourceName)
+        CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
+
+        val schema = environment.schema
+
+        val target = schema.entities.single { it.className == targetName }
+        val source = schema.entities.single { it.className == sourceName }
+
+        for (prop in source.properties) {
+            when (prop.propertyName) {
+                "targetId" -> {
+                    Truth.assertThat(prop.dbName).isEqualTo(prop.propertyName)
+                    Truth.assertThat(prop.virtualTargetName).isEqualTo("target")
+                    assertPrimitiveType(prop, PropertyType.RelationId)
+                    assertToManyRelation(target, source, prop)
+                }
+                "id", "targetOtherId" -> {
+                    // just ensure its exists
+                }
+                else -> Assert.fail("Found stray property '${prop.propertyName}' in schema.")
+            }
+        }
+    }
+
+    @Test
+    fun backlink_wrongTo() {
+        // test if correct to-one of @Backlink (with 'to' value) is detected
+        val targetName = "BacklinkWrongToTarget"
+        val sourceName = "BacklinkWrongToSource"
+
+        val environment = TestEnvironment("not-generated.json")
+
+        val compilation = environment.compile(targetName, sourceName)
+        CompilationSubject.assertThat(compilation).failed()
+
+        CompilationSubject.assertThat(compilation)
+                .hadErrorContaining("Could not find target property 'wrongTarget' in '$sourceName'")
     }
 
     @Test
@@ -243,68 +305,6 @@ class RelationsTest : BaseProcessorTest() {
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
     }
 
-    @Test
-    fun testBacklinkMultiple() {
-        // test if multiple to-one fields for one @Backlink (without 'to' value) are detected
-        val parentName = "BacklinkMultipleParent"
-        val childName = "BacklinkMultipleChild"
-
-        val environment = TestEnvironment("not-generated.json")
-
-        val compilation = environment.compile(parentName, childName)
-        CompilationSubject.assertThat(compilation).failed()
-
-        CompilationSubject.assertThat(compilation).hadErrorContaining("Set name of one to-one relation of '$childName'")
-    }
-
-    @Test
-    fun testBacklinkWithTo() {
-        // test if correct to-one of @Backlink (with 'to' value) is detected
-        val parentName = "BacklinkWithToParent"
-        val childName = "BacklinkWithToChild"
-
-        val environment = TestEnvironment("backlink-with-to-temp.json")
-        environment.cleanModelFile()
-
-        val compilation = environment.compile(parentName, childName)
-        CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
-
-        val schema = environment.schema
-
-        val parent = schema.entities.single { it.className == parentName }
-        val child = schema.entities.single { it.className == childName }
-
-        for (prop in child.properties) {
-            when (prop.propertyName) {
-                "parentId" -> {
-                    Truth.assertThat(prop.dbName).isEqualTo(prop.propertyName)
-                    Truth.assertThat(prop.virtualTargetName).isEqualTo("parent")
-                    assertPrimitiveType(prop, PropertyType.RelationId)
-                    assertToManyRelation(parent, child, prop)
-                }
-                "id", "parentOtherId" -> {
-                    // just ensure its exists
-                }
-                else -> Assert.fail("Found stray property '${prop.propertyName}' in schema.")
-            }
-        }
-    }
-
-    @Test
-    fun testBacklinkWrongTo() {
-        // test if correct to-one of @Backlink (with 'to' value) is detected
-        val parentName = "BacklinkWrongToParent"
-        val childName = "BacklinkWrongToChild"
-
-        val environment = TestEnvironment("not-generated.json")
-
-        val compilation = environment.compile(parentName, childName)
-        CompilationSubject.assertThat(compilation).failed()
-
-        CompilationSubject.assertThat(compilation)
-                .hadErrorContaining("Could not find target property 'wrongParent' in '$childName'")
-    }
-
     private fun assertToManySchema(schema: Schema, parentName: String, childName: String) {
         // assert schema
         Truth.assertThat(schema).isNotNull()
@@ -325,6 +325,7 @@ class RelationsTest : BaseProcessorTest() {
         }
         // assert child properties
         val child = schema.entities.single { it.className == childName }
+        val targetPropertyName = "target"
         for (prop in child.properties) {
             when (prop.propertyName) {
                 "id" -> {
@@ -333,13 +334,13 @@ class RelationsTest : BaseProcessorTest() {
                     Truth.assertThat(prop.dbName).isEqualTo("id")
                     assertType(prop, PropertyType.Long)
                 }
-                "parentId" -> {
+                "${targetPropertyName}Id" -> {
                     Truth.assertThat(prop.dbName).isEqualTo(prop.propertyName)
-                    Truth.assertThat(prop.virtualTargetName).isEqualTo("parent")
+                    Truth.assertThat(prop.virtualTargetName).isEqualTo(targetPropertyName)
                     assertPrimitiveType(prop, PropertyType.RelationId)
                     Truth.assertThat(child.indexes).hasSize(1)
                     Truth.assertThat(child.toOneRelations).hasSize(1)
-                    assertToOneIndexAndRelation(child, parent, prop, toOneName = "parent")
+                    assertToOneIndexAndRelation(child, parent, prop, toOneName = targetPropertyName)
                     assertToManyRelation(parent, child, prop)
                 }
                 else -> Assert.fail("Found stray property '${prop.propertyName}' in schema.")
@@ -350,7 +351,7 @@ class RelationsTest : BaseProcessorTest() {
     private fun assertToManyRelation(parent: Entity, child: Entity, prop: Property) {
         for (toManyRelation in parent.toManyRelations) {
             when (toManyRelation.name) {
-                "children" -> {
+                "sources" -> {
                     Truth.assertThat(toManyRelation.sourceEntity).isEqualTo(parent)
                     Truth.assertThat(toManyRelation.targetEntity).isEqualTo(child)
                     val toMany = toManyRelation as ToMany
@@ -358,7 +359,7 @@ class RelationsTest : BaseProcessorTest() {
                     Truth.assertThat(toMany.targetProperties[0]).isEqualTo(prop)
                     // generator takes care of populating sourceProperties if we do not set them, so do not assert here
                 }
-                "childrenOther" -> {
+                "sourcesOther" -> {
                     Truth.assertThat(toManyRelation.sourceEntity).isEqualTo(parent)
                     Truth.assertThat(toManyRelation.targetEntity).isEqualTo(child)
                 }

@@ -6,14 +6,12 @@ import io.objectbox.annotation.Id;
 import io.objectbox.relation.ToOne;
 
 @Entity
-public class BacklinkMultipleChild {
+public class BacklinkToOneListSource {
 
     @Id
     Long id;
 
-    ToOne<BacklinkMultipleParent> parentA = new ToOne<>(this, BacklinkMultipleChild_.parentA);
-
-    ToOne<BacklinkMultipleParent> parentB = new ToOne<>(this, BacklinkMultipleChild_.parentB);
+    ToOne<BacklinkToOneListTarget> target = new ToOne<>(this, BacklinkToOneListSource_.target);
 
     // need to add manually, as processor can not modify entity
     transient BoxStore __boxStore;

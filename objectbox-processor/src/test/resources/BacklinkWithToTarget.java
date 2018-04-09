@@ -7,13 +7,16 @@ import io.objectbox.annotation.Id;
 import io.objectbox.relation.ToMany;
 
 @Entity
-public class BacklinkToManyParent {
+public class BacklinkWithToTarget {
 
     @Id
     Long id;
 
-    @Backlink
-    ToMany<BacklinkToManyChild> children = new ToMany<>(this, BacklinkToManyParent_.children);
+    @Backlink(to = "target")
+    ToMany<BacklinkWithToSource> sources = new ToMany<>(this, BacklinkWithToTarget_.sources);
+
+    @Backlink(to = "targetOtherId") // with "Id" postfix for the property
+    ToMany<BacklinkWithToSource> sourcesOther = new ToMany<>(this, BacklinkWithToTarget_.sourcesOther);
 
     // need to add manually, as processor can not modify entity
     transient BoxStore __boxStore;

@@ -1,21 +1,17 @@
 package io.objectbox.processor.test;
 
-import java.util.List;
-
 import io.objectbox.BoxStore;
-import io.objectbox.annotation.Backlink;
 import io.objectbox.annotation.Entity;
 import io.objectbox.annotation.Id;
-import io.objectbox.relation.ToMany;
+import io.objectbox.relation.ToOne;
 
 @Entity
-public class BacklinkListParent {
+public class BacklinkToOneSource {
 
     @Id
     Long id;
 
-    @Backlink
-    List<BacklinkListChild> children = new ToMany<>(this, BacklinkListParent_.children);
+    ToOne<BacklinkToOneTarget> target = new ToOne<>(this, BacklinkToOneSource_.target);
 
     // need to add manually, as processor can not modify entity
     transient BoxStore __boxStore;
