@@ -49,6 +49,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
 
     companion object {
         val OPTION_MODEL_PATH: String = "objectbox.modelPath"
+        val OPTION_MYOBJECTBOX_PACKAGE: String = "objectbox.myObjectBoxPackage"
         val OPTION_DAO_COMPAT: String = "objectbox.daoCompat"
         val OPTION_DAO_PACKAGE: String = "objectbox.daoPackage"
         val OPTION_FLATBUFFERS_SCHEMA_FOLDER: String = "objectbox.flatbuffersSchemaFolder"
@@ -97,6 +98,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
     private lateinit var filer: Filer
     private lateinit var messages: Messages
     private var customModelPath: String? = null
+    private var customDefaultPackage: String? = null
     private var daoCompat: Boolean = false
     private var transformationEnabled: Boolean = false
     private var daoCompatPackage: String? = null
@@ -113,6 +115,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
 
         val options = env.options
         customModelPath = options[OPTION_MODEL_PATH]
+        customDefaultPackage = options[OPTION_MYOBJECTBOX_PACKAGE]
         daoCompat = "true" == options[OPTION_DAO_COMPAT]
         debug = "true" == options[OPTION_DEBUG]
         daoCompatPackage = options[OPTION_DAO_PACKAGE]
@@ -133,6 +136,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
     override fun getSupportedOptions(): MutableSet<String> {
         val options = LinkedHashSet<String>()
         options.add(OPTION_MODEL_PATH)
+        options.add(OPTION_MYOBJECTBOX_PACKAGE)
         options.add(OPTION_DAO_COMPAT)
         options.add(OPTION_DAO_PACKAGE)
         options.add(OPTION_FLATBUFFERS_SCHEMA_FOLDER)
@@ -169,6 +173,8 @@ open class ObjectBoxProcessor : AbstractProcessor() {
 
         val defaultJavaPackage = if (daoCompat && daoCompatPackage != null) {
             daoCompatPackage
+        } else if (customDefaultPackage != null) {
+            customDefaultPackage
         } else {
             // entities may be in multiple packages, so generate MyObjectBox in one that is least likely to change
             val packages = entities.map { elementUtils.getPackageOf(it).qualifiedName.toString() }
