@@ -253,6 +253,16 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
     }
 
     @Test
+    fun simpleEntity_noPackage() {
+        val className = "SimpleEntityNoPackage"
+
+        val environment = TestEnvironment("default-no-pkg-temp.json")
+
+        val compilation = environment.compile(className)
+        CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
+    }
+
+    @Test
     fun testIdNotLong() {
         // test that instead of just failing compilation, processor warns if @Id is not Long
         val source = """
