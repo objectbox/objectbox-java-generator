@@ -23,7 +23,7 @@ along with ObjectBox Build Tools.  If not, see <http://www.gnu.org/licenses/>.
 
 <#assign toBindType = {"Boolean":"Long", "Byte":"Long", "Short":"Long", "Int":"Long", "Long":"Long", "Float":"Double", "Double":"Double", "String":"String", "ByteArray":"Blob", "Date": "Long" } />
 <#assign toCursorType = {"Boolean":"Short", "Byte":"Short", "Short":"Short", "Int":"Int", "Long":"Long", "Float":"Float", "Double":"Double", "String":"String", "ByteArray":"Blob", "Date": "Long"  } />
-package ${entity.javaPackageDao};
+<#if entity.javaPackageDao?length != 0>package ${entity.javaPackageDao};</#if>
 
 <#if entity.incomingToManyRelations?has_content || entity.toManyRelations?has_content>
 import java.util.List;
@@ -40,21 +40,18 @@ import io.objectbox.relation.ToMany;
 <#if entity.toOneRelations?has_content>
 import io.objectbox.relation.ToOne;
 </#if>
-<#if entity.javaPackageDao != schema.defaultJavaPackageDao>
-//import ${schema.defaultJavaPackageDao}.${schema.prefix}DaoSession;
 
-</#if>
 <#if entity.additionalImportsDao?has_content>
 <#list entity.additionalImportsDao as additionalImport>
 import ${additionalImport};
 </#list>
 
 </#if>
-<#if entity.javaPackageDao != entity.javaPackage>
+<#if entity.javaPackageDao != entity.javaPackage && entity.javaPackage?length != 0>
 import ${entity.javaPackage}.${entity.className};
 
 </#if>
-<#if entity.protobuf>
+<#if entity.protobuf && entity.javaPackage?length != 0>
 import ${entity.javaPackage}.${entity.className}.Builder;
 
 </#if>

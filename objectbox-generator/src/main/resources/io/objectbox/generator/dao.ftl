@@ -23,7 +23,7 @@ along with ObjectBox Build Tools.  If not, see <http://www.gnu.org/licenses/>.
 <#assign daoCompatPackage = "org.greenrobot.daocompat" >
 <#assign toBindType = {"Boolean":"Long", "Byte":"Long", "Short":"Long", "Int":"Long", "Long":"Long", "Float":"Double", "Double":"Double", "String":"String", "ByteArray":"Blob", "Date": "Long" } />
 <#assign toCursorType = {"Boolean":"Short", "Byte":"Short", "Short":"Short", "Int":"Int", "Long":"Long", "Float":"Float", "Double":"Double", "String":"String", "ByteArray":"Blob", "Date": "Long"  } />
-package ${entity.javaPackageDao};
+<#if entity.javaPackageDao?length != 0>package ${entity.javaPackageDao};</#if>
 
 <#if entity.toOneRelations?has_content || entity.incomingToManyRelations?has_content>
 import java.util.List;
@@ -38,7 +38,7 @@ import ${daoCompatPackage}.query.Query;
 import ${daoCompatPackage}.query.QueryBuilder;
 </#if>
 
-<#if entity.javaPackageDao != schema.defaultJavaPackageDao>
+<#if entity.javaPackageDao != schema.defaultJavaPackageDao && schema.defaultJavaPackageDao?length != 0>
 import ${schema.defaultJavaPackageDao}.${schema.prefix}DaoSession;
 
 </#if>
@@ -48,11 +48,11 @@ import ${additionalImport};
 </#list>
 
 </#if>
-<#if entity.javaPackageDao != entity.javaPackage>
+<#if entity.javaPackageDao != entity.javaPackage && entity.javaPackage?length != 0>
 import ${entity.javaPackage}.${entity.className};
 
 </#if>
-<#if entity.protobuf>
+<#if entity.protobuf && entity.javaPackage?length != 0>
 import ${entity.javaPackage}.${entity.className}.Builder;
 
 </#if>

@@ -18,7 +18,7 @@ along with ObjectBox Build Tools.  If not, see <http://www.gnu.org/licenses/>.
 
 -->
 <#-- @ftlvariable name="schema" type="io.objectbox.generator.model.Schema" -->
-package ${schema.defaultJavaPackageDao};
+<#if schema.defaultJavaPackageDao?length != 0>package ${schema.defaultJavaPackageDao};</#if>
 
 import io.objectbox.BoxStore;
 import io.objectbox.BoxStoreBuilder;
