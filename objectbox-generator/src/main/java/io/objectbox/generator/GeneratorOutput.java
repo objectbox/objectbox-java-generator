@@ -56,7 +56,12 @@ public class GeneratorOutput {
             return new FileWriter(getFileOrNull(javaPackage, fileOrJavaClassName, fileExtension));
         } else if (filer != null && ".java".equals(fileExtension)) {
             // note: filer could write to files with other extensions, but warns about it, so we do not
-            String fileName = javaPackage + "." + fileOrJavaClassName;
+            String fileName;
+            if (javaPackage != null && javaPackage.length() != 0) {
+                fileName = javaPackage + "." + fileOrJavaClassName;
+            } else {
+                fileName = fileOrJavaClassName; // no package
+            }
             JavaFileObject sourceFile = filer.createSourceFile(fileName);
             return sourceFile.openWriter();
         } else {
