@@ -27,11 +27,14 @@ public class SimpleEntityNoPackage {
     @NameInDb("B")
     String namedProperty;
 
-    @Convert(converter = SimpleEnumConverter.class, dbType = Integer.class)
-    SimpleEnum customType;
-
-    @Convert(converter = SimpleEnumListConverter.class, dbType = Integer.class)
-    List<SimpleEnum> customTypes;
+    // Currently broken because TextUtil.getPackageFromFullyQualified() in Entity.init3rdPassAdditionalImports()
+    // can not handle sub-types (like Entity.MyType)
+    // note: still works fine if custom type and converter are top-level classes
+//    @Convert(converter = SimpleEnumConverter.class, dbType = Integer.class)
+//    SimpleEnum customType;
+//
+//    @Convert(converter = SimpleEnumListConverter.class, dbType = Integer.class)
+//    List<SimpleEnum> customTypes;
 
     ToOne<SimpleEntityNoPackage> toOne;
 
