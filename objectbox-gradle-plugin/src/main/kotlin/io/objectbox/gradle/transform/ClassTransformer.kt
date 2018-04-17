@@ -260,9 +260,9 @@ class ClassTransformer(val debug: Boolean = false) {
                                       relationFields: List<RelationField>): Boolean {
         var changed = false
         for (constructor in ctClass.constructors) {
-            // skip constructors that call another constructor to
-            // avoid overwriting changes to relation fields made in the called constructor
-            if (!constructor.callsSuper()) {
+            // Skip constructors that call another (this) constructor to avoid initializing fields multiple times.
+            // This would also overwrite potential changes to relation fields made in the called constructor.
+            if (!constructor.callsSuper()) { // "calls super()" == "does not call this()"
                 if (debug) println("Skipping constructor ${constructor.longName} calling another constructor")
                 continue
             }
