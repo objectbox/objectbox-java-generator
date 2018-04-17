@@ -172,6 +172,16 @@ class ClassTransformerTest : AbstractTransformTest() {
     }
 
     @Test
+    fun doNotTransform_constructorCallingConstructor() {
+        val classes = listOf(EntityMultipleCtors::class, EntityMultipleCtors_::class)
+        val (stats) = testTransformOrCopy(classes, 1, 1)
+        assertEquals(1, stats.toManyInitializerAdded) // only ctor calling super should be transformed
+        assertEquals(1, stats.boxStoreFieldsAdded)
+        assertEquals(0, stats.toOnesFound)
+        assertEquals(1, stats.toManyFound)
+    }
+
+    @Test
     fun testTransformCursor() {
         val classes = listOf(TestCursor::class, EntityBoxStoreField::class)
         testTransformOrCopy(classes, 2, 0)
