@@ -283,6 +283,8 @@ class ClassTransformer(val debug: Boolean = false) {
                     if (field.relationType == ClassConst.toOne) context.stats.toOnesInitializerAdded++
                     else if (field.relationType == ClassConst.toMany) context.stats.toManyInitializerAdded++
                     changed = true
+                } else {
+                    println("Warning: ${ctClass.name} constructor initializes relation field '$fieldName', this might break ObjectBox relations")
                 }
             }
         }
