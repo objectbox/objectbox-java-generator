@@ -158,6 +158,21 @@ object EntityTransientList_ : EntityInfo<EntityToOneLateInit> {
     val actualRelation = RelationInfo<EntityEmpty>(null, null, null, null)
 }
 
+@Entity
+class EntityMultipleCtors {
+    lateinit var toMany: ToMany<EntityMultipleCtors>
+
+    constructor()
+
+    @Suppress("UNUSED_PARAMETER")
+    constructor(someValue: String) : this()
+}
+
+object EntityMultipleCtors_ : EntityInfo<EntityMultipleCtors> {
+    @JvmField
+    val toMany = RelationInfo<EntityMultipleCtors>(null, null, null, null)
+}
+
 @BaseEntity
 open class EntityBaseWithRelations {
     lateinit var entityBaseToMany: ToMany<EntityEmpty>
