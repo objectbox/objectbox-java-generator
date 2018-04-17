@@ -2,9 +2,9 @@ buildscript {
     ext.ob_expected_version = project.hasProperty('expectedVersion') ? project.property('expectedVersion') : 'UNDEFINED'
     ext.android_version = '3.0.0' // minimal supported version
     ext.kotlin_version = '1.2.31'
-    ext.objectbox_plugin_version = '1.5.1-ignore-ctor-w-this-SNAPSHOT' // used to version this projects' artifacts
-//    ext.objectbox_java_version = ext.objectbox_plugin_version // used for dependencies (runtime library)
-    ext.objectbox_java_version = '1.5.0-RC' // used for dependencies (runtime library)
+    ext.objectbox_plugin_version = '1.5.0-RC' // used to version this projects' artifacts
+    ext.objectbox_java_version = ext.objectbox_plugin_version // used for dependencies (runtime library)
+    //ext.objectbox_java_version = '1.4.2' // used for dependencies (runtime library)
 
     repositories {
         jcenter()
