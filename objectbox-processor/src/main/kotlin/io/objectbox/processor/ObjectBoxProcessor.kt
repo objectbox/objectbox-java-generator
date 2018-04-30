@@ -210,7 +210,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
             BoxGenerator().generateAll(job)
             completed = true
         } catch (e: Exception) {
-            messages.error("Code generation failed: ${e.message}")
+            messages.error("Code generation failed: $e")
             e.printStackTrace()
         }
         trackStats(schema, completed)
