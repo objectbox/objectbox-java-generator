@@ -207,7 +207,7 @@ class RelationsTest : BaseProcessorTest() {
         val compilation = environment.compile(targetName, sourceName)
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
 
-//        assertGeneratedSourceMatches(compilation, "${targetName}_")
+        assertGeneratedSourceMatches(compilation, "${targetName}_")
 //        assertGeneratedSourceMatches(compilation, "${targetName}Cursor")
 
 //        assertToManySchema(environment.schema, targetName, sourceName)
