@@ -38,7 +38,7 @@ buildConfig {
     // rename to avoid conflict with other build config files (modules use same root package)
     clsName = 'GradlePluginBuildConfig'
     // also add runtime version to BuildConfig
-    buildConfigField 'String', 'VERSION_RUNTIME', {"$objectbox_java_version"}
+    buildConfigField 'String', 'VERSION_RUNTIME', {"$objectbox_runtime_version"}
 }
 
 task javadocJar(type: Jar) {
