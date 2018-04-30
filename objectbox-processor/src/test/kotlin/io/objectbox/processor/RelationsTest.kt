@@ -197,6 +197,23 @@ class RelationsTest : BaseProcessorTest() {
     }
 
     @Test
+    fun backlink_toMany_toMany() {
+        // tested relation: a source has MULTIPLE targets, a target a BACKLINK to its sources
+        val targetName = "BacklinkToManyTarget"
+        val sourceName = "BacklinkToManySource"
+
+        val environment = TestEnvironment("backlink-to-many-to-many-temp.json")
+
+        val compilation = environment.compile(targetName, sourceName)
+        CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
+
+//        assertGeneratedSourceMatches(compilation, "${targetName}_")
+//        assertGeneratedSourceMatches(compilation, "${targetName}Cursor")
+
+//        assertToManySchema(environment.schema, targetName, sourceName)
+    }
+
+    @Test
     fun backlink_multiple() {
         // test if multiple to-one fields for one @Backlink (without 'to' value) are detected
         val targetName = "BacklinkMultipleTarget"

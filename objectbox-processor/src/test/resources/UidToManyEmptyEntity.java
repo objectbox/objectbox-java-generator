@@ -18,7 +18,7 @@ public class UidToManyEmptyEntity {
 
     ToOne<UidToManyEmptyEntity> toOne;
 
-    @Backlink
+    @Backlink(to = "toOne")
     ToMany<UidToManyEmptyEntity> toManyBacklink;
 
     @Uid

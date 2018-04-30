@@ -18,7 +18,7 @@ public class UidToOneNewEntity {
     @Uid(3843553193211826785L)
     ToOne<UidToOneNewEntity> toOne;
 
-    @Backlink
+    @Backlink(to = "toOne")
     ToMany<UidToOneNewEntity> toManyBacklink;
 
     ToMany<UidToOneNewEntity> toManyStandalone;
