@@ -224,7 +224,7 @@ class RelationsTest : BaseProcessorTest() {
         val compilation = environment.compile(targetName, sourceName)
         CompilationSubject.assertThat(compilation).failed()
 
-        CompilationSubject.assertThat(compilation).hadErrorContaining("Set name of one to-one relation of '$sourceName'")
+        CompilationSubject.assertThat(compilation).hadErrorContaining("Set name of one to-one or to-many relation of '$sourceName'")
     }
 
     @Test
