@@ -310,7 +310,7 @@ class RelationsTest : BaseProcessorTest() {
 
     @Test
     fun backlink_withTo() {
-        // test if correct to-one of @Backlink (with 'to' value) is detected
+        // test if correct relation of @Backlink (with 'to' value) is detected
         val targetName = "BacklinkWithToTarget"
         val sourceName = "BacklinkWithToSource"
 
@@ -325,18 +325,46 @@ class RelationsTest : BaseProcessorTest() {
         val target = schema.entities.single { it.className == targetName }
         val source = schema.entities.single { it.className == sourceName }
 
+        var toOneTargetProperty: Property? = null
         for (prop in source.properties) {
             when (prop.propertyName) {
                 "targetId" -> {
                     assertThat(prop.dbName).isEqualTo(prop.propertyName)
                     assertThat(prop.virtualTargetName).isEqualTo("target")
                     assertPrimitiveType(prop, PropertyType.RelationId)
-                    assertToManyRelation(target, source, prop)
+                    toOneTargetProperty = prop
                 }
-                "id", "targetOtherId" -> {
-                    // just ensure its exists
-                }
+                "id", "targetOtherId" -> { /* just ensure they exist */ }
                 else -> Assert.fail("Found stray property '${prop.propertyName}' in schema.")
+            }
+        }
+        assertThat(toOneTargetProperty).isNotNull()
+
+        for (toManyRelation in target.toManyRelations) {
+            when (toManyRelation.name) {
+                "sources" -> {
+                    assertThat(toManyRelation.sourceEntity).isEqualTo(target)
+                    assertThat(toManyRelation.targetEntity).isEqualTo(source)
+                    assertThat(toManyRelation is ToMany)
+                    val toMany = toManyRelation as ToMany
+                    assertThat(toMany.backlinkToOne.name).isEqualTo("target")
+                    assertThat(toMany.targetProperties).hasLength(1)
+                    assertThat(toMany.targetProperties[0]).isEqualTo(toOneTargetProperty)
+                    // generator takes care of populating sourceProperties if we do not set them, so do not assert here
+                }
+                "sourcesOther" -> {
+                    assertThat(toManyRelation.sourceEntity).isEqualTo(target)
+                    assertThat(toManyRelation.targetEntity).isEqualTo(source)
+                    assertThat(toManyRelation is ToMany)
+                    assertThat((toManyRelation as ToMany).backlinkToOne.name).isEqualTo("targetOther")
+                }
+                "sourcesMany" -> {
+                    assertThat(toManyRelation.sourceEntity).isEqualTo(target)
+                    assertThat(toManyRelation.targetEntity).isEqualTo(source)
+                    assertThat(toManyRelation is ToManyToMany)
+                    assertThat((toManyRelation as ToManyToMany).backlinkToMany.name).isEqualTo("targets")
+                }
+                else -> Assert.fail("Found stray to-many relation '${toManyRelation.name}' in schema.")
             }
         }
     }

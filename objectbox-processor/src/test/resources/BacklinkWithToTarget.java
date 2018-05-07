@@ -18,6 +18,9 @@ public class BacklinkWithToTarget {
     @Backlink(to = "targetOtherId") // with "Id" postfix for the property
     ToMany<BacklinkWithToSource> sourcesOther = new ToMany<>(this, BacklinkWithToTarget_.sourcesOther);
 
+    @Backlink(to = "targets")
+    ToMany<BacklinkWithToSource> sourcesMany = new ToMany<>(this, BacklinkWithToTarget_.sourcesMany);
+
     // need to add manually, as processor can not modify entity
     transient BoxStore __boxStore;
 
