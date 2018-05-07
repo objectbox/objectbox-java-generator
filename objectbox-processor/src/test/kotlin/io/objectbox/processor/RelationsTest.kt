@@ -1,6 +1,6 @@
 package io.objectbox.processor
 
-import com.google.common.truth.Truth
+import com.google.common.truth.Truth.assertThat
 import com.google.testing.compile.CompilationSubject
 import io.objectbox.generator.IdUid
 import io.objectbox.generator.model.Entity
@@ -35,28 +35,28 @@ class RelationsTest : BaseProcessorTest() {
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
 
         val schema = environment.schema
-        Truth.assertThat(schema).isNotNull()
-        Truth.assertThat(schema.entities).hasSize(2)
+        assertThat(schema).isNotNull()
+        assertThat(schema.entities).hasSize(2)
 
         val parent = schema.entities.single { it.className == parentName }
         val child = schema.entities.single { it.className == childName }
 
         // assert to-one and index on target property in schema
-        Truth.assertThat(child.properties.size).isAtLeast(1)
+        assertThat(child.properties.size).isAtLeast(1)
         for (prop in child.properties) {
             when (prop.propertyName) {
                 "id" -> {
-                    Truth.assertThat(prop.isPrimaryKey).isTrue()
-                    Truth.assertThat(prop.isIdAssignable).isFalse()
-                    Truth.assertThat(prop.dbName).isEqualTo("id")
+                    assertThat(prop.isPrimaryKey).isTrue()
+                    assertThat(prop.isIdAssignable).isFalse()
+                    assertThat(prop.dbName).isEqualTo("id")
                     assertType(prop, PropertyType.Long)
                 }
                 "parentId" -> {
-                    Truth.assertThat(prop.dbName).isEqualTo(prop.propertyName)
-                    Truth.assertThat(prop.virtualTargetName).isNull()
+                    assertThat(prop.dbName).isEqualTo(prop.propertyName)
+                    assertThat(prop.virtualTargetName).isNull()
                     assertPrimitiveType(prop, PropertyType.RelationId)
-                    Truth.assertThat(child.indexes).hasSize(1)
-                    Truth.assertThat(child.toOneRelations).hasSize(1)
+                    assertThat(child.indexes).hasSize(1)
+                    assertThat(child.toOneRelations).hasSize(1)
                     assertToOneIndexAndRelation(child, parent, prop, toOneName = "parent", toOneFieldName = "parent")
                 }
                 else -> Assert.fail("Found stray property '${prop.propertyName}' in schema.")
@@ -83,31 +83,31 @@ class RelationsTest : BaseProcessorTest() {
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
 
         val schema = environment.schema
-        Truth.assertThat(schema).isNotNull()
-        Truth.assertThat(schema.entities).hasSize(2)
+        assertThat(schema).isNotNull()
+        assertThat(schema.entities).hasSize(2)
 
         // assert entity
         val parent = schema.entities.single { it.className == parentName }
         val child = schema.entities.single { it.className == childName }
-        Truth.assertThat(child.properties).hasSize(3)
+        assertThat(child.properties).hasSize(3)
 
         // assert properties
         for (prop in child.properties) {
             when (prop.propertyName) {
                 "id" -> {
-                    Truth.assertThat(prop.isPrimaryKey).isTrue()
-                    Truth.assertThat(prop.isIdAssignable).isFalse()
-                    Truth.assertThat(prop.dbName).isEqualTo("id")
+                    assertThat(prop.isPrimaryKey).isTrue()
+                    assertThat(prop.isIdAssignable).isFalse()
+                    assertThat(prop.dbName).isEqualTo("id")
                     assertType(prop, PropertyType.Long)
                 }
                 "parentId" -> {
-                    Truth.assertThat(prop.dbName).isEqualTo(prop.propertyName)
-                    Truth.assertThat(prop.virtualTargetName).isEqualTo("parent")
+                    assertThat(prop.dbName).isEqualTo(prop.propertyName)
+                    assertThat(prop.virtualTargetName).isEqualTo("parent")
                     assertPrimitiveType(prop, PropertyType.RelationId)
                     assertToOneIndexAndRelation(child, parent, prop, toOneName = "parent")
                 }
                 "aParentId" -> {
-                    Truth.assertThat(prop.dbName).isEqualTo(prop.propertyName)
+                    assertThat(prop.dbName).isEqualTo(prop.propertyName)
 //                    assertThat(prop.virtualTargetName).isEqualTo("parentWithIdProperty")
                     assertPrimitiveType(prop, PropertyType.RelationId)
                     assertToOneIndexAndRelation(child, parent, prop, toOneName = "parentWithIdProperty")
@@ -134,15 +134,15 @@ class RelationsTest : BaseProcessorTest() {
         val modelChild = model.findEntity(childName, null)
 
         // assert only target property has an index in model
-        Truth.assertThat(modelChild!!.properties.size).isAtLeast(1)
+        assertThat(modelChild!!.properties.size).isAtLeast(1)
         for (property in modelChild.properties) {
             when (property.name) {
                 "parentId", "aParentId" -> {
-                    Truth.assertThat(property.indexId).isNotNull()
-                    Truth.assertThat(property.indexId).isNotEqualTo(IdUid())
+                    assertThat(property.indexId).isNotNull()
+                    assertThat(property.indexId).isNotEqualTo(IdUid())
                 }
                 else -> {
-                    Truth.assertThat(property.indexId).isNull()
+                    assertThat(property.indexId).isNull()
                 }
             }
         }
@@ -247,8 +247,8 @@ class RelationsTest : BaseProcessorTest() {
         for (prop in source.properties) {
             when (prop.propertyName) {
                 "targetId" -> {
-                    Truth.assertThat(prop.dbName).isEqualTo(prop.propertyName)
-                    Truth.assertThat(prop.virtualTargetName).isEqualTo("target")
+                    assertThat(prop.dbName).isEqualTo(prop.propertyName)
+                    assertThat(prop.virtualTargetName).isEqualTo("target")
                     assertPrimitiveType(prop, PropertyType.RelationId)
                     assertToManyRelation(target, source, prop)
                 }
@@ -324,17 +324,17 @@ class RelationsTest : BaseProcessorTest() {
 
     private fun assertToManySchema(schema: Schema, parentName: String, childName: String) {
         // assert schema
-        Truth.assertThat(schema).isNotNull()
-        Truth.assertThat(schema.entities).hasSize(2)
+        assertThat(schema).isNotNull()
+        assertThat(schema.entities).hasSize(2)
 
         // assert parent properties
         val parent = schema.entities.single { it.className == parentName }
         for (prop in parent.properties) {
             when (prop.propertyName) {
                 "id" -> {
-                    Truth.assertThat(prop.isPrimaryKey).isTrue()
-                    Truth.assertThat(prop.isIdAssignable).isFalse()
-                    Truth.assertThat(prop.dbName).isEqualTo("id")
+                    assertThat(prop.isPrimaryKey).isTrue()
+                    assertThat(prop.isIdAssignable).isFalse()
+                    assertThat(prop.dbName).isEqualTo("id")
                     assertType(prop, PropertyType.Long)
                 }
                 else -> Assert.fail("Found stray property '${prop.propertyName}' in schema.")
@@ -346,17 +346,17 @@ class RelationsTest : BaseProcessorTest() {
         for (prop in child.properties) {
             when (prop.propertyName) {
                 "id" -> {
-                    Truth.assertThat(prop.isPrimaryKey).isTrue()
-                    Truth.assertThat(prop.isIdAssignable).isFalse()
-                    Truth.assertThat(prop.dbName).isEqualTo("id")
+                    assertThat(prop.isPrimaryKey).isTrue()
+                    assertThat(prop.isIdAssignable).isFalse()
+                    assertThat(prop.dbName).isEqualTo("id")
                     assertType(prop, PropertyType.Long)
                 }
                 "${targetPropertyName}Id" -> {
-                    Truth.assertThat(prop.dbName).isEqualTo(prop.propertyName)
-                    Truth.assertThat(prop.virtualTargetName).isEqualTo(targetPropertyName)
+                    assertThat(prop.dbName).isEqualTo(prop.propertyName)
+                    assertThat(prop.virtualTargetName).isEqualTo(targetPropertyName)
                     assertPrimitiveType(prop, PropertyType.RelationId)
-                    Truth.assertThat(child.indexes).hasSize(1)
-                    Truth.assertThat(child.toOneRelations).hasSize(1)
+                    assertThat(child.indexes).hasSize(1)
+                    assertThat(child.toOneRelations).hasSize(1)
                     assertToOneIndexAndRelation(child, parent, prop, toOneName = targetPropertyName)
                     assertToManyRelation(parent, child, prop)
                 }
@@ -369,16 +369,16 @@ class RelationsTest : BaseProcessorTest() {
         for (toManyRelation in parent.toManyRelations) {
             when (toManyRelation.name) {
                 "sources" -> {
-                    Truth.assertThat(toManyRelation.sourceEntity).isEqualTo(parent)
-                    Truth.assertThat(toManyRelation.targetEntity).isEqualTo(child)
+                    assertThat(toManyRelation.sourceEntity).isEqualTo(parent)
+                    assertThat(toManyRelation.targetEntity).isEqualTo(child)
                     val toMany = toManyRelation as ToMany
-                    Truth.assertThat(toMany.targetProperties).hasLength(1)
-                    Truth.assertThat(toMany.targetProperties[0]).isEqualTo(prop)
+                    assertThat(toMany.targetProperties).hasLength(1)
+                    assertThat(toMany.targetProperties[0]).isEqualTo(prop)
                     // generator takes care of populating sourceProperties if we do not set them, so do not assert here
                 }
                 "sourcesOther" -> {
-                    Truth.assertThat(toManyRelation.sourceEntity).isEqualTo(parent)
-                    Truth.assertThat(toManyRelation.targetEntity).isEqualTo(child)
+                    assertThat(toManyRelation.sourceEntity).isEqualTo(parent)
+                    assertThat(toManyRelation.targetEntity).isEqualTo(child)
                 }
                 else -> Assert.fail("Found stray toManyRelation '${toManyRelation.name}' in schema.")
             }
@@ -389,13 +389,13 @@ class RelationsTest : BaseProcessorTest() {
                                             toOneFieldName: String = toOneName) {
         // assert index
         val indexesForProperty = child.indexes.filter { it.properties[0] == prop }
-        Truth.assertThat(indexesForProperty).hasSize(1)
+        assertThat(indexesForProperty).hasSize(1)
 
         // assert to one relation
         val toOneRelation = child.toOneRelations.single { it.name == toOneName }
-        Truth.assertThat(toOneRelation.targetEntity).isEqualTo(parent)
-        Truth.assertThat(toOneRelation.targetIdProperty).isEqualTo(prop)
-        Truth.assertThat(toOneRelation.nameToOne).isEqualTo(toOneFieldName)
+        assertThat(toOneRelation.targetEntity).isEqualTo(parent)
+        assertThat(toOneRelation.targetIdProperty).isEqualTo(prop)
+        assertThat(toOneRelation.nameToOne).isEqualTo(toOneFieldName)
     }
 
 }

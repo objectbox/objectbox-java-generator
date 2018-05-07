@@ -1,6 +1,6 @@
 package io.objectbox.processor
 
-import com.google.common.truth.Truth
+import com.google.common.truth.Truth.assertThat
 import com.google.testing.compile.CompilationSubject
 import io.objectbox.generator.model.PropertyType
 import org.junit.Assert
@@ -30,16 +30,16 @@ class InheritanceTest : BaseProcessorTest() {
 
         // assert schema
         val schema = environment.schema
-        Truth.assertThat(schema).isNotNull()
-        Truth.assertThat(schema.entities).hasSize(2)
+        assertThat(schema).isNotNull()
+        assertThat(schema.entities).hasSize(2)
 
         // assert entity
         val schemaEntity = schema.entities.find { it.className == nameSub }
-        Truth.assertThat(schemaEntity!!.properties.size).isEqualTo(4)
+        assertThat(schemaEntity!!.properties.size).isEqualTo(4)
         for (prop in schemaEntity.properties) {
             when (prop.propertyName) {
                 "id" -> {
-                    Truth.assertThat(prop.isPrimaryKey).isTrue()
+                    assertThat(prop.isPrimaryKey).isTrue()
                     assertPrimitiveType(prop, PropertyType.Long)
                 }
                 "baseString" -> assertType(prop, PropertyType.String)
@@ -51,11 +51,11 @@ class InheritanceTest : BaseProcessorTest() {
         }
 
         val schemaEntity2 = schema.entities.find { it.className == nameSubSub }
-        Truth.assertThat(schemaEntity2!!.properties.size).isEqualTo(5)
+        assertThat(schemaEntity2!!.properties.size).isEqualTo(5)
         for (prop in schemaEntity2.properties) {
             when (prop.propertyName) {
                 "id" -> {
-                    Truth.assertThat(prop.isPrimaryKey).isTrue()
+                    assertThat(prop.isPrimaryKey).isTrue()
                     assertPrimitiveType(prop, PropertyType.Long)
                 }
                 "baseString" -> assertType(prop, PropertyType.String)
@@ -71,9 +71,9 @@ class InheritanceTest : BaseProcessorTest() {
         val model = environment.readModel()
 
         val modelEntity = model.findEntity(nameSub, null)
-        Truth.assertThat(modelEntity).isNotNull()
+        assertThat(modelEntity).isNotNull()
         val modelProperties = modelEntity!!.properties
-        Truth.assertThat(modelProperties.size).isEqualTo(4)
+        assertThat(modelProperties.size).isEqualTo(4)
         val modelPropertyNames = listOf(
                 "id",
                 "baseString",
@@ -85,9 +85,9 @@ class InheritanceTest : BaseProcessorTest() {
                 .forEach { Assert.fail("Found stray property '${it.name}' in model file.") }
 
         val modelEntity2 = model.findEntity(nameSubSub, null)
-        Truth.assertThat(modelEntity2).isNotNull()
+        assertThat(modelEntity2).isNotNull()
         val modelProperties2 = modelEntity2!!.properties
-        Truth.assertThat(modelProperties2.size).isEqualTo(5)
+        assertThat(modelProperties2.size).isEqualTo(5)
         val modelPropertyNames2 = modelPropertyNames.plus("subSubString")
         modelProperties2
                 .filterNot { modelPropertyNames2.contains(it.name) }
@@ -110,16 +110,16 @@ class InheritanceTest : BaseProcessorTest() {
 
         // assert schema
         val schema = environment.schema
-        Truth.assertThat(schema).isNotNull()
-        Truth.assertThat(schema.entities).hasSize(2)
+        assertThat(schema).isNotNull()
+        assertThat(schema.entities).hasSize(2)
 
         // assert entity
         val schemaEntity = schema.entities.find { it.className == nameSuper }
-        Truth.assertThat(schemaEntity!!.properties.size).isEqualTo(2)
+        assertThat(schemaEntity!!.properties.size).isEqualTo(2)
         for (prop in schemaEntity.properties) {
             when (prop.propertyName) {
                 "id" -> {
-                    Truth.assertThat(prop.isPrimaryKey).isTrue()
+                    assertThat(prop.isPrimaryKey).isTrue()
                     assertPrimitiveType(prop, PropertyType.Long)
                 }
                 "simpleString" -> assertType(prop, PropertyType.String)
@@ -128,11 +128,11 @@ class InheritanceTest : BaseProcessorTest() {
         }
 
         val schemaEntity2 = schema.entities.find { it.className == nameSub }
-        Truth.assertThat(schemaEntity2!!.properties.size).isEqualTo(3)
+        assertThat(schemaEntity2!!.properties.size).isEqualTo(3)
         for (prop in schemaEntity2.properties) {
             when (prop.propertyName) {
                 "id" -> {
-                    Truth.assertThat(prop.isPrimaryKey).isTrue()
+                    assertThat(prop.isPrimaryKey).isTrue()
                     assertPrimitiveType(prop, PropertyType.Long)
                 }
                 "simpleString" -> assertType(prop, PropertyType.String)
@@ -145,9 +145,9 @@ class InheritanceTest : BaseProcessorTest() {
         val model = environment.readModel()
 
         val modelEntity = model.findEntity(nameSuper, null)
-        Truth.assertThat(modelEntity).isNotNull()
+        assertThat(modelEntity).isNotNull()
         val modelProperties = modelEntity!!.properties
-        Truth.assertThat(modelProperties.size).isEqualTo(2)
+        assertThat(modelProperties.size).isEqualTo(2)
         val modelPropertyNames = listOf(
                 "id",
                 "simpleString"
@@ -157,9 +157,9 @@ class InheritanceTest : BaseProcessorTest() {
                 .forEach { Assert.fail("Found stray property '${it.name}' in model file.") }
 
         val modelEntity2 = model.findEntity(nameSub, null)
-        Truth.assertThat(modelEntity2).isNotNull()
+        assertThat(modelEntity2).isNotNull()
         val modelProperties2 = modelEntity2!!.properties
-        Truth.assertThat(modelProperties2.size).isEqualTo(3)
+        assertThat(modelProperties2.size).isEqualTo(3)
         val modelPropertyNames2 = modelPropertyNames.plus("subString")
         modelProperties2
                 .filterNot { modelPropertyNames2.contains(it.name) }
