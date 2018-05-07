@@ -276,11 +276,30 @@ class RelationsTest : BaseProcessorTest() {
     }
 
     @Test
-    fun backlink_multiple() {
-        // test if multiple to-one fields for one @Backlink (without 'to' value) are detected
-        val targetName = "BacklinkMultipleTarget"
-        val sourceName = "BacklinkMultipleSource"
+    fun backlink_multiple_toOne_toOne() {
+        val targetName = "BacklinkMultipleOOTarget"
+        val sourceName = "BacklinkMultipleOOSource"
+        assertMultipleRelationsError(targetName, sourceName)
+    }
 
+    @Test
+    fun backlink_multiple_toOne_toMany() {
+        val targetName = "BacklinkMultipleOMTarget"
+        val sourceName = "BacklinkMultipleOMSource"
+        assertMultipleRelationsError(targetName, sourceName)
+    }
+
+    @Test
+    fun backlink_multiple_toMany_toMany() {
+        val targetName = "BacklinkMultipleMMTarget"
+        val sourceName = "BacklinkMultipleMMSource"
+        assertMultipleRelationsError(targetName, sourceName)
+    }
+
+    /**
+     * Tests if multiple relation fields for one @Backlink (without 'to' value) are causing an error.
+     */
+    private fun assertMultipleRelationsError(targetName: String, sourceName: String) {
         val environment = TestEnvironment("not-generated.json")
 
         val compilation = environment.compile(targetName, sourceName)
