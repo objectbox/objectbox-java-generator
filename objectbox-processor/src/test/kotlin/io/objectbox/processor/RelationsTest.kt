@@ -9,6 +9,7 @@ import io.objectbox.generator.model.PropertyType
 import io.objectbox.generator.model.Schema
 import io.objectbox.generator.model.ToMany
 import io.objectbox.generator.model.ToManyStandalone
+import io.objectbox.generator.model.ToManyToMany
 import org.junit.Assert
 import org.junit.Test
 
@@ -208,9 +209,70 @@ class RelationsTest : BaseProcessorTest() {
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
 
         assertGeneratedSourceMatches(compilation, "${targetName}_")
-//        assertGeneratedSourceMatches(compilation, "${targetName}Cursor")
 
-//        assertToManySchema(environment.schema, targetName, sourceName)
+        // assert schema
+        val schema = environment.schema
+        assertThat(schema).isNotNull()
+        assertThat(schema.entities).hasSize(2)
+
+        val target = schema.entities.single { it.className == targetName }
+        val source = schema.entities.single { it.className == sourceName }
+
+        // assert target to-many schema
+        assertThat(target.toManyRelations).isNotEmpty()
+        for (toManyRelation in target.toManyRelations) {
+            when (toManyRelation.name) {
+                "sources" -> {
+                    assertThat(toManyRelation.sourceEntity).isEqualTo(target)
+                    assertThat(toManyRelation.targetEntity).isEqualTo(source)
+                    assertThat(toManyRelation is ToManyToMany)
+                    val backlinkToMany = (toManyRelation as ToManyToMany).backlinkToMany
+                    assertThat(backlinkToMany).isNotNull()
+                    assertThat(backlinkToMany.name).isEqualTo("targets")
+                }
+                else -> Assert.fail("Found stray to-many relation '${toManyRelation.name}' in schema.")
+            }
+        }
+
+        // ensure target schema is as expected
+        assertThat(target.toOneRelations).isEmpty()
+        assertThat(target.properties).isNotEmpty()
+        for (prop in target.properties) {
+            when (prop.propertyName) {
+                "id" -> assertType(prop, PropertyType.Long)
+                else -> Assert.fail("Found stray property '${prop.propertyName}' in schema.")
+            }
+        }
+        assertThat(target.incomingToManyRelations).isNotEmpty()
+        for (toManyRelation in target.incomingToManyRelations) {
+            when (toManyRelation.name) {
+                "targets" -> assertThat(toManyRelation is ToManyStandalone)
+                else -> Assert.fail("Found stray incoming to-many relation '${toManyRelation.name}' in schema.")
+            }
+        }
+        // ensure source schema is as expected
+        assertThat(source.toOneRelations).isEmpty()
+        assertThat(source.properties).isNotEmpty()
+        for (prop in source.properties) {
+            when (prop.propertyName) {
+                "id" -> assertType(prop, PropertyType.Long)
+                else -> Assert.fail("Found stray property '${prop.propertyName}' in schema.")
+            }
+        }
+        assertThat(source.toManyRelations).isNotEmpty()
+        for (toManyRelation in source.toManyRelations) {
+            when (toManyRelation.name) {
+                "targets" -> assertThat(toManyRelation is ToManyStandalone)
+                else -> Assert.fail("Found stray to-many relation '${toManyRelation.name}' in schema.")
+            }
+        }
+        assertThat(source.incomingToManyRelations).isNotEmpty()
+        for (toManyRelation in source.incomingToManyRelations) {
+            when (toManyRelation.name) {
+                "sources" -> assertThat(toManyRelation is ToManyToMany)
+                else -> Assert.fail("Found stray incoming to-many relation '${toManyRelation.name}' in schema.")
+            }
+        }
     }
 
     @Test
