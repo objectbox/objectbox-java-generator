@@ -4,7 +4,7 @@ buildscript {
     ext.kotlin_version = '1.2.31'
     ext.objectbox_plugin_version = '1.5.1-to-many-backlink-SNAPSHOT' // used to version this projects' artifacts
     ext.objectbox_java_version = ext.objectbox_plugin_version // used for plugin dependencies
-    ext.objectbox_runtime_version = '1.5.0' // used as runtime library (projects using plugin)
+    ext.objectbox_runtime_version = '1.5.1-SNAPSHOT' // used as runtime library (projects using plugin)
 
     repositories {
         jcenter()
