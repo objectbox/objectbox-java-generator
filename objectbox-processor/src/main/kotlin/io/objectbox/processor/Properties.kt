@@ -101,17 +101,22 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
         propertyBuilder.property.parsedElement = field
 
         // checks if field is accessible
-        if (!field.modifiers.contains(Modifier.PRIVATE)) {
+        val isPrivate = field.modifiers.contains(Modifier.PRIVATE)
+        if (!isPrivate) {
             propertyBuilder.fieldAccessible()
         }
         // find getter method name
-        propertyBuilder.getterMethodName(getGetterMethodNameFor(propertyBuilder.property))
+        val getterMethodName = getGetterMethodNameFor(propertyBuilder.property)
+        propertyBuilder.getterMethodName(getterMethodName)
 
         // @Id
         val idAnnotation = field.getAnnotation(Id::class.java)
         if (idAnnotation != null) {
             if (propertyBuilder.property.propertyType != PropertyType.Long) {
-                messages.error("An @Id property has to be of type Long", field)
+                messages.error("An @Id property has to be of type Long.", field)
+            }
+            if (isPrivate && getterMethodName == null) {
+                messages.error("An @Id property can not be private, or add a getter and setter.")
             }
             propertyBuilder.primaryKey()
             if (idAnnotation.assignable) {
