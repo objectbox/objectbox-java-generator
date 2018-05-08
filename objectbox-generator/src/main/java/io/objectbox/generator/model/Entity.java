@@ -210,6 +210,17 @@ public class Entity implements HasParsedElement {
     }
 
     /**
+     * Adds a to-many relation linking back from a stand-alone to-many relation ({@link ToManyStandalone}).
+     */
+    public ToManyToMany addToMany(Entity target, String linkedToManyName, String name) {
+        ToManyToMany toMany = new ToManyToMany(schema, this, target, linkedToManyName);
+        toMany.setName(name);
+        trackUniqueName(names, name, toMany);
+        addToMany(toMany);
+        return toMany;
+    }
+
+    /**
      * Adds a stand-alone to-many relation ({@link ToManyStandalone}).
      */
     public ToManyStandalone addToManyStandalone(Entity target, String name) {

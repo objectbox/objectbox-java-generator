@@ -3,8 +3,8 @@ buildscript {
     ext.android_version = '3.0.0' // minimal supported version
     ext.kotlin_version = '1.2.31'
     ext.objectbox_plugin_version = '1.5.1-SNAPSHOT' // used to version this projects' artifacts
-    ext.objectbox_java_version = ext.objectbox_plugin_version // used for dependencies (runtime library)
-//    ext.objectbox_java_version = '1.5.0-RC' // used for dependencies (runtime library)
+    ext.objectbox_java_version = '1.5.1-SNAPSHOT' // used for plugin dependencies
+    ext.objectbox_runtime_version = '1.5.1-SNAPSHOT' // used as runtime library (projects using plugin)
 
     repositories {
         jcenter()
@@ -149,7 +149,7 @@ task installAll {
     dependsOn ':objectbox-gradle-plugin:install'
     dependsOn ':objectbox-processor:install'
     doLast {
-        println("Installed version $objectbox_plugin_version with dependency on version $objectbox_java_version")
+        println("Installed version $objectbox_plugin_version (dep $objectbox_java_version, runtime $objectbox_runtime_version)")
     }
 }
 
@@ -168,6 +168,7 @@ task verifyVersion {
     doLast {
         assert ob_expected_version == objectbox_plugin_version
         assert ob_expected_version == objectbox_java_version
+        assert ob_expected_version == objectbox_runtime_version
     }
 }
 

@@ -1,6 +1,6 @@
 package io.objectbox.processor
 
-import com.google.common.truth.Truth
+import com.google.common.truth.Truth.assertThat
 import com.google.testing.compile.CompilationSubject
 import org.junit.Assert
 import org.junit.Test
@@ -24,10 +24,10 @@ class UidTest {
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
 
         val entity = environment.schema.entities[0]
-        Truth.assertThat(entity.modelUid).isEqualTo(2361091532752425885)
+        assertThat(entity.modelUid).isEqualTo(2361091532752425885)
 
         val property = entity.properties.single { it.propertyName == "uidProperty" }
-        Truth.assertThat(property.modelId.uid).isEqualTo(7287685531948841886)
+        assertThat(property.modelId.uid).isEqualTo(7287685531948841886)
     }
 
     @Test

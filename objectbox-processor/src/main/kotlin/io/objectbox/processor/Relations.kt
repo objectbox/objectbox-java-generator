@@ -29,7 +29,7 @@ import io.objectbox.generator.model.Entity
 import io.objectbox.generator.model.PropertyType
 import io.objectbox.generator.model.Schema
 import io.objectbox.generator.model.ToManyBase
-import io.objectbox.generator.model.ToOne
+import io.objectbox.generator.model.ToManyStandalone
 import javax.lang.model.element.Modifier
 import javax.lang.model.element.VariableElement
 import javax.lang.model.type.DeclaredType
@@ -182,11 +182,20 @@ class Relations(private val messages: Messages) {
             }
         }
 
-        // then resolve to-many relations which depends on to-one relations being resolved
+        // then resolve standalone to-many relations
         for ((entity, toManys) in toManysByEntity) {
-            for (toMany in toManys) {
+            toManys.filter { !it.isBacklink }.forEach { toMany ->
                 if (!resolveToMany(schema, entity, toMany)) {
-                    return false // resolving to-many failed
+                    return false // resolving standalone to-many failed
+                }
+            }
+        }
+
+        // then resolve backlink to-many relations which depends on to-one and standalone to-many relations being resolved
+        for ((entity, toManys) in toManysByEntity) {
+            toManys.filter { it.isBacklink }.forEach { toMany ->
+                if (!resolveToMany(schema, entity, toMany)) {
+                    return false // resolving backlink to-many failed
                 }
             }
         }
@@ -220,36 +229,55 @@ class Relations(private val messages: Messages) {
         return true
     }
 
-    private fun findBacklinkToOneOrRaiseError(entity: Entity, targetEntity: Entity, toMany: ToManyRelation): ToOne? {
+    private fun addBacklinkToManyOrRaiseError(entity: Entity, targetEntity: Entity, toMany: ToManyRelation): ToManyBase? {
         val backlinkTo = toMany.backlinkTo
         if (backlinkTo.isNullOrEmpty()) {
-            // no explicit target name: just ensure a single to-one relation, then use that
+            // no explicit target name: just ensure a single to-one or to-many relation, then use that
             val targetToOne = targetEntity.toOneRelations.filter {
                 it.targetEntity == entity
             }
-            if (targetToOne.isEmpty()) {
-                messages.error("Illegal @Backlink: no (to-one) relation found in '${targetEntity.className}'. " +
+            val targetToMany = targetEntity.toManyRelations.filter {
+                it.targetEntity == entity
+            }
+
+            return if (targetToOne.size == 1 && targetToMany.isEmpty()) {
+                // back link from a ToOne
+                entity.addToMany(targetEntity, targetToOne[0].targetIdProperty, toMany.propertyName)
+            } else if (targetToOne.isEmpty() && targetToMany.size == 1) {
+                // back link from a ToMany
+                entity.addToMany(targetEntity, targetToMany[0].name, toMany.propertyName)
+            } else if (targetToOne.isEmpty() && targetToMany.isEmpty()) {
+                messages.error("Illegal @Backlink: no (to-one or to-many) relation found in '${targetEntity.className}'. " +
                         "Required by backlink to-many relation '${toMany.propertyName}' in '${entity.className}'.",
                         entity)
-                return null
-            } else if (targetToOne.size > 1) {
-                messages.error("Set name of one to-one relation of '${targetEntity.className}' as @Backlink 'to' " +
+                null
+            } else {
+                messages.error("Set name of one to-one or to-many relation of '${targetEntity.className}' as @Backlink 'to' " +
                         "value to create the to-many relation '${toMany.propertyName}' in '${entity.className}'.",
                         entity)
-                return null
+                null
             }
-            return targetToOne[0]
         } else {
-            // explicit target name: find the related to-one relation
+            // explicit target name: find the related to-one or to-many relation
             val targetToOne = targetEntity.toOneRelations.singleOrNull {
                 it.targetEntity == entity && (it.name == backlinkTo || it.targetIdProperty.propertyName == backlinkTo)
             }
-            if (targetToOne == null) {
+            val targetToMany = targetEntity.toManyRelations.singleOrNull {
+                it.targetEntity == entity && it.name == backlinkTo && it is ToManyStandalone
+            }
+            return if (targetToOne != null && targetToMany == null) {
+                entity.addToMany(targetEntity, targetToOne.targetIdProperty, toMany.propertyName)
+            } else if (targetToOne == null && targetToMany != null) {
+                entity.addToMany(targetEntity, targetToMany.name, toMany.propertyName)
+            } else if (targetToOne != null && targetToMany != null) {
+                messages.error("Specify unique name for target property '$backlinkTo' in " +
+                        "'${targetEntity.className}' of @Backlink in '${entity.className}'.", entity)
+                null
+            } else {
                 messages.error("Could not find target property '$backlinkTo' in " +
                         "'${targetEntity.className}' of @Backlink in '${entity.className}'.", entity)
-                return null
+                null
             }
-            return targetToOne
         }
     }
 
@@ -258,8 +286,8 @@ class Relations(private val messages: Messages) {
 
         val toManyModel: ToManyBase
         if (toMany.isBacklink) {
-            val targetToOne = findBacklinkToOneOrRaiseError(entity, targetEntity, toMany) ?: return false
-            toManyModel = entity.addToMany(targetEntity, targetToOne.targetIdProperty, toMany.propertyName)
+            // TODO ut why not directly add the linked to ToManyStandalone?
+            toManyModel = addBacklinkToManyOrRaiseError(entity, targetEntity, toMany) ?: return false
         } else {
             val standalone = entity.addToManyStandalone(targetEntity, toMany.propertyName)
             if (toMany.uid != null) standalone.modelId = IdUid(0, toMany.uid)

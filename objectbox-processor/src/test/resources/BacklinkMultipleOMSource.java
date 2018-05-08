@@ -7,16 +7,14 @@ import io.objectbox.relation.ToOne;
 import io.objectbox.relation.ToMany;
 
 @Entity
-public class BacklinkWithToSource {
+public class BacklinkMultipleOMSource {
 
     @Id
     Long id;
 
-    ToOne<BacklinkWithToTarget> targetOther = new ToOne<>(this, BacklinkWithToSource_.targetOther);
+    ToOne<BacklinkMultipleOMTarget> target = new ToOne<>(this, BacklinkMultipleOMSource_.target);
 
-    ToOne<BacklinkWithToTarget> target = new ToOne<>(this, BacklinkWithToSource_.target);
-
-    ToMany<BacklinkWithToTarget> targets = new ToMany<>(this, BacklinkWithToSource_.targets);
+    ToMany<BacklinkMultipleOMTarget> targets = new ToMany<>(this, BacklinkMultipleOMSource_.targets);
 
     // need to add manually, as processor can not modify entity
     transient BoxStore __boxStore;
