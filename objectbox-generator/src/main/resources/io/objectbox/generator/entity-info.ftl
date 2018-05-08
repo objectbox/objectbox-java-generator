@@ -190,7 +190,12 @@ property.converter??>, ${property.converterClassName}.class, ${property.customTy
                 public ToOne<${toMany.sourceEntity.className}> getToOne(${toMany.targetEntity.className} entity) {
                     return entity.${toMany.backlinkToOne.toOneValueExpression};
                 }
-            });<#else> <#if toMany.backlinkToMany??>${toMany.backlinkToMany.modelId.id}, true<#else>${toMany.modelId.id}</#if>);</#if>
+            }<#else><#if toMany.backlinkToMany??>new ToManyGetter<${toMany.targetEntity.className}>() {
+                @Override
+                public List<${toMany.sourceEntity.className}> getToMany(${toMany.targetEntity.className} entity) {
+                    return entity.${toMany.backlinkToMany.valueExpression};
+                }
+            }, ${toMany.backlinkToMany.modelId.id}<#else> ${toMany.modelId.id}</#if></#if>);
 
     </#list>
 </#if>

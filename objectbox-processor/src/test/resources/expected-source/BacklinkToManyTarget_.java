@@ -103,6 +103,11 @@ public final class BacklinkToManyTarget_ implements EntityInfo<BacklinkToManyTar
                     return entity.sources;
                 }
             },
-            1, true);
+            new ToManyGetter<BacklinkToManySource>() {
+                @Override
+                public List<BacklinkToManyTarget> getToMany(BacklinkToManySource entity) {
+                    return entity.targets;
+                }
+            }, 1);
 
 }
