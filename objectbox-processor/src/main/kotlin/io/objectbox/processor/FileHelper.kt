@@ -79,7 +79,7 @@ fun findProjectRoot(filer: Filer): File {
     var buildDir: File? = null
     var buildDirWithoutConfigFile: File? = null
     for (i in 1..9) {
-        dir = dir.parentFile
+        dir = dir.parentFile ?: break
         if (File(dir, ObjectBoxBuildConfig.FILE_NAME).exists()) {
             buildDir = dir
             break
