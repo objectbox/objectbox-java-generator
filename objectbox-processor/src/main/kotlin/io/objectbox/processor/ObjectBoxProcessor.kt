@@ -346,7 +346,8 @@ open class ObjectBoxProcessor : AbstractProcessor() {
                         return false
                     }
                 }
-                if (param.asType() != parsedElement.asType()) {
+                // Note: equality check does not work for TypeMirror, use Types utils
+                if (!typeUtils.isSameType(param.asType(), parsedElement.asType())) {
                     messages.debug("Constructor param type differs: ${param.asType()} vs. ${parsedElement.asType()}")
                     return false
                 }
