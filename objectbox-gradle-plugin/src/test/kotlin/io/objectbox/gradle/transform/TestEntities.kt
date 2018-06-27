@@ -48,7 +48,7 @@ class EntityToOne {
 
 object EntityToOne_ : EntityInfo<EntityToOneLateInit> {
     @JvmField
-    val entityEmpty = RelationInfo<EntityEmpty>(null, null, null, null)
+    val entityEmpty = RelationInfo<EntityToOneLateInit, EntityEmpty>(null, null, null, null)
 }
 
 @Entity
@@ -58,7 +58,7 @@ class EntityToOneLateInit {
 
 object EntityToOneLateInit_ : EntityInfo<EntityToOneLateInit> {
     @JvmField
-    val entityEmpty = RelationInfo<EntityEmpty>(null, null, null, null)
+    val entityEmpty = RelationInfo<EntityToOneLateInit, EntityEmpty>(null, null, null, null)
 }
 
 @Entity
@@ -68,7 +68,7 @@ class EntityToOneSuffix {
 
 object EntityToOneSuffix_ : EntityInfo<EntityToOneLateInit> {
     @JvmField
-    val entityEmpty = RelationInfo<EntityEmpty>(null, null, null, null)
+    val entityEmpty = RelationInfo<EntityToOneLateInit, EntityEmpty>(null, null, null, null)
 }
 
 @Entity
@@ -79,7 +79,7 @@ class EntityToMany {
 
 object EntityToMany_ : EntityInfo<EntityToOneLateInit> {
     @JvmField
-    val entityEmpty = RelationInfo<EntityEmpty>(null, null, null, null)
+    val entityEmpty = RelationInfo<EntityToOneLateInit, EntityEmpty>(null, null, null, null)
 }
 
 @Entity
@@ -89,7 +89,7 @@ class EntityToManyLateInit {
 
 object EntityToManyLateInit_ : EntityInfo<EntityToOneLateInit> {
     @JvmField
-    val entityEmpty = RelationInfo<EntityEmpty>(null, null, null, null)
+    val entityEmpty = RelationInfo<EntityToManyLateInit, EntityEmpty>(null, null, null, null)
 }
 
 @Entity
@@ -102,7 +102,7 @@ class EntityToManyAndConverter {
 
 object EntityToManyAndConverter_ : EntityInfo<EntityToOneLateInit> {
     @JvmField
-    val entityEmpty = RelationInfo<EntityEmpty>(null, null, null, null)
+    val entityEmpty = RelationInfo<EntityToOneLateInit, EntityEmpty>(null, null, null, null)
 }
 
 @Entity
@@ -115,7 +115,7 @@ class EntityToOneAndConverter(val someExternalType: LongHashSet? = LongHashSet(8
 
 object EntityToOneAndConverter_ : EntityInfo<EntityToOneLateInit> {
     @JvmField
-    val entityEmpty = RelationInfo<EntityEmpty>(null, null, null, null)
+    val entityEmpty = RelationInfo<EntityToOneLateInit, EntityEmpty>(null, null, null, null)
 }
 
 @Entity
@@ -125,7 +125,7 @@ class EntityToManySuffix {
 
 object EntityToManySuffix_ : EntityInfo<EntityToOneLateInit> {
     @JvmField
-    val entityEmpty = RelationInfo<EntityEmpty>(null, null, null, null)
+    val entityEmpty = RelationInfo<EntityToOneLateInit, EntityEmpty>(null, null, null, null)
 }
 
 @Entity
@@ -136,7 +136,7 @@ class EntityToManyListLateInit {
 
 object EntityToManyListLateInit_ : EntityInfo<EntityToOneLateInit> {
     @JvmField
-    val entityEmpty = RelationInfo<EntityEmpty>(null, null, null, null)
+    val entityEmpty = RelationInfo<EntityToOneLateInit, EntityEmpty>(null, null, null, null)
 }
 
 @Entity
@@ -155,7 +155,7 @@ class EntityTransientList {
 
 object EntityTransientList_ : EntityInfo<EntityToOneLateInit> {
     @JvmField
-    val actualRelation = RelationInfo<EntityEmpty>(null, null, null, null)
+    val actualRelation = RelationInfo<EntityToOneLateInit, EntityEmpty>(null, null, null, null)
 }
 
 @Entity
@@ -170,7 +170,7 @@ class EntityMultipleCtors {
 
 object EntityMultipleCtors_ : EntityInfo<EntityMultipleCtors> {
     @JvmField
-    val toMany = RelationInfo<EntityMultipleCtors>(null, null, null, null)
+    val toMany = RelationInfo<EntityMultipleCtors, EntityMultipleCtors>(null, null, null, null)
 }
 
 @BaseEntity
@@ -211,9 +211,9 @@ class EntityRelationsInSuperBase : EntityBaseWithRelations()
 
 class EntitySub_ : EntityInfo<EntitySub> {
     @JvmField
-    val entityEmptyToOne = RelationInfo<EntityEmpty>(null, null, null, null)
+    val entityEmptyToOne = RelationInfo<EntitySub, EntityEmpty>(null, null, null, null)
     @JvmField
-    val entityEmptyToMany = RelationInfo<EntityEmpty>(null, null, null, null)
+    val entityEmptyToMany = RelationInfo<EntitySub, EntityEmpty>(null, null, null, null)
 }
 
 class EntitySubCursor : Cursor<EntitySub>() {
