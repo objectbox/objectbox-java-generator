@@ -89,15 +89,16 @@ public final class ${entity.className}_ implements EntityInfo<${entity.className
     property.modelId??>${property.modelId.id?c}<#else>0</#if>, ${property.javaType}.class, "${property.propertyName}"<#if
     property.primaryKey || (property.dbName?? && property.dbName != property.propertyName) || property.converter??>, ${property.primaryKey?string}, "${property.dbName}"<#if
 property.converter??>, ${property.converterClassName}.class, ${property.customTypeClassName}.class</#if></#if>);
-</#list>
 
-    public final static io.objectbox.Property<${entity.className}>[] __ALL_PROPERTIES = new Property[]{
+</#list>
+    @SuppressWarnings("unchecked")
+    public final static io.objectbox.Property<${entity.className}>[] __ALL_PROPERTIES = new io.objectbox.Property[]{
 <#list entity.propertiesColumns as property>
         ${property.propertyName}<#if property?has_next>,</#if>
 </#list>
     };
 
-    public final static io.objectbox.Property __ID_PROPERTY = ${entity.pkProperty.propertyName};
+    public final static io.objectbox.Property<${entity.className}> __ID_PROPERTY = ${entity.pkProperty.propertyName};
 
     @Override
     public String getEntityName() {
@@ -162,7 +163,7 @@ property.converter??>, ${property.converterClassName}.class, ${property.customTy
 <#if entity.hasRelations() >
     <#list entity.toOneRelations as toOne>
     /** To-one relation "${toOne.name}" to target entity "${toOne.targetEntity.className}". */
-    public static final RelationInfo<${toOne.targetEntity.className}> ${toOne.name} =
+    public static final RelationInfo<${toOne.sourceEntity.className}, ${toOne.targetEntity.className}> ${toOne.name} =
             new RelationInfo<>(${toOne.sourceEntity.className}_.__INSTANCE,<#--
     --> ${toOne.targetEntity.className}_.__INSTANCE,<#--
     --> <#if toOne.targetIdProperty.virtual>null<#else>${toOne.targetIdProperty.propertyName}</#if>,<#--
@@ -176,7 +177,7 @@ property.converter??>, ${property.converterClassName}.class, ${property.customTy
     </#list>
     <#list entity.toManyRelations as toMany>
     /** To-many relation "${toMany.name}" to target entity "${toMany.targetEntity.className}". */
-    public static final RelationInfo<${toMany.targetEntity.className}> ${toMany.name} =<#--
+    public static final RelationInfo<${toMany.sourceEntity.className}, ${toMany.targetEntity.className}> ${toMany.name} =<#--
      --> new RelationInfo<>(${toMany.sourceEntity.className}_.__INSTANCE,<#--
      --> ${toMany.targetEntity.className}_.__INSTANCE,
             new ToManyGetter<${toMany.sourceEntity.className}>() {
