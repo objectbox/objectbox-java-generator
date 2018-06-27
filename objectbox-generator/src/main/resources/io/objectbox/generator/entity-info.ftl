@@ -81,22 +81,23 @@ public final class ${entity.className}_ implements EntityInfo<${entity.className
     @Internal
     static final ${entity.className}IdGetter __ID_GETTER = new ${entity.className}IdGetter();
 
+    public final static ${entity.className}_ __INSTANCE = new ${entity.className}_();
+
 <#list entity.propertiesColumns as property>
-    public final static io.objectbox.Property ${property.propertyName} = new io.objectbox.Property(${property_index}, <#if
+    public final static io.objectbox.Property<${entity.className}> ${property.propertyName} =
+        new io.objectbox.Property<>(__INSTANCE, ${property_index}, <#if
     property.modelId??>${property.modelId.id?c}<#else>0</#if>, ${property.javaType}.class, "${property.propertyName}"<#if
     property.primaryKey || (property.dbName?? && property.dbName != property.propertyName) || property.converter??>, ${property.primaryKey?string}, "${property.dbName}"<#if
 property.converter??>, ${property.converterClassName}.class, ${property.customTypeClassName}.class</#if></#if>);
 </#list>
 
-    public final static io.objectbox.Property[] __ALL_PROPERTIES = {
+    public final static io.objectbox.Property<${entity.className}>[] __ALL_PROPERTIES = new Property[]{
 <#list entity.propertiesColumns as property>
         ${property.propertyName}<#if property?has_next>,</#if>
 </#list>
     };
 
     public final static io.objectbox.Property __ID_PROPERTY = ${entity.pkProperty.propertyName};
-
-    public final static ${entity.className}_ __INSTANCE = new ${entity.className}_();
 
     @Override
     public String getEntityName() {
@@ -119,12 +120,12 @@ property.converter??>, ${property.converterClassName}.class, ${property.customTy
     }
 
     @Override
-    public io.objectbox.Property[] getAllProperties() {
+    public io.objectbox.Property<${entity.className}>[] getAllProperties() {
         return __ALL_PROPERTIES;
     }
 
     @Override
-    public io.objectbox.Property getIdProperty() {
+    public io.objectbox.Property<${entity.className}> getIdProperty() {
         return __ID_PROPERTY;
     }
 
