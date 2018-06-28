@@ -1,7 +1,6 @@
 package io.objectbox.processor.test;
 
 import io.objectbox.processor.test.BacklinkToManyTargetCursor.Factory;
-
 import io.objectbox.EntityInfo;
 import io.objectbox.annotation.apihint.Internal;
 import io.objectbox.internal.CursorFactory;
@@ -36,15 +35,17 @@ public final class BacklinkToManyTarget_ implements EntityInfo<BacklinkToManyTar
     @Internal
     static final BacklinkToManyTargetIdGetter __ID_GETTER = new BacklinkToManyTargetIdGetter();
 
-    public final static io.objectbox.Property id = new io.objectbox.Property(0, 1, Long.class, "id", true, "id");
+    public final static BacklinkToManyTarget_ __INSTANCE = new BacklinkToManyTarget_();
 
-    public final static io.objectbox.Property[] __ALL_PROPERTIES = {
+    public final static io.objectbox.Property<BacklinkToManyTarget> id =
+            new io.objectbox.Property<>(__INSTANCE, 0, 1, Long.class, "id", true, "id");
+
+    @SuppressWarnings("unchecked")
+    public final static io.objectbox.Property<BacklinkToManyTarget>[] __ALL_PROPERTIES = new io.objectbox.Property[]{
             id
     };
 
-    public final static io.objectbox.Property __ID_PROPERTY = id;
-
-    public final static BacklinkToManyTarget_ __INSTANCE = new BacklinkToManyTarget_();
+    public final static io.objectbox.Property<BacklinkToManyTarget> __ID_PROPERTY = id;
 
     @Override
     public String getEntityName() {
@@ -67,12 +68,12 @@ public final class BacklinkToManyTarget_ implements EntityInfo<BacklinkToManyTar
     }
 
     @Override
-    public io.objectbox.Property[] getAllProperties() {
+    public io.objectbox.Property<BacklinkToManyTarget>[] getAllProperties() {
         return __ALL_PROPERTIES;
     }
 
     @Override
-    public io.objectbox.Property getIdProperty() {
+    public io.objectbox.Property<BacklinkToManyTarget> getIdProperty() {
         return __ID_PROPERTY;
     }
 
@@ -96,7 +97,7 @@ public final class BacklinkToManyTarget_ implements EntityInfo<BacklinkToManyTar
     }
 
     /** To-many relation "sources" to target entity "BacklinkToManySource". */
-    public static final RelationInfo<BacklinkToManySource> sources = new RelationInfo<>(BacklinkToManyTarget_.__INSTANCE, BacklinkToManySource_.__INSTANCE,
+    public static final RelationInfo<BacklinkToManyTarget, BacklinkToManySource> sources = new RelationInfo<>(BacklinkToManyTarget_.__INSTANCE, BacklinkToManySource_.__INSTANCE,
             new ToManyGetter<BacklinkToManyTarget>() {
                 @Override
                 public List<BacklinkToManySource> getToMany(BacklinkToManyTarget entity) {

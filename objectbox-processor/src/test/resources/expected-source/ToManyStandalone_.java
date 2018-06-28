@@ -1,7 +1,6 @@
 package io.objectbox.processor.test;
 
 import io.objectbox.processor.test.ToManyStandaloneCursor.Factory;
-
 import io.objectbox.EntityInfo;
 import io.objectbox.annotation.apihint.Internal;
 import io.objectbox.internal.CursorFactory;
@@ -36,15 +35,17 @@ public final class ToManyStandalone_ implements EntityInfo<ToManyStandalone> {
     @Internal
     static final ToManyStandaloneIdGetter __ID_GETTER = new ToManyStandaloneIdGetter();
 
-    public final static io.objectbox.Property id = new io.objectbox.Property(0, 1, Long.class, "id", true, "id");
+    public final static ToManyStandalone_ __INSTANCE = new ToManyStandalone_();
 
-    public final static io.objectbox.Property[] __ALL_PROPERTIES = {
+    public final static io.objectbox.Property<ToManyStandalone> id =
+            new io.objectbox.Property<>(__INSTANCE, 0, 1, Long.class, "id", true, "id");
+
+    @SuppressWarnings("unchecked")
+    public final static io.objectbox.Property<ToManyStandalone>[] __ALL_PROPERTIES = new io.objectbox.Property[]{
             id
     };
 
-    public final static io.objectbox.Property __ID_PROPERTY = id;
-
-    public final static ToManyStandalone_ __INSTANCE = new ToManyStandalone_();
+    public final static io.objectbox.Property<ToManyStandalone> __ID_PROPERTY = id;
 
     @Override
     public String getEntityName() {
@@ -67,12 +68,12 @@ public final class ToManyStandalone_ implements EntityInfo<ToManyStandalone> {
     }
 
     @Override
-    public io.objectbox.Property[] getAllProperties() {
+    public io.objectbox.Property<ToManyStandalone>[] getAllProperties() {
         return __ALL_PROPERTIES;
     }
 
     @Override
-    public io.objectbox.Property getIdProperty() {
+    public io.objectbox.Property<ToManyStandalone> getIdProperty() {
         return __ID_PROPERTY;
     }
 
@@ -95,8 +96,8 @@ public final class ToManyStandalone_ implements EntityInfo<ToManyStandalone> {
         }
     }
 
-    /** to-many */
-    public static final RelationInfo<IdEntity> children = new RelationInfo<>(ToManyStandalone_.__INSTANCE, IdEntity_.__INSTANCE,
+    /** To-many relation "children" to target entity "IdEntity". */
+    public static final RelationInfo<ToManyStandalone, IdEntity> children = new RelationInfo<>(ToManyStandalone_.__INSTANCE, IdEntity_.__INSTANCE,
             new ToManyGetter<ToManyStandalone>() {
                 @Override
                 public List<IdEntity> getToMany(ToManyStandalone entity) {
