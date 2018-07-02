@@ -27,7 +27,7 @@ import javassist.bytecode.SignatureAttribute
 import javassist.bytecode.annotation.Annotation
 
 fun FieldInfo.exGetGenericTypeArguments(): Array<out SignatureAttribute.TypeArgument>? {
-    val signatureAttr = getAttribute(SignatureAttribute.tag) as SignatureAttribute
+    val signatureAttr = getAttribute(SignatureAttribute.tag) as? SignatureAttribute ?: return null
     val objectType = SignatureAttribute.toFieldSignature(signatureAttr.signature)
     return (objectType as? SignatureAttribute.ClassType)?.typeArguments
 }
