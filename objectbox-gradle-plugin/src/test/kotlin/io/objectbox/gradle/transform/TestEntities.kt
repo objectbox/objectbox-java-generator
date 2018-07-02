@@ -22,7 +22,6 @@ package io.objectbox.gradle.transform
 
 import io.objectbox.Cursor
 import io.objectbox.EntityInfo
-import io.objectbox.annotation.BaseEntity
 import io.objectbox.annotation.Entity
 import io.objectbox.relation.RelationInfo
 import io.objectbox.relation.ToMany
@@ -142,53 +141,6 @@ class EntityMultipleCtors {
 object EntityMultipleCtors_ : EntityInfo<EntityMultipleCtors> {
     @JvmField
     val toMany = RelationInfo<EntityMultipleCtors, EntityMultipleCtors>(null, null, null, null)
-}
-
-@BaseEntity
-open class EntityBaseWithRelations {
-    lateinit var entityBaseToMany: ToMany<EntityEmpty>
-    lateinit var entityBaseToOne: ToOne<EntityEmpty>
-    lateinit var entityBaseList: List<EntityEmpty>
-}
-
-open class EntityBaseNoAnnotation : EntityBaseWithRelations() {
-    lateinit var entityNoBaseToMany: ToMany<EntityEmpty>
-    lateinit var entityNoBaseToOne: ToOne<EntityEmpty>
-    lateinit var entityNoBaseList: List<EntityEmpty>
-}
-
-@BaseEntity
-open class EntityBase {
-    var baseString: String? = null
-}
-
-interface EntityInterface {
-    @Suppress("unused")
-    fun foo() {}
-}
-
-@Entity
-open class EntitySub : EntityBase(), EntityInterface {
-    lateinit var entityEmptyToMany: ToMany<EntityEmpty>
-    lateinit var entityEmptyToOne: ToOne<EntityEmpty>
-    lateinit var entityEmptyList: List<EntityEmpty>
-}
-
-@Entity
-class EntityRelationsInSuperEntity : EntitySub()
-
-@Entity
-class EntityRelationsInSuperBase : EntityBaseWithRelations()
-
-class EntitySub_ : EntityInfo<EntitySub> {
-    @JvmField
-    val entityEmptyToOne = RelationInfo<EntitySub, EntityEmpty>(null, null, null, null)
-    @JvmField
-    val entityEmptyToMany = RelationInfo<EntitySub, EntityEmpty>(null, null, null, null)
-}
-
-class EntitySubCursor : Cursor<EntitySub>() {
-    private fun attachEntity(@Suppress("UNUSED_PARAMETER") entity: EntitySub) {}
 }
 
 class TestCursor : Cursor<EntityBoxStoreField>() {
