@@ -213,18 +213,29 @@ class ClassTransformer(val debug: Boolean = false) {
                                    fieldTypeDescriptor: String, relationType: String)
             : MutableList<RelationField> {
         val fields = mutableListOf<RelationField>()
-        ctClass.declaredFields.filter { it.fieldInfo.descriptor == fieldTypeDescriptor }.forEach { field ->
-            val targetClassType = field.fieldInfo.exGetSingleGenericTypeArgumentOrNull()
-            if (ClassConst.listDescriptor == fieldTypeDescriptor) {
-                if (targetClassType == null || !context.entityTypes.contains(targetClassType.name)
-                        || Modifier.isTransient(field.modifiers)
-                        || field.fieldInfo.exGetAnnotation(ClassConst.transientAnnotationName) != null) {
-                    return@forEach
+        ctClass.declaredFields
+                .filter { it.fieldInfo.descriptor == fieldTypeDescriptor }
+                .forEach { field ->
+                    val targetClassType = field.fieldInfo.exGetSingleGenericTypeArgumentOrNull()
+                    if (ClassConst.listDescriptor == fieldTypeDescriptor) {
+                        // is List
+                        if (targetClassType == null
+                                || !context.entityTypes.contains(targetClassType.name)
+                                || Modifier.isTransient(field.modifiers)
+                                || field.fieldInfo.exGetAnnotation(ClassConst.transientAnnotationName) != null
+                                || field.fieldInfo.exGetAnnotation(ClassConst.convertAnnotationName) != null) {
+                            // exclude:
+                            // - no target entity
+                            // - does not hold the expected target entity,
+                            // - is transient
+                            // - is annotated with @Transient or @Convert
+                            // note: this detection should be in sync with ClassProber#extractAllListTypes
+                            return@forEach
+                        }
+                    }
+                    val name = findRelationNameInEntityInfo(context, ctClassEntity, field, relationType)
+                    fields += RelationField(field, name, relationType, targetClassType)
                 }
-            }
-            val name = findRelationNameInEntityInfo(context, ctClassEntity, field, relationType)
-            fields += RelationField(field, name, relationType, targetClassType)
-        }
         return fields
     }
 

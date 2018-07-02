@@ -18,6 +18,7 @@
 
 package io.objectbox.gradle.transform
 
+import org.junit.Assert
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
@@ -36,6 +37,8 @@ abstract class AbstractTransformTest {
 
     val prober = ClassProber()
 
+    val transformer = ClassTransformer(true)
+
     @Test
     fun testClassDir() {
         assertTrue(classDir.absolutePath, classDir.exists())
@@ -45,6 +48,27 @@ abstract class AbstractTransformTest {
         val file = File(classDir, kclass.qualifiedName!!.replace('.', '/') + ".class")
         assertTrue(file.absolutePath, file.exists())
         return prober.probeClass(file, outDir)
+    }
+
+    fun testTransformOrCopy(kClass: KClass<*>, expectedTransformed: Int, expectedCopied: Int)
+            = testTransformOrCopy(listOf(kClass), expectedTransformed, expectedCopied)
+
+    fun testTransformOrCopy(kClasses: List<KClass<*>>, expectedTransformed: Int, expectedCopied: Int)
+            : Pair<ClassTransformerStats, List<File>> {
+        val tempDir = File.createTempFile(this.javaClass.name, "")
+        tempDir.delete()
+        assertTrue(tempDir.mkdir())
+        val probedClasses = kClasses.map { probeClass(it, tempDir) }
+        try {
+            val stats = transformer.transformOrCopyClasses(probedClasses)
+            Assert.assertEquals(expectedTransformed, stats.countTransformed)
+            Assert.assertEquals(expectedCopied, stats.countCopied)
+            val createdFiles = tempDir.walkBottomUp().toList().filter { it.isFile }
+            Assert.assertEquals(expectedTransformed + expectedCopied, createdFiles.size)
+            return Pair(stats, createdFiles)
+        } finally {
+            tempDir.deleteRecursively()
+        }
     }
 
 }

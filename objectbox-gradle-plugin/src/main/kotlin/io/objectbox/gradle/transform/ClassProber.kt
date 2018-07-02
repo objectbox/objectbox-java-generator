@@ -90,12 +90,24 @@ class ClassProber {
     }
 
     private fun extractAllListTypes(fields: List<FieldInfo>): List<String> {
-        return fields.filter {
-            it.descriptor == ClassConst.listDescriptor && !it.exIsTransient()
-                    && it.exGetAnnotation(ClassConst.transientAnnotationName) == null
-        }.map {
-            it.exGetSingleGenericTypeArgumentOrNull()?.name
-        }.filterNotNull()
+        return fields.mapNotNull {
+            val targetClassType = it.exGetSingleGenericTypeArgumentOrNull()
+            if (ClassConst.listDescriptor != it.descriptor
+                    || targetClassType == null
+                    || it.exIsTransient()
+                    || it.exGetAnnotation(ClassConst.transientAnnotationName) != null
+                    || it.exGetAnnotation(ClassConst.convertAnnotationName) != null) {
+                // exclude:
+                // - not List,
+                // - no target entity,
+                // - is transient,
+                // - is annotated with @Transient or @Convert
+                // note: this detection should be in sync with ClassTransformer#findRelationFields
+                null
+            } else {
+                targetClassType.name
+            }
+        }
     }
 
     private fun hasClassRef(classFile: ClassFile, className: String, classDescriptorName: String): Boolean {

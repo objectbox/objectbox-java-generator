@@ -19,6 +19,7 @@
 package io.objectbox.gradle.transform
 
 import io.objectbox.annotation.BaseEntity
+import io.objectbox.annotation.Convert
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Transient
 import javassist.bytecode.SignatureAttribute
@@ -34,6 +35,7 @@ object ClassConst {
     val entityAnnotationName = Entity::class.qualifiedName!!
     val baseEntityAnnotationName = BaseEntity::class.qualifiedName!!
     val transientAnnotationName = Transient::class.qualifiedName!!
+    val convertAnnotationName = Convert::class.qualifiedName!!
 
     val toOne = "io.objectbox.relation.ToOne"
     val toOneDescriptor = "Lio/objectbox/relation/ToOne;"
