@@ -24,11 +24,8 @@ import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.ExpectedException
-import java.io.File
-import kotlin.reflect.KClass
 
 class ClassTransformerTest : AbstractTransformTest() {
-    val transformer = ClassTransformer(true)
 
     @Rule @JvmField
     val thrown : ExpectedException = ExpectedException.none()
@@ -121,27 +118,6 @@ class ClassTransformerTest : AbstractTransformTest() {
     }
 
     @Test
-    fun testTransformEntity_toManyAndConverter() {
-        val classes = listOf(EntityToManyAndConverter::class, EntityToManyAndConverter_::class)
-        val (stats) = testTransformOrCopy(classes, 1, 1)
-        assertEquals(1, stats.boxStoreFieldsAdded)
-        assertEquals(0, stats.toOnesFound)
-        assertEquals(1, stats.toManyFound)
-        assertEquals(1, stats.toManyInitializerAdded)
-    }
-
-    @Test
-    fun testTransformEntity_toOneAndConverter() {
-        val classes = listOf(EntityToOneAndConverter::class, EntityToOneAndConverter_::class)
-        val (stats) = testTransformOrCopy(classes, 1, 1)
-        assertEquals(1, stats.boxStoreFieldsAdded)
-        assertEquals(1, stats.toOnesFound)
-        assertEquals(0, stats.toManyFound)
-        assertTrue(stats.constructorsCheckedForTransform >= 1)
-        assertEquals(stats.constructorsCheckedForTransform, stats.toOnesInitializerAdded)
-    }
-
-    @Test
     fun testTransformEntity_toManySuffix() {
         val classes = listOf(EntityToManySuffix::class, EntityToManySuffix_::class)
         val (stats) = testTransformOrCopy(classes, 1, 1)
@@ -170,6 +146,8 @@ class ClassTransformerTest : AbstractTransformTest() {
         assertEquals(1, stats.toManyFound)
         assertEquals(1, stats.toManyInitializerAdded)
     }
+
+
 
     @Test
     fun doNotTransform_constructorCallingConstructor() {
@@ -200,27 +178,5 @@ class ClassTransformerTest : AbstractTransformTest() {
         val actualPath = copiedFile.absolutePath.replace('\\', '/')
         assertTrue(actualPath, actualPath.endsWith(expectedPath))
     }
-
-    fun testTransformOrCopy(kClass: KClass<*>, expectedTransformed: Int, expectedCopied: Int)
-            = testTransformOrCopy(listOf(kClass), expectedTransformed, expectedCopied)
-
-    fun testTransformOrCopy(kClasses: List<KClass<*>>, expectedTransformed: Int, expectedCopied: Int)
-            : Pair<ClassTransformerStats, List<File>> {
-        val tempDir = File.createTempFile(this.javaClass.name, "")
-        tempDir.delete()
-        assertTrue(tempDir.mkdir())
-        val probedClasses = kClasses.map { probeClass(it, tempDir) }
-        try {
-            val stats = transformer.transformOrCopyClasses(probedClasses)
-            assertEquals(expectedTransformed, stats.countTransformed)
-            assertEquals(expectedCopied, stats.countCopied)
-            val createdFiles = tempDir.walkBottomUp().toList().filter { it.isFile }
-            assertEquals(expectedTransformed + expectedCopied, createdFiles.size)
-            return Pair(stats, createdFiles)
-        } finally {
-            tempDir.deleteRecursively()
-        }
-    }
-
 
 }
