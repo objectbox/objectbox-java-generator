@@ -116,7 +116,7 @@ class IndexTest : BaseProcessorTest() {
 
         val compilation = environment.compile(entity)
         CompilationSubject.assertThat(compilation).failed()
-        // TODO assert error message
+        CompilationSubject.assertThat(compilation).hadErrorContaining("@Index(maxValueLength) must be 0 or greater.")
     }
 
     @Test
@@ -127,7 +127,7 @@ class IndexTest : BaseProcessorTest() {
 
         val compilation = environment.compile(entity)
         CompilationSubject.assertThat(compilation).failed()
-        // TODO assert error message
+        CompilationSubject.assertThat(compilation).hadErrorContaining("@Index(maxValueLength) is only allowed for String or byte[].")
     }
 
     @Test
@@ -138,7 +138,7 @@ class IndexTest : BaseProcessorTest() {
 
         val compilation = environment.compile(entity)
         CompilationSubject.assertThat(compilation).failed()
-        // TODO assert error message
+        CompilationSubject.assertThat(compilation).hadErrorContaining("@Index(maxValueLength) is only allowed for @Index(type = IndexType.VALUE).")
     }
 
     @Test

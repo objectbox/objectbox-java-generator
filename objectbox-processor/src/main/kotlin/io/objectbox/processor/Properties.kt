@@ -150,9 +150,20 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
                     }
                 }
             }
-            val maxValueLength = if ((indexAnnotation.type == IndexType.DEFAULT
-                            || indexAnnotation.type == IndexType.VALUE) && isStringOrByteArray) {
-                max(0, indexAnnotation.maxValueLength) // at least 0
+            // error if maxValueLength is used incorrectly
+            val isTypeDefaultOrValue = indexAnnotation.type == IndexType.DEFAULT || indexAnnotation.type == IndexType.VALUE
+            val unsafeMaxValueLength = indexAnnotation.maxValueLength
+            if (unsafeMaxValueLength < 0) {
+                messages.error("'$field' @Index(maxValueLength) must be 0 or greater.")
+            } else if (unsafeMaxValueLength > 0) {
+                if (!isStringOrByteArray) {
+                    messages.error("'$field' @Index(maxValueLength) is only allowed for String or byte[].")
+                } else if (!isTypeDefaultOrValue) {
+                    messages.error("'$field' @Index(maxValueLength) is only allowed for @Index(type = IndexType.VALUE).")
+                }
+            }
+            val maxValueLength = if (isStringOrByteArray && isTypeDefaultOrValue) {
+                max(0, unsafeMaxValueLength) // at least 0
             } else {
                 0
             }
