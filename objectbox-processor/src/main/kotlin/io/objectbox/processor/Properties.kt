@@ -21,6 +21,7 @@ package io.objectbox.processor
 import io.objectbox.annotation.Convert
 import io.objectbox.annotation.Id
 import io.objectbox.annotation.Index
+import io.objectbox.annotation.IndexType
 import io.objectbox.annotation.NameInDb
 import io.objectbox.annotation.Transient
 import io.objectbox.annotation.Uid
@@ -28,6 +29,7 @@ import io.objectbox.generator.IdUid
 import io.objectbox.generator.model.Entity
 import io.objectbox.generator.model.Property
 import io.objectbox.generator.model.PropertyType
+import io.objectbox.model.PropertyFlags
 import io.objectbox.relation.ToMany
 import io.objectbox.relation.ToOne
 import javax.lang.model.element.AnnotationMirror
@@ -38,6 +40,7 @@ import javax.lang.model.type.TypeMirror
 import javax.lang.model.util.ElementFilter
 import javax.lang.model.util.Elements
 import javax.lang.model.util.Types
+import kotlin.math.max
 
 /**
  * Parses properties from fields for a given entity and adds them to the entity model.
@@ -130,8 +133,30 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
         }
 
         // @Index
-        if (field.hasAnnotation(Index::class.java)) {
-            propertyBuilder.indexAsc(null, false)
+        val indexAnnotation = field.getAnnotation(Index::class.java)
+        if (indexAnnotation != null) {
+            val propertyType = propertyBuilder.property.propertyType
+            val isStringOrByteArray = propertyType == PropertyType.String || propertyType == PropertyType.ByteArray
+            val indexType = when(indexAnnotation.type) {
+                IndexType.VALUE -> PropertyFlags.INDEXED
+                IndexType.HASH -> PropertyFlags.INDEX_HASH
+                IndexType.HASH64 -> PropertyFlags.INDEX_HASH64
+                IndexType.DEFAULT -> {
+                    // auto detect
+                    if (isStringOrByteArray) {
+                        PropertyFlags.INDEX_HASH // String and byte[] like HASH
+                    } else {
+                        PropertyFlags.INDEXED // others like VALUE
+                    }
+                }
+            }
+            val maxValueLength = if ((indexAnnotation.type == IndexType.DEFAULT
+                            || indexAnnotation.type == IndexType.VALUE) && isStringOrByteArray) {
+                max(0, indexAnnotation.maxValueLength) // at least 0
+            } else {
+                0
+            }
+            propertyBuilder.indexAsc(null, indexType, maxValueLength)
         }
 
         // @Uid
