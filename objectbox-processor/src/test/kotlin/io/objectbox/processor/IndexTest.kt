@@ -145,7 +145,8 @@ class IndexTest : BaseProcessorTest() {
     fun index_typeAndMaxLength_generatedCodeFlagsMatch() {
         val entity = "IndexGenerated"
 
-        val environment = TestEnvironment("index-generated-temp.json")
+        // need stable model file + ids to verify sources match
+        val environment = TestEnvironment("index-generated.json")
 
         val compilation = environment.compile(entity)
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
