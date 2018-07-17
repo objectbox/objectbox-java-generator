@@ -86,18 +86,14 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
 
     private fun parseProperty(field: VariableElement) {
         // Why nullable? A property might not be parsed due to an error. We do not throw here.
-        val propertyBuilder: Property.PropertyBuilder?
-
-        if (field.hasAnnotation(Convert::class.java)) {
+        val propertyBuilder: Property.PropertyBuilder = (if (field.hasAnnotation(Convert::class.java)) {
             // verify @Convert custom type
-            propertyBuilder = parseCustomProperty(field)
+            parseCustomProperty(field)
         } else {
             // verify that supported type is used
-            propertyBuilder = parseSupportedProperty(field)
-        }
-        if (propertyBuilder == null) {
-            return
-        }
+            parseSupportedProperty(field)
+        }) ?: return
+
         propertyBuilder.property.parsedElement = field
 
         // checks if field is accessible
