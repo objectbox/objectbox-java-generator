@@ -23,6 +23,10 @@ public class Index extends PropertyOrderList {
     private String name;
     private boolean unique;
     private boolean nonDefaultName;
+    /** Value mapped to a PropertyFlags constant in Java API. */
+    private int type;
+    /** Used to restrict index value length for String and byte[] if using value based index. */
+    private int maxValueLength;
 
     public String getName() {
         return name;
@@ -51,5 +55,21 @@ public class Index extends PropertyOrderList {
     void setDefaultName(String name) {
         this.name = name;
         this.nonDefaultName = false;
+    }
+
+    public int getType() {
+        return type;
+    }
+
+    public void setType(int type) {
+        this.type = type;
+    }
+
+    public int getMaxValueLength() {
+        return maxValueLength;
+    }
+
+    public void setMaxValueLength(int maxValueLength) {
+        this.maxValueLength = maxValueLength;
     }
 }

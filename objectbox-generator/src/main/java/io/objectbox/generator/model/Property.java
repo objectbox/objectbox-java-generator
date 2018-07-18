@@ -125,6 +125,16 @@ public class Property implements HasParsedElement {
             return this;
         }
 
+        public PropertyBuilder indexAsc(String indexNameOrNull, int type, int maxValueLength) {
+            Index index = new Index();
+            index.addPropertyAsc(property);
+            index.setName(indexNameOrNull);
+            index.setType(type);
+            index.setMaxValueLength(maxValueLength);
+            property.entity.addIndex(index);
+            return this;
+        }
+
         public PropertyBuilder indexDesc(String indexNameOrNull, boolean isUnique) {
             Index index = new Index();
             index.addPropertyDesc(property);
