@@ -41,6 +41,10 @@ public class ToManyToMany extends ToManyBase {
         this.sourceProperties = sourceProperties;
     }
 
+    public String getLinkedToManyName() {
+        return linkedToManyName;
+    }
+
     public ToManyStandalone getBacklinkToMany() {
         return backlinkToMany;
     }
