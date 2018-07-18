@@ -109,14 +109,25 @@ class IndexTest : BaseProcessorTest() {
     }
 
     @Test
-    fun index_maxLength_failsIfValueNegative() {
-        val entity = "IndexMaxLengthFailValue"
+    fun index_maxLength_failsIfNegative() {
+        val entity = "IndexMaxLengthFailValueNeg"
 
-        val environment = TestEnvironment("index-max-length-illegal-temp.json")
+        val environment = TestEnvironment("index-max-length-neg-temp.json")
 
         val compilation = environment.compile(entity)
         CompilationSubject.assertThat(compilation).failed()
-        CompilationSubject.assertThat(compilation).hadErrorContaining("@Index(maxValueLength) must be 0 or greater.")
+        CompilationSubject.assertThat(compilation).hadErrorContaining("@Index(maxValueLength) must be in range [1..450].")
+    }
+
+    @Test
+    fun index_maxLength_failsIfAboveMax() {
+        val entity = "IndexMaxLengthFailValueMax"
+
+        val environment = TestEnvironment("index-max-length-max-temp.json")
+
+        val compilation = environment.compile(entity)
+        CompilationSubject.assertThat(compilation).failed()
+        CompilationSubject.assertThat(compilation).hadErrorContaining("@Index(maxValueLength) must be in range [1..450].")
     }
 
     @Test

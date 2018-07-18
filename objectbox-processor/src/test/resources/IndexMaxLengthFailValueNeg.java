@@ -8,10 +8,10 @@ import io.objectbox.annotation.IndexType;
 import java.util.Date;
 
 @Entity
-public class IndexMaxLengthFailValue {
+public class IndexMaxLengthFailValueNeg {
 
     @Id long id;
 
     // index type correct, prop type correct, but value not allowed
-    @Index(type = IndexType.VALUE, maxValueLength = -42) String intProp;
+    @Index(type = IndexType.VALUE, maxValueLength = -1) String intProp;
 }

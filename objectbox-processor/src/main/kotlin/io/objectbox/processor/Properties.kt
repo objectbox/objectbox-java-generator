@@ -41,6 +41,7 @@ import javax.lang.model.util.ElementFilter
 import javax.lang.model.util.Elements
 import javax.lang.model.util.Types
 import kotlin.math.max
+import kotlin.math.min
 
 /**
  * Parses properties from fields for a given entity and adds them to the entity model.
@@ -153,8 +154,8 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
             // error if maxValueLength is used incorrectly
             val isTypeDefaultOrValue = indexAnnotation.type == IndexType.DEFAULT || indexAnnotation.type == IndexType.VALUE
             val unsafeMaxValueLength = indexAnnotation.maxValueLength
-            if (unsafeMaxValueLength < 0) {
-                messages.error("'$field' @Index(maxValueLength) must be 0 or greater.")
+            if (unsafeMaxValueLength < 0 || unsafeMaxValueLength > INDEX_MAX_VALUE_LENGTH_MAX) {
+                messages.error("'$field' @Index(maxValueLength) must be in range [1..$INDEX_MAX_VALUE_LENGTH_MAX].")
             } else if (unsafeMaxValueLength > 0) {
                 if (!isStringOrByteArray) {
                     messages.error("'$field' @Index(maxValueLength) is only allowed for String or byte[].")
@@ -163,9 +164,10 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
                 }
             }
             val maxValueLength = if (isStringOrByteArray && isTypeDefaultOrValue) {
-                max(0, unsafeMaxValueLength) // at least 0
+                // at least 0 (not set) or at most INDEX_MAX_VALUE_LENGTH_MAX
+                max(0, min(INDEX_MAX_VALUE_LENGTH_MAX, unsafeMaxValueLength))
             } else {
-                0
+                0 // not set
             }
             propertyBuilder.indexAsc(null, indexType, maxValueLength)
         }
@@ -288,6 +290,10 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
             }
         }
         return methods.find { it == "get$propertyNameCapitalized" }
+    }
+
+    companion object {
+        private const val INDEX_MAX_VALUE_LENGTH_MAX = 450
     }
 
 }
