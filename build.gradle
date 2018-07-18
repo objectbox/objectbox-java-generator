@@ -5,7 +5,8 @@ buildscript {
         kotlin_version = '1.2.50'
         objectbox_version = '2.0.0-SNAPSHOT' // used to version this projects' artifacts
         objectbox_plugin_version = objectbox_version // used to version this projects' artifacts
-        objectbox_java_version = objectbox_version // used for plugin dependencies
+//        objectbox_java_version = objectbox_version // used for plugin dependencies
+        objectbox_java_version = '2.0.0-index-types-SNAPSHOT' // used for plugin dependencies
         objectbox_runtime_version = objectbox_version // used as runtime library (projects using plugin)
     }
 
