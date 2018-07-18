@@ -134,43 +134,7 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
         }
 
         // @Index
-        val indexAnnotation = field.getAnnotation(Index::class.java)
-        if (indexAnnotation != null) {
-            val propertyType = propertyBuilder.property.propertyType
-            val isStringOrByteArray = propertyType == PropertyType.String || propertyType == PropertyType.ByteArray
-            val indexType = when(indexAnnotation.type) {
-                IndexType.VALUE -> PropertyFlags.INDEXED
-                IndexType.HASH -> PropertyFlags.INDEX_HASH
-                IndexType.HASH64 -> PropertyFlags.INDEX_HASH64
-                IndexType.DEFAULT -> {
-                    // auto detect
-                    if (isStringOrByteArray) {
-                        PropertyFlags.INDEX_HASH // String and byte[] like HASH
-                    } else {
-                        PropertyFlags.INDEXED // others like VALUE
-                    }
-                }
-            }
-            // error if maxValueLength is used incorrectly
-            val isTypeDefaultOrValue = indexAnnotation.type == IndexType.DEFAULT || indexAnnotation.type == IndexType.VALUE
-            val unsafeMaxValueLength = indexAnnotation.maxValueLength
-            if (unsafeMaxValueLength < 0 || unsafeMaxValueLength > INDEX_MAX_VALUE_LENGTH_MAX) {
-                messages.error("'$field' @Index(maxValueLength) must be in range [1..$INDEX_MAX_VALUE_LENGTH_MAX].")
-            } else if (unsafeMaxValueLength > 0) {
-                if (!isStringOrByteArray) {
-                    messages.error("'$field' @Index(maxValueLength) is only allowed for String or byte[].")
-                } else if (!isTypeDefaultOrValue) {
-                    messages.error("'$field' @Index(maxValueLength) is only allowed for @Index(type = IndexType.VALUE).")
-                }
-            }
-            val maxValueLength = if (isStringOrByteArray && isTypeDefaultOrValue) {
-                // at least 0 (not set) or at most INDEX_MAX_VALUE_LENGTH_MAX
-                max(0, min(INDEX_MAX_VALUE_LENGTH_MAX, unsafeMaxValueLength))
-            } else {
-                0 // not set
-            }
-            propertyBuilder.indexAsc(null, indexType, maxValueLength)
-        }
+        parseIndexAnnotation(field, propertyBuilder)
 
         // @Uid
         val uidAnnotation = field.getAnnotation(Uid::class.java)
@@ -180,6 +144,50 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
             val uid = if (uidAnnotation.value == 0L) -1 else uidAnnotation.value
             propertyBuilder.modelId(IdUid(0, uid))
         }
+    }
+
+    private fun parseIndexAnnotation(field: VariableElement, propertyBuilder: Property.PropertyBuilder) {
+        val indexAnnotation = field.getAnnotation(Index::class.java) ?: return
+
+        // determine index type
+        val propertyType = propertyBuilder.property.propertyType
+        val isStringOrByteArray = propertyType == PropertyType.String || propertyType == PropertyType.ByteArray
+        val indexType = when (indexAnnotation.type) {
+            IndexType.VALUE -> PropertyFlags.INDEXED
+            IndexType.HASH -> PropertyFlags.INDEX_HASH
+            IndexType.HASH64 -> PropertyFlags.INDEX_HASH64
+            IndexType.DEFAULT -> {
+                // auto detect
+                if (isStringOrByteArray) {
+                    PropertyFlags.INDEX_HASH // String and byte[] like HASH
+                } else {
+                    PropertyFlags.INDEXED // others like VALUE
+                }
+            }
+        }
+
+        // error if maxValueLength is used incorrectly
+        val isTypeDefaultOrValue = indexAnnotation.type == IndexType.DEFAULT || indexAnnotation.type == IndexType.VALUE
+        val unsafeMaxValueLength = indexAnnotation.maxValueLength
+        if (unsafeMaxValueLength < 0 || unsafeMaxValueLength > INDEX_MAX_VALUE_LENGTH_MAX) {
+            messages.error("'$field' @Index(maxValueLength) must be in range [1..$INDEX_MAX_VALUE_LENGTH_MAX].")
+        } else if (unsafeMaxValueLength > 0) {
+            if (!isStringOrByteArray) {
+                messages.error("'$field' @Index(maxValueLength) is only allowed for String or byte[].")
+            } else if (!isTypeDefaultOrValue) {
+                messages.error("'$field' @Index(maxValueLength) is only allowed for @Index(type = IndexType.VALUE).")
+            }
+        }
+
+        // determine maxValueLength
+        val maxValueLength = if (isStringOrByteArray && isTypeDefaultOrValue) {
+            // at least 0 (not set) or at most INDEX_MAX_VALUE_LENGTH_MAX
+            max(0, min(INDEX_MAX_VALUE_LENGTH_MAX, unsafeMaxValueLength))
+        } else {
+            0 // not set
+        }
+
+        propertyBuilder.indexAsc(null, indexType, maxValueLength)
     }
 
     private fun parseCustomProperty(field: VariableElement): Property.PropertyBuilder? {
