@@ -309,6 +309,30 @@ class RelationsTest : BaseProcessorTest() {
     }
 
     @Test
+    fun backlink_multipleToToOneRelation_shouldError() {
+        val backlinkEntity = "BacklinkMultipleErrorO"
+        val relationEntity = "BacklinkMultipleErrorORelation"
+
+        assertMultipleBacklinksError(backlinkEntity, relationEntity)
+    }
+
+    @Test
+    fun backlink_multipleToToManyRelation_shouldError() {
+        val backlinkEntity = "BacklinkMultipleErrorM"
+        val relationEntity = "BacklinkMultipleErrorMRelation"
+
+        assertMultipleBacklinksError(backlinkEntity, relationEntity)
+    }
+
+    private fun assertMultipleBacklinksError(backlinkEntity: String, relationEntity: String) {
+        val environment = TestEnvironment("not-generated.json")
+
+        val compilation = environment.compile(backlinkEntity, relationEntity)
+        CompilationSubject.assertThat(compilation).failed()
+        CompilationSubject.assertThat(compilation).hadErrorContaining("Only one @Backlink per relation allowed. Remove all but one @Backlink.")
+    }
+
+    @Test
     fun backlink_withTo() {
         // test if correct relation of @Backlink (with 'to' value) is detected
         val targetName = "BacklinkWithToTarget"
