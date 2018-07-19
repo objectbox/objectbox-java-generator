@@ -13,6 +13,11 @@ pipeline {
                 sh 'chmod +x gradlew'
                 sh "./gradlew $gradleArgs"
             }
+            post {
+                always {
+                    junit '**/build/test-results/**/TEST-*.xml'
+                }
+            }
         }
 
         stage('build-windows') {
@@ -20,14 +25,15 @@ pipeline {
             steps {
                 bat "gradlew $gradleArgs"
             }
+            post {
+                always {
+                    junit '**/build/test-results/**/TEST-*.xml'
+                }
+            }
         }
     }
 
     post {
-        always {
-            junit '**/build/test-results/**/TEST-*.xml'
-        }
-
         changed {
             // For global vars see /jenkins/pipeline-syntax/globals
             slackSend color: COLOR_MAP[currentBuild.currentResult],
