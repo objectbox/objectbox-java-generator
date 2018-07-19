@@ -6,29 +6,34 @@ pipeline {
     agent none
 
     stages {
-        stage('build-linux') {
-            agent { label 'linux' }
-            steps {
-                // sh 'cp /var/my-private-files/private.properties ./gradle.properties'
-                sh 'chmod +x gradlew'
-                sh "./gradlew $gradleArgs"
-            }
-            post {
-                always {
-                    junit '**/build/test-results/**/TEST-*.xml'
+        stage ('build') {
+            parallel {
+                stage('build-linux') {
+                    agent { label 'linux' }
+                    steps {
+                        // sh 'cp /var/my-private-files/private.properties ./gradle.properties'
+                        sh 'chmod +x gradlew'
+                        sh "./gradlew $gradleArgs"
+                    }
+                    post {
+                        always {
+                            junit '**/build/test-results/**/TEST-*.xml'
+                        }
+                    }
                 }
-            }
-        }
 
-        stage('build-windows') {
-            agent { label 'windows' }
-            steps {
-                bat "gradlew $gradleArgs"
-            }
-            post {
-                always {
-                    junit '**/build/test-results/**/TEST-*.xml'
+                stage('build-windows') {
+                    agent { label 'windows' }
+                    steps {
+                        bat "gradlew $gradleArgs"
+                    }
+                    post {
+                        always {
+                            junit '**/build/test-results/**/TEST-*.xml'
+                        }
+                    }
                 }
+
             }
         }
     }
