@@ -18,19 +18,9 @@ dependencies {
     // manually add tools.jar required by compile-testing
     def jvm = org.gradle.internal.jvm.Jvm.current()
     File toolsJar = jvm.getToolsJar()
-    if(toolsJar == null) {
-        def msg = 'No tools.jar on the JVM path: ' + jvm.getJavaHome()
-        logger.warn(msg)
-        def candidate = new File('C:\\Program Files\\Java\\jdk-10\\lib\\tools.jar')
-        if(candidate.exists()) {
-            logger.info("Found $candidate")
-            toolsJar = candidate
-        }
-        if(toolsJar == null) {
-            throw new GradleException(msg)
-        }
+    if(toolsJar != null) {
+        testCompile files(toolsJar)
     }
-    testCompile files(toolsJar)
     testCompile 'junit:junit:4.12'
     testCompile 'com.google.truth:truth:0.37'
     testCompile 'com.google.testing.compile:compile-testing:0.15'
