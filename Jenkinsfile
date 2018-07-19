@@ -1,7 +1,7 @@
 def COLOR_MAP = ['SUCCESS': 'good', 'FAILURE': 'danger', 'UNSTABLE': 'danger', 'ABORTED': 'danger']
 
 pipeline {
-    agent any // { docker 'openjdk:8-jdk' }
+    agent none
 
     stages {
         stage('build-linux') {
@@ -12,6 +12,7 @@ pipeline {
                 sh './gradlew clean check install'
             }
         }
+
         stage('build-windows') {
             agent { label 'windows' }
             steps {
