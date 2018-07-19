@@ -22,7 +22,7 @@ dependencies {
         def msg = 'No tools.jar on the JVM path: ' + jvm.getJavaHome()
         logger.warn(msg)
         def candidate = new File('C:\\Program Files\\Java\\jdk-10\\lib\\tools.jar')
-        if(candidate.exists) {
+        if(candidate.exists()) {
             logger.info("Found $candidate")
             toolsJar = candidate
         }

@@ -1,5 +1,7 @@
 def COLOR_MAP = ['SUCCESS': 'good', 'FAILURE': 'danger', 'UNSTABLE': 'danger', 'ABORTED': 'danger']
 
+def gradleArgs = '-Dorg.gradle.daemon=false --stacktrace clean check install'
+
 pipeline {
     agent none
 
@@ -9,14 +11,14 @@ pipeline {
             steps {
                 // sh 'cp /var/my-private-files/private.properties ./gradle.properties'
                 sh 'chmod +x gradlew'
-                sh './gradlew clean check install'
+                sh "./gradlew $gradleArgs"
             }
         }
 
         stage('build-windows') {
             agent { label 'windows' }
             steps {
-                bat 'gradlew clean check install'
+                bat "gradlew $gradleArgs"
             }
         }
     }
