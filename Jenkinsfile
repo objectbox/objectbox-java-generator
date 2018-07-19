@@ -4,17 +4,18 @@ pipeline {
     agent any // { docker 'openjdk:8-jdk' }
 
     stages {
-        stage('config') {
+        stage('build-linux') {
+            agent { label 'linux' }
             steps {
-                sh 'cp /var/my-private-files/private.properties ./gradle.properties'
+                // sh 'cp /var/my-private-files/private.properties ./gradle.properties'
                 sh 'chmod +x gradlew'
-                //sh 'printenv'
+                sh './gradlew clean check install'
             }
         }
-
-        stage('build') {
+        stage('build-windows') {
+            agent { label 'windows' }
             steps {
-                sh './gradlew clean check install'
+                bat 'gradlew clean check install'
             }
         }
     }
