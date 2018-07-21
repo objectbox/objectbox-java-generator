@@ -95,6 +95,7 @@ public class MyObjectBox {
     <#if property.index.type == 4096>
         <#assign flags = flags + ["PropertyFlags.INDEX_HASH64"]>
     </#if>
+    <#if property.index.unique><#assign flags = flags + ["PropertyFlags.UNIQUE"]></#if>
 </#if>
 <#if property.virtual><#assign flags = flags + ["PropertyFlags.VIRTUAL"]></#if>
 <#if property.propertyType == "RelationId"><#assign flags = flags + ["PropertyFlags.INDEXED", "PropertyFlags.INDEX_PARTIAL_SKIP_ZERO"]></#if>

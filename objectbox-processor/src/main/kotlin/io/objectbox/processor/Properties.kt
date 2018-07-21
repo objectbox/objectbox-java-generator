@@ -25,6 +25,7 @@ import io.objectbox.annotation.IndexType
 import io.objectbox.annotation.NameInDb
 import io.objectbox.annotation.Transient
 import io.objectbox.annotation.Uid
+import io.objectbox.annotation.Unique
 import io.objectbox.generator.IdUid
 import io.objectbox.generator.model.Entity
 import io.objectbox.generator.model.Property
@@ -134,7 +135,7 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
         }
 
         // @Index
-        parseIndexAnnotation(field, propertyBuilder)
+        parseIndexAndUniqueAnnotations(field, propertyBuilder)
 
         // @Uid
         val uidAnnotation = field.getAnnotation(Uid::class.java)
@@ -146,13 +147,18 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
         }
     }
 
-    private fun parseIndexAnnotation(field: VariableElement, propertyBuilder: Property.PropertyBuilder) {
-        val indexAnnotation = field.getAnnotation(Index::class.java) ?: return
+    private fun parseIndexAndUniqueAnnotations(field: VariableElement, propertyBuilder: Property.PropertyBuilder) {
+        val indexAnnotation = field.getAnnotation(Index::class.java)
+        val uniqueAnnotation = field.getAnnotation(Unique::class.java)
+        if(indexAnnotation == null && uniqueAnnotation == null) {
+            return
+        }
 
         // determine index type
         val propertyType = propertyBuilder.property.propertyType
         val isStringOrByteArray = propertyType == PropertyType.String || propertyType == PropertyType.ByteArray
-        val indexType = when (indexAnnotation.type) {
+        val indexType = indexAnnotation?.type ?: IndexType.DEFAULT
+        val indexFlags: Int = when (indexType) {
             IndexType.VALUE -> PropertyFlags.INDEXED
             IndexType.HASH -> PropertyFlags.INDEX_HASH
             IndexType.HASH64 -> PropertyFlags.INDEX_HASH64
@@ -168,12 +174,14 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
 
         if (propertyType == PropertyType.ByteArray || propertyType == PropertyType.Float ||
                 propertyType == PropertyType.Double) {
-            messages.error("'$field' type ($propertyType) does not support indexing yet. Please remove @Index for now.")
+            val annotationName =  if(indexAnnotation != null) "Index" else "Unique"
+            messages.error("'$field' has an yet unsupported type $propertyType for indexing. " +
+                    "Please remove @$annotationName for now.")
         }
 
         // error if maxValueLength is used incorrectly
-        val isTypeDefaultOrValue = indexAnnotation.type == IndexType.DEFAULT || indexAnnotation.type == IndexType.VALUE
-        val unsafeMaxValueLength = indexAnnotation.maxValueLength
+        val isTypeDefaultOrValue = indexType == IndexType.DEFAULT || indexType == IndexType.VALUE
+        val unsafeMaxValueLength = indexAnnotation?.maxValueLength ?: 0
         if (unsafeMaxValueLength < 0 || unsafeMaxValueLength > INDEX_MAX_VALUE_LENGTH_MAX) {
             messages.error("'$field' @Index(maxValueLength) must be in range [1..$INDEX_MAX_VALUE_LENGTH_MAX].")
         } else if (unsafeMaxValueLength > 0) {
@@ -192,7 +200,7 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
             0 // not set
         }
 
-        propertyBuilder.indexAsc(null, indexType, maxValueLength)
+        propertyBuilder.indexAsc(null, indexFlags, maxValueLength, uniqueAnnotation != null)
     }
 
     private fun parseCustomProperty(field: VariableElement): Property.PropertyBuilder? {
