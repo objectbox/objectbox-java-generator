@@ -158,12 +158,17 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
             IndexType.HASH64 -> PropertyFlags.INDEX_HASH64
             IndexType.DEFAULT -> {
                 // auto detect
-                if (isStringOrByteArray) {
+                if (propertyType == PropertyType.String /*isStringOrByteArray*/) { // Not yet supported for bytes[]
                     PropertyFlags.INDEX_HASH // String and byte[] like HASH
                 } else {
                     PropertyFlags.INDEXED // others like VALUE
                 }
             }
+        }
+
+        if (propertyType == PropertyType.ByteArray || propertyType == PropertyType.Float ||
+                propertyType == PropertyType.Double) {
+            messages.error("'$field' type ($propertyType) does not support indexing yet. Please remove @Index for now.")
         }
 
         // error if maxValueLength is used incorrectly
