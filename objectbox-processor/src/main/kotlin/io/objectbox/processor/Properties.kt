@@ -195,7 +195,9 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
         // determine maxValueLength
         val maxValueLength = if (isStringOrByteArray && isTypeDefaultOrValue) {
             // at least 0 (not set) or at most INDEX_MAX_VALUE_LENGTH_MAX
-            max(0, min(INDEX_MAX_VALUE_LENGTH_MAX, unsafeMaxValueLength))
+            // max(0, min(INDEX_MAX_VALUE_LENGTH_MAX, unsafeMaxValueLength))
+            messages.info("'$field' @Index(maxValueLength) is ignored for now")
+            0
         } else {
             0 // not set
         }
