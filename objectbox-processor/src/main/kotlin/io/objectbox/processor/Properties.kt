@@ -41,8 +41,6 @@ import javax.lang.model.type.TypeMirror
 import javax.lang.model.util.ElementFilter
 import javax.lang.model.util.Elements
 import javax.lang.model.util.Types
-import kotlin.math.max
-import kotlin.math.min
 
 /**
  * Parses properties from fields for a given entity and adds them to the entity model.
@@ -112,7 +110,8 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
 
         // @Id
         val idAnnotation = field.getAnnotation(Id::class.java)
-        if (idAnnotation != null) {
+        val hasIdAnnotation = idAnnotation != null
+        if (hasIdAnnotation) {
             if (propertyBuilder.property.propertyType != PropertyType.Long) {
                 messages.error("An @Id property has to be of type Long.", field)
             }
@@ -135,7 +134,7 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
         }
 
         // @Index
-        parseIndexAndUniqueAnnotations(field, propertyBuilder)
+        parseIndexAndUniqueAnnotations(field, propertyBuilder, hasIdAnnotation)
 
         // @Uid
         val uidAnnotation = field.getAnnotation(Uid::class.java)
@@ -147,10 +146,11 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
         }
     }
 
-    private fun parseIndexAndUniqueAnnotations(field: VariableElement, propertyBuilder: Property.PropertyBuilder) {
+    private fun parseIndexAndUniqueAnnotations(field: VariableElement, propertyBuilder: Property.PropertyBuilder,
+            hasIdAnnotation: Boolean) {
         val indexAnnotation = field.getAnnotation(Index::class.java)
         val uniqueAnnotation = field.getAnnotation(Unique::class.java)
-        if(indexAnnotation == null && uniqueAnnotation == null) {
+        if (indexAnnotation == null && uniqueAnnotation == null) {
             return
         }
 
@@ -170,6 +170,12 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
                     PropertyFlags.INDEXED // others like VALUE
                 }
             }
+        }
+
+        // error if used with @Id
+        if (hasIdAnnotation) {
+            val annotationName =  if(indexAnnotation != null) "Index" else "Unique"
+            messages.error("'$field' @$annotationName can not be used with @Id.")
         }
 
         // error if unsupported property type

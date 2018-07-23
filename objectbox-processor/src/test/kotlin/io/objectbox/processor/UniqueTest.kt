@@ -43,6 +43,8 @@ class UniqueTest : BaseProcessorTest() {
         val compilation = environment.compile(entity)
         CompilationSubject.assertThat(compilation).failed()
 
+        CompilationSubject.assertThat(compilation).hadErrorContaining("@Unique can not be used with @Id.")
+
         CompilationSubject.assertThat(compilation).hadErrorContaining("@Unique is not supported for Float.")
         CompilationSubject.assertThat(compilation).hadErrorContaining("@Unique is not supported for Double.")
         CompilationSubject.assertThat(compilation).hadErrorContaining("@Unique is not supported for ByteArray.")

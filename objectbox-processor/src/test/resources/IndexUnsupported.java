@@ -8,7 +8,7 @@ import java.util.Date;
 @Entity
 public class IndexUnsupported {
 
-    @Id long id;
+    @Id @Index long id;
 
     // byte[], float or double do not support @Index
     @Index Float floatPropOrNull;

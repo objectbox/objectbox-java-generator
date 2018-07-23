@@ -8,7 +8,7 @@ import java.util.Date;
 @Entity
 public class UniqueUnsupported {
 
-    @Id long id;
+    @Id @Unique long id;
 
     // byte[], float or double do not support @Unique
     @Unique Float floatPropOrNull;

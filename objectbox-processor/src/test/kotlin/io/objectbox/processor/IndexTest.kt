@@ -53,6 +53,9 @@ class IndexTest : BaseProcessorTest() {
 
         val compilation = environment.compile(entity)
         CompilationSubject.assertThat(compilation).failed()
+
+        CompilationSubject.assertThat(compilation).hadErrorContaining("@Index can not be used with @Id.")
+
         CompilationSubject.assertThat(compilation).hadErrorContaining("@Index is not supported for Float.")
         CompilationSubject.assertThat(compilation).hadErrorContaining("@Index is not supported for Double.")
         CompilationSubject.assertThat(compilation).hadErrorContaining("@Index is not supported for ByteArray.")
