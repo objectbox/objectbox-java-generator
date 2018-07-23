@@ -172,11 +172,11 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
             }
         }
 
+        // error if unsupported property type
         if (propertyType == PropertyType.ByteArray || propertyType == PropertyType.Float ||
                 propertyType == PropertyType.Double) {
             val annotationName =  if(indexAnnotation != null) "Index" else "Unique"
-            messages.error("'$field' has an yet unsupported type $propertyType for indexing. " +
-                    "Please remove @$annotationName for now.")
+            messages.error("'$field' @$annotationName is not supported for $propertyType. Remove @$annotationName.")
         }
 
         propertyBuilder.indexAsc(null, indexFlags, 0, uniqueAnnotation != null)

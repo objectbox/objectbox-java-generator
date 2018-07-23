@@ -46,6 +46,19 @@ class IndexTest : BaseProcessorTest() {
     }
 
     @Test
+    fun index_unsupportedProperties_failsWithError() {
+        val entity = "IndexUnsupported"
+
+        val environment = TestEnvironment("index-unsupported-temp.json")
+
+        val compilation = environment.compile(entity)
+        CompilationSubject.assertThat(compilation).failed()
+        CompilationSubject.assertThat(compilation).hadErrorContaining("@Index is not supported for Float.")
+        CompilationSubject.assertThat(compilation).hadErrorContaining("@Index is not supported for Double.")
+        CompilationSubject.assertThat(compilation).hadErrorContaining("@Index is not supported for ByteArray.")
+    }
+
+    @Test
     fun index_type_ifSetOverridesDefault() {
         val entity = "IndexTypeOverride"
 

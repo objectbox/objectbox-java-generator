@@ -35,6 +35,20 @@ class UniqueTest : BaseProcessorTest() {
     }
 
     @Test
+    fun unique_unsupportedProperties_failsWithError() {
+        val entity = "UniqueUnsupported"
+
+        val environment = TestEnvironment("unique-unsupported-temp.json")
+
+        val compilation = environment.compile(entity)
+        CompilationSubject.assertThat(compilation).failed()
+
+        CompilationSubject.assertThat(compilation).hadErrorContaining("@Unique is not supported for Float.")
+        CompilationSubject.assertThat(compilation).hadErrorContaining("@Unique is not supported for Double.")
+        CompilationSubject.assertThat(compilation).hadErrorContaining("@Unique is not supported for ByteArray.")
+    }
+
+    @Test
     fun unique_andIndex_makesIndexUnique() {
         val entity = "UniqueAndIndex"
 
