@@ -5,7 +5,6 @@ import com.google.testing.compile.CompilationSubject
 import com.google.testing.compile.JavaFileObjects
 import io.objectbox.generator.model.PropertyType
 import io.objectbox.model.PropertyFlags
-import org.junit.Ignore
 import org.junit.Test
 
 
@@ -15,7 +14,6 @@ import org.junit.Test
 class IndexTest : BaseProcessorTest() {
 
     @Test
-    @Ignore("Adjust test to limited indexing features")
     fun index_type_autoDetectAsExpected() {
         val entity = "IndexAutoDetect"
 
@@ -48,7 +46,6 @@ class IndexTest : BaseProcessorTest() {
     }
 
     @Test
-    @Ignore("Adjust test to limited indexing features")
     fun index_type_ifSetOverridesDefault() {
         val entity = "IndexTypeOverride"
 
@@ -82,7 +79,6 @@ class IndexTest : BaseProcessorTest() {
     }
 
     @Test
-    @Ignore("Adjust test to limited indexing features")
     fun index_maxLength_isPickedUp() {
         val entity = "IndexMaxLength"
 
@@ -157,7 +153,6 @@ class IndexTest : BaseProcessorTest() {
     }
 
     @Test
-    @Ignore("Adjust test to limited indexing features")
     fun index_typeAndMaxLength_generatedCodeFlagsMatch() {
         val entity = "IndexGenerated"
 
