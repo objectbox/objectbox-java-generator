@@ -13,9 +13,9 @@ public class IndexGenerated {
     @Id long id;
 
     // all possible values for 'type'
-    @Index int intProp; // DEFAULT (ensured by compiler)
-    @Index(type = IndexType.VALUE) boolean boolProp;
-    @Index(type = IndexType.HASH) String stringProp;
-    @Index(type = IndexType.HASH64) Date dateProp;
+    @Index int defaultProp; // DEFAULT (ensured by compiler)
+    @Index(type = IndexType.VALUE) boolean valueProp;
+    @Index(type = IndexType.HASH) String hashProp;
+    @Index(type = IndexType.HASH64) String hash64Prop;
 
 }

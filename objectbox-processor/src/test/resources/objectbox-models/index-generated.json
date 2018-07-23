@@ -4,51 +4,47 @@
   "_note3": "If you have VCS merge conflicts, you must resolve them according to ObjectBox docs.",
   "entities": [
     {
-      "id": "1:7084431515111534289",
-      "lastPropertyId": "6:7923177323346835759",
+      "id": "1:8909216917646328500",
+      "lastPropertyId": "5:386689427203097845",
       "name": "IndexGenerated",
       "properties": [
         {
-          "id": "1:5977303612346588151",
+          "id": "1:5446539300635330200",
           "name": "id"
         },
         {
-          "id": "2:4686331430971777646",
-          "indexId": "1:1174449523189016795",
-          "name": "intProp"
+          "id": "2:5084698942674518401",
+          "indexId": "1:6484382999829587572",
+          "name": "defaultProp"
         },
         {
-          "id": "3:8467822549470294700",
-          "indexId": "2:983663037912438369",
-          "name": "boolProp"
+          "id": "3:7492569418772139189",
+          "indexId": "2:6991639645044933453",
+          "name": "valueProp"
         },
         {
-          "id": "4:6533786315119600269",
-          "indexId": "3:1891898801773255310",
-          "name": "stringProp"
+          "id": "4:104351152796407233",
+          "indexId": "3:1690874977862683848",
+          "name": "hashProp"
         },
         {
-          "id": "5:5827784785326621795",
-          "indexId": "4:2061695745452259841",
-          "name": "dateProp"
+          "id": "5:386689427203097845",
+          "indexId": "4:6816316644989602931",
+          "name": "hash64Prop"
         }
       ],
       "relations": []
     }
   ],
-  "lastEntityId": "1:7084431515111534289",
-  "lastIndexId": "5:7832271055854174317",
+  "lastEntityId": "1:8909216917646328500",
+  "lastIndexId": "4:6816316644989602931",
   "lastRelationId": "0:0",
   "lastSequenceId": "0:0",
   "modelVersion": 4,
   "modelVersionParserMinimum": 4,
   "retiredEntityUids": [],
-  "retiredIndexUids": [
-    7832271055854174317
-  ],
-  "retiredPropertyUids": [
-    7923177323346835759
-  ],
+  "retiredIndexUids": [],
+  "retiredPropertyUids": [],
   "retiredRelationUids": [],
   "version": 1
 }

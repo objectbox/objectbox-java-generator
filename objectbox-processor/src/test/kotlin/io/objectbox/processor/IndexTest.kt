@@ -5,6 +5,7 @@ import com.google.testing.compile.CompilationSubject
 import com.google.testing.compile.JavaFileObjects
 import io.objectbox.generator.model.PropertyType
 import io.objectbox.model.PropertyFlags
+import org.junit.Assert
 import org.junit.Test
 
 
@@ -62,6 +63,40 @@ class IndexTest : BaseProcessorTest() {
     }
 
     @Test
+    fun index_hash_failsForUnsupportedTypes() {
+        val entity = "IndexHashNotSupported"
+
+        val environment = TestEnvironment("index-hash-not-temp.json")
+
+        val compilation = environment.compile(entity)
+        CompilationSubject.assertThat(compilation).failed()
+
+        CompilationSubject.assertThat(compilation).hadErrorContaining("IndexType.HASH is not supported for ${PropertyType.Boolean}.")
+        CompilationSubject.assertThat(compilation).hadErrorContaining("IndexType.HASH is not supported for ${PropertyType.Int}.")
+        CompilationSubject.assertThat(compilation).hadErrorContaining("IndexType.HASH is not supported for ${PropertyType.Long}.")
+        CompilationSubject.assertThat(compilation).hadErrorContaining("IndexType.HASH is not supported for ${PropertyType.Byte}.")
+        CompilationSubject.assertThat(compilation).hadErrorContaining("IndexType.HASH is not supported for ${PropertyType.Char}.")
+        CompilationSubject.assertThat(compilation).hadErrorContaining("IndexType.HASH is not supported for ${PropertyType.Date}.")
+    }
+
+    @Test
+    fun index_hash64_failsForUnsupportedTypes() {
+        val entity = "IndexHash64NotSupported"
+
+        val environment = TestEnvironment("index-hash64-not-temp.json")
+
+        val compilation = environment.compile(entity)
+        CompilationSubject.assertThat(compilation).failed()
+
+        CompilationSubject.assertThat(compilation).hadErrorContaining("IndexType.HASH64 is not supported for ${PropertyType.Boolean}.")
+        CompilationSubject.assertThat(compilation).hadErrorContaining("IndexType.HASH64 is not supported for ${PropertyType.Int}.")
+        CompilationSubject.assertThat(compilation).hadErrorContaining("IndexType.HASH64 is not supported for ${PropertyType.Long}.")
+        CompilationSubject.assertThat(compilation).hadErrorContaining("IndexType.HASH64 is not supported for ${PropertyType.Byte}.")
+        CompilationSubject.assertThat(compilation).hadErrorContaining("IndexType.HASH64 is not supported for ${PropertyType.Char}.")
+        CompilationSubject.assertThat(compilation).hadErrorContaining("IndexType.HASH64 is not supported for ${PropertyType.Date}.")
+    }
+
+    @Test
     fun index_type_ifSetOverridesDefault() {
         val entity = "IndexTypeOverride"
 
@@ -80,12 +115,13 @@ class IndexTest : BaseProcessorTest() {
                 assertWithMessage("${it.propertyName} should have index").that(it.index).isNotNull()
 
                 // assert index type is overridden from default type
-                // (switched VALUE with HASH and vice versa for all)
-                val expectedIndexType = if (it.propertyType == PropertyType.String
-                        || it.propertyType == PropertyType.ByteArray) {
-                    PropertyFlags.INDEXED // 8
-                } else {
-                    PropertyFlags.INDEX_HASH // 2048
+                val expectedIndexType = when (it.propertyName) {
+                    "valueProp" -> PropertyFlags.INDEXED // 8
+                    "hash64Prop" -> PropertyFlags.INDEX_HASH64 // 4096
+                    else -> {
+                        Assert.fail("No mapping for property ${it.propertyName}")
+                        0
+                    }
                 }
                 assertWithMessage("${it.propertyName} index type is wrong")
                         .that(it.index.type)

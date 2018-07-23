@@ -18,25 +18,25 @@ public class MyObjectBox {
 
     private static byte[] getModel() {
         ModelBuilder modelBuilder = new ModelBuilder();
-        modelBuilder.lastEntityId(1, 7084431515111534289L);
-        modelBuilder.lastIndexId(5, 7832271055854174317L);
+        modelBuilder.lastEntityId(1, 8909216917646328500L);
+        modelBuilder.lastIndexId(4, 6816316644989602931L);
         modelBuilder.lastRelationId(0, 0L);
 
         EntityBuilder entityBuilder;
 
         entityBuilder = modelBuilder.entity("IndexGenerated");
-        entityBuilder.id(1, 7084431515111534289L).lastPropertyId(6, 7923177323346835759L);
+        entityBuilder.id(1, 8909216917646328500L).lastPropertyId(5, 386689427203097845L);
         entityBuilder.flags(io.objectbox.model.EntityFlags.USE_NO_ARG_CONSTRUCTOR);
-        entityBuilder.property("id", PropertyType.Long).id(1, 5977303612346588151L)
+        entityBuilder.property("id", PropertyType.Long).id(1, 5446539300635330200L)
                 .flags(PropertyFlags.ID | PropertyFlags.NOT_NULL);
-        entityBuilder.property("intProp", PropertyType.Int).id(2, 4686331430971777646L)
-                .flags(PropertyFlags.NOT_NULL | PropertyFlags.INDEXED).indexId(1, 1174449523189016795L);
-        entityBuilder.property("boolProp", PropertyType.Bool).id(3, 8467822549470294700L)
-                .flags(PropertyFlags.NOT_NULL | PropertyFlags.INDEXED).indexId(2, 983663037912438369L);
-        entityBuilder.property("stringProp", PropertyType.String).id(4, 6533786315119600269L)
-                .flags(PropertyFlags.INDEX_HASH).indexId(3, 1891898801773255310L);
-        entityBuilder.property("dateProp", PropertyType.Date).id(5, 5827784785326621795L)
-                .flags(PropertyFlags.INDEX_HASH64).indexId(4, 2061695745452259841L);
+        entityBuilder.property("defaultProp", PropertyType.Int).id(2, 5084698942674518401L)
+                .flags(PropertyFlags.NOT_NULL | PropertyFlags.INDEXED).indexId(1, 6484382999829587572L);
+        entityBuilder.property("valueProp", PropertyType.Bool).id(3, 7492569418772139189L)
+                .flags(PropertyFlags.NOT_NULL | PropertyFlags.INDEXED).indexId(2, 6991639645044933453L);
+        entityBuilder.property("hashProp", PropertyType.String).id(4, 104351152796407233L)
+                .flags(PropertyFlags.INDEX_HASH).indexId(3, 1690874977862683848L);
+        entityBuilder.property("hash64Prop", PropertyType.String).id(5, 386689427203097845L)
+                .flags(PropertyFlags.INDEX_HASH64).indexId(4, 6816316644989602931L);
         entityBuilder.entityDone();
 
         return modelBuilder.build();

@@ -156,7 +156,8 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
 
         // determine index type
         val propertyType = propertyBuilder.property.propertyType
-        val isStringOrByteArray = propertyType == PropertyType.String || propertyType == PropertyType.ByteArray
+        val supportsHashIndex = propertyType == PropertyType.String
+                // || propertyType == PropertyType.ByteArray // Not yet supported for byte[]
         val indexType = indexAnnotation?.type ?: IndexType.DEFAULT
         val indexFlags: Int = when (indexType) {
             IndexType.VALUE -> PropertyFlags.INDEXED
@@ -164,12 +165,17 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
             IndexType.HASH64 -> PropertyFlags.INDEX_HASH64
             IndexType.DEFAULT -> {
                 // auto detect
-                if (propertyType == PropertyType.String /*isStringOrByteArray*/) { // Not yet supported for bytes[]
+                if (supportsHashIndex) {
                     PropertyFlags.INDEX_HASH // String and byte[] like HASH
                 } else {
                     PropertyFlags.INDEXED // others like VALUE
                 }
             }
+        }
+
+        // error if HASH or HASH64 is not supported by property type
+        if (!supportsHashIndex && (indexType == IndexType.HASH || indexType == IndexType.HASH64)) {
+            messages.error("'$field' IndexType.$indexType is not supported for $propertyType.")
         }
 
         // error if used with @Id
