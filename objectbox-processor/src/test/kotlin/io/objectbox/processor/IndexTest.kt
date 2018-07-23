@@ -5,7 +5,6 @@ import com.google.testing.compile.CompilationSubject
 import com.google.testing.compile.JavaFileObjects
 import io.objectbox.generator.model.PropertyType
 import io.objectbox.model.PropertyFlags
-import org.junit.Ignore
 import org.junit.Test
 
 
@@ -15,7 +14,6 @@ import org.junit.Test
 class IndexTest : BaseProcessorTest() {
 
     @Test
-    @Ignore("Adjust test to limited indexing features")
     fun index_type_autoDetectAsExpected() {
         val entity = "IndexAutoDetect"
 
@@ -48,7 +46,6 @@ class IndexTest : BaseProcessorTest() {
     }
 
     @Test
-    @Ignore("Adjust test to limited indexing features")
     fun index_type_ifSetOverridesDefault() {
         val entity = "IndexTypeOverride"
 
@@ -82,82 +79,6 @@ class IndexTest : BaseProcessorTest() {
     }
 
     @Test
-    @Ignore("Adjust test to limited indexing features")
-    fun index_maxLength_isPickedUp() {
-        val entity = "IndexMaxLength"
-
-        val environment = TestEnvironment("index-max-length-temp.json")
-
-        val compilation = environment.compile(entity)
-        CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
-
-        assertWithMessage("test files broken").that(environment.schema.entities).isNotEmpty()
-        environment.schema.entities.forEach {
-            assertWithMessage("test files broken").that(it.properties).isNotEmpty()
-            it.properties.forEach propLoop@{
-                if (it.isPrimaryKey) {
-                    return@propLoop
-                }
-                assertWithMessage("${it.propertyName} should have index").that(it.index).isNotNull()
-
-                // assert index has max length default or set value
-                val expectedMaxValueLength = when (it.propertyName) {
-                    "byteArrayProp" -> 42
-                    else -> 0 // default
-                }
-                assertWithMessage("${it.propertyName} index max value length is wrong")
-                        .that(it.index.maxValueLength)
-                        .isEqualTo(expectedMaxValueLength)
-            }
-        }
-    }
-
-    @Test
-    fun index_maxLength_failsIfNegative() {
-        val entity = "IndexMaxLengthFailValueNeg"
-
-        val environment = TestEnvironment("index-max-length-neg-temp.json")
-
-        val compilation = environment.compile(entity)
-        CompilationSubject.assertThat(compilation).failed()
-        CompilationSubject.assertThat(compilation).hadErrorContaining("@Index(maxValueLength) must be in range [1..450].")
-    }
-
-    @Test
-    fun index_maxLength_failsIfAboveMax() {
-        val entity = "IndexMaxLengthFailValueMax"
-
-        val environment = TestEnvironment("index-max-length-max-temp.json")
-
-        val compilation = environment.compile(entity)
-        CompilationSubject.assertThat(compilation).failed()
-        CompilationSubject.assertThat(compilation).hadErrorContaining("@Index(maxValueLength) must be in range [1..450].")
-    }
-
-    @Test
-    fun index_maxLength_failsIfWrongProp() {
-        val entity = "IndexMaxLengthFailProp"
-
-        val environment = TestEnvironment("index-max-length-fail2-temp.json")
-
-        val compilation = environment.compile(entity)
-        CompilationSubject.assertThat(compilation).failed()
-        CompilationSubject.assertThat(compilation).hadErrorContaining("@Index(maxValueLength) is only allowed for String or byte[].")
-    }
-
-    @Test
-    fun index_maxLength_failsIfWrongType() {
-        val entity = "IndexMaxLengthFailType"
-
-        val environment = TestEnvironment("index-max-length-fail1-temp.json")
-
-        val compilation = environment.compile(entity)
-        CompilationSubject.assertThat(compilation).failed()
-        CompilationSubject.assertThat(compilation).hadErrorContaining("@Index(maxValueLength) is only allowed for @Index(type = IndexType.VALUE).")
-    }
-
-    @Test
-    @Ignore("Adjust test to limited indexing features")
     fun index_typeAndMaxLength_generatedCodeFlagsMatch() {
         val entity = "IndexGenerated"
 

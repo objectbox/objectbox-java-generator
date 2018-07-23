@@ -12,7 +12,7 @@ public class IndexTypeOverride {
 
     @Id long id;
 
-    // all supported types, compare with https://docs.objectbox.io/advanced/custom-types
+    // all but byte[], float or double support @Index, compare with https://docs.objectbox.io/advanced/custom-types
     @Index(type = IndexType.HASH) Boolean boolPropOrNull;
     @Index(type = IndexType.HASH) boolean boolProp;
 
@@ -22,19 +22,11 @@ public class IndexTypeOverride {
     @Index(type = IndexType.HASH) Long longPropOrNull;
     @Index(type = IndexType.HASH) long longProp;
 
-    @Index(type = IndexType.HASH) Float floatPropOrNull;
-    @Index(type = IndexType.HASH) float floatProp;
-
-    @Index(type = IndexType.HASH) Double doublePropOrNull;
-    @Index(type = IndexType.HASH) double doubleProp;
-
     @Index(type = IndexType.HASH) Byte bytePropOrNull;
     @Index(type = IndexType.HASH) byte byteProp;
 
     @Index(type = IndexType.HASH) Character charPropOrNull;
     @Index(type = IndexType.HASH) char charProp;
-
-    @Index(type = IndexType.VALUE) byte[] byteArrayProp;
 
     @Index(type = IndexType.VALUE) String stringProp;
 

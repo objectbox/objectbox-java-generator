@@ -37,8 +37,6 @@ public class MyObjectBox {
                 .flags(PropertyFlags.INDEX_HASH).indexId(3, 1891898801773255310L);
         entityBuilder.property("dateProp", PropertyType.Date).id(5, 5827784785326621795L)
                 .flags(PropertyFlags.INDEX_HASH64).indexId(4, 2061695745452259841L);
-        entityBuilder.property("byteArrayProp", PropertyType.ByteVector).id(6, 7923177323346835759L)
-                .flags(PropertyFlags.INDEXED).indexMaxValueLength(42).indexId(5, 7832271055854174317L);
         entityBuilder.entityDone();
 
         return modelBuilder.build();

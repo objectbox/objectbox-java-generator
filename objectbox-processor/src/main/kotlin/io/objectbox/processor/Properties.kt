@@ -179,30 +179,7 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
                     "Please remove @$annotationName for now.")
         }
 
-        // error if maxValueLength is used incorrectly
-        val isTypeDefaultOrValue = indexType == IndexType.DEFAULT || indexType == IndexType.VALUE
-        val unsafeMaxValueLength = indexAnnotation?.maxValueLength ?: 0
-        if (unsafeMaxValueLength < 0 || unsafeMaxValueLength > INDEX_MAX_VALUE_LENGTH_MAX) {
-            messages.error("'$field' @Index(maxValueLength) must be in range [1..$INDEX_MAX_VALUE_LENGTH_MAX].")
-        } else if (unsafeMaxValueLength > 0) {
-            if (!isStringOrByteArray) {
-                messages.error("'$field' @Index(maxValueLength) is only allowed for String or byte[].")
-            } else if (!isTypeDefaultOrValue) {
-                messages.error("'$field' @Index(maxValueLength) is only allowed for @Index(type = IndexType.VALUE).")
-            }
-        }
-
-        // determine maxValueLength
-        val maxValueLength = if (isStringOrByteArray && isTypeDefaultOrValue) {
-            // at least 0 (not set) or at most INDEX_MAX_VALUE_LENGTH_MAX
-            // max(0, min(INDEX_MAX_VALUE_LENGTH_MAX, unsafeMaxValueLength))
-            messages.info("'$field' @Index(maxValueLength) is ignored for now")
-            0
-        } else {
-            0 // not set
-        }
-
-        propertyBuilder.indexAsc(null, indexFlags, maxValueLength, uniqueAnnotation != null)
+        propertyBuilder.indexAsc(null, indexFlags, 0, uniqueAnnotation != null)
     }
 
     private fun parseCustomProperty(field: VariableElement): Property.PropertyBuilder? {
