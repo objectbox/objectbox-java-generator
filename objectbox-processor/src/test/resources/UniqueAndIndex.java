@@ -13,6 +13,9 @@ public class UniqueAndIndex {
 
     @Id long id;
 
+    @Index
+    long notUniqueProp;
+
     @Unique
     @Index
     int intProp;
