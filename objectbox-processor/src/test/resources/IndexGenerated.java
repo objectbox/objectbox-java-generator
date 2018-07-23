@@ -18,5 +18,4 @@ public class IndexGenerated {
     @Index(type = IndexType.HASH) String stringProp;
     @Index(type = IndexType.HASH64) Date dateProp;
 
-    @Index(type = IndexType.VALUE, maxValueLength = 42) byte[] byteArrayProp;
 }

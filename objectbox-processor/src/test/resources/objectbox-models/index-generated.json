@@ -31,11 +31,6 @@
           "id": "5:5827784785326621795",
           "indexId": "4:2061695745452259841",
           "name": "dateProp"
-        },
-        {
-          "id": "6:7923177323346835759",
-          "indexId": "5:7832271055854174317",
-          "name": "byteArrayProp"
         }
       ],
       "relations": []
@@ -48,8 +43,12 @@
   "modelVersion": 4,
   "modelVersionParserMinimum": 4,
   "retiredEntityUids": [],
-  "retiredIndexUids": [],
-  "retiredPropertyUids": [],
+  "retiredIndexUids": [
+    7832271055854174317
+  ],
+  "retiredPropertyUids": [
+    7923177323346835759
+  ],
   "retiredRelationUids": [],
   "version": 1
 }
