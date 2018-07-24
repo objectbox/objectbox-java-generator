@@ -57,6 +57,10 @@ class IndexTest : BaseProcessorTest() {
 
         CompilationSubject.assertThat(compilation).hadErrorContaining("@Index can not be used with @Id.")
 
+        CompilationSubject.assertThat(compilation).hadErrorContaining("@Index can not be used with a ToOne relation.")
+        CompilationSubject.assertThat(compilation).hadErrorContaining("@Index can not be used with a ToMany relation.")
+        CompilationSubject.assertThat(compilation).hadErrorContaining("@Index can not be used with a List relation.")
+
         CompilationSubject.assertThat(compilation).hadErrorContaining("@Index is not supported for Float.")
         CompilationSubject.assertThat(compilation).hadErrorContaining("@Index is not supported for Double.")
         CompilationSubject.assertThat(compilation).hadErrorContaining("@Index is not supported for ByteArray.")

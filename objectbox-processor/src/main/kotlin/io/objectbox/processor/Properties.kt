@@ -73,17 +73,28 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
 
         if (typeHelper.isTypeEqualTo(field.asType(), ToOne::class.java.name, eraseTypeParameters = true)) {
             // ToOne<TARGET> property
+            errorIfIndexOrUniqueAnnotation(field, "ToOne")
             relations.parseToOne(entityModel, field)
         } else if (!field.hasAnnotation(Convert::class.java)
                 && typeHelper.isTypeEqualTo(field.asType(), List::class.java.name, eraseTypeParameters = true)) {
             // List<TARGET> property
+            errorIfIndexOrUniqueAnnotation(field, "List")
             relations.parseToMany(entityModel, field)
         } else if (typeHelper.isTypeEqualTo(field.asType(), ToMany::class.java.name, eraseTypeParameters = true)) {
             // ToMany<TARGET> property
+            errorIfIndexOrUniqueAnnotation(field, "ToMany")
             relations.parseToMany(entityModel, field)
         } else {
             // regular property
             parseProperty(field)
+        }
+    }
+
+    private fun errorIfIndexOrUniqueAnnotation(field: VariableElement, relationType: String) {
+        val hasIndex = field.hasAnnotation(Index::class.java)
+        if (hasIndex || field.hasAnnotation(Unique::class.java)) {
+            val annotationName = if (hasIndex) "Index" else "Unique"
+            messages.error("'$field' @$annotationName can not be used with a $relationType relation.")
         }
     }
 
