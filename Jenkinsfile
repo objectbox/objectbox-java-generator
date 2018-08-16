@@ -39,6 +39,8 @@ pipeline {
 
         stage('upload-to-bintray') {
             when { expression { return BRANCH_NAME == 'objectbox-publish' } }
+            agent { label 'linux' }
+
             environment {
                 BINTRAY_URL = credentials('bintray_url')
                 BINTRAY_LOGIN = credentials('bintray_login')
@@ -48,7 +50,7 @@ pipeline {
                     slackSend color: "#42ebf4",
                             message: "Publishing ${currentBuild.fullDisplayName} to Bintray...\n${env.BUILD_URL}"
                 }
-                sh './gradlew --stacktrace -PpreferedRepo=${BINTRAY_URL} -PpreferedUsername=${BINTRAY_LOGIN_USR} -PpreferedPassword=${BINTRAY_LOGIN_PSW} uploadArchives'
+                sh './gradlew -Dorg.gradle.daemon=false --stacktrace -PpreferedRepo=${BINTRAY_URL} -PpreferedUsername=${BINTRAY_LOGIN_USR} -PpreferedPassword=${BINTRAY_LOGIN_PSW} uploadArchives'
                 script {
                     slackSend color: "##41f4cd",
                             message: "Published ${currentBuild.fullDisplayName} successfully to Bintray - check https://bintray.com/objectbox/objectbox\n${env.BUILD_URL}"
