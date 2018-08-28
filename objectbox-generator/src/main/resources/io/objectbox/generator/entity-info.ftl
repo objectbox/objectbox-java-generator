@@ -166,7 +166,7 @@ property.converter??>, ${property.converterClassName}.class, ${property.customTy
     public static final RelationInfo<${toOne.sourceEntity.className}, ${toOne.targetEntity.className}> ${toOne.name} =
             new RelationInfo<>(${toOne.sourceEntity.className}_.__INSTANCE,<#--
     --> ${toOne.targetEntity.className}_.__INSTANCE,<#--
-    --> <#if toOne.targetIdProperty.virtual>null<#else>${toOne.targetIdProperty.propertyName}</#if>,<#--
+    --> ${toOne.targetIdProperty.propertyName},<#--
     --> new ToOneGetter<${toOne.sourceEntity.className}>() {
                 @Override
                 public ToOne<${toOne.targetEntity.className}> getToOne(${toOne.sourceEntity.className} entity) {
