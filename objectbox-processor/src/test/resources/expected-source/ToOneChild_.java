@@ -41,7 +41,7 @@ public final class ToOneChild_ implements EntityInfo<ToOneChild> {
             new io.objectbox.Property<>(__INSTANCE, 1, 3, long.class, "aParentId");
 
     public final static io.objectbox.Property<ToOneChild> parentId =
-            new io.objectbox.Property<>(__INSTANCE, 2, 2, long.class, "parentId");
+            new io.objectbox.Property<>(__INSTANCE, 2, 2, long.class, "parentId", true);
 
     @SuppressWarnings("unchecked")
     public final static io.objectbox.Property<ToOneChild>[] __ALL_PROPERTIES = new io.objectbox.Property[]{
@@ -103,7 +103,7 @@ public final class ToOneChild_ implements EntityInfo<ToOneChild> {
 
     /** To-one relation "parent" to target entity "ToOneParent". */
     public static final RelationInfo<ToOneChild, ToOneParent> parent =
-            new RelationInfo<>(ToOneChild_.__INSTANCE, ToOneParent_.__INSTANCE, null, new ToOneGetter<ToOneChild>() {
+            new RelationInfo<>(ToOneChild_.__INSTANCE, ToOneParent_.__INSTANCE, parentId, new ToOneGetter<ToOneChild>() {
                 @Override
                 public ToOne<ToOneParent> getToOne(ToOneChild entity) {
                     return entity.parent;

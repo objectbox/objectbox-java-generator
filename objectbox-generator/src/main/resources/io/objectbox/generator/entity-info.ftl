@@ -86,7 +86,7 @@ public final class ${entity.className}_ implements EntityInfo<${entity.className
 <#list entity.propertiesColumns as property>
     public final static io.objectbox.Property<${entity.className}> ${property.propertyName} =
         new io.objectbox.Property<>(__INSTANCE, ${property_index}, <#if
-    property.modelId??>${property.modelId.id?c}<#else>0</#if>, ${property.javaType}.class, "${property.propertyName}"<#if
+    property.modelId??>${property.modelId.id?c}<#else>0</#if>, ${property.javaType}.class, "${property.propertyName}"<#if property.isVirtual()>, true</#if><#if
     property.primaryKey || (property.dbName?? && property.dbName != property.propertyName) || property.converter??>, ${property.primaryKey?string}, "${property.dbName}"<#if
 property.converter??>, ${property.converterClassName}.class, ${property.customTypeClassName}.class</#if></#if>);
 
@@ -166,7 +166,7 @@ property.converter??>, ${property.converterClassName}.class, ${property.customTy
     public static final RelationInfo<${toOne.sourceEntity.className}, ${toOne.targetEntity.className}> ${toOne.name} =
             new RelationInfo<>(${toOne.sourceEntity.className}_.__INSTANCE,<#--
     --> ${toOne.targetEntity.className}_.__INSTANCE,<#--
-    --> <#if toOne.targetIdProperty.virtual>null<#else>${toOne.targetIdProperty.propertyName}</#if>,<#--
+    --> ${toOne.targetIdProperty.propertyName},<#--
     --> new ToOneGetter<${toOne.sourceEntity.className}>() {
                 @Override
                 public ToOne<${toOne.targetEntity.className}> getToOne(${toOne.sourceEntity.className} entity) {
