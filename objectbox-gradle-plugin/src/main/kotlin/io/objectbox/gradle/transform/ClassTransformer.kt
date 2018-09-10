@@ -404,15 +404,13 @@ class ClassTransformer(val debug: Boolean = false) {
 
             val existingCode = attachCtMethod.methodInfo.codeAttribute.code
             if (existingCode.size != 1 || existingCode[0] != Opcode.RETURN.toByte()) {
-                throw TransformException(
-                        "Expected empty method body for ${ctClass.name}.${ClassConst.cursorAttachEntityMethodName} " +
-                                "but was ${existingCode.size} long")
+                println("Warning: ${ctClass.name}.${ClassConst.cursorAttachEntityMethodName} body not empty, will amend")
             }
 
             checkEntityIsInClassPool(classPool, signature)
 
             val code = "\$1.${ClassConst.boxStoreFieldName} = \$0.boxStoreForEntities;"
-            attachCtMethod.setBody(code)
+            attachCtMethod.insertAfter(code)
             if (debug) println("Writing transformed cursor '${ctClass.name}'")
             ctClass.writeFile(outDir.absolutePath)
             return true
