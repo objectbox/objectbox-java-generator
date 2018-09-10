@@ -29,6 +29,8 @@ import javassist.NotFoundException
 import javassist.bytecode.Descriptor
 import javassist.bytecode.Opcode
 import javassist.bytecode.SignatureAttribute
+import javassist.expr.ExprEditor
+import javassist.expr.FieldAccess
 import java.io.File
 
 /**
@@ -402,9 +404,20 @@ class ClassTransformer(val debug: Boolean = false) {
                         "Bad signature for ${ctClass.name}.${ClassConst.cursorAttachEntityMethodName}: $signature")
             }
 
-            val existingCode = attachCtMethod.methodInfo.codeAttribute.code
-            if (existingCode.size != 1 || existingCode[0] != Opcode.RETURN.toByte()) {
-                println("Warning: ${ctClass.name}.${ClassConst.cursorAttachEntityMethodName} body not empty, will amend")
+            var assignsBoxStoreField = false
+            attachCtMethod.instrument(object : ExprEditor() {
+                override fun edit(f: FieldAccess?) {
+                    // Java: BoxStore field write access
+                    if (f?.fieldName == ClassConst.boxStoreFieldName && f.isWriter) {
+                        assignsBoxStoreField = true
+                    }
+                    if (debug) println("Field ${f?.fieldName} is written: ${f?.isWriter}")
+                }
+            })
+            if (assignsBoxStoreField) {
+                println("Warning: ${ctClass.name}.${ClassConst.cursorAttachEntityMethodName} assigns " +
+                        "${ClassConst.boxStoreFieldName}, this might break ObjectBox relations")
+                return false // just copy, change nothing
             }
 
             checkEntityIsInClassPool(classPool, signature)
