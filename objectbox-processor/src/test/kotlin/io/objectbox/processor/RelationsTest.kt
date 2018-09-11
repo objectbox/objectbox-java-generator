@@ -431,6 +431,30 @@ class RelationsTest : BaseProcessorTest() {
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
     }
 
+    @Test
+    fun toOne_relatedEntityIsGeneric_error() {
+        val className = "ToOneGenerics"
+
+        val environment = TestEnvironment("not-generated.json")
+        val compilation = environment.compile(className)
+        CompilationSubject.assertThat(compilation).failed()
+
+        CompilationSubject.assertThat(compilation).hadErrorCount(1)
+        CompilationSubject.assertThat(compilation).hadErrorContainingMatch("Property 'toOne' can not have a relation to type T")
+    }
+
+    @Test
+    fun toMany_relatedEntityIsGeneric_error() {
+        val className = "ToManyGenerics"
+
+        val environment = TestEnvironment("not-generated.json")
+        val compilation = environment.compile(className)
+        CompilationSubject.assertThat(compilation).failed()
+
+        CompilationSubject.assertThat(compilation).hadErrorCount(1)
+        CompilationSubject.assertThat(compilation).hadErrorContainingMatch("Property 'toMany' can not have a relation to type T")
+    }
+
     private fun assertToManySchema(schema: Schema, parentName: String, childName: String) {
         // assert schema
         assertThat(schema).isNotNull()

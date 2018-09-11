@@ -65,12 +65,22 @@ class Relations(private val messages: Messages) {
     fun hasRelations(entity: Entity) =
             (toOnesByEntity[entity]?.isNotEmpty() ?: false) || (toManysByEntity[entity]?.isNotEmpty() ?: false)
 
+    private fun targetEntityNameOrError(field: VariableElement): String? {
+        // assuming ToOne<TargetEntity>, List<TargetType> or ToMany<TargetType> field
+        val fieldTypeMirror = field.asType() as DeclaredType
+        val targetTypeMirror = fieldTypeMirror.typeArguments[0]
+        return if (targetTypeMirror is DeclaredType) {
+            // can simply get as element as code would not have compiled if target type is not known
+            targetTypeMirror.asElement().simpleName.toString()
+        } else {
+            messages.error("Property '$field' can not have a relation to type $targetTypeMirror, " +
+                    "specify an entity class instead")
+            null
+        }
+    }
+
     fun parseToMany(entityModel: Entity, field: VariableElement) {
-        // assuming List<TargetType> or ToMany<TargetType>
-        val toManyTypeMirror = field.asType() as DeclaredType
-        val targetTypeMirror = toManyTypeMirror.typeArguments[0] as DeclaredType
-        // can simply get as element as code would not have compiled if target type is not known
-        val targetEntityName = targetTypeMirror.asElement().simpleName
+        val targetEntityName = targetEntityNameOrError(field) ?: return // skip faulty to-many
 
         val backlinkAnnotation = field.getAnnotation(Backlink::class.java)
         val isBacklink = backlinkAnnotation != null
@@ -81,7 +91,7 @@ class Relations(private val messages: Messages) {
 
         val toMany = ToManyRelation(
                 propertyName = field.simpleName.toString(),
-                targetEntityName = targetEntityName.toString(),
+                targetEntityName = targetEntityName,
                 isBacklink = isBacklink,
                 backlinkTo = backlinkAnnotation?.to?.nullIfBlank(),
                 fieldAccessible = !field.modifiers.contains(Modifier.PRIVATE),
@@ -93,15 +103,13 @@ class Relations(private val messages: Messages) {
     }
 
     fun parseToOne(entityModel: Entity, field: VariableElement) {
-        // assuming ToOne<TargetType>
-        val toOneTypeMirror = field.asType() as DeclaredType
-        val targetTypeMirror = toOneTypeMirror.typeArguments[0] as DeclaredType
+        val targetEntityName = targetEntityNameOrError(field) ?: return // skip faulty to-one
+
         val relationAnnotation = field.getAnnotation(TargetIdProperty::class.java)
         val targetIdName = relationAnnotation?.value?.nullIfBlank()
         val toOne = ToOneRelation(
                 propertyName = field.simpleName.toString(),
-                // can simply get as element as code would not have compiled if target type is not known
-                targetEntityName = targetTypeMirror.asElement().simpleName.toString(),
+                targetEntityName = targetEntityName,
                 targetIdName = targetIdName,
                 targetIdDbName = field.getAnnotation(NameInDb::class.java)?.value?.nullIfBlank(),
                 targetIdUid = field.getAnnotation(Uid::class.java)?.value?.let { if (it == 0L) -1L else it },
