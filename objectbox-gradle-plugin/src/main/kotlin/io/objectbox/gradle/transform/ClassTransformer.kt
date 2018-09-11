@@ -404,6 +404,11 @@ class ClassTransformer(val debug: Boolean = false) {
                         "Bad signature for ${ctClass.name}.${ClassConst.cursorAttachEntityMethodName}: $signature")
             }
 
+            val existingCode = attachCtMethod.methodInfo.codeAttribute.code
+            if (existingCode.size != 1 || existingCode[0] != Opcode.RETURN.toByte()) {
+                println("Warning: ${ctClass.name}.${ClassConst.cursorAttachEntityMethodName} body not empty")
+            }
+
             var assignsBoxStoreField = false
             attachCtMethod.instrument(object : ExprEditor() {
                 override fun edit(f: FieldAccess?) {
@@ -411,7 +416,6 @@ class ClassTransformer(val debug: Boolean = false) {
                     if (f?.fieldName == ClassConst.boxStoreFieldName && f.isWriter) {
                         assignsBoxStoreField = true
                     }
-                    if (debug) println("Field ${f?.fieldName} is written: ${f?.isWriter}")
                 }
             })
             if (assignsBoxStoreField) {
