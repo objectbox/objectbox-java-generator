@@ -4,8 +4,7 @@ buildscript {
         android_version = '3.0.0' // minimal supported version
         kotlin_version = '1.2.60'
         objectbox_version = '2.2.0-SNAPSHOT' // used to version this projects' artifacts
-//        objectbox_plugin_version = objectbox_version // used to version this projects' artifacts
-        objectbox_plugin_version = '2.2.0-transform-aar-unit-tests-SNAPSHOT' // used to version this projects' artifacts
+        objectbox_plugin_version = objectbox_version // used to version this projects' artifacts
         objectbox_java_version = objectbox_version // used for plugin dependencies
         objectbox_runtime_version = objectbox_version // used as runtime library (projects using plugin)
     }
