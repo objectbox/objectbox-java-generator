@@ -20,6 +20,7 @@
 
 package io.objectbox.gradle.transform
 
+import io.objectbox.BoxStore
 import io.objectbox.Cursor
 import io.objectbox.EntityInfo
 import io.objectbox.annotation.Entity
@@ -34,7 +35,8 @@ class EntityEmpty
 
 @Entity
 class EntityBoxStoreField {
-    val __boxStore = Object()
+    @JvmField // mimic generated Java code (transform adds field, not property with set/get)
+    var __boxStore = BoxStore()
 }
 
 @Entity
@@ -147,9 +149,15 @@ class TestCursor : Cursor<EntityBoxStoreField>() {
     private fun attachEntity(@Suppress("UNUSED_PARAMETER") entity: EntityBoxStoreField) {}
 }
 
-class CursorWithExistingImpl : Cursor<EntityBoxStoreField>() {
+class CursorExistingImplReads : Cursor<EntityBoxStoreField>() {
     private fun attachEntity(entity: EntityBoxStoreField) {
-        System.out.println(entity)
+        System.out.println(entity.__boxStore)
+    }
+}
+
+class CursorExistingImplWrites : Cursor<EntityBoxStoreField>() {
+    private fun attachEntity(entity: EntityBoxStoreField) {
+        entity.__boxStore = super.boxStoreForEntities!!
     }
 }
 

@@ -29,6 +29,8 @@ import javassist.NotFoundException
 import javassist.bytecode.Descriptor
 import javassist.bytecode.Opcode
 import javassist.bytecode.SignatureAttribute
+import javassist.expr.ExprEditor
+import javassist.expr.FieldAccess
 import java.io.File
 
 /**
@@ -404,15 +406,28 @@ class ClassTransformer(val debug: Boolean = false) {
 
             val existingCode = attachCtMethod.methodInfo.codeAttribute.code
             if (existingCode.size != 1 || existingCode[0] != Opcode.RETURN.toByte()) {
-                throw TransformException(
-                        "Expected empty method body for ${ctClass.name}.${ClassConst.cursorAttachEntityMethodName} " +
-                                "but was ${existingCode.size} long")
+                println("Warning: ${ctClass.name}.${ClassConst.cursorAttachEntityMethodName} body not empty")
+            }
+
+            var assignsBoxStoreField = false
+            attachCtMethod.instrument(object : ExprEditor() {
+                override fun edit(f: FieldAccess?) {
+                    // Java: BoxStore field write access
+                    if (f?.fieldName == ClassConst.boxStoreFieldName && f.isWriter) {
+                        assignsBoxStoreField = true
+                    }
+                }
+            })
+            if (assignsBoxStoreField) {
+                println("Warning: ${ctClass.name}.${ClassConst.cursorAttachEntityMethodName} assigns " +
+                        "${ClassConst.boxStoreFieldName}, this might break ObjectBox relations")
+                return false // just copy, change nothing
             }
 
             checkEntityIsInClassPool(classPool, signature)
 
             val code = "\$1.${ClassConst.boxStoreFieldName} = \$0.boxStoreForEntities;"
-            attachCtMethod.setBody(code)
+            attachCtMethod.insertAfter(code)
             if (debug) println("Writing transformed cursor '${ctClass.name}'")
             ctClass.writeFile(outDir.absolutePath)
             return true
