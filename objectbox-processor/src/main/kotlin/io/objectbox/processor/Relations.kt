@@ -59,8 +59,8 @@ data class ToManyRelation(
  */
 class Relations(private val messages: Messages) {
 
-    val toOnesByEntity: MutableMap<Entity, MutableList<ToOneRelation>> = mutableMapOf()
-    val toManysByEntity: MutableMap<Entity, MutableList<ToManyRelation>> = mutableMapOf()
+    private val toOnesByEntity: MutableMap<Entity, MutableList<ToOneRelation>> = mutableMapOf()
+    private val toManysByEntity: MutableMap<Entity, MutableList<ToManyRelation>> = mutableMapOf()
 
     fun hasRelations(entity: Entity) =
             (toOnesByEntity[entity]?.isNotEmpty() ?: false) || (toManysByEntity[entity]?.isNotEmpty() ?: false)
@@ -115,8 +115,8 @@ class Relations(private val messages: Messages) {
     private fun collectToOne(entity: Entity, toOne: ToOneRelation) {
         var toOnes = toOnesByEntity[entity]
         if (toOnes == null) {
-            toOnes = mutableListOf<ToOneRelation>()
-            toOnesByEntity.put(entity, toOnes)
+            toOnes = mutableListOf()
+            toOnesByEntity[entity] = toOnes
         }
         toOnes.add(toOne)
     }
@@ -124,8 +124,8 @@ class Relations(private val messages: Messages) {
     private fun collectToMany(entity: Entity, toMany: ToManyRelation) {
         var toManys = toManysByEntity[entity]
         if (toManys == null) {
-            toManys = mutableListOf<ToManyRelation>()
-            toManysByEntity.put(entity, toManys)
+            toManys = mutableListOf()
+            toManysByEntity[entity] = toManys
         }
         toManys.add(toMany)
     }
