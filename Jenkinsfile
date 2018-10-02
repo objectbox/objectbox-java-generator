@@ -5,6 +5,10 @@ def gradleArgs = '-Dorg.gradle.daemon=false --stacktrace clean check install'
 pipeline {
     agent none
 
+    options {
+        gitLabConnection('code.example.org')
+    }
+
     stages {
         stage ('build') {
             parallel {
@@ -70,6 +74,11 @@ pipeline {
             // For global vars see /jenkins/pipeline-syntax/globals
             slackSend color: "danger",
                     message: "Failed: ${currentBuild.fullDisplayName}\n${env.BUILD_URL}"
+            updateGitlabCommitStatus name: 'build', state: 'failed'
+        }
+
+        success {
+            updateGitlabCommitStatus name: 'build', state: 'success'
         }
     }
 }
