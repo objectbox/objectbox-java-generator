@@ -105,6 +105,10 @@ class Relations(private val messages: Messages) {
     fun parseToOne(entityModel: Entity, field: VariableElement) {
         val targetEntityName = targetEntityNameOrError(field) ?: return // skip faulty to-one
 
+        if (field.getAnnotation(Backlink::class.java) != null) {
+            messages.error("'$field' @Backlink can only be used on a ToMany relation")
+        }
+
         val relationAnnotation = field.getAnnotation(TargetIdProperty::class.java)
         val targetIdName = relationAnnotation?.value?.nullIfBlank()
         val toOne = ToOneRelation(

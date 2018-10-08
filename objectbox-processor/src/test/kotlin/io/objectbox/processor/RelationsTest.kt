@@ -385,6 +385,19 @@ class RelationsTest : BaseProcessorTest() {
     }
 
     @Test
+    fun backlink_toOne_shouldError() {
+        val sourceName = "BacklinkToOneError"
+
+        val environment = TestEnvironment("not-generated.json")
+
+        val compilation = environment.compile(sourceName)
+        CompilationSubject.assertThat(compilation).failed()
+
+        CompilationSubject.assertThat(compilation)
+                .hadErrorContaining("'nonsensicalToOne' @Backlink can only be used on a ToMany relation")
+    }
+
+    @Test
     fun testToManyStandalone() {
         val parentName = "ToManyStandalone"
         val childName = "IdEntity"
