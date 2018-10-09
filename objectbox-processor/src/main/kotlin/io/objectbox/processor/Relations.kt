@@ -26,10 +26,13 @@ import io.objectbox.codemodifier.nullIfBlank
 import io.objectbox.generator.IdUid
 import io.objectbox.generator.TextUtil
 import io.objectbox.generator.model.Entity
+import io.objectbox.generator.model.Property
 import io.objectbox.generator.model.PropertyType
 import io.objectbox.generator.model.Schema
+import io.objectbox.generator.model.ToMany
 import io.objectbox.generator.model.ToManyBase
 import io.objectbox.generator.model.ToManyStandalone
+import io.objectbox.generator.model.ToManyToMany
 import javax.lang.model.element.Modifier
 import javax.lang.model.element.VariableElement
 import javax.lang.model.type.DeclaredType
@@ -237,56 +240,98 @@ class Relations(private val messages: Messages) {
         return true
     }
 
-    private fun addBacklinkToManyOrRaiseError(entity: Entity, targetEntity: Entity, toMany: ToManyRelation): ToManyBase? {
-        val backlinkTo = toMany.backlinkTo
+    private fun addBacklinkToManyOrRaiseError(entityWithBacklink: Entity, targetEntity: Entity, backlinkToMany: ToManyRelation): ToManyBase? {
+        val backlinkTo = backlinkToMany.backlinkTo
         if (backlinkTo.isNullOrEmpty()) {
             // no explicit target name: just ensure a single to-one or to-many relation, then use that
             val targetToOne = targetEntity.toOneRelations.filter {
-                it.targetEntity == entity
+                it.targetEntity == entityWithBacklink
             }
             val targetToMany = targetEntity.toManyRelations.filter {
-                it.targetEntity == entity
+                it.targetEntity == entityWithBacklink
             }
-
             return if (targetToOne.size == 1 && targetToMany.isEmpty()) {
                 // back link from a ToOne
-                entity.addToMany(targetEntity, targetToOne[0].targetIdProperty, toMany.propertyName)
+                val targetIdProperty = targetToOne[0].targetIdProperty
+                entityWithBacklink.addBacklinkToToOneIfNoneExists(backlinkToMany, targetEntity, targetIdProperty)
             } else if (targetToOne.isEmpty() && targetToMany.size == 1) {
                 // back link from a ToMany
-                entity.addToMany(targetEntity, targetToMany[0].name, toMany.propertyName)
+                val targetToManyName = targetToMany[0].name
+                entityWithBacklink.addBacklinkToToManyIfNoneExists(backlinkToMany, targetEntity, targetToManyName)
             } else if (targetToOne.isEmpty() && targetToMany.isEmpty()) {
                 messages.error("Illegal @Backlink: no (to-one or to-many) relation found in '${targetEntity.className}'. " +
-                        "Required by backlink to-many relation '${toMany.propertyName}' in '${entity.className}'.",
-                        entity)
+                        "Required by backlink to-many relation '${backlinkToMany.propertyName}' in '${entityWithBacklink.className}'.",
+                        entityWithBacklink)
                 null
             } else {
                 messages.error("Set name of one to-one or to-many relation of '${targetEntity.className}' as @Backlink 'to' " +
-                        "value to create the to-many relation '${toMany.propertyName}' in '${entity.className}'.",
-                        entity)
+                        "value to create the to-many relation '${backlinkToMany.propertyName}' in '${entityWithBacklink.className}'.",
+                        entityWithBacklink)
                 null
             }
         } else {
             // explicit target name: find the related to-one or to-many relation
             val targetToOne = targetEntity.toOneRelations.singleOrNull {
-                it.targetEntity == entity && (it.name == backlinkTo || it.targetIdProperty.propertyName == backlinkTo)
+                it.targetEntity == entityWithBacklink
+                        && (it.name == backlinkTo || it.targetIdProperty.propertyName == backlinkTo)
             }
             val targetToMany = targetEntity.toManyRelations.singleOrNull {
-                it.targetEntity == entity && it.name == backlinkTo && it is ToManyStandalone
+                it.targetEntity == entityWithBacklink && it.name == backlinkTo && it is ToManyStandalone
             }
             return if (targetToOne != null && targetToMany == null) {
-                entity.addToMany(targetEntity, targetToOne.targetIdProperty, toMany.propertyName)
+                // back link from a ToOne
+                val targetIdProperty = targetToOne.targetIdProperty
+                entityWithBacklink.addBacklinkToToOneIfNoneExists(backlinkToMany, targetEntity, targetIdProperty)
             } else if (targetToOne == null && targetToMany != null) {
-                entity.addToMany(targetEntity, targetToMany.name, toMany.propertyName)
+                // back link from a ToMany
+                val targetToManyName = targetToMany.name
+                entityWithBacklink.addBacklinkToToManyIfNoneExists(backlinkToMany, targetEntity, targetToManyName)
             } else if (targetToOne != null && targetToMany != null) {
                 messages.error("Specify unique name for target property '$backlinkTo' in " +
-                        "'${targetEntity.className}' of @Backlink in '${entity.className}'.", entity)
+                        "'${targetEntity.className}' of @Backlink in '${entityWithBacklink.className}'.",
+                        entityWithBacklink)
                 null
             } else {
                 messages.error("Could not find target property '$backlinkTo' in " +
-                        "'${targetEntity.className}' of @Backlink in '${entity.className}'.", entity)
+                        "'${targetEntity.className}' of @Backlink in '${entityWithBacklink.className}'.",
+                        entityWithBacklink)
                 null
             }
         }
+    }
+
+    private fun Entity.addBacklinkToToOneIfNoneExists(backlinkToMany: ToManyRelation, targetEntity: Entity,
+                                                      targetIdProperty: Property): ToManyBase? {
+        // check incoming to-many relations if they use the target property of the to-one
+        val existingBacklink = targetEntity.incomingToManyRelations.find {
+            it is ToMany && it.targetProperties != null
+                    && it.targetProperties.let { it.size == 1 && it[0] == targetIdProperty }
+        }
+        if (existingBacklink != null) {
+            errorOnlyOneBacklinkAllowed(this, backlinkToMany)
+            return null // there is already a backlink to this to-one
+        }
+
+        return addToMany(targetEntity, targetIdProperty, backlinkToMany.propertyName)
+    }
+
+    private fun Entity.addBacklinkToToManyIfNoneExists(backlinkToMany: ToManyRelation, targetEntity: Entity,
+                                                       targetToManyName: String): ToManyBase? {
+        // check incoming to-many relations if they use the target property of the to-one
+        val existingBacklink = targetEntity.incomingToManyRelations.find {
+            it is ToManyToMany && it.linkedToManyName == targetToManyName
+        }
+        if (existingBacklink != null) {
+            errorOnlyOneBacklinkAllowed(this, backlinkToMany)
+            return null // there is already a backlink to this to-many
+        }
+
+        return addToMany(targetEntity, targetToManyName, backlinkToMany.propertyName)
+    }
+
+    private fun errorOnlyOneBacklinkAllowed(backlinkEntity: Entity, backlinkToMany: ToManyRelation) {
+        messages.error("'${backlinkEntity.className}.${backlinkToMany.propertyName}' " +
+                "Only one @Backlink per relation allowed. Remove all but one @Backlink.")
     }
 
     private fun resolveToMany(schema: Schema, entity: Entity, toMany: ToManyRelation): Boolean {
