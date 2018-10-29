@@ -3,7 +3,6 @@ package io.objectbox.processor.test;
 
 import io.objectbox.BoxStore;
 import io.objectbox.Cursor;
-import io.objectbox.Transaction;
 import io.objectbox.annotation.apihint.Internal;
 import io.objectbox.internal.CursorFactory;
 import io.objectbox.relation.ToOne;
@@ -17,7 +16,7 @@ public final class RelationChildCursor extends Cursor<RelationChild> {
     @Internal
     static final class Factory implements CursorFactory<RelationChild> {
         @Override
-        public Cursor<RelationChild> createCursor(Transaction tx, long cursorHandle, BoxStore boxStoreForEntities) {
+        public Cursor<RelationChild> createCursor(io.objectbox.Transaction tx, long cursorHandle, BoxStore boxStoreForEntities) {
             return new RelationChildCursor(tx, cursorHandle, boxStoreForEntities);
         }
     }
@@ -27,7 +26,7 @@ public final class RelationChildCursor extends Cursor<RelationChild> {
 
     private final static int __ID_parentId = RelationChild_.parentId.id;
 
-    public RelationChildCursor(Transaction tx, long cursor, BoxStore boxStore) {
+    public RelationChildCursor(io.objectbox.Transaction tx, long cursor, BoxStore boxStore) {
         super(tx, cursor, RelationChild_.__INSTANCE, boxStore);
     }
 

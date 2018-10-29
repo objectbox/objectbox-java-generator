@@ -29,9 +29,10 @@ along with ObjectBox Build Tools.  If not, see <http://www.gnu.org/licenses/>.
 import java.util.List;
 </#if>
 
+<#-- Note: Using fully qualified imports for ObjectBox classes which names are likely
+to conflict with user-defined entity classes. -->
 import io.objectbox.BoxStore;
 import io.objectbox.Cursor;
-import io.objectbox.Transaction;
 import io.objectbox.annotation.apihint.Internal;
 import io.objectbox.internal.CursorFactory;
 <#if entity.toManyRelations?has_content>
@@ -65,7 +66,7 @@ public final class ${entity.classNameDao} extends Cursor<${entity.className}> {
     @Internal
     static final class Factory implements CursorFactory<${entity.className}> {
         @Override
-        public Cursor<${entity.className}> createCursor(Transaction tx, long cursorHandle, BoxStore boxStoreForEntities) {
+        public Cursor<${entity.className}> createCursor(io.objectbox.Transaction tx, long cursorHandle, BoxStore boxStoreForEntities) {
             return new ${entity.classNameDao}(tx, cursorHandle, boxStoreForEntities);
         }
     }
@@ -83,7 +84,7 @@ public final class ${entity.classNameDao} extends Cursor<${entity.className}> {
     </#if>
 </#list>
 
-    public ${entity.classNameDao}(Transaction tx, long cursor, BoxStore boxStore) {
+    public ${entity.classNameDao}(io.objectbox.Transaction tx, long cursor, BoxStore boxStore) {
         super(tx, cursor, ${entity.className}_.__INSTANCE, boxStore);
     }
 
