@@ -3,7 +3,6 @@ package io.objectbox.processor.test;
 
 import io.objectbox.BoxStore;
 import io.objectbox.Cursor;
-import io.objectbox.Transaction;
 import io.objectbox.annotation.apihint.Internal;
 import io.objectbox.internal.CursorFactory;
 import io.objectbox.processor.test.SimpleEntity.SimpleEnum;
@@ -23,7 +22,7 @@ public final class SimpleEntityCursor extends Cursor<SimpleEntity> {
     @Internal
     static final class Factory implements CursorFactory<SimpleEntity> {
         @Override
-        public Cursor<SimpleEntity> createCursor(Transaction tx, long cursorHandle, BoxStore boxStoreForEntities) {
+        public Cursor<SimpleEntity> createCursor(io.objectbox.Transaction tx, long cursorHandle, BoxStore boxStoreForEntities) {
             return new SimpleEntityCursor(tx, cursorHandle, boxStoreForEntities);
         }
     }
@@ -57,7 +56,7 @@ public final class SimpleEntityCursor extends Cursor<SimpleEntity> {
     private final static int __ID_customType = SimpleEntity_.customType.id;
     private final static int __ID_customTypes = SimpleEntity_.customTypes.id;
 
-    public SimpleEntityCursor(Transaction tx, long cursor, BoxStore boxStore) {
+    public SimpleEntityCursor(io.objectbox.Transaction tx, long cursor, BoxStore boxStore) {
         super(tx, cursor, SimpleEntity_.__INSTANCE, boxStore);
     }
 

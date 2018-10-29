@@ -4,7 +4,6 @@ import java.util.List;
 
 import io.objectbox.BoxStore;
 import io.objectbox.Cursor;
-import io.objectbox.Transaction;
 import io.objectbox.annotation.apihint.Internal;
 import io.objectbox.internal.CursorFactory;
 import io.objectbox.relation.ToMany;
@@ -18,7 +17,7 @@ public final class ToManyStandaloneCursor extends Cursor<ToManyStandalone> {
     @Internal
     static final class Factory implements CursorFactory<ToManyStandalone> {
         @Override
-        public Cursor<ToManyStandalone> createCursor(Transaction tx, long cursorHandle, BoxStore boxStoreForEntities) {
+        public Cursor<ToManyStandalone> createCursor(io.objectbox.Transaction tx, long cursorHandle, BoxStore boxStoreForEntities) {
             return new ToManyStandaloneCursor(tx, cursorHandle, boxStoreForEntities);
         }
     }
@@ -27,7 +26,7 @@ public final class ToManyStandaloneCursor extends Cursor<ToManyStandalone> {
 
 
 
-    public ToManyStandaloneCursor(Transaction tx, long cursor, BoxStore boxStore) {
+    public ToManyStandaloneCursor(io.objectbox.Transaction tx, long cursor, BoxStore boxStore) {
         super(tx, cursor, ToManyStandalone_.__INSTANCE, boxStore);
     }
 
