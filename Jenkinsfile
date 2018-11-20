@@ -15,7 +15,6 @@ pipeline {
                 stage('build-linux') {
                     agent { label 'linux' }
                     steps {
-                        // sh 'cp /var/my-private-files/private.properties ./gradle.properties'
                         sh 'chmod +x gradlew'
                         sh "./gradlew $gradleArgs"
                     }
@@ -54,7 +53,7 @@ pipeline {
                     slackSend color: "#42ebf4",
                             message: "Publishing ${currentBuild.fullDisplayName} to Bintray...\n${env.BUILD_URL}"
                 }
-                sh './gradlew -Dorg.gradle.daemon=false --stacktrace -PpreferedRepo=${BINTRAY_URL} -PpreferedUsername=${BINTRAY_LOGIN_USR} -PpreferedPassword=${BINTRAY_LOGIN_PSW} uploadArchives'
+                sh './gradlew -Dorg.gradle.daemon=false --stacktrace -PpreferredRepo=${BINTRAY_URL} -PpreferredUsername=${BINTRAY_LOGIN_USR} -PpreferredPassword=${BINTRAY_LOGIN_PSW} uploadArchives'
                 script {
                     slackSend color: "##41f4cd",
                             message: "Published ${currentBuild.fullDisplayName} successfully to Bintray - check https://bintray.com/objectbox/objectbox\n${env.BUILD_URL}"
