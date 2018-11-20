@@ -103,7 +103,7 @@ class BuildTrackerTest {
         val adapter = Moshi.Builder().build().adapter<Map<String, Any>>(parameterizedType)
         val json = adapter.fromJson(eventData)
 
-        assertEquals(expectedEvent, json["event"])
+        assertEquals(expectedEvent, json!!["event"])
         @Suppress("UNCHECKED_CAST")
         val properties = json["properties"] as Map<String, Any>
         assertNotNull(properties["token"])
