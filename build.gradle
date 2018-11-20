@@ -18,9 +18,11 @@ buildscript {
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "gradle.plugin.de.fuerstenau:BuildConfigPlugin:1.1.8" // for code-modifier, gradle-plugin
+        classpath "com.github.ben-manes:gradle-versions-plugin:0.20.0"
     }
 }
 
+apply plugin: "com.github.ben-manes.versions"
 apply from: 'gradle/objectbox-deploy.gradle'
 
 subprojects {
@@ -44,9 +46,4 @@ task cleanOut {
             }
         }
     }
-}
-
-task wrapper(type: Wrapper) {
-    group 'build setup'
-    distributionType Wrapper.DistributionType.ALL
 }
