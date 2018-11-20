@@ -1,7 +1,6 @@
 // https://docs.gradle.org/current/userguide/custom_plugins.html
 apply plugin: 'kotlin'
 apply plugin: 'groovy' // for dsl tests
-apply plugin: 'maven'
 apply plugin: 'de.fuerstenau.buildconfig'
 apply plugin: 'idea' // to pick up generated BuildConfig in IntelliJ
 
@@ -19,7 +18,7 @@ dependencies {
     compile project(':objectbox-code-modifier')
     compileOnly "com.android.tools.build:gradle:$android_version"
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    compile 'org.javassist:javassist:3.21.0-GA'
+    compile 'org.javassist:javassist:3.24.0-GA'
 
     // For Transformer to resolve class dependencies to (real) ObjectBox classes
     compile "io.objectbox:objectbox-java:$objectbox_java_version"
@@ -30,7 +29,7 @@ dependencies {
     testCompile "com.android.tools.build:gradle:$android_version"
 
     testCompile 'junit:junit:4.12'
-    testCompile 'org.mockito:mockito-core:2.19.1'
+    testCompile "org.mockito:mockito-core:$mockito_version"
     testCompile gradleTestKit()
 }
 
@@ -40,6 +39,8 @@ buildConfig {
     // also add runtime version to BuildConfig
     buildConfigField 'String', 'VERSION_RUNTIME', {"$objectbox_runtime_version"}
 }
+
+apply from: rootProject.file("gradle/objectbox-publish.gradle")
 
 task javadocJar(type: Jar) {
     classifier = 'javadoc'

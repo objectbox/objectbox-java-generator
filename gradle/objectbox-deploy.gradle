@@ -1,0 +1,38 @@
+// Adds task to simplify installing and deploying
+
+buildscript {
+    ext {
+        ob_expected_version = project.hasProperty('expectedVersion') ? project.property('expectedVersion') : 'UNDEFINED'
+    }
+}
+
+// this task is also used by the composite build ('objectbox-deploy'), check before making changes
+task installAll {
+    group 'deploy'
+    dependsOn ':objectbox-generator:install'
+    dependsOn ':objectbox-code-modifier:install'
+    dependsOn ':objectbox-gradle-plugin:install'
+    dependsOn ':objectbox-processor:install'
+    doLast {
+        println("Installed version $objectbox_plugin_version (dep $objectbox_java_version, runtime $objectbox_runtime_version)")
+    }
+}
+
+// this task is also used by the composite build ('objectbox-deploy'), check before making changes
+task deployAll {
+    group 'deploy'
+    dependsOn ':objectbox-generator:uploadArchives'
+    dependsOn ':objectbox-code-modifier:uploadArchives'
+    dependsOn ':objectbox-gradle-plugin:uploadArchives'
+    dependsOn ':objectbox-processor:uploadArchives'
+}
+
+// this task is also used by the composite build ('objectbox-deploy'), check before making changes
+task verifyVersion {
+    group 'verify'
+    doLast {
+        assert ob_expected_version == objectbox_plugin_version
+        assert ob_expected_version == objectbox_java_version
+        assert ob_expected_version == objectbox_runtime_version
+    }
+}
