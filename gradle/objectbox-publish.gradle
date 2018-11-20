@@ -1,0 +1,104 @@
+// Configures common publishing settings
+
+buildscript {
+    ext {
+        hasPreferredRepo = project.hasProperty('preferredRepo')
+        preferredRepo = hasPreferredRepo ? project.property('preferredRepo') : null
+    }
+    if (hasPreferredRepo) {
+        println "********************************************"
+        println "*** PREFERRED REPO = $preferredRepo"
+        println "********************************************"
+    }
+}
+
+apply plugin: "maven"
+apply plugin: "signing"
+
+configurations {
+    deployerJars
+}
+
+dependencies {
+    deployerJars 'org.apache.maven.wagon:wagon-webdav:1.0-beta-2'
+    deployerJars 'org.apache.maven.wagon:wagon-ftp:2.2'
+}
+
+javadoc {
+    if(JavaVersion.current().isJava8Compatible()) {
+        options.addStringOption('Xdoclint:none', '-quiet')
+    }
+}
+
+signing {
+    if (project.hasProperty('signing.keyId') && project.hasProperty('signing.password') &&
+            project.hasProperty('signing.secretKeyRingFile')) {
+        sign configurations.archives
+    } else {
+        println "Signing information missing/incomplete for ${project.name}"
+    }
+}
+
+// Use afterEvaluate or dependencies might be lost in the generated POM
+afterEvaluate { project ->
+    uploadArchives {
+        repositories {
+            mavenDeployer {
+                if (hasPreferredRepo && preferredRepo == 'local') {
+                    repository url: repositories.mavenLocal().url
+                } else if (hasPreferredRepo
+                        && project.hasProperty('preferredUsername')
+                        && project.hasProperty('preferredPassword')) {
+                    configuration = configurations.deployerJars
+                    // Replace for bintray's dynamic URL
+                    def bintrayRepositoryUrl = preferredRepo
+                            .replace('__groupId__', project.group)
+                            .replace('__artifactId__', project.archivesBaseName)
+                    repository(url: bintrayRepositoryUrl) {
+                        authentication(userName: preferredUsername, password: preferredPassword)
+                    }
+                } else if (project.hasProperty('sonatypeUsername') && project.hasProperty('sonatypePassword')) {
+                    beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+                    def isSnapshot = version.endsWith('-SNAPSHOT')
+                    def sonatypeRepositoryUrl = isSnapshot ?
+                            "https://oss.sonatype.org/content/repositories/snapshots/"
+                            : "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+                    repository(url: sonatypeRepositoryUrl) {
+                        authentication(userName: sonatypeUsername, password: sonatypePassword)
+                    }
+                } else {
+                    println "Deployment settings missing/incomplete for ${project.name}"
+                }
+
+                // Common properties, projects still need to set name, description and license
+                pom.project {
+                    packaging 'jar'
+                    url 'https://objectbox.io'
+
+                    scm {
+                        url 'https://github.com/objectbox/objectbox-java'
+                        connection 'scm:git@github.com:objectbox/objectbox-java.git'
+                        developerConnection 'scm:git@github.com:objectbox/objectbox-java.git'
+                    }
+
+                    developers {
+                        developer {
+                            id 'ObjectBox'
+                            name 'ObjectBox'
+                        }
+                    }
+
+                    issueManagement {
+                        system 'GitHub Issues'
+                        url 'https://github.com/objectbox/objectbox-java/issues'
+                    }
+
+                    organization {
+                        name 'ObjectBox Ltd.'
+                        url 'https://objectbox.io'
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,7 +1,5 @@
 apply plugin: 'java'
 apply plugin: 'kotlin'
-apply plugin: 'maven'
-apply plugin: 'signing'
 
 group = 'io.objectbox'
 archivesBaseName = 'objectbox-generator'
@@ -41,6 +39,8 @@ javadoc {
         }
     }
 }
+
+apply from: rootProject.file("gradle/objectbox-publish.gradle")
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
     classifier = 'javadoc'

@@ -1,15 +1,11 @@
 buildscript {
     ext {
-        ob_expected_version = project.hasProperty('expectedVersion') ? project.property('expectedVersion') : 'UNDEFINED'
         android_version = '3.0.0' // minimal supported version
         kotlin_version = '1.2.71'
         objectbox_version = '2.3.0-SNAPSHOT' // used to version this projects' artifacts
         objectbox_plugin_version = objectbox_version // used to version this projects' artifacts
         objectbox_java_version = objectbox_version // used for plugin dependencies
         objectbox_runtime_version = objectbox_version // used as runtime library (projects using plugin)
-
-        hasPreferredRepo = project.hasProperty('preferredRepo')
-        preferredRepo = hasPreferredRepo ? project.property('preferredRepo') : null
     }
 
     repositories {
@@ -23,114 +19,17 @@ buildscript {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "gradle.plugin.de.fuerstenau:BuildConfigPlugin:1.1.8" // for code-modifier, gradle-plugin
     }
-
-    if (hasPreferredRepo) {
-        println "********************************************"
-        println "*** PREFERRED REPO = $preferredRepo"
-        println "********************************************"
-    }
 }
 
-if (JavaVersion.current().isJava8Compatible()) {
-    allprojects {
-        tasks.withType(Javadoc) {
-            options.addStringOption('Xdoclint:none', '-quiet')
-        }
-    }
-}
+apply from: 'gradle/objectbox-deploy.gradle'
 
 subprojects {
-    apply plugin: 'maven'
-    apply plugin: 'signing'
-
     version = "$objectbox_plugin_version"
 
     repositories {
         jcenter()
         mavenCentral()
         mavenLocal()
-        maven { url "http://objectbox.net/beta-repo/" }
-    }
-
-    configurations {
-        deployerJars
-    }
-
-    dependencies {
-        deployerJars 'org.apache.maven.wagon:wagon-webdav:1.0-beta-2'
-        deployerJars 'org.apache.maven.wagon:wagon-ftp:2.2'
-    }
-
-    signing {
-        if(project.hasProperty('signing.keyId') && project.hasProperty('signing.password') &&
-                project.hasProperty('signing.secretKeyRingFile')) {
-            sign configurations.archives
-        } else {
-            println "Signing information missing/incomplete for ${project.name}"
-        }
-    }
-
-    // Use afterEvaluate or all dependencies will be lost in the generated POM
-    afterEvaluate {
-        uploadArchives {
-            repositories {
-                mavenDeployer {
-                    if (hasPreferredRepo && preferredRepo == 'local') {
-                        repository url: repositories.mavenLocal().url
-                    } else if (hasPreferredRepo
-                            && project.hasProperty('preferredUsername')
-                            && project.hasProperty('preferredPassword')) {
-                        configuration = configurations.deployerJars
-                        // Replace for bintray's dynamic URL
-                        def bintrayRepositoryUrl = preferredRepo
-                                .replace('__groupId__', project.group)
-                                .replace('__artifactId__', project.archivesBaseName)
-                        repository(url: bintrayRepositoryUrl) {
-                            authentication(userName: preferredUsername, password: preferredPassword)
-                        }
-                    } else if (project.hasProperty('sonatypeUsername') && project.hasProperty('sonatypePassword')) {
-                        beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
-                        def isSnapshot = version.endsWith('-SNAPSHOT')
-                        def sonatypeRepositoryUrl = isSnapshot ?
-                                "https://oss.sonatype.org/content/repositories/snapshots/"
-                                : "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
-                        repository(url: sonatypeRepositoryUrl) {
-                            authentication(userName: sonatypeUsername, password: sonatypePassword)
-                        }
-                    } else {
-                        println "Deployment settings missing/incomplete for ${project.name}"
-                    }
-
-                    pom.project {
-                        packaging 'jar'
-                        url 'https://objectbox.io'
-
-                        scm {
-                            url 'https://github.com/objectbox/objectbox-java'
-                            connection 'scm:git@github.com:objectbox/objectbox-java.git'
-                            developerConnection 'scm:git@github.com:objectbox/objectbox-java.git'
-                        }
-
-                        developers {
-                            developer {
-                                id 'ObjectBox'
-                                name 'ObjectBox'
-                            }
-                        }
-
-                        issueManagement {
-                            system 'GitHub Issues'
-                            url 'https://github.com/objectbox/objectbox-java/issues'
-                        }
-
-                        organization {
-                            name 'ObjectBox Ltd.'
-                            url 'https://objectbox.io'
-                        }
-                    }
-                }
-            }
-        }
     }
 }
 
@@ -144,37 +43,6 @@ task cleanOut {
                 println "Deleted dir \"${outDir.getAbsolutePath()}\": $deleted"
             }
         }
-    }
-}
-
-// this task is also used by the composite build ('objectbox-deploy'), check before making changes
-task installAll {
-    group 'deploy'
-    dependsOn ':objectbox-generator:install'
-    dependsOn ':objectbox-code-modifier:install'
-    dependsOn ':objectbox-gradle-plugin:install'
-    dependsOn ':objectbox-processor:install'
-    doLast {
-        println("Installed version $objectbox_plugin_version (dep $objectbox_java_version, runtime $objectbox_runtime_version)")
-    }
-}
-
-// this task is also used by the composite build ('objectbox-deploy'), check before making changes
-task deployAll {
-    group 'deploy'
-    dependsOn ':objectbox-generator:uploadArchives'
-    dependsOn ':objectbox-code-modifier:uploadArchives'
-    dependsOn ':objectbox-gradle-plugin:uploadArchives'
-    dependsOn ':objectbox-processor:uploadArchives'
-}
-
-// this task is also used by the composite build ('objectbox-deploy'), check before making changes
-task verifyVersion {
-    group 'verify'
-    doLast {
-        assert ob_expected_version == objectbox_plugin_version
-        assert ob_expected_version == objectbox_java_version
-        assert ob_expected_version == objectbox_runtime_version
     }
 }
 

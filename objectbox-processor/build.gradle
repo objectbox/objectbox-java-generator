@@ -28,6 +28,8 @@ dependencies {
     testCompile "io.objectbox:objectbox-java:$objectbox_java_version"
 }
 
+apply from: rootProject.file("gradle/objectbox-publish.gradle")
+
 task sourcesJar(type: Jar) {
     classifier = 'sources'
     from 'README'
