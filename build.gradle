@@ -93,12 +93,12 @@ subprojects {
 
                     pom.project {
                         packaging 'jar'
-                        url 'http://objectbox.io'
+                        url 'https://objectbox.io'
 
                         scm {
-                            url 'https://github.com/greenrobot/ObjectBox'
-                            connection 'scm:git@github.com:greenrobot/ObjectBox.git'
-                            developerConnection 'scm:git@github.com:greenrobot/ObjectBox.git'
+                            url 'https://github.com/objectbox/objectbox-java'
+                            connection 'scm:git@github.com:objectbox/objectbox-java.git'
+                            developerConnection 'scm:git@github.com:objectbox/objectbox-java.git'
                         }
 
                         developers {
@@ -110,12 +110,12 @@ subprojects {
 
                         issueManagement {
                             system 'GitHub Issues'
-                            url 'https://github.com/greenrobot/ObjectBox/issues'
+                            url 'https://github.com/objectbox/objectbox-java/issues'
                         }
 
                         organization {
                             name 'ObjectBox Ltd.'
-                            url 'http://objectbox.io'
+                            url 'https://objectbox.io'
                         }
                     }
                 }
