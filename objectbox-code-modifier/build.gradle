@@ -18,8 +18,8 @@ dependencies {
     compile project (':objectbox-generator')
 
     testCompile 'junit:junit:4.12'
-    testCompile 'org.mockito:mockito-core:2.19.1'
-    testCompile 'com.natpryce:hamkrest:1.4.0.0'
+    testCompile "org.mockito:mockito-core:$mockito_version"
+    testCompile 'com.natpryce:hamkrest:1.6.0.0'
 }
 
 buildConfig {
