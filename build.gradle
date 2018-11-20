@@ -7,6 +7,9 @@ buildscript {
         objectbox_plugin_version = objectbox_version // used to version this projects' artifacts
         objectbox_java_version = objectbox_version // used for plugin dependencies
         objectbox_runtime_version = objectbox_version // used as runtime library (projects using plugin)
+
+        hasPreferredRepo = project.hasProperty('preferredRepo')
+        preferredRepo = hasPreferredRepo ? project.property('preferredRepo') : null
     }
 
     repositories {
@@ -19,6 +22,12 @@ buildscript {
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "gradle.plugin.de.fuerstenau:BuildConfigPlugin:1.1.8" // for code-modifier, gradle-plugin
+    }
+
+    if (hasPreferredRepo) {
+        println "********************************************"
+        println "*** PREFERRED REPO = $preferredRepo"
+        println "********************************************"
     }
 }
 
@@ -66,17 +75,18 @@ subprojects {
         uploadArchives {
             repositories {
                 mavenDeployer {
-                    if (project.hasProperty('preferedRepo') && preferedRepo == 'local') {
+                    if (hasPreferredRepo && preferredRepo == 'local') {
                         repository url: repositories.mavenLocal().url
-                    } else if (project.hasProperty('preferedRepo') && project.hasProperty('preferedUsername')
-                            && project.hasProperty('preferedPassword')) {
+                    } else if (hasPreferredRepo
+                            && project.hasProperty('preferredUsername')
+                            && project.hasProperty('preferredPassword')) {
                         configuration = configurations.deployerJars
                         // Replace for bintray's dynamic URL
-                        preferedRepo = preferedRepo.replace('__groupId__', project.group)
-                        preferedRepo = preferedRepo.replace('__artifactId__', project.archivesBaseName)
-                        // println preferedRepo
-                        repository(url: preferedRepo) {
-                            authentication(userName: preferedUsername, password: preferedPassword)
+                        def bintrayRepositoryUrl = preferredRepo
+                                .replace('__groupId__', project.group)
+                                .replace('__artifactId__', project.archivesBaseName)
+                        repository(url: bintrayRepositoryUrl) {
+                            authentication(userName: preferredUsername, password: preferredPassword)
                         }
                     } else if (project.hasProperty('sonatypeUsername') && project.hasProperty('sonatypePassword')) {
                         beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
@@ -88,7 +98,7 @@ subprojects {
                             authentication(userName: sonatypeUsername, password: sonatypePassword)
                         }
                     } else {
-                        println "Settings sonatypeUsername/sonatypePassword missing/incomplete for ${project.name}"
+                        println "Deployment settings missing/incomplete for ${project.name}"
                     }
 
                     pom.project {
