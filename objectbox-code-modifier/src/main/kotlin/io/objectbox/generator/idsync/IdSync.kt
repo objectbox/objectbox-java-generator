@@ -480,15 +480,15 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
         val propertyUids = ArrayList<Long>()
         val indexUids = ArrayList<Long>()
         val relationUids = ArrayList<Long>()
-        entities.forEach {
-            it.properties.forEach {
+        entities.forEach { entity ->
+            entity.properties.forEach {
                 propertyUids += it.uid
                 if (it.indexId != null) {
                     indexUids += it.indexId.uid
                 }
             }
             @Suppress("UNNECESSARY_SAFE_CALL") // read from JSON
-            it.relations?.forEach { relationUids += it.uid }
+            entity.relations?.forEach { relationUids += it.uid }
         }
         return Triple(propertyUids, indexUids, relationUids)
     }

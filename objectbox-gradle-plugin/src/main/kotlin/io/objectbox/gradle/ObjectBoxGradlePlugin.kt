@@ -74,9 +74,9 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
         val project = env.project
         project.afterEvaluate {
             val javaPlugin = project.convention.getPlugin(JavaPluginConvention::class.java)
-            javaPlugin.sourceSets.forEach {
+            javaPlugin.sourceSets.forEach { sourceSet ->
                 // name task based on SourceSet
-                val sourceSetName = it.name
+                val sourceSetName = sourceSet.name
                 val taskName = "objectboxJavaTransform" + if (sourceSetName != "main") sourceSetName.capitalize() else ""
 
                 val task = project.task(taskName)
@@ -86,10 +86,10 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
 
                 // attach to lifecycle
                 // assumes that classes task depends on compileJava depends on compileKotlin
-                val classesTask = project.tasks.findByName(it.classesTaskName) ?:
-                        throw RuntimeException("Could not find classes task '${it.classesTaskName}'.")
-                val compileJavaTask = project.tasks.findByName(it.compileJavaTaskName) as JavaCompile? ?:
-                        throw RuntimeException("Could not find compileJava task '${it.compileJavaTaskName}'.")
+                val classesTask = project.tasks.findByName(sourceSet.classesTaskName) ?:
+                        throw RuntimeException("Could not find classes task '${sourceSet.classesTaskName}'.")
+                val compileJavaTask = project.tasks.findByName(sourceSet.compileJavaTaskName) as JavaCompile? ?:
+                        throw RuntimeException("Could not find compileJava task '${sourceSet.compileJavaTaskName}'.")
 
                 classesTask.dependsOn(task)
                 task.mustRunAfter(compileJavaTask)
@@ -122,7 +122,7 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
             val aptConf = project.configurations.findByName("kapt") ?:
                     project.configurations.findByName("annotationProcessor") ?:
                     project.configurations.findByName("apt")
-            val foundDependency = aptConf?.dependencies?.firstOrNull() { it.group == "io.objectbox" }
+            val foundDependency = aptConf?.dependencies?.firstOrNull { dep -> dep.group == "io.objectbox" }
             if (foundDependency == null) {
                 var msg = "No ObjectBox annotation processor configuration found. Please check your build scripts."
                 if (!env.hasAndroidPlugin) msg += "Currently only Android projects are fully supported."

@@ -20,16 +20,16 @@ class UniqueTest : BaseProcessorTest() {
         assertWithMessage("test files broken").that(environment.schema.entities).isNotEmpty()
         environment.schema.entities.forEach {
             assertWithMessage("test files broken").that(it.properties).isNotEmpty()
-            it.properties.forEach propLoop@{
-                if (it.isPrimaryKey) {
+            it.properties.forEach propLoop@{ prop ->
+                if (prop.isPrimaryKey) {
                     return@propLoop
                 }
 
                 // assert index is created
-                assertWithMessage("${it.propertyName} should have index").that(it.index).isNotNull()
+                assertWithMessage("${prop.propertyName} should have index").that(prop.index).isNotNull()
 
                 // assert index is unique
-                assertWithMessage("${it.propertyName} index is not unique").that(it.index.isUnique).isTrue()
+                assertWithMessage("${prop.propertyName} index is not unique").that(prop.index.isUnique).isTrue()
             }
         }
     }
@@ -66,20 +66,20 @@ class UniqueTest : BaseProcessorTest() {
         assertWithMessage("test files broken").that(environment.schema.entities).isNotEmpty()
         environment.schema.entities.forEach {
             assertWithMessage("test files broken").that(it.properties).isNotEmpty()
-            it.properties.forEach propLoop@{
-                if (it.isPrimaryKey) {
+            it.properties.forEach propLoop@{ prop ->
+                if (prop.isPrimaryKey) {
                     return@propLoop
                 }
 
                 // assert index is created
-                assertWithMessage("${it.propertyName} should have index").that(it.index).isNotNull()
+                assertWithMessage("${prop.propertyName} should have index").that(prop.index).isNotNull()
 
-                if (it.propertyName == "notUniqueProp") {
+                if (prop.propertyName == "notUniqueProp") {
                     // assert index is non-unique
-                    assertWithMessage("${it.propertyName} index should not be unique").that(it.index.isUnique).isFalse()
+                    assertWithMessage("${prop.propertyName} index should not be unique").that(prop.index.isUnique).isFalse()
                 } else {
                     // assert index is unique
-                    assertWithMessage("${it.propertyName} index should be unique").that(it.index.isUnique).isTrue()
+                    assertWithMessage("${prop.propertyName} index should be unique").that(prop.index.isUnique).isTrue()
                 }
             }
         }

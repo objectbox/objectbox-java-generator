@@ -307,9 +307,10 @@ class Relations(private val messages: Messages) {
     private fun Entity.addBacklinkToToOneIfNoneExists(backlinkToMany: ToManyRelation, targetEntity: Entity,
                                                       targetIdProperty: Property): ToManyBase? {
         // check incoming to-many relations if they use the target property of the to-one
-        val existingBacklink = targetEntity.incomingToManyRelations.find {
-            it is ToMany && it.targetProperties != null
-                    && it.targetProperties.let { it.size == 1 && it[0] == targetIdProperty }
+        val existingBacklink = targetEntity.incomingToManyRelations.find { toManyBase ->
+            toManyBase is ToMany
+                    && toManyBase.targetProperties != null
+                    && toManyBase.targetProperties.let { it.size == 1 && it[0] == targetIdProperty }
         }
         if (existingBacklink != null) {
             errorOnlyOneBacklinkAllowed(this, backlinkToMany)

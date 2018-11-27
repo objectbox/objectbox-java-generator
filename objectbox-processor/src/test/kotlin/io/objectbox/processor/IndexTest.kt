@@ -26,21 +26,21 @@ class IndexTest : BaseProcessorTest() {
         assertWithMessage("test files broken").that(environment.schema.entities).isNotEmpty()
         environment.schema.entities.forEach {
             assertWithMessage("test files broken").that(it.properties).isNotEmpty()
-            it.properties.forEach propLoop@{
-                if (it.isPrimaryKey) {
+            it.properties.forEach propLoop@{ prop ->
+                if (prop.isPrimaryKey) {
                     return@propLoop
                 }
-                assertWithMessage("${it.propertyName} should have index").that(it.index).isNotNull()
+                assertWithMessage("${prop.propertyName} should have index").that(prop.index).isNotNull()
 
                 // assert index has expected type
-                val expectedIndexType = if (it.propertyType == PropertyType.String
-                        || it.propertyType == PropertyType.ByteArray) {
+                val expectedIndexType = if (prop.propertyType == PropertyType.String
+                        || prop.propertyType == PropertyType.ByteArray) {
                     PropertyFlags.INDEX_HASH // 2048
                 } else {
                     PropertyFlags.INDEXED // 8
                 }
-                assertWithMessage("${it.propertyName} index type is wrong")
-                        .that(it.index.type)
+                assertWithMessage("${prop.propertyName} index type is wrong")
+                        .that(prop.index.type)
                         .isEqualTo(expectedIndexType)
             }
         }
@@ -112,23 +112,23 @@ class IndexTest : BaseProcessorTest() {
         assertWithMessage("test files broken").that(environment.schema.entities).isNotEmpty()
         environment.schema.entities.forEach {
             assertWithMessage("test files broken").that(it.properties).isNotEmpty()
-            it.properties.forEach propLoop@{
-                if (it.isPrimaryKey) {
+            it.properties.forEach propLoop@{ prop ->
+                if (prop.isPrimaryKey) {
                     return@propLoop
                 }
-                assertWithMessage("${it.propertyName} should have index").that(it.index).isNotNull()
+                assertWithMessage("${prop.propertyName} should have index").that(prop.index).isNotNull()
 
                 // assert index type is overridden from default type
-                val expectedIndexType = when (it.propertyName) {
+                val expectedIndexType = when (prop.propertyName) {
                     "valueProp" -> PropertyFlags.INDEXED // 8
                     "hash64Prop" -> PropertyFlags.INDEX_HASH64 // 4096
                     else -> {
-                        Assert.fail("No mapping for property ${it.propertyName}")
+                        Assert.fail("No mapping for property ${prop.propertyName}")
                         0
                     }
                 }
-                assertWithMessage("${it.propertyName} index type is wrong")
-                        .that(it.index.type)
+                assertWithMessage("${prop.propertyName} index type is wrong")
+                        .that(prop.index.type)
                         .isEqualTo(expectedIndexType)
             }
         }
