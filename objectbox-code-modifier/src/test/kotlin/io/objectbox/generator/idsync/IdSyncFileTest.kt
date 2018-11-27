@@ -38,7 +38,7 @@ class IdSyncFileTest {
     fun testAllOk() {
         val file = File(dir, "all-ok.json")
         assertTrue(file.exists())
-        var idSync = IdSync(file)
+        val idSync = IdSync(file)
         val entity = idSync.findEntity("Note", null)!!
         assertSame(entity, idSync.findEntity("Kumbaya", 4858050548069557694))
 
@@ -58,7 +58,7 @@ class IdSyncFileTest {
         assertTrue(file.exists())
         try {
             IdSync(file)
-            fail("Should have thrown");
+            fail("Should have thrown")
         } catch (e: IdSyncException) {
             assertEquals(IdSyncException::class.java, e.cause!!.javaClass)
             val message = e.cause!!.message!!

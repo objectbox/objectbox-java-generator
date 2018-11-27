@@ -56,9 +56,9 @@ class PluginIntegrationTest {
 
     fun buildTestProject(name: String, args: List<String>, expectedPackageDir: String, genDirPath: String,
                          generateBuildFile: Boolean = false) {
-        var dir = File("test-gradle-projects/" + name)
+        var dir = File("test-gradle-projects/$name")
         if (!dir.exists()) {
-            dir = File("objectbox-gradle-plugin/test-gradle-projects/" + name)
+            dir = File("objectbox-gradle-plugin/test-gradle-projects/$name")
         }
         assertTrue(dir.absolutePath, dir.exists())
 

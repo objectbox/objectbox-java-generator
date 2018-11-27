@@ -188,7 +188,7 @@ open class BasicBuildTracker(val toolName: String) {
             val dir = File(System.getProperty("user.home"))
             if (dir.isDirectory) file = File(dir, fileName)
         } catch (e: Exception) {
-            System.err.println("Could not get user dir: " + e) // No stack trace
+            System.err.println("Could not get user dir: $e") // No stack trace
         }
         if (file == null) file = File(System.getProperty("java.io.tmpdir"), fileName) // Plan B
         val keyUid = "uid"
@@ -209,7 +209,7 @@ open class BasicBuildTracker(val toolName: String) {
             val bytes = ByteArray(8)
             SecureRandom().nextBytes(bytes)
             uid = encodeBase64WithoutPadding(bytes)
-            properties.put(keyUid, uid)
+            properties[keyUid] = uid
             FileWriter(file).use {
                 properties.store(it, "Properties for ObjectBox build tools")
             }
