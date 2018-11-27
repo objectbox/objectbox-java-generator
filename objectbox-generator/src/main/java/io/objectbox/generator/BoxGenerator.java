@@ -235,12 +235,9 @@ public class BoxGenerator {
                 }
             }
 
-            Writer writer = output.createWriter(javaPackage, fileName, fileExtension);
-            try {
+            try (Writer writer = output.createWriter(javaPackage, fileName, fileExtension)) {
                 template.process(root, writer);
                 writer.flush();
-            } finally {
-                writer.close();
             }
             System.out.println("Written " + filePath);
         } catch (Exception ex) {

@@ -31,7 +31,7 @@ public class Query {
 
     public Query(String name) {
         this.name = name;
-        parameters= new ArrayList<QueryParam>();
+        parameters= new ArrayList<>();
     }
     
     public QueryParam addEqualsParam(Property column) {

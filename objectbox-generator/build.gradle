@@ -3,11 +3,12 @@ apply plugin: 'kotlin'
 
 group = 'io.objectbox'
 archivesBaseName = 'objectbox-generator'
-//version= rootProject.version
-sourceCompatibility = 1.7
+
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
 
 dependencies {
-    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     compile "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
 
     compile 'org.freemarker:freemarker:2.3.28'

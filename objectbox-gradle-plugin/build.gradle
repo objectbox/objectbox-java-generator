@@ -6,8 +6,8 @@ apply plugin: 'idea' // to pick up generated BuildConfig in IntelliJ
 
 group = 'io.objectbox'
 
-sourceCompatibility = '1.7'
-targetCompatibility = '1.7'
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
 
 repositories {
     google()
@@ -17,7 +17,7 @@ dependencies {
     compile gradleApi()
     compile project(':objectbox-code-modifier')
     compileOnly "com.android.tools.build:gradle:$android_version"
-    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     compile 'org.javassist:javassist:3.24.0-GA'
 
     // For Transformer to resolve class dependencies to (real) ObjectBox classes
