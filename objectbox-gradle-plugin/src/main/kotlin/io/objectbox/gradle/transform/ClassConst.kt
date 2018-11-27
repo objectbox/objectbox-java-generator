@@ -36,21 +36,21 @@ object ClassConst {
     val transientAnnotationName = Transient::class.qualifiedName!!
     val convertAnnotationName = Convert::class.qualifiedName!!
 
-    val toOne = "io.objectbox.relation.ToOne"
-    val toOneDescriptor = "Lio/objectbox/relation/ToOne;"
+    const val toOne = "io.objectbox.relation.ToOne"
+    const val toOneDescriptor = "Lio/objectbox/relation/ToOne;"
 
-    val toMany = "io.objectbox.relation.ToMany"
-    val toManyDescriptor = "Lio/objectbox/relation/ToMany;"
+    const val toMany = "io.objectbox.relation.ToMany"
+    const val toManyDescriptor = "Lio/objectbox/relation/ToMany;"
 
-    val entityInfo = "io.objectbox.EntityInfo"
-    val relationInfo = "io.objectbox.relation.RelationInfo"
+    const val entityInfo = "io.objectbox.EntityInfo"
+    const val relationInfo = "io.objectbox.relation.RelationInfo"
 
-    val boxStoreFieldName = "__boxStore"
-    val boxStoreClass = "io.objectbox.BoxStore"
+    const val boxStoreFieldName = "__boxStore"
+    const val boxStoreClass = "io.objectbox.BoxStore"
 
-    val cursorClass = "io.objectbox.Cursor"
-    val cursorAttachEntityMethodName = "attachEntity"
+    const val cursorClass = "io.objectbox.Cursor"
+    const val cursorAttachEntityMethodName = "attachEntity"
 
-    val listDescriptor = "Ljava/util/List;"
+    const val listDescriptor = "Ljava/util/List;"
 
 }

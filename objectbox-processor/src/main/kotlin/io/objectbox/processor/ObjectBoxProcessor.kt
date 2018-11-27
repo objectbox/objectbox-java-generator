@@ -48,15 +48,15 @@ import javax.lang.model.util.Types
 open class ObjectBoxProcessor : AbstractProcessor() {
 
     companion object {
-        val OPTION_MODEL_PATH: String = "objectbox.modelPath"
-        val OPTION_MYOBJECTBOX_PACKAGE: String = "objectbox.myObjectBoxPackage"
-        val OPTION_DAO_COMPAT: String = "objectbox.daoCompat"
-        val OPTION_DAO_PACKAGE: String = "objectbox.daoPackage"
-        val OPTION_FLATBUFFERS_SCHEMA_FOLDER: String = "objectbox.flatbuffersSchemaFolder"
-        val OPTION_DEBUG: String = "objectbox.debug"
+        const val OPTION_MODEL_PATH: String = "objectbox.modelPath"
+        const val OPTION_MYOBJECTBOX_PACKAGE: String = "objectbox.myObjectBoxPackage"
+        const val OPTION_DAO_COMPAT: String = "objectbox.daoCompat"
+        const val OPTION_DAO_PACKAGE: String = "objectbox.daoPackage"
+        const val OPTION_FLATBUFFERS_SCHEMA_FOLDER: String = "objectbox.flatbuffersSchemaFolder"
+        const val OPTION_DEBUG: String = "objectbox.debug"
         /** Set by ObjectBox plugin */
-        val OPTION_TRANSFORMATION_ENABLED: String = "objectbox.transformationEnabled"
-        val OPTION_ALLOW_NUMBERED_CONSTRUCTOR_ARGS: String = "objectbox.allowNumberedConstructorArgs"
+        const val OPTION_TRANSFORMATION_ENABLED: String = "objectbox.transformationEnabled"
+        const val OPTION_ALLOW_NUMBERED_CONSTRUCTOR_ARGS: String = "objectbox.allowNumberedConstructorArgs"
 
         /**
          * Typically selects the top most and lexicographically first package. If entities are in different packages and
