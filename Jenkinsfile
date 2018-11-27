@@ -5,8 +5,12 @@ def gradleArgs = '-Dorg.gradle.daemon=false --stacktrace clean check install'
 pipeline {
     agent none
 
+    environment {
+        GITLAB_URL = credentials('gitlab_url')
+    }
+
     options {
-        gitLabConnection('code.example.org')
+        gitLabConnection("${env.GITLAB_URL}")
     }
 
     stages {
