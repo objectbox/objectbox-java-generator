@@ -19,9 +19,7 @@
 package io.objectbox
 
 /** FAKE just for tests */
-class BoxStore {
-
-}
+class BoxStore
 
 /** FAKE just for tests */
 open class Cursor<T> {
@@ -30,5 +28,4 @@ open class Cursor<T> {
 }
 
 /** FAKE just for tests */
-interface EntityInfo<T> {
-}
+interface EntityInfo<T>
