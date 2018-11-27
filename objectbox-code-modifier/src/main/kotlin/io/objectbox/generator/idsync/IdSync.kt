@@ -28,7 +28,6 @@ import io.objectbox.generator.model.Schema
 import io.objectbox.generator.model.ToManyStandalone
 import okio.Buffer
 import okio.Okio
-import okio.Source
 import org.greenrobot.essentials.collections.LongHashSet
 import org.jetbrains.annotations.TestOnly
 import java.io.File
@@ -134,7 +133,7 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
                 idSyncModel.entities.forEach { entity ->
                     uidHelper.addExistingId(entity.uid)
                     entity.properties.forEach { uidHelper.addExistingId(it.uid) }
-                    entitiesReadByUid.put(entity.uid, entity)
+                    entitiesReadByUid[entity.uid] = entity
                     if (entitiesReadByName.put(entity.name.toLowerCase(), entity) != null) {
                         throw IdSyncException("Malformed model file \"${jsonFile.name}\": " +
                                 "duplicate entity name ${entity.name} - please edit the file to resolve the issue")
@@ -426,12 +425,12 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
                 }
                 throw IdSyncException("In entity ${entity.name}, no property with UID $uid found")
             }
-            check(filtered.size == 1, { "property name: $name, UID: $uid" })
+            check(filtered.size == 1) { "property name: $name, UID: $uid" }
             return filtered.first()
         } else {
             val nameLowerCase = name.toLowerCase()
             val filtered = entity.properties.filter { it.name.toLowerCase() == nameLowerCase }
-            check(filtered.size <= 1, { "size: ${filtered.size} property name: $name, UID: $uid" })
+            check(filtered.size <= 1) { "size: ${filtered.size} property name: $name, UID: $uid" }
             return if (filtered.isNotEmpty()) filtered.first() else null
         }
     }
@@ -447,12 +446,12 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
                 }
                 throw IdSyncException("In entity ${entity.name}, no relation with UID $uid found")
             }
-            check(filtered.size == 1, { "relation name: $name, UID: $uid" })
+            check(filtered.size == 1) { "relation name: $name, UID: $uid" }
             return filtered.first()
         } else {
             val nameLowerCase = name.toLowerCase()
             val filtered = entity.relations.filter { it.name.toLowerCase() == nameLowerCase }
-            check(filtered.size <= 1, { "size: ${filtered.size} relation name: $name, UID: $uid" })
+            check(filtered.size <= 1) { "size: ${filtered.size} relation name: $name, UID: $uid" }
             return if (filtered.isNotEmpty()) filtered.first() else null
         }
     }
@@ -481,15 +480,15 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
         val propertyUids = ArrayList<Long>()
         val indexUids = ArrayList<Long>()
         val relationUids = ArrayList<Long>()
-        entities.forEach {
-            it.properties.forEach {
+        entities.forEach { entity ->
+            entity.properties.forEach {
                 propertyUids += it.uid
                 if (it.indexId != null) {
                     indexUids += it.indexId.uid
                 }
             }
             @Suppress("UNNECESSARY_SAFE_CALL") // read from JSON
-            it.relations?.forEach { relationUids += it.uid }
+            entity.relations?.forEach { relationUids += it.uid }
         }
         return Triple(propertyUids, indexUids, relationUids)
     }

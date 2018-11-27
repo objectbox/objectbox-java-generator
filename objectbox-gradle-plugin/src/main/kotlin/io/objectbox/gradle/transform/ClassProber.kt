@@ -40,8 +40,8 @@ class ClassProber {
      */
     fun probeClass(file: File, outDir: File): ProbedClass {
         try {
-            DataInputStream(BufferedInputStream(file.inputStream())).use {
-                val classFile = ClassFile(it)
+            DataInputStream(BufferedInputStream(file.inputStream())).use { input ->
+                val classFile = ClassFile(input)
                 val name = classFile.name
                 val javaPackage = name.substringBeforeLast('.', "")
 

@@ -31,7 +31,7 @@ class UidHelper(
         val existingUids: MutableSet<Long> = HashSet()
 ) {
     // Use SecureRandom to better avoid conflicts when IDs are assigned in diverging git branches
-    val random = SecureRandom();
+    val random = SecureRandom()
 
     init {
         existingUids.forEach { verify(it) }
@@ -49,9 +49,9 @@ class UidHelper(
     }
 
     fun create(): Long {
-        var newId:Long;
+        var newId:Long
         do {
-            var randomPart = (1 + random.nextLong()) and 0x7FFFFFFFFFFFFF00
+            val randomPart = (1 + random.nextLong()) and 0x7FFFFFFFFFFFFF00
             val murmur = Murmur3F()
             murmur.updateLongLE(randomPart)
             newId = randomPart or (murmur.value and 0xFF)
@@ -60,13 +60,13 @@ class UidHelper(
     }
 
     fun verify(value: Long) {
-        if (value < 0) throw IdSyncException("Illegal UID: " + value)
+        if (value < 0) throw IdSyncException("Illegal UID: $value")
         val randomPart = value and 0x7FFFFFFFFFFFFF00
-        if (randomPart == 0L) throw IdSyncException("Illegal UID: " + value)
+        if (randomPart == 0L) throw IdSyncException("Illegal UID: $value")
         val murmur = Murmur3F()
         murmur.updateLongLE(randomPart)
         if (value < 0 || (value and 0xFF != murmur.value and 0xFF)) {
-            throw IdSyncException("Illegal UID: " + value)
+            throw IdSyncException("Illegal UID: $value")
         }
     }
 

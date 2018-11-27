@@ -64,7 +64,7 @@ fun findProjectRoot(filer: Filer): File {
             filePathProbe = "file://" + filePathProbe.substring("file:".length)
         }
     } else {
-        filePathProbe = "file://" + filePathProbe
+        filePathProbe = "file://$filePathProbe"
     }
 
     val cleanURI: URI

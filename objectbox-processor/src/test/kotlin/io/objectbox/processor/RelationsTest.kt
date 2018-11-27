@@ -450,7 +450,7 @@ class RelationsTest : BaseProcessorTest() {
         val myObjectBoxContent = getGeneratedJavaFile(compilation, "MyObjectBox").contentsAsUtf8String()
         myObjectBoxContent.contains("420000000L")
         myObjectBoxContent.contains("\"Hoolaloop\"")
-        val entity = environment.schema.entities.filter { it.className == "ToManyStandaloneUidName" }.single()
+        val entity = environment.schema.entities.single { it.className == "ToManyStandaloneUidName" }
         Assert.assertEquals(1, entity.toManyRelations.size)
         val toMany = entity.toManyRelations[0] as ToManyStandalone
         Assert.assertEquals("Hoolaloop", toMany.dbName)

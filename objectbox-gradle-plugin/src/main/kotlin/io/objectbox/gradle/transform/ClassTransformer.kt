@@ -83,10 +83,10 @@ class ClassTransformer(val debug: Boolean = false) {
         // First define all EntityInfo (Entity_) and entity classes to ensure the real classes are used
         // (E.g. constructor transformation may introduce dummy classes)
         probedClasses.forEach { if (it.isEntityInfo) makeCtClass(context, it) }
-        probedClasses.forEach {
-            if (it.isEntity) {
-                makeCtClasses(context, probedClasses, it)
-                it.interfaces.forEach {
+        probedClasses.forEach { probedClass ->
+            if (probedClass.isEntity) {
+                makeCtClasses(context, probedClasses, probedClass)
+                probedClass.interfaces.forEach {
                     // create dummy classes for interfaces to enable searching fields in super classes
                     // (javassist searches interfaces first and fails if they are not in the class pool)
                     context.classPool.makeClass(it)

@@ -52,24 +52,24 @@ class ObjectBoxAndroidTransform(val options: PluginOptions) : Transform() {
     object Registration {
         fun to(project: Project, options: PluginOptions) {
             val transform = ObjectBoxAndroidTransform(options)
-            getAllExtensions(project).forEach {
+            getAllExtensions(project).forEach { extension ->
                 // for regular build and instrumentation tests
-                it.registerTransform(transform)
+                extension.registerTransform(transform)
                 // for local unit tests
                 // a transform registered like above does only run when dexing is required (!= for local unit tests)
                 // so inject our own transform task before local unit tests are compiled
                 @Suppress("DEPRECATION") // There is always a Java compile task -- the deprecation was for Jack
-                when (it) {
-                    is AppExtension -> it.applicationVariants.all {
+                when (extension) {
+                    is AppExtension -> extension.applicationVariants.all {
                         injectTransformTask(project, options, it, it.unitTestVariant)
                     }
-                    is LibraryExtension -> it.libraryVariants.all {
+                    is LibraryExtension -> extension.libraryVariants.all {
                         injectTransformTask(project, options, it, it.unitTestVariant)
                     }
-                    is FeatureExtension -> it.featureVariants.all {
+                    is FeatureExtension -> extension.featureVariants.all {
                         injectTransformTask(project, options, it, it.unitTestVariant)
                     }
-                    is TestExtension -> it.applicationVariants.all {
+                    is TestExtension -> extension.applicationVariants.all {
                         injectTransformTask(project, options, it, it.unitTestVariant)
                     }
                 }

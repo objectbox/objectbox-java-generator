@@ -30,7 +30,7 @@ class ProjectEnv(val project: Project) {
     }
 
     /** Note: Plugin extension, values only available after evaluation phase. */
-    val options = project.extensions.create(Const.name, PluginOptions::class.java, project)
+    val options: PluginOptions = project.extensions.create(Const.name, PluginOptions::class.java, project)
     /** Note: Extension value, only available after evaluation phase. */
     val debug: Boolean
         get() = options.debug
@@ -44,7 +44,7 @@ class ProjectEnv(val project: Project) {
     val hasKotlinPlugin = project.plugins.hasPlugin("kotlin")
     val hasJavaPlugin = project.plugins.hasPlugin("java")
 
-    val osName = System.getProperty("os.name")
+    val osName: String = System.getProperty("os.name")
     val is64Bit = System.getProperty("sun.arch.data.model") == "64"
     private val osNameLowerCase = osName.toLowerCase(Locale.US)
     val isLinux = osNameLowerCase.contains("linux")
