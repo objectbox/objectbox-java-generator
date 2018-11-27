@@ -22,7 +22,6 @@ import io.objectbox.annotation.BaseEntity
 import io.objectbox.annotation.Convert
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Transient
-import javassist.bytecode.SignatureAttribute
 
 /**
  * Expected string representations of types, fields and methods used for probing and transforming entity and cursor
@@ -54,6 +53,4 @@ object ClassConst {
 
     val listDescriptor = "Ljava/util/List;"
 
-    val genericSignatureT =
-            SignatureAttribute.ClassSignature(arrayOf(SignatureAttribute.TypeParameter("T"))).encode()!!
 }
