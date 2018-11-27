@@ -400,14 +400,10 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
         if (!jsonFile.exists() || jsonFile.length() == 0L) { // Temp files have a 0 bytes length
             return null
         }
-        var source: Source? = null
-        try {
-            source = Okio.source(file)
-            return modelJsonAdapter.fromJson(Okio.buffer(source))
+        return try {
+            Okio.source(file).use { modelJsonAdapter.fromJson(Okio.buffer(it)) }
         } catch (e: FileNotFoundException) {
-            return null
-        } finally {
-            source?.close()
+            null
         }
     }
 
