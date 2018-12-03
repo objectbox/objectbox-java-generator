@@ -283,7 +283,7 @@ class IdSyncTest {
         assertNotSame(property1, property2)
     }
 
-    private fun basicSchema() = Schema("default", 1, "pac.me")
+    private fun basicSchema() = Schema(Schema.DEFAULT_NAME, 1, "pac.me")
 
     private fun syncBasicModel(): IdSyncModel {
         val schema = basicSchema()

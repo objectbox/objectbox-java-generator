@@ -180,7 +180,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
             val packages = entities.map { elementUtils.getPackageOf(it).qualifiedName.toString() }
             selectPackage(packages)
         }
-        val schema = Schema("default", 1, defaultJavaPackage)
+        val schema = Schema(Schema.DEFAULT_NAME, 1, defaultJavaPackage)
 
         for (entity in entities) {
             parseEntity(env.rootElements, schema, relations, entity)
