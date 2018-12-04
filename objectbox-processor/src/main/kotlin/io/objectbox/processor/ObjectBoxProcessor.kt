@@ -400,17 +400,12 @@ open class ObjectBoxProcessor : AbstractProcessor() {
             }
         }
 
-        val idSync: IdSync
         try {
-            idSync = IdSync(modelFile)
-            idSync.sync(schema)
+            IdSync(modelFile).sync(schema)
         } catch (e: IdSyncException) {
             messages.error(e.message ?: "Could not sync id model for unknown reason.")
             return false
         }
-
-        schema.lastEntityId = idSync.lastEntityId
-        schema.lastIndexId = idSync.lastIndexId
 
         return true
     }
