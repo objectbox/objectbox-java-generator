@@ -25,6 +25,7 @@ import org.junit.Test;
 import java.io.File;
 
 import io.objectbox.generator.model.Entity;
+import io.objectbox.generator.model.Index;
 import io.objectbox.generator.model.Property;
 import io.objectbox.generator.model.PropertyType;
 import io.objectbox.generator.model.Schema;
@@ -51,7 +52,7 @@ public class SimpleBoxGeneratorTest {
         File cursorFile = fileDeleteIfExists(outputDir, baseName + "Cursor.java");
         File entityInfoFile = fileDeleteIfExists(outputDir, baseName + "_.java");
 
-        assignIdsUids(schema);
+        assignMissingIdsUids(schema);
         schema.finish();
         new BoxGenerator().generateAll(jobForFileForceExists(schema, outputDir));
 
@@ -85,12 +86,31 @@ public class SimpleBoxGeneratorTest {
         return new GeneratorJob(schema, GeneratorOutput.create(outDir.getPath()));
     }
 
-    private void assignIdsUids(Schema schema) {
+    /**
+     * Assigns required IDs and UIDs that were not explicitly assigned when building the test schema.
+     */
+    private void assignMissingIdsUids(Schema schema) {
         int id = 1;
         long uid = 1000;
         for (Entity entity : schema.getEntities()) {
-            entity.setModelId(id++);
-            entity.setModelUid(uid++);
+            if (entity.getModelId() == null) {
+                entity.setModelId(id++);
+            }
+            if (entity.getModelUid() == null) {
+                entity.setModelUid(uid++);
+            }
+            for (Property property : entity.getProperties()) {
+                if (property.getModelId() == null) {
+                    property.setModelId(new IdUid(id++, uid++));
+                }
+                if (property.getModelIndexId() == null) {
+                    for (Index index : entity.getIndexes()) {
+                        if (index.getProperties().contains(property)) {
+                            property.setModelIndexId(new IdUid(id++, uid++));
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -111,7 +131,7 @@ public class SimpleBoxGeneratorTest {
         String fileNameCursor = "io/objectbox/test/multicollect/" + multiCollectEntity.getClassName() + "Cursor.java";
         File cursorFile = fileDeleteIfExists(outputDir, fileNameCursor);
 
-        assignIdsUids(schema);
+        assignMissingIdsUids(schema);
         schema.finish();
         new BoxGenerator().generateAll(jobForFileForceExists(schema, outputDir));
 
@@ -138,7 +158,7 @@ public class SimpleBoxGeneratorTest {
         String fileNameCursor = "io/objectbox/test/multicollect/" + multiCollectEntity.getClassName() + "Cursor.java";
         File cursorFile = fileDeleteIfExists(outputDir, fileNameCursor);
 
-        assignIdsUids(schema);
+        assignMissingIdsUids(schema);
         schema.finish();
         new BoxGenerator().generateAll(jobForFileForceExists(schema, outputDir));
 
@@ -213,7 +233,7 @@ public class SimpleBoxGeneratorTest {
         myObjectBoxFile.delete();
         assertFalse(myObjectBoxFile.exists());
 
-        assignIdsUids(schema);
+        assignMissingIdsUids(schema);
         schema.finish();
         new BoxGenerator().generateAll(jobForFileForceExists(schema, outputDir));
 
@@ -243,7 +263,7 @@ public class SimpleBoxGeneratorTest {
         File outputDir = new File("build/test-out");
         outputDir.mkdirs();
 
-        assignIdsUids(schema);
+        assignMissingIdsUids(schema);
         schema.finish();
         GeneratorJob job = new GeneratorJob(schema, GeneratorOutput.create(outputDir));
         File outputDirFbs = new File(outputDir, "fbs-src");
