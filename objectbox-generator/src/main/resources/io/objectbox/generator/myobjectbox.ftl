@@ -76,19 +76,21 @@ public class MyObjectBox {
         entityBuilder.id(${entity.modelId?c}, ${entity.modelUid?c}L)<#if
             entity.lastPropertyId??>.lastPropertyId(${entity.lastPropertyId.id?c}, ${entity.lastPropertyId.uid?c}L)</#if>;
 </#if>
-<#if (entity.entityFlagsNames?size > 0)>
-        entityBuilder.flags(${entity.entityFlagsNames?join(" | ")});
+<#assign entityFlags = entity.entityFlagsNames>
+<#if (entityFlags?size > 0)>
+        entityBuilder.flags(${entityFlags?join(" | ")});
 </#if>
 <#list entity.propertiesColumns as property>
+    <#assign propertyFlags = property.propertyFlagsNames>
         entityBuilder.property("${property.dbName}", <#--
         --><#if property.targetEntity??>"${property.targetEntity.dbName}", <#--
             --><#if property.virtualTargetName??>"${property.virtualTargetName}", </#if></#if><#--
         -->PropertyType.${property.dbType})<#--
         --><#if property.propertyName != property.dbName>.secondaryName("${property.propertyName}")</#if><#--
         --><#if property.modelId??>.id(${property.modelId.id?c}, ${property.modelId.uid?c}L)</#if><#--
-        --><#if (property.propertyFlagsNames?size > 0)>
+        --><#if (propertyFlags?size > 0)>
 
-            .flags(${property.propertyFlagsNames?join(" | ")})</#if><#--
+            .flags(${propertyFlags?join(" | ")})</#if><#--
         --><#if property.index?? && (property.index.maxValueLength > 0)>.indexMaxValueLength(${property.index.maxValueLength?c})</#if><#--
         --><#if property.modelIndexId??>.indexId(${property.modelIndexId.id?c}, ${property.modelIndexId.uid?c}L)</#if>;
 </#list>
