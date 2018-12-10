@@ -80,38 +80,15 @@ public class MyObjectBox {
         entityBuilder.flags(io.objectbox.model.EntityFlags.USE_NO_ARG_CONSTRUCTOR);
     </#if>
 <#list entity.propertiesColumns as property>
-<#assign flags = []>
-<#if property.primaryKey><#assign flags = flags + ["PropertyFlags.ID"]></#if>
-<#if property.idAssignable><#assign flags = flags + ["PropertyFlags.ID_SELF_ASSIGNABLE"]></#if>
-<#if property.notNull><#assign flags = flags + ["PropertyFlags.NOT_NULL"]></#if>
-<#if property.nonPrimitiveType && property.propertyType.scalar><#assign flags = flags + ["PropertyFlags.NON_PRIMITIVE_TYPE"]></#if>
-<#if property.index??>
-    <#if property.index.type == 0 || property.index.type == 8>
-        <#assign flags = flags + ["PropertyFlags.INDEXED"]>
-    </#if>
-    <#if property.index.type == 2048>
-        <#assign flags = flags + ["PropertyFlags.INDEX_HASH"]>
-    </#if>
-    <#if property.index.type == 4096>
-        <#assign flags = flags + ["PropertyFlags.INDEX_HASH64"]>
-    </#if>
-    <#if property.index.unique><#assign flags = flags + ["PropertyFlags.UNIQUE"]></#if>
-</#if>
-<#if property.virtual><#assign flags = flags + ["PropertyFlags.VIRTUAL"]></#if>
-<#if property.propertyType == "RelationId"><#assign flags = flags + ["PropertyFlags.INDEXED", "PropertyFlags.INDEX_PARTIAL_SKIP_ZERO"]></#if>
-<#assign uniqueFlags = []>
-<#list flags as flag>
-    <#if !uniqueFlags?seq_contains(flag)><#assign uniqueFlags = uniqueFlags + [flag]></#if>
-</#list>
         entityBuilder.property("${property.dbName}", <#--
         --><#if property.targetEntity??>"${property.targetEntity.dbName}", <#--
             --><#if property.virtualTargetName??>"${property.virtualTargetName}", </#if></#if><#--
         -->PropertyType.${property.dbType})<#--
         --><#if property.propertyName != property.dbName>.secondaryName("${property.propertyName}")</#if><#--
         --><#if property.modelId??>.id(${property.modelId.id?c}, ${property.modelId.uid?c}L)</#if><#--
-        --><#if (uniqueFlags?size > 0)>
+        --><#if (property.propertyFlagsNames?size > 0)>
 
-            .flags(${uniqueFlags?join(" | ")})</#if><#--
+            .flags(${property.propertyFlagsNames?join(" | ")})</#if><#--
         --><#if property.index?? && (property.index.maxValueLength > 0)>.indexMaxValueLength(${property.index.maxValueLength?c})</#if><#--
         --><#if property.modelIndexId??>.indexId(${property.modelIndexId.id?c}, ${property.modelIndexId.uid?c}L)</#if>;
 </#list>
