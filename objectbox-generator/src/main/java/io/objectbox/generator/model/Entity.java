@@ -21,12 +21,15 @@ package io.objectbox.generator.model;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeSet;
 
 import io.objectbox.generator.IdUid;
 import io.objectbox.generator.TextUtil;
+import io.objectbox.model.EntityFlags;
 
 /**
  * Model class for an entity: a Java data object mapped to a data base representation. A new entity is added to a {@link
@@ -87,6 +90,9 @@ public class Entity implements HasParsedElement {
     private Boolean hasKeepSections;
     private boolean hasBoxStoreField;
     private Object parsedElement;
+
+    private int entityFlags;
+    private Set<String> entityFlagsNames;
 
     Entity(Schema schema, String className) {
         this.schema = schema;
@@ -798,6 +804,35 @@ public class Entity implements HasParsedElement {
 
     public void setParsedElement(Object parsedElement) {
         this.parsedElement = parsedElement;
+    }
+
+    private void computeEntityFlags() {
+        int flags = 0;
+        Set<String> flagsNames = new LinkedHashSet<>(); // keep in insert-order
+
+        if (!isConstructors()) {
+            flags |= EntityFlags.USE_NO_ARG_CONSTRUCTOR;
+            flagsNames.add("io.objectbox.model.EntityFlags.USE_NO_ARG_CONSTRUCTOR");
+        }
+
+        this.entityFlags = flags;
+        this.entityFlagsNames = flagsNames;
+    }
+
+    /**
+     * Returns combined {@link io.objectbox.model.EntityFlags} value.
+     */
+    public int getEntityFlags() {
+        computeEntityFlags();
+        return entityFlags;
+    }
+
+    /**
+     * Returns names of {@link io.objectbox.model.EntityFlags}.
+     */
+    public Set<String> getEntityFlagsNames() {
+        computeEntityFlags();
+        return entityFlagsNames;
     }
 
     @Override

@@ -76,9 +76,9 @@ public class MyObjectBox {
         entityBuilder.id(${entity.modelId?c}, ${entity.modelUid?c}L)<#if
             entity.lastPropertyId??>.lastPropertyId(${entity.lastPropertyId.id?c}, ${entity.lastPropertyId.uid?c}L)</#if>;
 </#if>
-    <#if !entity.constructors>
-        entityBuilder.flags(io.objectbox.model.EntityFlags.USE_NO_ARG_CONSTRUCTOR);
-    </#if>
+<#if (entity.entityFlagsNames?size > 0)>
+        entityBuilder.flags(${entity.entityFlagsNames?join(" | ")});
+</#if>
 <#list entity.propertiesColumns as property>
         entityBuilder.property("${property.dbName}", <#--
         --><#if property.targetEntity??>"${property.targetEntity.dbName}", <#--
