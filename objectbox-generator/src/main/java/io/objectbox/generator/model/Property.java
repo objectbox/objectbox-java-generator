@@ -279,7 +279,7 @@ public class Property implements HasParsedElement {
 
     private Object parsedElement;
 
-    private int propertyFlags;
+    private Integer propertyFlags;
     private Set<String> propertyFlagsNames;
 
     /**
@@ -586,11 +586,11 @@ public class Property implements HasParsedElement {
     }
 
     /**
-     * Based on this properties attributes computes required {@link io.objectbox.model.PropertyFlags}.
+     * Based on this properties attributes computes required {@link PropertyFlags}.
      * @see #getPropertyFlags()
      * @see #getPropertyFlagsNames()
      */
-    private void computePropertyFlags() {
+    public void computePropertyFlags() {
         int flags = 0;
         Set<String> flagsNames = new LinkedHashSet<>(); // keep in insert-order
 
@@ -650,7 +650,9 @@ public class Property implements HasParsedElement {
      * Returns combined {@link io.objectbox.model.PropertyFlags} value.
      */
     public int getPropertyFlags() {
-        computePropertyFlags();
+        if (propertyFlags == null) {
+            computePropertyFlags();
+        }
         return propertyFlags;
     }
 
@@ -658,7 +660,9 @@ public class Property implements HasParsedElement {
      * Returns names of {@link io.objectbox.model.PropertyFlags}.
      */
     public Set<String> getPropertyFlagsNames() {
-        computePropertyFlags();
+        if (propertyFlagsNames == null) {
+            computePropertyFlags();
+        }
         return propertyFlagsNames;
     }
 

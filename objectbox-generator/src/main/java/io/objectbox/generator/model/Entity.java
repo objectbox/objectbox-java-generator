@@ -91,7 +91,7 @@ public class Entity implements HasParsedElement {
     private boolean hasBoxStoreField;
     private Object parsedElement;
 
-    private int entityFlags;
+    private Integer entityFlags;
     private Set<String> entityFlagsNames;
 
     Entity(Schema schema, String className) {
@@ -806,7 +806,12 @@ public class Entity implements HasParsedElement {
         this.parsedElement = parsedElement;
     }
 
-    private void computeEntityFlags() {
+    /**
+     * Based on this entities attributes computes required {@link EntityFlags}.
+     * @see #getEntityFlags()
+     * @see #getEntityFlagsNames()
+     */
+    public void computeEntityFlags() {
         int flags = 0;
         Set<String> flagsNames = new LinkedHashSet<>(); // keep in insert-order
 
@@ -823,7 +828,9 @@ public class Entity implements HasParsedElement {
      * Returns combined {@link io.objectbox.model.EntityFlags} value.
      */
     public int getEntityFlags() {
-        computeEntityFlags();
+        if (entityFlags == null) {
+            computeEntityFlags();
+        }
         return entityFlags;
     }
 
@@ -831,7 +838,9 @@ public class Entity implements HasParsedElement {
      * Returns names of {@link io.objectbox.model.EntityFlags}.
      */
     public Set<String> getEntityFlagsNames() {
-        computeEntityFlags();
+        if (entityFlagsNames == null) {
+            computeEntityFlags();
+        }
         return entityFlagsNames;
     }
 
