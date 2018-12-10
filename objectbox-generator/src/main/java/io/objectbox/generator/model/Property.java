@@ -18,8 +18,12 @@
 
 package io.objectbox.generator.model;
 
+import java.util.LinkedHashSet;
+import java.util.Set;
+
 import io.objectbox.generator.IdUid;
 import io.objectbox.generator.TextUtil;
+import io.objectbox.model.PropertyFlags;
 
 /** Model class for an entity's property: a Java property mapped to a data base representation. */
 @SuppressWarnings("unused")
@@ -274,6 +278,9 @@ public class Property implements HasParsedElement {
     private String getterMethodName;
 
     private Object parsedElement;
+
+    private int propertyFlags;
+    private Set<String> propertyFlagsNames;
 
     /**
      * Index, which has only this property
@@ -576,6 +583,83 @@ public class Property implements HasParsedElement {
 
     public void setParsedElement(Object parsedElement) {
         this.parsedElement = parsedElement;
+    }
+
+    /**
+     * Based on this properties attributes computes required {@link io.objectbox.model.PropertyFlags}.
+     * @see #getPropertyFlags()
+     * @see #getPropertyFlagsNames()
+     */
+    private void computePropertyFlags() {
+        int flags = 0;
+        Set<String> flagsNames = new LinkedHashSet<>(); // keep in insert-order
+
+        if (isPrimaryKey()) {
+            flags |= PropertyFlags.ID;
+            flagsNames.add("PropertyFlags.ID");
+        }
+        if (isIdAssignable()) {
+            flags |= PropertyFlags.ID_SELF_ASSIGNABLE;
+            flagsNames.add("PropertyFlags.ID_SELF_ASSIGNABLE");
+        }
+        if (isNotNull()) {
+            flags |= PropertyFlags.NOT_NULL;
+            flagsNames.add("PropertyFlags.NOT_NULL");
+        }
+        if (isNonPrimitiveType() && getPropertyType().isScalar()) {
+            flags |= PropertyFlags.NON_PRIMITIVE_TYPE;
+            flagsNames.add("PropertyFlags.NON_PRIMITIVE_TYPE");
+        }
+        if (isVirtual()) {
+            flags |= PropertyFlags.VIRTUAL;
+            flagsNames.add("PropertyFlags.VIRTUAL");
+        }
+
+        if (getPropertyType() == PropertyType.RelationId) {
+            flags |= PropertyFlags.INDEXED;
+            flagsNames.add("PropertyFlags.INDEXED");
+            flags |= PropertyFlags.INDEX_PARTIAL_SKIP_ZERO;
+            flagsNames.add("PropertyFlags.INDEX_PARTIAL_SKIP_ZERO");
+        } else if (getIndex() != null) {
+            switch (getIndex().getType()) {
+                case 0:
+                case PropertyFlags.INDEXED:
+                    flags |= PropertyFlags.INDEXED;
+                    flagsNames.add("PropertyFlags.INDEXED");
+                    break;
+                case PropertyFlags.INDEX_HASH:
+                    flags |= PropertyFlags.INDEX_HASH;
+                    flagsNames.add("PropertyFlags.INDEX_HASH");
+                    break;
+                case PropertyFlags.INDEX_HASH64:
+                    flags |= PropertyFlags.INDEX_HASH64;
+                    flagsNames.add("PropertyFlags.INDEX_HASH64");
+                    break;
+            }
+            if (getIndex().isUnique()) {
+                flags |= PropertyFlags.UNIQUE;
+                flagsNames.add("PropertyFlags.UNIQUE");
+            }
+        }
+
+        this.propertyFlags = flags;
+        this.propertyFlagsNames = flagsNames;
+    }
+
+    /**
+     * Returns combined {@link io.objectbox.model.PropertyFlags} value.
+     */
+    public int getPropertyFlags() {
+        computePropertyFlags();
+        return propertyFlags;
+    }
+
+    /**
+     * Returns names of {@link io.objectbox.model.PropertyFlags}.
+     */
+    public Set<String> getPropertyFlagsNames() {
+        computePropertyFlags();
+        return propertyFlagsNames;
     }
 
     @Override

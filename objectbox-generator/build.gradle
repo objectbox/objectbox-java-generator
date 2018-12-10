@@ -11,6 +11,7 @@ dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     compile "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
 
+    compile "io.objectbox:objectbox-java:$objectbox_java_version"
     compile 'org.freemarker:freemarker:2.3.28'
     compile 'org.greenrobot:essentials:3.0.0-RC1'
     compile fileTree(dir: 'libs', include: ['*.jar'])
