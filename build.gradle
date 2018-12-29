@@ -4,7 +4,7 @@ buildscript {
         kotlin_version = '1.2.71'
         mockito_version = '2.23.0'
         
-        objectbox_version = '2.3.0-SNAPSHOT' // used to version this projects' artifacts
+        objectbox_version = '2.3.0' // used to version this projects' artifacts
         objectbox_plugin_version = objectbox_version // used to version this projects' artifacts
         objectbox_java_version = objectbox_version // used for plugin dependencies
         objectbox_runtime_version = objectbox_version // used as runtime library (projects using plugin)
