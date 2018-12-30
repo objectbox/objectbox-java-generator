@@ -176,7 +176,7 @@ open class BasicBuildTracker(val toolName: String) {
         val murmurHash = Murmur3F()
         murmurHash.update(input.toByteArray())
         // 8 bytes are enough
-        val bytes = murmurHash.valueBytesBigEndian.copyOfRange(0, 8)
+        val bytes = murmurHash.valueBytesBigEndian.copyOf(8)
         return encodeBase64WithoutPadding(bytes)
     }
 
