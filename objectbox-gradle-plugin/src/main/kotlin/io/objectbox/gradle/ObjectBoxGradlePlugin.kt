@@ -209,14 +209,14 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
             project.addDep(env.configAndroidTestImplOrCompile, "com.google.code.findbugs:jsr305:3.0.2")
 
             // for local unit tests
-            addNativeDependency(env, env.configTestImplOrCompile)
+            addNativeDependency(env, env.configTestImplOrCompile, true)
         } else {
             project.addDep(compileConfig, "io.objectbox:objectbox-java:$runtimeVersion")
-            addNativeDependency(env, compileConfig)
+            addNativeDependency(env, compileConfig, false)
         }
     }
 
-    private fun addNativeDependency(env: ProjectEnv, config: String) {
+    private fun addNativeDependency(env: ProjectEnv, config: String, searchTestConfigs: Boolean) {
         val runtimeVersion = ProjectEnv.Const.runtimeVersion
         val project = env.project
 
@@ -224,9 +224,9 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
                 "isLinux64=${env.isLinux64} isWindows64=${env.isWindows64} isMac64=${env.isMac64}")
 
         // note: for this detection to work apply the plugin after the dependencies block
-        if (project.hasObjectBoxDep("objectbox-linux")
-                || project.hasObjectBoxDep("objectbox-windows")
-                || project.hasObjectBoxDep("objectbox-macos")) {
+        if (project.hasObjectBoxDep("objectbox-linux", searchTestConfigs)
+                || project.hasObjectBoxDep("objectbox-windows", searchTestConfigs)
+                || project.hasObjectBoxDep("objectbox-macos", searchTestConfigs)) {
             if (DEBUG) println("### Detected native dependency, not auto-adding one.")
         } else {
             when {
@@ -239,23 +239,22 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
     }
 
     /**
-     * Note: for this detection to work apply this plugin after the dependencies block.
+     * Note: for this detection to work apply the plugin after the dependencies block.
      */
-    private fun Project.hasObjectBoxDep(name: String): Boolean {
-        val dependency = findObjectBoxDependency(this, name)
+    private fun Project.hasObjectBoxDep(name: String, searchTestConfigs: Boolean = false): Boolean {
+        val dependency = findObjectBoxDependency(this, name, searchTestConfigs)
         if (DEBUG) println("### $name dependency: $dependency")
         return dependency != null
     }
 
-    private fun findObjectBoxDependency(project: Project, name: String): Dependency? {
-        project.configurations.asMap.values
-                .filterNot { it.name.contains("test", ignoreCase = true) }
-                .forEach { config ->
-                    val dependency = config.dependencies.find({ it.group == "io.objectbox" && it.name == name })
-                    if (dependency != null) {
-                        return dependency
-                    }
-                }
+    private fun findObjectBoxDependency(project: Project, name: String, searchTestConfigs: Boolean): Dependency? {
+        if (searchTestConfigs) {
+            project.configurations
+        } else {
+            project.configurations.filterNot { it.name.contains("test", ignoreCase = true) }
+        }.forEach { config ->
+            config.dependencies.find { it.group == "io.objectbox" && it.name == name }?.let { return it }
+        }
         return null
     }
 
