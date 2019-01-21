@@ -24,10 +24,14 @@ import io.objectbox.build.ObjectBoxBuildConfig
 import io.objectbox.gradle.transform.ObjectBoxAndroidTransform
 import io.objectbox.gradle.transform.ObjectBoxJavaTransform
 import io.objectbox.gradle.transform.TransformException
+import io.objectbox.gradle.util.GradleCompat
 import okio.Buffer
 import okio.Okio
+import org.gradle.api.Action
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.Task
+import org.gradle.api.UnknownDomainObjectException
 import org.gradle.api.UnknownTaskException
 import org.gradle.api.artifacts.Dependency
 import org.gradle.api.plugins.JavaPluginConvention
@@ -81,28 +85,25 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
                 val taskName = "objectboxJavaTransform" + if (sourceSetName != "main") sourceSetName.capitalize() else ""
 
                 // use register to defer creation until use
-                val transformTask = project.tasks.register(taskName)
+                val transformTask = GradleCompat.get().registerTask(project, taskName)
                 if (env.debug) println("### Registered $transformTask in $project")
 
-                // verify classes task and compileJava task exist
-                val classesTask = try {
-                    project.tasks.named(sourceSet.classesTaskName)
-                } catch (e: UnknownTaskException) {
-                    throw RuntimeException("Could not find classes task '${sourceSet.classesTaskName}'.")
+                // verify classes and compileJava task exist, attach to lifecycle
+                // assumes that classes task depends on compileJava depends on compileKotlin
+                try {
+                    GradleCompat.get().configureTask(project, sourceSet.classesTaskName, Action {
+                        it.dependsOn(transformTask)
+                    })
+                } catch (e: UnknownDomainObjectException) {
+                    throw RuntimeException("Could not find classes task '${sourceSet.classesTaskName}'.", e)
                 }
                 val compileJavaTask = try {
-                    project.tasks.named(sourceSet.compileJavaTaskName)
+                    GradleCompat.get().getTask(project, sourceSet.compileJavaTaskName)
                 } catch (e: UnknownTaskException) {
-                    throw RuntimeException("Could not find compileJava task '${sourceSet.compileJavaTaskName}'.")
+                    throw RuntimeException("Could not find compileJava task '${sourceSet.compileJavaTaskName}'.", e)
                 }
 
-                // attach to lifecycle
-                // assumes that classes task depends on compileJava depends on compileKotlin
-                classesTask.configure {
-                    it.dependsOn(transformTask)
-                }
-
-                transformTask.configure {
+                GradleCompat.get().configureTask(project, taskName, Action {
                     it.group = "objectbox"
                     it.description = "Transforms Java bytecode"
 
@@ -112,10 +113,12 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
                         if (env.debug) println("### Executing $transformTask in $project")
 
                         // fine to get() compileJava task, no more need to defer its creation
-                        val compileJavaTaskOutputDir = (compileJavaTask.get() as JavaCompile).destinationDir
+                        val compileJavaTaskOutputDir = GradleCompat.get()
+                                .getTask(project, JavaCompile::class.java, sourceSet.compileJavaTaskName)
+                                .destinationDir
                         ObjectBoxJavaTransform(env.debug).transform(listOf(compileJavaTaskOutputDir))
                     }
-                }
+                })
             }
         }
     }
@@ -124,20 +127,19 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
         val project = env.project
 
         // use register to defer creation until use
-        val prepareTask = project.tasks.register("objectboxPrepareBuild")
+        val prepareTaskName = "objectboxPrepareBuild"
+        val prepareTask = GradleCompat.get().registerTask(project, prepareTaskName)
         if (DEBUG) println("### Registered $prepareTask in $project")
 
         // make build task depend on prepare task
-        val buildTask = try {
-            project.tasks.named("preBuild") // Android
-        } catch (e: UnknownTaskException) {
-            project.tasks.named("build") // Java
-        }
-        buildTask.configure {
-            it.dependsOn(prepareTask)
+        val configureDepends = Action<Task> { it.dependsOn(prepareTask) }
+        try {
+            GradleCompat.get().configureTask(project, "preBuild", configureDepends)  // Android
+        } catch (e: Exception) {
+            GradleCompat.get().configureTask(project, "build", configureDepends) // Java
         }
 
-        prepareTask.configure {
+        GradleCompat.get().configureTask(project, prepareTaskName, Action {
             it.group = "objectbox"
 
             it.doFirst {
@@ -160,7 +162,7 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
 
                 writeBuildConfig(env)
             }
-        }
+        })
     }
 
     private fun writeBuildConfig(env: ProjectEnv) {

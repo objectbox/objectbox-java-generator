@@ -35,6 +35,8 @@ import com.android.build.gradle.api.BaseVariant
 import com.android.build.gradle.api.UnitTestVariant
 import io.objectbox.gradle.GradleBuildTracker
 import io.objectbox.gradle.PluginOptions
+import io.objectbox.gradle.util.GradleCompat
+import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.compile.AbstractCompile
@@ -107,8 +109,9 @@ class ObjectBoxAndroidTransform(val options: PluginOptions) : Transform() {
             }
 
             // use register to defer creation until use
-            val transformTask = project.tasks.register("objectboxTransform${unitTestVariant.name.capitalize()}")
-            transformTask.configure {
+            val transformTaskName = "objectboxTransform${unitTestVariant.name.capitalize()}"
+            val transformTask = GradleCompat.get().registerTask(project, transformTaskName)
+            GradleCompat.get().configureTask(project, transformTaskName, Action {
                 it.group = "objectbox"
                 it.description = "Transforms Java bytecode for local unit tests"
 
@@ -131,7 +134,7 @@ class ObjectBoxAndroidTransform(val options: PluginOptions) : Transform() {
                         ObjectBoxJavaTransform(options.debug).transform(listOf(compileAppOutput))
                     }
                 }
-            }
+            })
 
             unitTestVariant.javaCompileDependsOn(transformTask)
         }
