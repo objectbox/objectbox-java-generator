@@ -58,7 +58,6 @@ class ObjectBoxAndroidTransform(val options: PluginOptions) : Transform() {
                 // for local unit tests
                 // a transform registered like above does only run when dexing is required (!= for local unit tests)
                 // so inject our own transform task before local unit tests are compiled
-                @Suppress("DEPRECATION") // There is always a Java compile task -- the deprecation was for Jack
                 when (extension) {
                     is AppExtension -> extension.applicationVariants.all {
                         injectTransformTask(project, options, it, it.unitTestVariant)
@@ -105,31 +104,35 @@ class ObjectBoxAndroidTransform(val options: PluginOptions) : Transform() {
                 return
             }
 
-            val transformTask = project.task("objectboxTransform${unitTestVariant.name.capitalize()}")
-            transformTask.group = "objectbox"
-            transformTask.description = "Transforms Java bytecode for local unit tests"
+            val baseJavaCompile = baseVariant.javaCompileProvider
 
-            // There is always a Java compile task -- the deprecation was for Jack
-            @Suppress("DEPRECATION")
-            val baseJavaCompile = baseVariant.javaCompile
+            // use register to defer creation until use
+            val transformTask = project.tasks.register("objectboxTransform${unitTestVariant.name.capitalize()}")
+            transformTask.configure {
+                it.group = "objectbox"
+                it.description = "Transforms Java bytecode for local unit tests"
+                it.mustRunAfter(baseJavaCompile)
+                it.doLast {
+                    // fine to get() JavaC task, no more need to defer its creation
+                    val compileAppOutput = baseJavaCompile.get().destinationDir
 
-            transformTask.mustRunAfter(baseJavaCompile)
-            @Suppress("DEPRECATION")
-            unitTestVariant.javaCompile.dependsOn(transformTask)
+                    // using naming scheme promised by https://kotlinlang.org/docs/reference/using-gradle.html#compiler-options
+                    val kotlinTaskName = "compile${baseVariant.name.capitalize()}Kotlin"
 
-            // using naming scheme promised by https://kotlinlang.org/docs/reference/using-gradle.html#compiler-options
-            val kotlinTaskName = "compile${baseVariant.name.capitalize()}Kotlin"
-            val compileAppOutput = baseJavaCompile.destinationDir
-            transformTask.doLast {
-                // Kotlin tasks are currently added after project evaluation, so detect them at runtime
-                val kotlinCompile = project.tasks.findByName(kotlinTaskName)
-                if (kotlinCompile != null && kotlinCompile is AbstractCompile) {
-                    // Kotlin + Java
-                    ObjectBoxJavaTransform(options.debug).transform(listOf(kotlinCompile.destinationDir, compileAppOutput))
-                } else {
-                    // Java
-                    ObjectBoxJavaTransform(options.debug).transform(listOf(compileAppOutput))
+                    // Kotlin tasks are currently added after project evaluation, so detect them at runtime
+                    val kotlinCompile = project.tasks.findByName(kotlinTaskName)
+                    if (kotlinCompile != null && kotlinCompile is AbstractCompile) {
+                        // Kotlin + Java
+                        ObjectBoxJavaTransform(options.debug).transform(listOf(kotlinCompile.destinationDir, compileAppOutput))
+                    } else {
+                        // Java
+                        ObjectBoxJavaTransform(options.debug).transform(listOf(compileAppOutput))
+                    }
                 }
+            }
+
+            unitTestVariant.javaCompileProvider.configure {
+                it.dependsOn(transformTask)
             }
         }
     }
