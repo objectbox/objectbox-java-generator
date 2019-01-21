@@ -73,33 +73,48 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
     private fun createPlainJavaTransformTask(env: ProjectEnv) {
         // wait until after project evaluation so SourceSets defined in build configs are included
         val project = env.project
-        project.afterEvaluate {
+        project.afterEvaluate { _ ->
             val javaPlugin = project.convention.getPlugin(JavaPluginConvention::class.java)
             javaPlugin.sourceSets.forEach { sourceSet ->
                 // name task based on SourceSet
                 val sourceSetName = sourceSet.name
                 val taskName = "objectboxJavaTransform" + if (sourceSetName != "main") sourceSetName.capitalize() else ""
 
-                val task = project.task(taskName)
-                task.group = "objectbox"
-                task.description = "Transforms Java bytecode"
-                if (env.debug) println("### Created $task in $project")
+                // use register to defer creation until use
+                val transformTask = project.tasks.register(taskName)
+                if (env.debug) println("### Registered $transformTask in $project")
+
+                // verify classes task and compileJava task exist
+                val classesTask = try {
+                    project.tasks.named(sourceSet.classesTaskName)
+                } catch (e: UnknownTaskException) {
+                    throw RuntimeException("Could not find classes task '${sourceSet.classesTaskName}'.")
+                }
+                val compileJavaTask = try {
+                    project.tasks.named(sourceSet.compileJavaTaskName)
+                } catch (e: UnknownTaskException) {
+                    throw RuntimeException("Could not find compileJava task '${sourceSet.compileJavaTaskName}'.")
+                }
 
                 // attach to lifecycle
                 // assumes that classes task depends on compileJava depends on compileKotlin
-                val classesTask = project.tasks.findByName(sourceSet.classesTaskName) ?:
-                        throw RuntimeException("Could not find classes task '${sourceSet.classesTaskName}'.")
-                val compileJavaTask = project.tasks.findByName(sourceSet.compileJavaTaskName) as JavaCompile? ?:
-                        throw RuntimeException("Could not find compileJava task '${sourceSet.compileJavaTaskName}'.")
+                classesTask.configure {
+                    it.dependsOn(transformTask)
+                }
 
-                classesTask.dependsOn(task)
-                task.mustRunAfter(compileJavaTask)
+                transformTask.configure {
+                    it.group = "objectbox"
+                    it.description = "Transforms Java bytecode"
 
-                task.doLast {
-                    if (env.debug) println("### Executing $task in $project")
+                    it.mustRunAfter(compileJavaTask)
 
-                    val compileJavaTaskOutputDir = compileJavaTask.destinationDir
-                    ObjectBoxJavaTransform(env.debug).transform(listOf(compileJavaTaskOutputDir))
+                    it.doLast {
+                        if (env.debug) println("### Executing $transformTask in $project")
+
+                        // fine to get() compileJava task, no more need to defer its creation
+                        val compileJavaTaskOutputDir = (compileJavaTask.get() as JavaCompile).destinationDir
+                        ObjectBoxJavaTransform(env.debug).transform(listOf(compileJavaTaskOutputDir))
+                    }
                 }
             }
         }
