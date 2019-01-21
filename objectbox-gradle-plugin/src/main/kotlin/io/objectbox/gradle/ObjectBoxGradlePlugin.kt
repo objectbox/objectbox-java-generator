@@ -28,6 +28,7 @@ import okio.Buffer
 import okio.Okio
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.UnknownTaskException
 import org.gradle.api.artifacts.Dependency
 import org.gradle.api.plugins.JavaPluginConvention
 import org.gradle.api.tasks.compile.JavaCompile
@@ -106,30 +107,44 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
 
     private fun createPrepareTask(env: ProjectEnv) {
         val project = env.project
-        val task = project.task("objectboxPrepareBuild")
-        task.group = "objectbox"
-        if (DEBUG) println("### Created $task in $project")
-        val buildTask = project.tasks.findByName("preBuild") ?: project.tasks.getByName("build")
-        buildTask.dependsOn(task)
-        task.doFirst {
-            if (env.debug) println("### Executing $task in $project")
-            buildTracker.trackBuild(env)
+
+        // use register to defer creation until use
+        val prepareTask = project.tasks.register("objectboxPrepareBuild")
+        if (DEBUG) println("### Registered $prepareTask in $project")
+
+        // make build task depend on prepare task
+        val buildTask = try {
+            project.tasks.named("preBuild") // Android
+        } catch (e: UnknownTaskException) {
+            project.tasks.named("build") // Java
+        }
+        buildTask.configure {
+            it.dependsOn(prepareTask)
+        }
+
+        prepareTask.configure {
+            it.group = "objectbox"
+
+            it.doFirst {
+                if (env.debug) println("### Executing $prepareTask in $project")
+                buildTracker.trackBuild(env)
 
 //            if (ObjectBoxAndroidTransform.Registration.getAndroidExtensionClasses(project).isEmpty()) {
 //                // TODO check
 //            }
 
-            val aptConf = project.configurations.findByName("kapt") ?:
-                    project.configurations.findByName("annotationProcessor") ?:
-                    project.configurations.findByName("apt")
-            val foundDependency = aptConf?.dependencies?.firstOrNull { dep -> dep.group == "io.objectbox" }
-            if (foundDependency == null) {
-                var msg = "No ObjectBox annotation processor configuration found. Please check your build scripts."
-                if (!env.hasAndroidPlugin) msg += "Currently only Android projects are fully supported."
-                throw RuntimeException(msg)
-            }
+                val aptConf = project.configurations.findByName("kapt") ?:
+                project.configurations.findByName("annotationProcessor") ?:
+                project.configurations.findByName("apt")
+                val foundDependency = aptConf?.dependencies?.firstOrNull { dep -> dep.group == "io.objectbox" }
+                if (foundDependency == null) {
+                    var msg = "No ObjectBox annotation processor configuration found. Please check your build scripts."
+                    if (!env.hasAndroidPlugin) msg += "Currently only Android projects are fully supported."
+                    throw RuntimeException(msg)
+                }
 
-            writeBuildConfig(env)
+                writeBuildConfig(env)
+            }
         }
     }
 
