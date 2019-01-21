@@ -36,7 +36,9 @@ import com.android.build.gradle.api.UnitTestVariant
 import io.objectbox.gradle.GradleBuildTracker
 import io.objectbox.gradle.PluginOptions
 import org.gradle.api.Project
+import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.compile.AbstractCompile
+import org.gradle.api.tasks.compile.JavaCompile
 import java.io.File
 
 /**
@@ -104,17 +106,17 @@ class ObjectBoxAndroidTransform(val options: PluginOptions) : Transform() {
                 return
             }
 
-            val baseJavaCompile = baseVariant.javaCompileProvider
-
             // use register to defer creation until use
             val transformTask = project.tasks.register("objectboxTransform${unitTestVariant.name.capitalize()}")
             transformTask.configure {
                 it.group = "objectbox"
                 it.description = "Transforms Java bytecode for local unit tests"
-                it.mustRunAfter(baseJavaCompile)
+
+                it.mustRunAfter(baseVariant.javaCompileCompat())
+
                 it.doLast {
                     // fine to get() JavaC task, no more need to defer its creation
-                    val compileAppOutput = baseJavaCompile.get().destinationDir
+                    val compileAppOutput = baseVariant.javaCompileGet().destinationDir
 
                     // using naming scheme promised by https://kotlinlang.org/docs/reference/using-gradle.html#compiler-options
                     val kotlinTaskName = "compile${baseVariant.name.capitalize()}Kotlin"
@@ -131,8 +133,39 @@ class ObjectBoxAndroidTransform(val options: PluginOptions) : Transform() {
                 }
             }
 
-            unitTestVariant.javaCompileProvider.configure {
-                it.dependsOn(transformTask)
+            unitTestVariant.javaCompileDependsOn(transformTask)
+        }
+
+        private fun BaseVariant.javaCompileDependsOn(task: Any) {
+            // Android Gradle Plugin 3.3.0 has deprecated variant.getJavaCompile()
+            // https://d.android.com/r/tools/task-configuration-avoidance
+            try {
+                javaCompileProvider.configure {
+                    it.dependsOn(task)
+                }
+            } catch (e: NoSuchMethodError) {
+                @Suppress("DEPRECATION")
+                javaCompile.dependsOn(task)
+            }
+        }
+
+        private fun BaseVariant.javaCompileCompat(): Any {
+            // Android Gradle Plugin 3.3.0 has deprecated variant.getJavaCompile()
+            // https://d.android.com/r/tools/task-configuration-avoidance
+            return try {
+                javaCompileProvider
+            } catch (e: NoSuchMethodError) {
+                @Suppress("DEPRECATION")
+                javaCompile
+            }
+        }
+
+        private fun BaseVariant.javaCompileGet(): JavaCompile {
+            val javaCompile = javaCompileCompat()
+            return if (javaCompile is Provider<*>) {
+                javaCompile.get() as JavaCompile
+            } else {
+                javaCompile as JavaCompile
             }
         }
     }
