@@ -28,16 +28,16 @@ import javax.lang.model.util.Types
 /**
  * Helps translate processor types to objectbox types.
  */
-class TypeHelper(val typeUtils: Types) {
+class TypeHelper(private val typeUtils: Types) {
 
     /**
      * Checks if the type name is equal to the given type name.
      */
     fun isTypeEqualTo(typeMirror: TypeMirror, otherType: String, eraseTypeParameters: Boolean = false): Boolean {
-        if (eraseTypeParameters) {
-            return otherType == typeUtils.erasure(typeMirror).toString()
+        return if (eraseTypeParameters) {
+            otherType == typeUtils.erasure(typeMirror).toString()
         } else {
-            return otherType == typeMirror.toString()
+            otherType == typeMirror.toString()
         }
     }
 
