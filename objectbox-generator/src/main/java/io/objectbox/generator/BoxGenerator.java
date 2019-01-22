@@ -23,7 +23,6 @@ import org.greenrobot.essentials.io.FileUtils;
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
-import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,7 +36,6 @@ import freemarker.template.Template;
 import freemarker.template.TemplateNotFoundException;
 import io.objectbox.generator.model.Entity;
 import io.objectbox.generator.model.InternalAccess;
-import io.objectbox.generator.model.PropertyType;
 import io.objectbox.generator.model.Schema;
 
 /**
@@ -136,7 +134,6 @@ public class BoxGenerator {
             }
         }
 
-        InternalAccess.setPropertyToDbType(schema, propertyToDbTypes());
         InternalAccess.init2ndAnd3rdPass(schema);
 
         System.out.println("Processing schema version " + schema.getVersion() + "...");
@@ -184,23 +181,6 @@ public class BoxGenerator {
 
         long time = System.currentTimeMillis() - start;
         System.out.println("Processed " + entities.size() + " entities in " + time + "ms");
-    }
-
-    private Map<PropertyType, String> propertyToDbTypes() {
-        Map<PropertyType, String> map = new EnumMap<>(PropertyType.class);
-        map.put(PropertyType.Boolean, "Bool");
-        map.put(PropertyType.Byte, "Byte");
-        map.put(PropertyType.Char, "Char");
-        map.put(PropertyType.Short, "Short");
-        map.put(PropertyType.Int, "Int");
-        map.put(PropertyType.Long, "Long");
-        map.put(PropertyType.Float, "Float");
-        map.put(PropertyType.Double, "Double");
-        map.put(PropertyType.String, "String");
-        map.put(PropertyType.ByteArray, "ByteVector");
-        map.put(PropertyType.Date, "Date");
-        map.put(PropertyType.RelationId, "Relation");
-        return map;
     }
 
     private Map<String, Object> createAdditionalDataForCursor(Entity entity) {
