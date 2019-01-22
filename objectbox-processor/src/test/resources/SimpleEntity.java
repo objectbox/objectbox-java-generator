@@ -52,6 +52,8 @@ public class SimpleEntity {
 
     byte[] simpleByteArray;
 
+    String[] simpleStringArray;
+
     static String transientField;
     transient String transientField2;
     @Transient

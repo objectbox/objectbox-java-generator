@@ -133,6 +133,7 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
                 "simpleChar" -> assertType(prop, PropertyType.Char)
                 "simpleString" -> assertType(prop, PropertyType.String)
                 "simpleByteArray" -> assertType(prop, PropertyType.ByteArray)
+                "simpleStringArray" -> assertType(prop, PropertyType.StringArray)
                 "transientField", "transientField2", "transientField3" ->
                     fail("Transient field should not be added to schema.")
                 "indexedProperty" -> {
@@ -206,6 +207,7 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
                 "simpleChar",
                 "simpleString",
                 "simpleByteArray",
+                "simpleStringArray",
                 "indexedProperty", // indexed
                 "B",
                 "customType",

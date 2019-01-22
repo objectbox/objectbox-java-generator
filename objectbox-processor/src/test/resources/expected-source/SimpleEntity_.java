@@ -98,20 +98,23 @@ public final class SimpleEntity_ implements EntityInfo<SimpleEntity> {
     public final static io.objectbox.Property<SimpleEntity> simpleByteArray =
             new io.objectbox.Property<>(__INSTANCE, 19, 18, byte[].class, "simpleByteArray");
 
+    public final static io.objectbox.Property<SimpleEntity> simpleStringArray =
+            new io.objectbox.Property<>(__INSTANCE, 20, 26, String[].class, "simpleStringArray");
+
     public final static io.objectbox.Property<SimpleEntity> indexedProperty =
-            new io.objectbox.Property<>(__INSTANCE, 20, 19, Integer.class, "indexedProperty");
+            new io.objectbox.Property<>(__INSTANCE, 21, 19, Integer.class, "indexedProperty");
 
     public final static io.objectbox.Property<SimpleEntity> namedProperty =
-            new io.objectbox.Property<>(__INSTANCE, 21, 20, String.class, "namedProperty", false, "B");
+            new io.objectbox.Property<>(__INSTANCE, 22, 20, String.class, "namedProperty", false, "B");
 
     public final static io.objectbox.Property<SimpleEntity> customType =
-            new io.objectbox.Property<>(__INSTANCE, 22, 21, int.class, "customType", false, "customType", SimpleEnumConverter.class, SimpleEnum.class);
+            new io.objectbox.Property<>(__INSTANCE, 23, 21, int.class, "customType", false, "customType", SimpleEnumConverter.class, SimpleEnum.class);
 
     public final static io.objectbox.Property<SimpleEntity> customTypes =
-            new io.objectbox.Property<>(__INSTANCE, 23, 22, int.class, "customTypes", false, "customTypes", SimpleEnumListConverter.class, List.class);
+            new io.objectbox.Property<>(__INSTANCE, 24, 22, int.class, "customTypes", false, "customTypes", SimpleEnumListConverter.class, List.class);
 
     public final static io.objectbox.Property<SimpleEntity> toOneId =
-            new io.objectbox.Property<>(__INSTANCE, 24, 25, long.class, "toOneId", true);
+            new io.objectbox.Property<>(__INSTANCE, 25, 25, long.class, "toOneId", true);
 
     @SuppressWarnings("unchecked")
     public final static io.objectbox.Property<SimpleEntity>[] __ALL_PROPERTIES = new io.objectbox.Property[]{
@@ -135,6 +138,7 @@ public final class SimpleEntity_ implements EntityInfo<SimpleEntity> {
             simpleChar,
             simpleString,
             simpleByteArray,
+            simpleStringArray,
             indexedProperty,
             namedProperty,
             customType,
