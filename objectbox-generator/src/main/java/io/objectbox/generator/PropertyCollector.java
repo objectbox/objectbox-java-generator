@@ -67,7 +67,10 @@ class PropertyCollector {
             int countDoubles = propertiesByType.countElements(PropertyType.Double);
             int maxCountFP = Math.max(countFloats, countDoubles);
             int countStrings = propertiesByType.countElements(PropertyType.String);
-            if (countStrings > 3 || countByteArrays > 1) {
+            int countStringArrays = propertiesByType.countElements(PropertyType.StringArray);
+            if (countStringArrays > 0) {
+                collectSignature = appendPropertyStringArray(properties, preCall);
+            } else if (countStrings > 3 || countByteArrays > 1) {
                 // If there are more non-primitive properties than we can process with one call, we must first collect
                 // them before mixing with primitives
                 collectSignature = countByteArrays > 0 ? appendProperties430000(properties, preCall) :
@@ -163,6 +166,11 @@ class PropertyCollector {
         appendProperty(preCall, properties, PropertyType.Long, true).append(", ");
         appendProperty(preCall, properties, PropertyType.Long, true).append(");\n\n");
         return "004000";
+    }
+
+    private String appendPropertyStringArray(StringBuilder properties, StringBuilder preCall) {
+        appendProperty(preCall, properties, PropertyType.StringArray, false).append(");\n\n");
+        return "StringArray";
     }
 
     private StringBuilder appendProperty(StringBuilder preCall, StringBuilder sb, PropertyType type, boolean isScalar) {
