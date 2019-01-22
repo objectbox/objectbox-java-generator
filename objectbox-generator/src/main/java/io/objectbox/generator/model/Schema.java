@@ -28,8 +28,6 @@ import io.objectbox.generator.TextUtil;
 
 /**
  * The "root" model class to which you can add entities to.
- * 
- * @see <a href="http://greendao-orm.com/documentation/modelling-entities/">Modelling Entities (Documentation page)</a>
  */
 @SuppressWarnings("unused")
 public class Schema {
@@ -40,9 +38,7 @@ public class Schema {
     private String defaultJavaPackageDao;
     private String defaultJavaPackageTest;
     private final List<Entity> entities;
-    private Map<PropertyType, String> propertyToDbType;
-    private Map<PropertyType, String> propertyToJavaTypeNotNull;
-    private Map<PropertyType, String> propertyToJavaTypeNullable;
+    private Map<PropertyType, Mapping> propertyTypeMapping;
     private boolean hasKeepSectionsByDefault;
     private boolean useActiveEntitiesByDefault;
     private final String name;
@@ -64,10 +60,6 @@ public class Schema {
         this(DEFAULT_NAME, version, defaultJavaPackage);
     }
 
-    void setPropertyToDbType(Map<PropertyType, String> propertyToDbType) {
-        this.propertyToDbType = propertyToDbType;
-    }
-
     public void enableKeepSectionsByDefault() {
         hasKeepSectionsByDefault = true;
     }
@@ -76,37 +68,43 @@ public class Schema {
         useActiveEntitiesByDefault = true;
     }
 
+    private static class Mapping {
+        final String dbType;
+        final String javaTypeNullable;
+        final String javaTypeNotNull;
+        Mapping(String dbType, String javaTypeNullable, String javaTypeNotNull) {
+            this.dbType = dbType;
+            this.javaTypeNotNull = javaTypeNotNull;
+            this.javaTypeNullable = javaTypeNullable;
+        }
+    }
+
     private void initTypeMappings() {
-        propertyToDbType = new EnumMap<>(PropertyType.class);
-        // For ObjectBox, this map will be set using setPropertyToDbType from outside
-
-        propertyToJavaTypeNotNull = new EnumMap<>(PropertyType.class);
-        propertyToJavaTypeNotNull.put(PropertyType.Boolean, "boolean");
-        propertyToJavaTypeNotNull.put(PropertyType.Byte, "byte");
-        propertyToJavaTypeNotNull.put(PropertyType.Short, "short");
-        propertyToJavaTypeNotNull.put(PropertyType.Char, "char");
-        propertyToJavaTypeNotNull.put(PropertyType.Int, "int");
-        propertyToJavaTypeNotNull.put(PropertyType.Long, "long");
-        propertyToJavaTypeNotNull.put(PropertyType.Float, "float");
-        propertyToJavaTypeNotNull.put(PropertyType.Double, "double");
-        propertyToJavaTypeNotNull.put(PropertyType.String, "String");
-        propertyToJavaTypeNotNull.put(PropertyType.ByteArray, "byte[]");
-        propertyToJavaTypeNotNull.put(PropertyType.Date, "java.util.Date");
-        propertyToJavaTypeNotNull.put(PropertyType.RelationId, "long");
-
-        propertyToJavaTypeNullable = new EnumMap<>(PropertyType.class);
-        propertyToJavaTypeNullable.put(PropertyType.Boolean, "Boolean");
-        propertyToJavaTypeNullable.put(PropertyType.Byte, "Byte");
-        propertyToJavaTypeNullable.put(PropertyType.Short, "Short");
-        propertyToJavaTypeNullable.put(PropertyType.Char, "Character");
-        propertyToJavaTypeNullable.put(PropertyType.Int, "Integer");
-        propertyToJavaTypeNullable.put(PropertyType.Long, "Long");
-        propertyToJavaTypeNullable.put(PropertyType.Float, "Float");
-        propertyToJavaTypeNullable.put(PropertyType.Double, "Double");
-        propertyToJavaTypeNullable.put(PropertyType.String, "String");
-        propertyToJavaTypeNullable.put(PropertyType.ByteArray, "byte[]");
-        propertyToJavaTypeNullable.put(PropertyType.Date, "java.util.Date");
-        propertyToJavaTypeNullable.put(PropertyType.RelationId, "Long");
+        propertyTypeMapping = new EnumMap<>(PropertyType.class);
+        propertyTypeMapping.put(PropertyType.Boolean, new Mapping(
+                "Bool", "Boolean", "boolean"));
+        propertyTypeMapping.put(PropertyType.Byte, new Mapping(
+                "Byte", "Byte", "byte"));
+        propertyTypeMapping.put(PropertyType.Char, new Mapping(
+                "Char", "Character", "char"));
+        propertyTypeMapping.put(PropertyType.Short, new Mapping(
+                "Short", "Short", "short"));
+        propertyTypeMapping.put(PropertyType.Int, new Mapping(
+                "Int", "Integer", "int"));
+        propertyTypeMapping.put(PropertyType.Long, new Mapping(
+                "Long", "Long", "long"));
+        propertyTypeMapping.put(PropertyType.Float, new Mapping(
+                "Float", "Float", "float"));
+        propertyTypeMapping.put(PropertyType.Double, new Mapping(
+                "Double", "Double", "double"));
+        propertyTypeMapping.put(PropertyType.String, new Mapping(
+                "String", "String", "String"));
+        propertyTypeMapping.put(PropertyType.ByteArray, new Mapping(
+                "ByteVector", "byte[]", "byte[]"));
+        propertyTypeMapping.put(PropertyType.Date, new Mapping(
+                "Date", "java.util.Date", "java.util.Date"));
+        propertyTypeMapping.put(PropertyType.RelationId, new Mapping(
+                "Relation", "Long", "long"));
     }
 
     /**
@@ -130,19 +128,19 @@ public class Schema {
     }
 
     public String mapToDbType(PropertyType propertyType) {
-        return mapType(propertyToDbType, propertyType);
+        return mapType(propertyTypeMapping, propertyType).dbType;
     }
 
     public String mapToJavaTypeNullable(PropertyType propertyType) {
-        return mapType(propertyToJavaTypeNullable, propertyType);
+        return mapType(propertyTypeMapping, propertyType).javaTypeNullable;
     }
 
     public String mapToJavaTypeNotNull(PropertyType propertyType) {
-        return mapType(propertyToJavaTypeNotNull, propertyType);
+        return mapType(propertyTypeMapping, propertyType).javaTypeNotNull;
     }
 
-    private String mapType(Map<PropertyType, String> map, PropertyType propertyType) {
-        String dbType = map.get(propertyType);
+    private <T> T mapType(Map<PropertyType, T> map, PropertyType propertyType) {
+        T dbType = map.get(propertyType);
         if (dbType == null) {
             throw new IllegalStateException("No mapping for " + propertyType);
         }
