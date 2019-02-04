@@ -24,10 +24,15 @@ import io.objectbox.build.ObjectBoxBuildConfig
 import io.objectbox.gradle.transform.ObjectBoxAndroidTransform
 import io.objectbox.gradle.transform.ObjectBoxJavaTransform
 import io.objectbox.gradle.transform.TransformException
+import io.objectbox.gradle.util.GradleCompat
 import okio.Buffer
 import okio.Okio
+import org.gradle.api.Action
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.Task
+import org.gradle.api.UnknownDomainObjectException
+import org.gradle.api.UnknownTaskException
 import org.gradle.api.artifacts.Dependency
 import org.gradle.api.plugins.JavaPluginConvention
 import org.gradle.api.tasks.compile.JavaCompile
@@ -72,65 +77,92 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
     private fun createPlainJavaTransformTask(env: ProjectEnv) {
         // wait until after project evaluation so SourceSets defined in build configs are included
         val project = env.project
-        project.afterEvaluate {
+        project.afterEvaluate { _ ->
             val javaPlugin = project.convention.getPlugin(JavaPluginConvention::class.java)
             javaPlugin.sourceSets.forEach { sourceSet ->
                 // name task based on SourceSet
                 val sourceSetName = sourceSet.name
                 val taskName = "objectboxJavaTransform" + if (sourceSetName != "main") sourceSetName.capitalize() else ""
 
-                val task = project.task(taskName)
-                task.group = "objectbox"
-                task.description = "Transforms Java bytecode"
-                if (env.debug) println("### Created $task in $project")
+                // use register to defer creation until use
+                val transformTask = GradleCompat.get().registerTask(project, taskName)
+                if (env.debug) println("### Registered $transformTask in $project")
 
-                // attach to lifecycle
+                // verify classes and compileJava task exist, attach to lifecycle
                 // assumes that classes task depends on compileJava depends on compileKotlin
-                val classesTask = project.tasks.findByName(sourceSet.classesTaskName) ?:
-                        throw RuntimeException("Could not find classes task '${sourceSet.classesTaskName}'.")
-                val compileJavaTask = project.tasks.findByName(sourceSet.compileJavaTaskName) as JavaCompile? ?:
-                        throw RuntimeException("Could not find compileJava task '${sourceSet.compileJavaTaskName}'.")
-
-                classesTask.dependsOn(task)
-                task.mustRunAfter(compileJavaTask)
-
-                task.doLast {
-                    if (env.debug) println("### Executing $task in $project")
-
-                    val compileJavaTaskOutputDir = compileJavaTask.destinationDir
-                    ObjectBoxJavaTransform(env.debug).transform(listOf(compileJavaTaskOutputDir))
+                try {
+                    GradleCompat.get().configureTask(project, sourceSet.classesTaskName, Action {
+                        it.dependsOn(transformTask)
+                    })
+                } catch (e: UnknownDomainObjectException) {
+                    throw RuntimeException("Could not find classes task '${sourceSet.classesTaskName}'.", e)
                 }
+                val compileJavaTask = try {
+                    GradleCompat.get().getTask(project, sourceSet.compileJavaTaskName)
+                } catch (e: UnknownTaskException) {
+                    throw RuntimeException("Could not find compileJava task '${sourceSet.compileJavaTaskName}'.", e)
+                }
+
+                GradleCompat.get().configureTask(project, taskName, Action {
+                    it.group = "objectbox"
+                    it.description = "Transforms Java bytecode"
+
+                    it.mustRunAfter(compileJavaTask)
+
+                    it.doLast {
+                        if (env.debug) println("### Executing $transformTask in $project")
+
+                        // fine to get() compileJava task, no more need to defer its creation
+                        val compileJavaTaskOutputDir = GradleCompat.get()
+                                .getTask(project, JavaCompile::class.java, sourceSet.compileJavaTaskName)
+                                .destinationDir
+                        ObjectBoxJavaTransform(env.debug).transform(listOf(compileJavaTaskOutputDir))
+                    }
+                })
             }
         }
     }
 
     private fun createPrepareTask(env: ProjectEnv) {
         val project = env.project
-        val task = project.task("objectboxPrepareBuild")
-        task.group = "objectbox"
-        if (DEBUG) println("### Created $task in $project")
-        val buildTask = project.tasks.findByName("preBuild") ?: project.tasks.getByName("build")
-        buildTask.dependsOn(task)
-        task.doFirst {
-            if (env.debug) println("### Executing $task in $project")
-            buildTracker.trackBuild(env)
+
+        // use register to defer creation until use
+        val prepareTaskName = "objectboxPrepareBuild"
+        val prepareTask = GradleCompat.get().registerTask(project, prepareTaskName)
+        if (DEBUG) println("### Registered $prepareTask in $project")
+
+        // make build task depend on prepare task
+        val configureDepends = Action<Task> { it.dependsOn(prepareTask) }
+        try {
+            GradleCompat.get().configureTask(project, "preBuild", configureDepends)  // Android
+        } catch (e: Exception) {
+            GradleCompat.get().configureTask(project, "build", configureDepends) // Java
+        }
+
+        GradleCompat.get().configureTask(project, prepareTaskName, Action {
+            it.group = "objectbox"
+
+            it.doFirst {
+                if (env.debug) println("### Executing $prepareTask in $project")
+                buildTracker.trackBuild(env)
 
 //            if (ObjectBoxAndroidTransform.Registration.getAndroidExtensionClasses(project).isEmpty()) {
 //                // TODO check
 //            }
 
-            val aptConf = project.configurations.findByName("kapt") ?:
-                    project.configurations.findByName("annotationProcessor") ?:
-                    project.configurations.findByName("apt")
-            val foundDependency = aptConf?.dependencies?.firstOrNull { dep -> dep.group == "io.objectbox" }
-            if (foundDependency == null) {
-                var msg = "No ObjectBox annotation processor configuration found. Please check your build scripts."
-                if (!env.hasAndroidPlugin) msg += "Currently only Android projects are fully supported."
-                throw RuntimeException(msg)
-            }
+                val aptConf = project.configurations.findByName("kapt") ?:
+                project.configurations.findByName("annotationProcessor") ?:
+                project.configurations.findByName("apt")
+                val foundDependency = aptConf?.dependencies?.firstOrNull { dep -> dep.group == "io.objectbox" }
+                if (foundDependency == null) {
+                    var msg = "No ObjectBox annotation processor configuration found. Please check your build scripts."
+                    if (!env.hasAndroidPlugin) msg += "Currently only Android projects are fully supported."
+                    throw RuntimeException(msg)
+                }
 
-            writeBuildConfig(env)
-        }
+                writeBuildConfig(env)
+            }
+        })
     }
 
     private fun writeBuildConfig(env: ProjectEnv) {

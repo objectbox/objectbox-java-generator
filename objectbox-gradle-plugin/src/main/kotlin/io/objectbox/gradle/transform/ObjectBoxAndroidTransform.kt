@@ -35,8 +35,12 @@ import com.android.build.gradle.api.BaseVariant
 import com.android.build.gradle.api.UnitTestVariant
 import io.objectbox.gradle.GradleBuildTracker
 import io.objectbox.gradle.PluginOptions
+import io.objectbox.gradle.util.GradleCompat
+import org.gradle.api.Action
 import org.gradle.api.Project
+import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.compile.AbstractCompile
+import org.gradle.api.tasks.compile.JavaCompile
 import java.io.File
 
 /**
@@ -58,7 +62,6 @@ class ObjectBoxAndroidTransform(val options: PluginOptions) : Transform() {
                 // for local unit tests
                 // a transform registered like above does only run when dexing is required (!= for local unit tests)
                 // so inject our own transform task before local unit tests are compiled
-                @Suppress("DEPRECATION") // There is always a Java compile task -- the deprecation was for Jack
                 when (extension) {
                     is AppExtension -> extension.applicationVariants.all {
                         injectTransformTask(project, options, it, it.unitTestVariant)
@@ -105,31 +108,67 @@ class ObjectBoxAndroidTransform(val options: PluginOptions) : Transform() {
                 return
             }
 
-            val transformTask = project.task("objectboxTransform${unitTestVariant.name.capitalize()}")
-            transformTask.group = "objectbox"
-            transformTask.description = "Transforms Java bytecode for local unit tests"
+            // use register to defer creation until use
+            val transformTaskName = "objectboxTransform${unitTestVariant.name.capitalize()}"
+            val transformTask = GradleCompat.get().registerTask(project, transformTaskName)
+            GradleCompat.get().configureTask(project, transformTaskName, Action {
+                it.group = "objectbox"
+                it.description = "Transforms Java bytecode for local unit tests"
 
-            // There is always a Java compile task -- the deprecation was for Jack
-            @Suppress("DEPRECATION")
-            val baseJavaCompile = baseVariant.javaCompile
+                it.mustRunAfter(baseVariant.javaCompileCompat())
 
-            transformTask.mustRunAfter(baseJavaCompile)
-            @Suppress("DEPRECATION")
-            unitTestVariant.javaCompile.dependsOn(transformTask)
+                it.doLast {
+                    // fine to get() JavaC task, no more need to defer its creation
+                    val compileAppOutput = baseVariant.javaCompileGet().destinationDir
 
-            // using naming scheme promised by https://kotlinlang.org/docs/reference/using-gradle.html#compiler-options
-            val kotlinTaskName = "compile${baseVariant.name.capitalize()}Kotlin"
-            val compileAppOutput = baseJavaCompile.destinationDir
-            transformTask.doLast {
-                // Kotlin tasks are currently added after project evaluation, so detect them at runtime
-                val kotlinCompile = project.tasks.findByName(kotlinTaskName)
-                if (kotlinCompile != null && kotlinCompile is AbstractCompile) {
-                    // Kotlin + Java
-                    ObjectBoxJavaTransform(options.debug).transform(listOf(kotlinCompile.destinationDir, compileAppOutput))
-                } else {
-                    // Java
-                    ObjectBoxJavaTransform(options.debug).transform(listOf(compileAppOutput))
+                    // using naming scheme promised by https://kotlinlang.org/docs/reference/using-gradle.html#compiler-options
+                    val kotlinTaskName = "compile${baseVariant.name.capitalize()}Kotlin"
+
+                    // Kotlin tasks are currently added after project evaluation, so detect them at runtime
+                    val kotlinCompile = project.tasks.findByName(kotlinTaskName)
+                    if (kotlinCompile != null && kotlinCompile is AbstractCompile) {
+                        // Kotlin + Java
+                        ObjectBoxJavaTransform(options.debug).transform(listOf(kotlinCompile.destinationDir, compileAppOutput))
+                    } else {
+                        // Java
+                        ObjectBoxJavaTransform(options.debug).transform(listOf(compileAppOutput))
+                    }
                 }
+            })
+
+            unitTestVariant.javaCompileDependsOn(transformTask)
+        }
+
+        private fun BaseVariant.javaCompileDependsOn(task: Any) {
+            // Android Gradle Plugin 3.3.0 has deprecated variant.getJavaCompile()
+            // https://d.android.com/r/tools/task-configuration-avoidance
+            try {
+                javaCompileProvider.configure {
+                    it.dependsOn(task)
+                }
+            } catch (e: NoSuchMethodError) {
+                @Suppress("DEPRECATION")
+                javaCompile.dependsOn(task)
+            }
+        }
+
+        private fun BaseVariant.javaCompileCompat(): Any {
+            // Android Gradle Plugin 3.3.0 has deprecated variant.getJavaCompile()
+            // https://d.android.com/r/tools/task-configuration-avoidance
+            return try {
+                javaCompileProvider
+            } catch (e: NoSuchMethodError) {
+                @Suppress("DEPRECATION")
+                javaCompile
+            }
+        }
+
+        private fun BaseVariant.javaCompileGet(): JavaCompile {
+            val javaCompile = javaCompileCompat()
+            return if (javaCompile is Provider<*>) {
+                javaCompile.get() as JavaCompile
+            } else {
+                javaCompile as JavaCompile
             }
         }
     }
