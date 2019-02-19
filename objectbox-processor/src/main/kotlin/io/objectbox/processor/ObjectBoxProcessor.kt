@@ -195,6 +195,14 @@ open class ObjectBoxProcessor : AbstractProcessor() {
             return // avoid changing files (model file, generated source)
         }
 
+        try {
+            schema.finish()
+        } catch (e: Exception) {
+            messages.error("Code generation failed: $e")
+            e.printStackTrace()
+            return
+        }
+
         if (!syncIdModel(schema)) {
             return // id model sync failed
         }

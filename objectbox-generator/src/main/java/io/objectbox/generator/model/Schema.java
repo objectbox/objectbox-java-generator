@@ -46,6 +46,7 @@ public class Schema {
     private IdUid lastEntityId;
     private IdUid lastIndexId;
     private IdUid lastRelationId;
+    private boolean isFinished;
 
     public Schema(String name, int version, String defaultJavaPackage) {
         this.name = name;
@@ -219,6 +220,27 @@ public class Schema {
 
     public void setLastRelationId(IdUid lastRelationId) {
         this.lastRelationId = lastRelationId;
+    }
+
+    public boolean isFinished() {
+        return isFinished;
+    }
+
+    /**
+     * Sets DAO names for ObjectBox (Cursor), runs 2nd and 3rd pass on schema. Afterwards {@link #isFinished()}.
+     */
+    public void finish() {
+        List<Entity> entities = getEntities();
+        for (Entity entity : entities) {
+            if (entity.getClassNameDao() == null) {
+                entity.setClassNameDao(entity.getClassName() + "Cursor");
+            }
+        }
+
+        init2ndPass();
+        init3rdPass();
+
+        isFinished = true;
     }
 
     void init2ndPass() {

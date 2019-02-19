@@ -51,6 +51,7 @@ public class SimpleBoxGeneratorTest {
         File entityInfoFile = fileDeleteIfExists(outputDir, baseName + "_.java");
 
         assignIdsUids(schema);
+        schema.finish();
         new BoxGenerator().generateAll(jobForFileForceExists(schema, outputDir));
 
         // Assert Cursor file
@@ -110,6 +111,7 @@ public class SimpleBoxGeneratorTest {
         File cursorFile = fileDeleteIfExists(outputDir, fileNameCursor);
 
         assignIdsUids(schema);
+        schema.finish();
         new BoxGenerator().generateAll(jobForFileForceExists(schema, outputDir));
 
         assertTrue(cursorFile.toString(), cursorFile.exists());
@@ -136,6 +138,7 @@ public class SimpleBoxGeneratorTest {
         File cursorFile = fileDeleteIfExists(outputDir, fileNameCursor);
 
         assignIdsUids(schema);
+        schema.finish();
         new BoxGenerator().generateAll(jobForFileForceExists(schema, outputDir));
 
         assertTrue(cursorFile.toString(), cursorFile.exists());
@@ -210,6 +213,7 @@ public class SimpleBoxGeneratorTest {
         assertFalse(myObjectBoxFile.exists());
 
         assignIdsUids(schema);
+        schema.finish();
         new BoxGenerator().generateAll(jobForFileForceExists(schema, outputDir));
 
         // Assert Cursor file
@@ -239,6 +243,7 @@ public class SimpleBoxGeneratorTest {
         outputDir.mkdirs();
 
         assignIdsUids(schema);
+        schema.finish();
         GeneratorJob job = new GeneratorJob(schema, GeneratorOutput.create(outputDir));
         File outputDirFbs = new File(outputDir, "fbs-src");
         job.setOutputFlatbuffersSchema(GeneratorOutput.create(outputDirFbs));

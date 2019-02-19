@@ -100,6 +100,7 @@ class IdSyncTest {
         val schema = basicSchema()
         val entity1 = addEntityTo(schema, "Entity1A", entityRefId)
         addPropertyTo(entity1, "bla", propertyRefId)
+        schema.finish()
         idSync = IdSync(file)
         idSync!!.sync(schema)
 
@@ -132,6 +133,7 @@ class IdSyncTest {
     private fun testKeepIdsForMatchingNames(schema: Schema) {
         val model1 = syncBasicModel()
         val entity1 = model1.entities.first()
+        schema.finish()
 
         idSync = IdSync(file)
         idSync!!.sync(schema)
@@ -157,6 +159,8 @@ class IdSyncTest {
         val schema = basicSchema()
         addBasicPropertiesTo(addEntityTo(schema, "Entity1A", entityRefId))
         addBasicPropertiesTo(addEntityTo(schema, "Entity2"))
+        schema.finish()
+
         idSync = IdSync(file)
         idSync!!.sync(schema)
 
@@ -177,6 +181,8 @@ class IdSyncTest {
         val entity = addEntityTo(schema, "Entity1")
         addPropertyTo(entity, "newOne")
         addPropertyTo(entity, "newTwo")
+        schema.finish()
+
         idSync = IdSync(file)
         idSync!!.sync(schema)
 
@@ -194,6 +200,8 @@ class IdSyncTest {
         val schema = basicSchema()
         addBasicPropertiesTo(addEntityTo(schema, "Entity1A", entityRefId))
         addBasicPropertiesTo(addEntityTo(schema, "Entity2", entityRefId))
+        schema.finish()
+
         idSync = IdSync(file)
         idSync!!.sync(schema)
     }
@@ -206,6 +214,8 @@ class IdSyncTest {
         val schema = basicSchema()
         val entity = addEntityTo(schema, "Entity1", entityRefId)
         addBasicPropertiesTo(entity, propertyRefId)
+        schema.finish()
+
         idSync = IdSync(file)
         idSync!!.sync(schema)
     }
@@ -217,6 +227,8 @@ class IdSyncTest {
         val schema = basicSchema()
         val entity = addEntityTo(schema, "Entity1", entityRefId)
         addBasicPropertiesTo(entity, entityRefId, true)
+        schema.finish()
+
         idSync = IdSync(file)
         idSync!!.sync(schema)
     }
@@ -231,6 +243,8 @@ class IdSyncTest {
         addPropertyTo(entity, "foo")
         addPropertyTo(entity, "bar", null, true)
         addPropertyTo(entity, "newAndIndexed", null, true)
+        schema.finish()
+
         idSync = IdSync(file)
         idSync!!.sync(schema)
 
@@ -250,6 +264,8 @@ class IdSyncTest {
 
         val schema = basicSchema()
         addBasicPropertiesTo(addEntityTo(schema, "Entity2"))
+        schema.finish()
+
         idSync = IdSync(file)
         idSync!!.sync(schema)
 
@@ -272,6 +288,8 @@ class IdSyncTest {
         addBasicPropertiesTo(entity2)
         val schemaProperty1 = entity1.properties[0]
         val schemaProperty2 = entity2.properties[0]
+        schema.finish()
+
         idSync!!.sync(schema)
 
         val model = idSync!!.justRead()
@@ -289,6 +307,8 @@ class IdSyncTest {
         val schema = basicSchema()
         val entity1 = addEntityTo(schema, "Entity1")
         addBasicPropertiesTo(entity1)
+        schema.finish()
+
         idSync!!.sync(schema)
 
         val model = idSync!!.justRead()!!

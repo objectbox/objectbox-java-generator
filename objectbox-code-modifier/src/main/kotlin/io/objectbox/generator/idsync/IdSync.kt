@@ -183,6 +183,10 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
     }
 
     fun sync(schema: Schema) {
+        if (!schema.isFinished) {
+            throw IllegalStateException("Must call schema.finish() first")
+        }
+
         if (entitiesBySchemaEntity.isNotEmpty() || propertiesBySchemaProperty.isNotEmpty()) {
             throw IllegalStateException("May be called only once")
         }
