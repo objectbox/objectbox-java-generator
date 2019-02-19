@@ -69,11 +69,13 @@ public class Schema {
     }
 
     private static class Mapping {
+        final short dbTypeId;
         final String dbType;
         final String javaTypeNullable;
         final String javaTypeNotNull;
-        Mapping(String dbType, String javaTypeNullable, String javaTypeNotNull) {
+        Mapping(short dbTypeId, String dbType, String javaTypeNullable, String javaTypeNotNull) {
             this.dbType = dbType;
+            this.dbTypeId = dbTypeId;
             this.javaTypeNotNull = javaTypeNotNull;
             this.javaTypeNullable = javaTypeNullable;
         }
@@ -82,29 +84,29 @@ public class Schema {
     private void initTypeMappings() {
         propertyTypeMapping = new EnumMap<>(PropertyType.class);
         propertyTypeMapping.put(PropertyType.Boolean, new Mapping(
-                "Bool", "Boolean", "boolean"));
+                io.objectbox.model.PropertyType.Bool, "Bool", "Boolean", "boolean"));
         propertyTypeMapping.put(PropertyType.Byte, new Mapping(
-                "Byte", "Byte", "byte"));
+                io.objectbox.model.PropertyType.Byte, "Byte", "Byte", "byte"));
         propertyTypeMapping.put(PropertyType.Char, new Mapping(
-                "Char", "Character", "char"));
+                io.objectbox.model.PropertyType.Char, "Char", "Character", "char"));
         propertyTypeMapping.put(PropertyType.Short, new Mapping(
-                "Short", "Short", "short"));
+                io.objectbox.model.PropertyType.Short, "Short", "Short", "short"));
         propertyTypeMapping.put(PropertyType.Int, new Mapping(
-                "Int", "Integer", "int"));
+                io.objectbox.model.PropertyType.Int, "Int", "Integer", "int"));
         propertyTypeMapping.put(PropertyType.Long, new Mapping(
-                "Long", "Long", "long"));
+                io.objectbox.model.PropertyType.Long, "Long", "Long", "long"));
         propertyTypeMapping.put(PropertyType.Float, new Mapping(
-                "Float", "Float", "float"));
+                io.objectbox.model.PropertyType.Float, "Float", "Float", "float"));
         propertyTypeMapping.put(PropertyType.Double, new Mapping(
-                "Double", "Double", "double"));
+                io.objectbox.model.PropertyType.Double, "Double", "Double", "double"));
         propertyTypeMapping.put(PropertyType.String, new Mapping(
-                "String", "String", "String"));
+                io.objectbox.model.PropertyType.String, "String", "String", "String"));
         propertyTypeMapping.put(PropertyType.ByteArray, new Mapping(
-                "ByteVector", "byte[]", "byte[]"));
+                io.objectbox.model.PropertyType.ByteVector, "ByteVector", "byte[]", "byte[]"));
         propertyTypeMapping.put(PropertyType.Date, new Mapping(
-                "Date", "java.util.Date", "java.util.Date"));
+                io.objectbox.model.PropertyType.Date, "Date", "java.util.Date", "java.util.Date"));
         propertyTypeMapping.put(PropertyType.RelationId, new Mapping(
-                "Relation", "Long", "long"));
+                io.objectbox.model.PropertyType.Relation, "Relation", "Long", "long"));
     }
 
     /**
@@ -129,6 +131,10 @@ public class Schema {
 
     public String mapToDbType(PropertyType propertyType) {
         return mapType(propertyTypeMapping, propertyType).dbType;
+    }
+
+    public short mapToDbTypeId(PropertyType propertyType) {
+        return mapType(propertyTypeMapping, propertyType).dbTypeId;
     }
 
     public String mapToJavaTypeNullable(PropertyType propertyType) {
