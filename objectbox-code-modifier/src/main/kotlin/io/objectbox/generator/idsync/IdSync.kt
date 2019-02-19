@@ -193,9 +193,13 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
 
         val schemaEntities = schema.entities
         try {
+            // ensure IdUid for all entities in schema, needed by relations sync
+            val existingEntities = schemaEntities.mapNotNull { syncEntityIdUids(it) }.associateBy { it.uid }
+
             val entities = schemaEntities.map {
-                syncEntity(it)
+                syncEntity(it, existingEntities[it.modelUid])
             }.sortedBy { it.id.id }
+
             updateRetiredUids(entities)
             writeModel(entities)
         } catch (e: Throwable) {
@@ -221,7 +225,7 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
         schema.lastRelationId = lastRelationId
     }
 
-    private fun syncEntity(schemaEntity: io.objectbox.generator.model.Entity): Entity {
+    private fun syncEntityIdUids(schemaEntity: io.objectbox.generator.model.Entity): Entity? {
         val entityName = schemaEntity.dbName ?: schemaEntity.className
         val entityUid = schemaEntity.modelUid
         val printUid = entityUid == -1L
@@ -229,7 +233,9 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
             throw IdSyncException("Non-unique UID $entityUid in parsed entity " +
                     "${schemaEntity.javaPackage}.${schemaEntity.className}")
         }
+
         val existingEntity: Entity? = findEntity(entityName, entityUid)
+
         if (printUid) {
             if (existingEntity != null) {
                 throw IdSyncPrintUidException("entity \"$entityName\"", existingEntity.uid, uidHelper.create())
@@ -237,6 +243,21 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
                 throw IdSyncException("Cannot use @Uid without a value for a new entity: $entityName")
             }
         }
+
+        val sourceId = if (existingEntity?.id == null) {
+            lastEntityId.incId(newUid(entityUid)) // create new id
+        } else {
+            existingEntity.id // use existing id + uid
+        }
+
+        // update schema entity
+        schemaEntity.modelId = sourceId.id
+        schemaEntity.modelUid = sourceId.uid
+
+        return existingEntity
+    }
+
+    private fun syncEntity(schemaEntity: io.objectbox.generator.model.Entity, existingEntity: Entity?): Entity {
         val lastPropertyId = if (existingEntity?.lastPropertyId == null) {
             IdUid() // create empty id + uid
         } else {
@@ -245,22 +266,14 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
         val properties = syncProperties(schemaEntity, existingEntity, lastPropertyId)
         val relations = syncRelations(schemaEntity, existingEntity)
 
-        val sourceId = if (existingEntity?.id == null) {
-            lastEntityId.incId(newUid(entityUid)) // create new id
-        } else {
-            existingEntity.id // use existing id + uid
-        }
         val entity = Entity(
-                name = entityName,
-                id = sourceId.clone(),
+                name = schemaEntity.dbName ?: schemaEntity.className,
+                id = IdUid(schemaEntity.modelId, schemaEntity.modelUid),
                 properties = properties,
                 relations = relations,
                 lastPropertyId = lastPropertyId
         )
-
         // update schema entity
-        schemaEntity.modelUid = entity.id.uid
-        schemaEntity.modelId = entity.id.id
         schemaEntity.lastPropertyId = entity.lastPropertyId
 
         entitiesBySchemaEntity[schemaEntity] = entity
