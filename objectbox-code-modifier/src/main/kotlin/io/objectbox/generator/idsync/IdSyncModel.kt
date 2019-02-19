@@ -98,6 +98,7 @@ data class Property(
 
 data class Relation(
         override val id: IdUid = IdUid(),
-        val name: String
+        val name: String,
+        val targetId: IdUid
 ) : HasIdUid
 

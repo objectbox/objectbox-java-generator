@@ -32,7 +32,8 @@
       "relations": [
         {
           "id": "2:420000000",
-          "name": "Hoolaloop"
+          "name": "Hoolaloop",
+          "targetId": "2:6121770550573222603"
         }
       ]
     }

@@ -260,6 +260,10 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
                 "toMany" -> {
                     assertThat(relation.id).isNotNull()
                     assertThat(relation.id).isNotEqualTo(IdUid())
+                    assertThat(relation.targetId).isNotNull()
+                    val targetEntityIdUid = model.findEntity(relatedClassName, null)!!.id
+                    assertThat(targetEntityIdUid).isNotEqualTo(IdUid())
+                    assertThat(relation.targetId).isEqualTo(targetEntityIdUid)
                 }
                 else -> fail("Found stray relation '${relation.name}' in model file.")
             }

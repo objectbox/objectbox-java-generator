@@ -404,7 +404,9 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
         }
         val relation = Relation(
                 name = name,
-                id = sourceId.clone()
+                id = sourceId.clone(),
+                // issue: schemaRelation.targetEntity might not have modelId or modelUid set by now
+                targetId = IdUid(schemaRelation.targetEntity.modelId, schemaRelation.targetEntity.modelUid)
         )
 
         // update schema property
