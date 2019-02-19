@@ -5,6 +5,12 @@ import io.objectbox.EntityInfo;
 import io.objectbox.annotation.apihint.Internal;
 import io.objectbox.internal.CursorFactory;
 import io.objectbox.internal.IdGetter;
+import io.objectbox.relation.RelationInfo;
+import io.objectbox.relation.ToOne;
+import io.objectbox.internal.ToOneGetter;
+import io.objectbox.internal.ToManyGetter;
+
+import java.util.List;
 
 import io.objectbox.processor.test.SimpleEntity.SimpleEnum;
 import io.objectbox.processor.test.SimpleEntity.SimpleEnumConverter;
@@ -107,6 +113,9 @@ public final class SimpleEntity_ implements EntityInfo<SimpleEntity> {
     public final static io.objectbox.Property<SimpleEntity> customTypes =
             new io.objectbox.Property<>(__INSTANCE, 23, 22, int.class, "customTypes", false, "customTypes", SimpleEnumListConverter.class, List.class);
 
+    public final static io.objectbox.Property<SimpleEntity> toOneId =
+            new io.objectbox.Property<>(__INSTANCE, 24, 25, long.class, "toOneId", true);
+
     @SuppressWarnings("unchecked")
     public final static io.objectbox.Property<SimpleEntity>[] __ALL_PROPERTIES = new io.objectbox.Property[]{
             id,
@@ -132,7 +141,8 @@ public final class SimpleEntity_ implements EntityInfo<SimpleEntity> {
             indexedProperty,
             namedProperty,
             customType,
-            customTypes
+            customTypes,
+            toOneId
     };
 
     public final static io.objectbox.Property<SimpleEntity> __ID_PROPERTY = id;
@@ -185,5 +195,24 @@ public final class SimpleEntity_ implements EntityInfo<SimpleEntity> {
             return id != null? id : 0;
         }
     }
+
+    /** To-one relation "toOne" to target entity "IdEntity". */
+    public static final RelationInfo<SimpleEntity, IdEntity> toOne =
+            new RelationInfo<>(SimpleEntity_.__INSTANCE, IdEntity_.__INSTANCE, toOneId, new ToOneGetter<SimpleEntity>() {
+                @Override
+                public ToOne<IdEntity> getToOne(SimpleEntity entity) {
+                    return entity.toOne;
+                }
+            });
+
+    /** To-many relation "toMany" to target entity "IdEntity". */
+    public static final RelationInfo<SimpleEntity, IdEntity> toMany = new RelationInfo<>(SimpleEntity_.__INSTANCE, IdEntity_.__INSTANCE,
+            new ToManyGetter<SimpleEntity>() {
+                @Override
+                public List<IdEntity> getToMany(SimpleEntity entity) {
+                    return entity.toMany;
+                }
+            },
+            1);
 
 }
