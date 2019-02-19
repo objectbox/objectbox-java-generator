@@ -57,8 +57,8 @@ data class IdSyncModel(
         val retiredRelationUids: List<Long>?
 ) {
     companion object {
-        const val MODEL_VERSION = 4L // !! When upgrading always check MODEL_VERSION_PARSER_MINIMUM !!
-        const val MODEL_VERSION_PARSER_MINIMUM = 4L
+        const val MODEL_VERSION = 5L // !! When upgrading always check MODEL_VERSION_PARSER_MINIMUM !!
+        const val MODEL_VERSION_PARSER_MINIMUM = 5L
     }
 }
 
