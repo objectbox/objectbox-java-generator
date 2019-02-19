@@ -5,7 +5,7 @@
   "entities": [
     {
       "id": "1:4858050548069557694",
-      "lastPropertyId": "24:2870459311547136401",
+      "lastPropertyId": "25:8807838229280449251",
       "name": "A",
       "properties": [
         {
@@ -104,14 +104,36 @@
         {
           "id": "24:2870459311547136401",
           "name": "simpleChar"
+        },
+        {
+          "id": "25:8807838229280449251",
+          "indexId": "2:6174264050444102923",
+          "name": "toOneId"
+        }
+      ],
+      "relations": [
+        {
+          "id": "1:1588763188636253926",
+          "name": "toMany"
+        }
+      ]
+    },
+    {
+      "id": "2:7806468668391521694",
+      "lastPropertyId": "1:4951803424764837731",
+      "name": "IdEntity",
+      "properties": [
+        {
+          "id": "1:4951803424764837731",
+          "name": "id"
         }
       ],
       "relations": []
     }
   ],
-  "lastEntityId": "1:4858050548069557694",
-  "lastIndexId": "1:4551328960004588074",
-  "lastRelationId": "0:0",
+  "lastEntityId": "2:7806468668391521694",
+  "lastIndexId": "2:6174264050444102923",
+  "lastRelationId": "1:1588763188636253926",
   "lastSequenceId": "0:0",
   "modelVersion": 4,
   "modelVersionParserMinimum": 4,

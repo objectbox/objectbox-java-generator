@@ -54,17 +54,18 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
     @Test
     fun testSimpleEntity() {
         val className = "SimpleEntity"
+        val relatedClassName = "IdEntity"
 
-        testGeneratedSources(className)
+        testGeneratedSources(className, relatedClassName)
 
-        testSchemaAndModel(className)
+        testSchemaAndModel(className, relatedClassName)
     }
 
-    private fun testGeneratedSources(className: String) {
+    private fun testGeneratedSources(className: String, relatedClassName: String) {
         // need stable model file + ids to verify sources match
         val environment = TestEnvironment("default.json")
 
-        val compilation = environment.compileDaoCompat(className)
+        val compilation = environment.compileDaoCompat(className, relatedClassName)
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
 
         // assert generated files source trees
@@ -73,12 +74,12 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
         assertGeneratedSourceMatches(compilation, "${className}Cursor")
     }
 
-    private fun testSchemaAndModel(className: String) {
+    private fun testSchemaAndModel(className: String, relatedClassName: String) {
         // ensure mode file is re-created on each run
         val environment = TestEnvironment("default-temp.json")
         environment.cleanModelFile()
 
-        val compilation = environment.compileDaoCompat(className)
+        val compilation = environment.compileDaoCompat(className, relatedClassName)
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
 
         // assert schema
@@ -86,7 +87,7 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
         assertThat(schema).isNotNull()
         assertThat(schema.version).isEqualTo(1)
         assertThat(schema.defaultJavaPackage).isEqualTo("io.objectbox.processor.test")
-        assertThat(schema.entities).hasSize(1)
+        assertThat(schema.entities).hasSize(2) /* SimpleEntity and IdEntity */
 
         // assert entity
         val schemaEntity = schema.entities[0]
@@ -96,7 +97,7 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
         assertThat(schemaEntity.isConstructors).isFalse()
 
         // assert index
-        assertThat(schemaEntity.indexes).hasSize(1)
+        assertThat(schemaEntity.indexes).hasSize(2) /* @Index and ToOne */
         val index = schemaEntity.indexes[0]
         assertThat(index.isNonDefaultName).isFalse()
         assertThat(index.isUnique).isFalse()
@@ -153,6 +154,12 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
                     assertThat(prop.converter).isEqualTo("io.objectbox.processor.test.SimpleEntity.SimpleEnumListConverter")
                     assertType(prop, PropertyType.Int)
                 }
+                "toOneId" -> {
+                    assertThat(prop.dbName).isEqualTo(prop.propertyName)
+                    assertThat(prop.virtualTargetName).isEqualTo("toOne")
+                    assertPrimitiveType(prop, PropertyType.RelationId)
+                    // note: relations themselves are properly tested in RelationsTest
+                }
                 else -> fail("Found stray field '${prop.propertyName}' in schema.")
             }
         }
@@ -171,7 +178,6 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
         assertThat(modelEntity).isNotNull()
         assertThat(modelEntity!!.id).isNotNull()
         assertThat(modelEntity.id).isNotEqualTo(IdUid())
-        assertThat(modelEntity.id).isEqualTo(model.lastEntityId)
         assertThat(modelEntity.id.id).isEqualTo(schemaEntity.modelId)
         assertThat(modelEntity.id.uid).isEqualTo(schemaEntity.modelUid)
         assertThat(modelEntity.lastPropertyId).isNotNull()
@@ -203,7 +209,8 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
                 "indexedProperty", // indexed
                 "B",
                 "customType",
-                "customTypes" // last
+                "customTypes",
+                "toOneId" // last
         )
         val modelProperties = modelEntity.properties
         assertThat(modelProperties.size).isAtLeast(1)
@@ -220,13 +227,34 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
 
             when (name) {
                 "indexedProperty" -> {
+                    // has valid IdUid
                     assertThat(property.indexId).isNotNull()
                     assertThat(property.indexId).isNotEqualTo(IdUid())
-                    assertThat(property.indexId).isEqualTo(model.lastIndexId)
                 }
-                "customTypes" -> {
+                "toOneId" -> {
+                    // has valid IdUid
+                    assertThat(property.indexId).isNotNull()
+                    assertThat(property.indexId).isNotEqualTo(IdUid())
+
+                    // is last index
+                    assertThat(property.indexId).isEqualTo(model.lastIndexId)
+
+                    // is last property
                     assertThat(property.id).isEqualTo(modelEntity.lastPropertyId)
                 }
+            }
+        }
+
+        // assert standalone relation
+        val relations = modelEntity.relations
+        assertThat(relations).isNotEmpty()
+        for (relation in relations) {
+            when (relation.name) {
+                "toMany" -> {
+                    assertThat(relation.id).isNotNull()
+                    assertThat(relation.id).isNotEqualTo(IdUid())
+                }
+                else -> fail("Found stray relation '${relation.name}' in model file.")
             }
         }
     }
@@ -234,11 +262,12 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
     @Test
     fun simpleEntity_customMyObjectBoxPackage() {
         val className = "SimpleEntity"
+        val relatedClassName = "IdEntity"
 
         // need stable model file + ids to verify sources match
         val environment = TestEnvironment("default.json", "io.objectbox.processor.custom")
 
-        val compilation = environment.compile(className)
+        val compilation = environment.compile(className, relatedClassName)
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
 
         // assert generated files source trees

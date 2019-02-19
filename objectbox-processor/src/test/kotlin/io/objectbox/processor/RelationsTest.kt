@@ -11,6 +11,7 @@ import io.objectbox.generator.model.ToMany
 import io.objectbox.generator.model.ToManyStandalone
 import io.objectbox.generator.model.ToManyToMany
 import org.junit.Assert
+import org.junit.Assert.fail
 import org.junit.Test
 
 
@@ -435,6 +436,8 @@ class RelationsTest : BaseProcessorTest() {
         assertGeneratedSourceMatches(compilation, "${parentName}Cursor")
 
         assertToManySchema(environment.schema, parentName, childName)
+
+        assertToManyStandaloneModel(environment, parentName, "children")
     }
 
     @Test
@@ -455,6 +458,8 @@ class RelationsTest : BaseProcessorTest() {
         val toMany = entity.toManyRelations[0] as ToManyStandalone
         Assert.assertEquals("Hoolaloop", toMany.dbName)
         Assert.assertEquals(420000000L, toMany.modelId.uid)
+
+        assertToManyStandaloneModel(environment, parentName, "Hoolaloop")
     }
 
     @Test
@@ -566,6 +571,24 @@ class RelationsTest : BaseProcessorTest() {
         assertThat(toOneRelation.targetEntity).isEqualTo(parent)
         assertThat(toOneRelation.targetIdProperty).isEqualTo(prop)
         assertThat(toOneRelation.nameToOne).isEqualTo(toOneFieldName)
+    }
+
+    private fun assertToManyStandaloneModel(environment: TestEnvironment, parentName: String, relationName: String) {
+        val model = environment.readModel()
+        val modelParent = model.findEntity(parentName, null)
+
+        val relations = modelParent!!.relations
+        assertThat(relations).isNotEmpty()
+
+        for (relation in relations) {
+            when (relation.name) {
+                relationName -> {
+                    assertThat(relation.id).isNotNull()
+                    assertThat(relation.id).isNotEqualTo(IdUid())
+                }
+                else -> fail("Found stray relation '${relation.name}' in model file.")
+            }
+        }
     }
 
 }

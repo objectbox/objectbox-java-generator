@@ -16,19 +16,20 @@ public class MyObjectBox {
     public static BoxStoreBuilder builder() {
         BoxStoreBuilder builder = new BoxStoreBuilder(getModel());
         builder.entity(SimpleEntity_.__INSTANCE);
+        builder.entity(IdEntity_.__INSTANCE);
         return builder;
     }
 
     private static byte[] getModel() {
         ModelBuilder modelBuilder = new ModelBuilder();
-        modelBuilder.lastEntityId(1, 4858050548069557694L);
-        modelBuilder.lastIndexId(1, 4551328960004588074L);
-        modelBuilder.lastRelationId(0, 0L);
+        modelBuilder.lastEntityId(2, 7806468668391521694L);
+        modelBuilder.lastIndexId(2, 6174264050444102923L);
+        modelBuilder.lastRelationId(1, 1588763188636253926L);
 
         EntityBuilder entityBuilder;
 
         entityBuilder = modelBuilder.entity("A");
-        entityBuilder.id(1, 4858050548069557694L).lastPropertyId(24, 2870459311547136401L);
+        entityBuilder.id(1, 4858050548069557694L).lastPropertyId(25, 8807838229280449251L);
         entityBuilder.flags(io.objectbox.model.EntityFlags.USE_NO_ARG_CONSTRUCTOR);
         entityBuilder.property("id", PropertyType.Long).id(1, 8303367770402050741L)
                 .flags(PropertyFlags.ID | PropertyFlags.ID_SELF_ASSIGNABLE | PropertyFlags.NON_PRIMITIVE_TYPE);
@@ -74,6 +75,17 @@ public class MyObjectBox {
                 .flags(PropertyFlags.NON_PRIMITIVE_TYPE);
         entityBuilder.property("customTypes", PropertyType.Int).id(22, 4772590935549770830L)
                 .flags(PropertyFlags.NON_PRIMITIVE_TYPE);
+        entityBuilder.property("toOneId", "IdEntity", "toOne", PropertyType.Relation).id(25, 8807838229280449251L)
+                .flags(PropertyFlags.NOT_NULL | PropertyFlags.VIRTUAL | PropertyFlags.INDEXED | PropertyFlags.INDEX_PARTIAL_SKIP_ZERO).indexId(2, 6174264050444102923L);
+
+        entityBuilder.relation("toMany", 1, 1588763188636253926L, 2, 7806468668391521694L);
+        entityBuilder.entityDone();
+
+        entityBuilder = modelBuilder.entity("IdEntity");
+        entityBuilder.id(2, 7806468668391521694L).lastPropertyId(1, 4951803424764837731L);
+        entityBuilder.flags(io.objectbox.model.EntityFlags.USE_NO_ARG_CONSTRUCTOR);
+        entityBuilder.property("id", PropertyType.Long).id(1, 4951803424764837731L)
+                .flags(PropertyFlags.ID | PropertyFlags.NON_PRIMITIVE_TYPE);
         entityBuilder.entityDone();
 
         return modelBuilder.build();

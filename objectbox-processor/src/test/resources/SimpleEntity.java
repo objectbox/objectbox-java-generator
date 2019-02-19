@@ -12,6 +12,8 @@ import io.objectbox.annotation.NameInDb;
 import io.objectbox.annotation.Transient;
 import io.objectbox.annotation.Uid;
 import io.objectbox.converter.PropertyConverter;
+import io.objectbox.relation.ToMany;
+import io.objectbox.relation.ToOne;
 
 @Entity
 @NameInDb("A")
@@ -66,6 +68,10 @@ public class SimpleEntity {
 
     @Convert(converter = SimpleEnumListConverter.class, dbType = Integer.class)
     List<SimpleEnum> customTypes;
+
+    ToOne<IdEntity> toOne = new ToOne<>(this, SimpleEntity_.toOne);
+
+    ToMany<IdEntity> toMany = new ToMany<>(this, SimpleEntity_.toMany);
 
     public boolean isSimpleBooleanPrimitive() {
         return simpleBooleanPrimitive;
