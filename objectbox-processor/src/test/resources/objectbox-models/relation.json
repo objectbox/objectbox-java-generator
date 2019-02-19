@@ -19,6 +19,7 @@
           "id": "2:8291817030601857585",
           "indexId": "2:1826750784658909321",
           "name": "parentId",
+          "relationTarget": "RelationParent",
           "type": 11
         }
       ],

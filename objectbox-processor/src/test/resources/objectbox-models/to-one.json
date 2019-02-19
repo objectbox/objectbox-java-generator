@@ -19,6 +19,7 @@
           "id": "2:185105220691557582",
           "indexId": "1:5047407137272902187",
           "name": "parentId",
+          "relationTarget": "ToOneParent",
           "type": 11
         },
         {
@@ -26,6 +27,7 @@
           "id": "3:8240414257720770495",
           "indexId": "3:2562844073064310031",
           "name": "aParentId",
+          "relationTarget": "ToOneParent",
           "type": 11
         }
       ],

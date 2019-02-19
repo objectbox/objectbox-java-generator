@@ -321,7 +321,8 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
                 id = sourceId.clone(),
                 indexId = sourceIndexId?.clone(),
                 type = schemaProperty.dbTypeId.toInt(),
-                flags = if (schemaProperty.propertyFlags != 0) schemaProperty.propertyFlags else null
+                flags = if (schemaProperty.propertyFlags != 0) schemaProperty.propertyFlags else null,
+                relationTarget = schemaProperty.targetEntity?.dbName
         )
 
         // update schema property

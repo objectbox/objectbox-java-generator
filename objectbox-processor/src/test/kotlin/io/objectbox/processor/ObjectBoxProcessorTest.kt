@@ -241,6 +241,8 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
                     assertThat(property.indexId).isNotNull()
                     assertThat(property.indexId).isNotEqualTo(IdUid())
 
+                    assertThat(property.relationTarget).isEqualTo(schemaProperty.targetEntity.dbName)
+
                     // is last index
                     assertThat(property.indexId).isEqualTo(model.lastIndexId)
 

@@ -154,6 +154,7 @@
           "id": "25:8807838229280449251",
           "indexId": "2:6174264050444102923",
           "name": "toOneId",
+          "relationTarget": "IdEntity",
           "type": 11
         }
       ],

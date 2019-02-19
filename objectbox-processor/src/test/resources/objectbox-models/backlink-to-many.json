@@ -33,6 +33,7 @@
           "id": "2:4383198095305772124",
           "indexId": "1:3805303550911331096",
           "name": "targetId",
+          "relationTarget": "BacklinkToOneTarget",
           "type": 11
         }
       ],

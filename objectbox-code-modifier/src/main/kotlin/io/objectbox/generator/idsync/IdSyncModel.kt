@@ -92,7 +92,8 @@ data class Property(
         val name: String,
         val indexId: IdUid?,
         val type: Int,
-        val flags: Int?
+        val flags: Int?,
+        val relationTarget: String?
 ) : HasIdUid
 
 data class Relation(
