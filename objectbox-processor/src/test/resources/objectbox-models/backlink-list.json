@@ -9,8 +9,10 @@
       "name": "BacklinkToOneListTarget",
       "properties": [
         {
+          "flags": 3,
           "id": "1:1826906556673625342",
-          "name": "id"
+          "name": "id",
+          "type": 6
         }
       ],
       "relations": []
@@ -21,13 +23,17 @@
       "name": "BacklinkToOneListSource",
       "properties": [
         {
+          "flags": 3,
           "id": "1:3998626054824627444",
-          "name": "id"
+          "name": "id",
+          "type": 6
         },
         {
+          "flags": 1548,
           "id": "2:4383198095305772124",
           "indexId": "1:3805303550911331096",
-          "name": "targetId"
+          "name": "targetId",
+          "type": 11
         }
       ],
       "relations": []
@@ -37,8 +43,8 @@
   "lastIndexId": "1:3805303550911331096",
   "lastRelationId": "0:0",
   "lastSequenceId": "0:0",
-  "modelVersion": 4,
-  "modelVersionParserMinimum": 4,
+  "modelVersion": 5,
+  "modelVersionParserMinimum": 5,
   "retiredEntityUids": [],
   "retiredIndexUids": [],
   "retiredPropertyUids": [],

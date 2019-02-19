@@ -90,7 +90,9 @@ data class Entity(
 data class Property(
         override val id: IdUid = IdUid(),
         val name: String,
-        val indexId: IdUid?
+        val indexId: IdUid?,
+        val type: Int,
+        val flags: Int?
 ) : HasIdUid
 
 data class Relation(

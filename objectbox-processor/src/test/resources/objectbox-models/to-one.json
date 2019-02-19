@@ -9,18 +9,24 @@
       "name": "ToOneChild",
       "properties": [
         {
+          "flags": 3,
           "id": "1:6092576657291525219",
-          "name": "id"
+          "name": "id",
+          "type": 6
         },
         {
+          "flags": 1548,
           "id": "2:185105220691557582",
           "indexId": "1:5047407137272902187",
-          "name": "parentId"
+          "name": "parentId",
+          "type": 11
         },
         {
+          "flags": 524,
           "id": "3:8240414257720770495",
           "indexId": "3:2562844073064310031",
-          "name": "aParentId"
+          "name": "aParentId",
+          "type": 11
         }
       ],
       "relations": []
@@ -31,8 +37,10 @@
       "name": "ToOneParent",
       "properties": [
         {
+          "flags": 3,
           "id": "1:3099448933659209799",
-          "name": "id"
+          "name": "id",
+          "type": 6
         }
       ],
       "relations": []
@@ -42,8 +50,8 @@
   "lastIndexId": "3:2562844073064310031",
   "lastRelationId": "0:0",
   "lastSequenceId": "0:0",
-  "modelVersion": 4,
-  "modelVersionParserMinimum": 4,
+  "modelVersion": 5,
+  "modelVersionParserMinimum": 5,
   "retiredEntityUids": [],
   "retiredIndexUids": [
     5129903347645642224

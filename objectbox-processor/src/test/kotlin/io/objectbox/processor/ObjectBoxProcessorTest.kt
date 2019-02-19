@@ -106,7 +106,8 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
 
         // assert properties
         assertThat(schemaEntity.properties.size).isAtLeast(1)
-        for (prop in schemaEntity.properties) {
+        val schemaProperties = schemaEntity.properties
+        for (prop in schemaProperties) {
             when (prop.propertyName) {
                 "id" -> {
                     assertThat(prop.isPrimaryKey).isTrue()
@@ -224,6 +225,10 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
             assertWithMessage("Property '$name' not in model file").that(property).isNotNull()
             assertWithMessage("Property '$name' has no id").that(property!!.id).isNotNull()
             assertWithMessage("Property '$name' id:uid is 0:0").that(property.id).isNotEqualTo(IdUid())
+
+            val schemaProperty = schemaProperties.find { it.dbName == name }!!
+            assertThat(property.type).isEqualTo(schemaProperty.dbTypeId)
+            assertThat(property.flags).isEqualTo(if (schemaProperty.propertyFlags != 0) schemaProperty.propertyFlags else null)
 
             when (name) {
                 "indexedProperty" -> {

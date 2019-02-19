@@ -9,18 +9,24 @@
       "name": "UniqueGenerated",
       "properties": [
         {
+          "flags": 5,
           "id": "1:1304105407891414803",
-          "name": "id"
+          "name": "id",
+          "type": 6
         },
         {
+          "flags": 44,
           "id": "2:1326107629162952823",
           "indexId": "1:1990008421926689894",
-          "name": "intProp"
+          "name": "intProp",
+          "type": 5
         },
         {
+          "flags": 40,
           "id": "3:3165064094626578066",
           "indexId": "2:8578641540773014588",
-          "name": "stringProp"
+          "name": "stringProp",
+          "type": 9
         }
       ],
       "relations": []
@@ -30,8 +36,8 @@
   "lastIndexId": "2:8578641540773014588",
   "lastRelationId": "0:0",
   "lastSequenceId": "0:0",
-  "modelVersion": 4,
-  "modelVersionParserMinimum": 4,
+  "modelVersion": 5,
+  "modelVersionParserMinimum": 5,
   "retiredEntityUids": [],
   "retiredIndexUids": [],
   "retiredPropertyUids": [],

@@ -9,106 +9,152 @@
       "name": "A",
       "properties": [
         {
+          "flags": 131,
           "id": "1:8303367770402050741",
-          "name": "id"
+          "name": "id",
+          "type": 6
         },
         {
+          "flags": 4,
           "id": "2:2547454299149596320",
-          "name": "simpleShortPrimitive"
+          "name": "simpleShortPrimitive",
+          "type": 3
         },
         {
+          "flags": 2,
           "id": "3:1065398153566608274",
-          "name": "simpleShort"
+          "name": "simpleShort",
+          "type": 3
         },
         {
+          "flags": 4,
           "id": "4:7019841740086346212",
-          "name": "simpleIntPrimitive"
+          "name": "simpleIntPrimitive",
+          "type": 5
         },
         {
+          "flags": 2,
           "id": "5:2149606992334875025",
-          "name": "simpleInt"
+          "name": "simpleInt",
+          "type": 5
         },
         {
+          "flags": 4,
           "id": "6:3870774530785480176",
-          "name": "simpleLongPrimitive"
+          "name": "simpleLongPrimitive",
+          "type": 6
         },
         {
+          "flags": 2,
           "id": "7:6076934711032013633",
-          "name": "simpleLong"
+          "name": "simpleLong",
+          "type": 6
         },
         {
+          "flags": 4,
           "id": "8:1005325329902505869",
-          "name": "simpleFloatPrimitive"
+          "name": "simpleFloatPrimitive",
+          "type": 7
         },
         {
+          "flags": 2,
           "id": "9:6013849627054382655",
-          "name": "simpleFloat"
+          "name": "simpleFloat",
+          "type": 7
         },
         {
+          "flags": 4,
           "id": "10:1714793024529017564",
-          "name": "simpleDoublePrimitive"
+          "name": "simpleDoublePrimitive",
+          "type": 8
         },
         {
+          "flags": 2,
           "id": "11:1265968316355477242",
-          "name": "simpleDouble"
+          "name": "simpleDouble",
+          "type": 8
         },
         {
+          "flags": 4,
           "id": "12:4472277657621006188",
-          "name": "simpleBooleanPrimitive"
+          "name": "simpleBooleanPrimitive",
+          "type": 1
         },
         {
+          "flags": 2,
           "id": "13:7658102659822256293",
-          "name": "simpleBoolean"
+          "name": "simpleBoolean",
+          "type": 1
         },
         {
+          "flags": 4,
           "id": "14:4560729911540009437",
-          "name": "simpleBytePrimitive"
+          "name": "simpleBytePrimitive",
+          "type": 2
         },
         {
+          "flags": 2,
           "id": "15:1331388668561714029",
-          "name": "simpleByte"
+          "name": "simpleByte",
+          "type": 2
         },
         {
           "id": "16:3711768428068804965",
-          "name": "simpleDate"
+          "name": "simpleDate",
+          "type": 10
         },
         {
           "id": "17:6798801512033870238",
-          "name": "simpleString"
+          "name": "simpleString",
+          "type": 9
         },
         {
           "id": "18:5561205097618864485",
-          "name": "simpleByteArray"
+          "name": "simpleByteArray",
+          "type": 23
         },
         {
+          "flags": 10,
           "id": "19:267919077724297667",
           "indexId": "1:4551328960004588074",
-          "name": "indexedProperty"
+          "name": "indexedProperty",
+          "type": 5
         },
         {
           "id": "20:8754346312277232208",
-          "name": "B"
+          "name": "B",
+          "type": 9
         },
         {
+          "flags": 2,
           "id": "21:8133069888579241668",
-          "name": "customType"
+          "name": "customType",
+          "type": 5
         },
         {
+          "flags": 2,
           "id": "22:4772590935549770830",
-          "name": "customTypes"
+          "name": "customTypes",
+          "type": 5
         },
         {
+          "flags": 4,
           "id": "23:1838261170942203646",
-          "name": "simpleCharPrimitive"
+          "name": "simpleCharPrimitive",
+          "type": 4
         },
         {
+          "flags": 2,
           "id": "24:2870459311547136401",
-          "name": "simpleChar"
+          "name": "simpleChar",
+          "type": 4
         },
         {
+          "flags": 1548,
           "id": "25:8807838229280449251",
           "indexId": "2:6174264050444102923",
-          "name": "toOneId"
+          "name": "toOneId",
+          "type": 11
         }
       ],
       "relations": [
@@ -124,8 +170,10 @@
       "name": "IdEntity",
       "properties": [
         {
+          "flags": 3,
           "id": "1:4951803424764837731",
-          "name": "id"
+          "name": "id",
+          "type": 6
         }
       ],
       "relations": []
@@ -135,8 +183,8 @@
   "lastIndexId": "2:6174264050444102923",
   "lastRelationId": "1:1588763188636253926",
   "lastSequenceId": "0:0",
-  "modelVersion": 4,
-  "modelVersionParserMinimum": 4,
+  "modelVersion": 5,
+  "modelVersionParserMinimum": 5,
   "retiredEntityUids": [],
   "retiredIndexUids": [],
   "retiredPropertyUids": [],
