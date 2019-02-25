@@ -9,10 +9,10 @@
       "name": "InheritanceEntity",
       "properties": [
         {
-          "flags": 5,
           "id": "1:2062290025845287711",
           "name": "id",
-          "type": 6
+          "type": 6,
+          "flags": 5
         },
         {
           "id": "2:5984231264292502640",
@@ -28,10 +28,10 @@
       "name": "InheritanceSubEntity",
       "properties": [
         {
-          "flags": 5,
           "id": "1:4445502405080662938",
           "name": "id",
-          "type": 6
+          "type": 6,
+          "flags": 5
         },
         {
           "id": "2:1216723564030583587",

@@ -92,7 +92,7 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
 
     init {
         val moshi = Moshi.Builder().add(ModelIdAdapter()).build()
-        modelJsonAdapter = moshi.adapter<IdSyncModel>(IdSyncModel::class.java)
+        modelJsonAdapter = IdSyncModelJsonAdapter(moshi)
         initModel()
     }
 

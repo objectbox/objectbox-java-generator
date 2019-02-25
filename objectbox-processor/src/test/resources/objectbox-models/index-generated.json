@@ -9,38 +9,38 @@
       "name": "IndexGenerated",
       "properties": [
         {
-          "flags": 5,
           "id": "1:5446539300635330200",
           "name": "id",
-          "type": 6
+          "type": 6,
+          "flags": 5
         },
         {
-          "flags": 12,
           "id": "2:5084698942674518401",
-          "indexId": "1:6484382999829587572",
           "name": "defaultProp",
-          "type": 5
+          "indexId": "1:6484382999829587572",
+          "type": 5,
+          "flags": 12
         },
         {
-          "flags": 12,
           "id": "3:7492569418772139189",
-          "indexId": "2:6991639645044933453",
           "name": "valueProp",
-          "type": 1
+          "indexId": "2:6991639645044933453",
+          "type": 1,
+          "flags": 12
         },
         {
-          "flags": 2048,
           "id": "4:104351152796407233",
-          "indexId": "3:1690874977862683848",
           "name": "hashProp",
-          "type": 9
+          "indexId": "3:1690874977862683848",
+          "type": 9,
+          "flags": 2048
         },
         {
-          "flags": 4096,
           "id": "5:386689427203097845",
-          "indexId": "4:6816316644989602931",
           "name": "hash64Prop",
-          "type": 9
+          "indexId": "4:6816316644989602931",
+          "type": 9,
+          "flags": 4096
         }
       ],
       "relations": []

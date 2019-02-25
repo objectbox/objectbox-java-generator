@@ -9,17 +9,17 @@
       "name": "MultipleEntity",
       "properties": [
         {
-          "flags": 3,
           "id": "1:994834629804652668",
           "name": "id",
-          "type": 6
+          "type": 6,
+          "flags": 3
         },
         {
-          "flags": 2048,
           "id": "2:167962951075785953",
-          "indexId": "1:473742723475921156",
           "name": "A",
-          "type": 9
+          "indexId": "1:473742723475921156",
+          "type": 9,
+          "flags": 2048
         }
       ],
       "relations": []

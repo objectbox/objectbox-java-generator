@@ -9,24 +9,24 @@
       "name": "UniqueGenerated",
       "properties": [
         {
-          "flags": 5,
           "id": "1:1304105407891414803",
           "name": "id",
-          "type": 6
+          "type": 6,
+          "flags": 5
         },
         {
-          "flags": 44,
           "id": "2:1326107629162952823",
-          "indexId": "1:1990008421926689894",
           "name": "intProp",
-          "type": 5
+          "indexId": "1:1990008421926689894",
+          "type": 5,
+          "flags": 44
         },
         {
-          "flags": 40,
           "id": "3:3165064094626578066",
-          "indexId": "2:8578641540773014588",
           "name": "stringProp",
-          "type": 9
+          "indexId": "2:8578641540773014588",
+          "type": 9,
+          "flags": 40
         }
       ],
       "relations": []

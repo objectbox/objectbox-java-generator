@@ -9,10 +9,10 @@
       "name": "IdEntity",
       "properties": [
         {
-          "flags": 3,
           "id": "1:3998626054824627444",
           "name": "id",
-          "type": 6
+          "type": 6,
+          "flags": 3
         }
       ],
       "relations": []
@@ -23,10 +23,10 @@
       "name": "ToManyStandaloneUidName",
       "properties": [
         {
-          "flags": 3,
           "id": "1:1269516875643200528",
           "name": "id",
-          "type": 6
+          "type": 6,
+          "flags": 3
         }
       ],
       "relations": [
