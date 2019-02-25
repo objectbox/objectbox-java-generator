@@ -117,7 +117,7 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
                 validateIds(idSyncModel)
                 modelRead = idSyncModel
                 lastEntityId = idSyncModel.lastEntityId
-                @Suppress("USELESS_ELVIS") // version 2 did not have this, provide non-null
+                // version 2 did not have this, provide non-null
                 lastRelationId = idSyncModel.lastRelationId ?: IdUid()
                 lastIndexId = idSyncModel.lastIndexId
                 lastSequenceId = idSyncModel.lastSequenceId
@@ -458,7 +458,6 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
     }
 
     fun findRelation(entity: Entity, name: String, uid: Long?): Relation? {
-        @Suppress("SENSELESS_COMPARISON") // When read by Moshi, not-null requirement is not enforced
         if (entity.relations == null) return null
         if (uid != null && uid != 0L && uid != -1L) {
             val filtered = entity.relations.filter { it.uid == uid }

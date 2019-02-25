@@ -253,7 +253,7 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
         }
 
         // assert standalone relation
-        val relations = modelEntity.relations
+        val relations = modelEntity.relations!!
         assertThat(relations).isNotEmpty()
         for (relation in relations) {
             when (relation.name) {

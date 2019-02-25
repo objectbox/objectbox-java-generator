@@ -32,7 +32,7 @@ data class IdSyncModel(
 
         val lastEntityId: IdUid,
         val lastIndexId: IdUid,
-        val lastRelationId: IdUid,
+        val lastRelationId: IdUid?,
         // TODO use this once we support sequences
         val lastSequenceId: IdUid,
 
@@ -89,7 +89,7 @@ data class Entity(
         val lastPropertyId: IdUid,
         val name: String,
         val properties: List<Property>,
-        val relations: List<Relation>
+        val relations: List<Relation>?
 ) : HasIdUid
 
 @JsonClass(generateAdapter = true)

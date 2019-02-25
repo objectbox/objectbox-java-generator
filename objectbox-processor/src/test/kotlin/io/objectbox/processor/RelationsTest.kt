@@ -577,7 +577,7 @@ class RelationsTest : BaseProcessorTest() {
         val model = environment.readModel()
         val modelParent = model.findEntity(parentName, null)
 
-        val relations = modelParent!!.relations
+        val relations = modelParent!!.relations!!
         assertThat(relations).isNotEmpty()
 
         for (relation in relations) {

@@ -127,7 +127,7 @@ class UidTest {
         val model = environment.readModel()
         val entity = model.findEntity("UidRelationNewEntity", null)!!
 
-        val relation = entity.relations.single { it.name == "toManyStandalone" }
+        val relation = entity.relations!!.single { it.name == "toManyStandalone" }
         val newUid = modelBefore.newUidPool.single()
         Assert.assertEquals(newUid, relation.uid)
         Assert.assertEquals(modelBefore.lastRelationId.id + 1, model.lastRelationId.id)
