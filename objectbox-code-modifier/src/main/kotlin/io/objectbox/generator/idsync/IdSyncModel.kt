@@ -38,7 +38,7 @@ data class IdSyncModel(
 
         var modelVersion: Long = MODEL_VERSION,
         /** Specify backward compatibility with older parsers.*/
-        var modelVersionParserMinimum: Long = MODEL_VERSION,
+        var modelVersionParserMinimum: Long?,
 
         /**
          * Previously allocated UIDs (e.g. via "@Uid" without value) to use to provide UIDs for new entities,
