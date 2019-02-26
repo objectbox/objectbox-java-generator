@@ -223,7 +223,7 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
         val compileConfig = env.configApiOrCompile
         val project = env.project
 
-        if (env.hasKotlinPlugin) {
+        if (env.hasKotlinPlugin || env.hasKotlinAndroidPlugin) {
             if (DEBUG) println("### Kotlin plugin detected")
             project.addDep(compileConfig, "io.objectbox:objectbox-kotlin:$runtimeVersion")
         }
