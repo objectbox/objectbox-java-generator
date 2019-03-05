@@ -24,7 +24,6 @@ import java.util.Date;
 //        var simpleDouble: Double? = null,
 //
 //        var simpleBoolean: Boolean? = null,
-//        var isBoolean: Boolean? = null,
 //
 //        var simpleByte: Byte? = null,
 //
@@ -33,6 +32,9 @@ import java.util.Date;
 //        var simpleString: String? = null,
 //
 //        var simpleByteArray: ByteArray? = null,
+//
+//        var isAnything: String? = null
+//
 //)
 
 @Entity
@@ -52,8 +54,6 @@ public final class SimpleKotlinEntity {
     @Nullable
     private Boolean simpleBoolean;
     @Nullable
-    private Boolean isBoolean;
-    @Nullable
     private Byte simpleByte;
     @Nullable
     private Date simpleDate;
@@ -61,6 +61,8 @@ public final class SimpleKotlinEntity {
     private String simpleString;
     @Nullable
     private byte[] simpleByteArray;
+    @Nullable
+    private String isAnything;
 
     public final long getId() {
         return this.id;
@@ -125,15 +127,6 @@ public final class SimpleKotlinEntity {
     }
 
     @Nullable
-    public final Boolean isBoolean() {
-        return this.isBoolean;
-    }
-
-    public final void setBoolean(@Nullable Boolean var1) {
-        this.isBoolean = var1;
-    }
-
-    @Nullable
     public final Byte getSimpleByte() {
         return this.simpleByte;
     }
@@ -169,9 +162,18 @@ public final class SimpleKotlinEntity {
         this.simpleByteArray = var1;
     }
 
+    @Nullable
+    public final String isAnything() {
+        return this.isAnything;
+    }
+
+    public final void setAnything(@Nullable String var1) {
+        this.isAnything = var1;
+    }
+
     public SimpleKotlinEntity(long arg0, @Nullable Short arg1, @Nullable Integer arg2, @Nullable Long arg3,
-            @Nullable Float arg4, @Nullable Double arg5, @Nullable Boolean arg6, @Nullable Boolean arg7,
-            @Nullable Byte arg8, @Nullable Date arg9, @Nullable String arg10, @Nullable byte[] arg11) {
+            @Nullable Float arg4, @Nullable Double arg5, @Nullable Boolean arg6, @Nullable Byte arg7,
+            @Nullable Date arg8, @Nullable String arg9, @Nullable byte[] arg10, @Nullable String arg11) {
         this.id = arg0;
         this.simpleShort = arg1;
         this.simpleInt = arg2;
@@ -179,11 +181,11 @@ public final class SimpleKotlinEntity {
         this.simpleFloat = arg4;
         this.simpleDouble = arg5;
         this.simpleBoolean = arg6;
-        this.isBoolean = arg7;
-        this.simpleByte = arg8;
-        this.simpleDate = arg9;
-        this.simpleString = arg10;
-        this.simpleByteArray = arg11;
+        this.simpleByte = arg7;
+        this.simpleDate = arg8;
+        this.simpleString = arg9;
+        this.simpleByteArray = arg10;
+        this.isAnything = arg11;
     }
 
     // methods left out as they do not affect us: copy, equals, hashCode, component1..N
