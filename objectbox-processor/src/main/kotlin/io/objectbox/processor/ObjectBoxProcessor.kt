@@ -283,7 +283,15 @@ open class ObjectBoxProcessor : AbstractProcessor() {
 
         // walk up inheritance chain
         val classSupertypes = typeUtils.directSupertypes(entity.asType()).mapNotNull { supertype ->
-            rootElements.find { typeUtils.isSameType(it.asType(), supertype) }
+            // note: directSupertypes() returns parameterized supertypes with a specific type (e.g. BaseEntity<String>)
+            // and not a generic one (e.g. BaseEntity<T>).
+            // But parameterized types in rootElements use a generic type (e.g. BaseEntity<T>).
+            // So erase any parameter types altogether (== ignore any type parameters on classes, e.g. BaseEntity)
+            val supertypeErasure = typeUtils.erasure(supertype)
+            rootElements.find {
+                val rootElementTypeErasure = typeUtils.erasure(it.asType())
+                typeUtils.isSameType(rootElementTypeErasure, supertypeErasure)
+            }
         }
         if (classSupertypes.isNotEmpty()) {
             // if any, classes are listed before interfaces: so just check first one

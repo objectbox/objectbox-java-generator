@@ -94,6 +94,55 @@ class InheritanceTest : BaseProcessorTest() {
                 .forEach { Assert.fail("Found stray property '${it.name}' in model file.") }
     }
 
+    @Test
+    fun genericBaseEntity() {
+        val nameBase = "InheritanceBaseGeneric"
+        val nameSub = "InheritanceSubGeneric"
+
+        val environment = TestEnvironment("inheritance-generic.json")
+
+        val compilation = environment.compile(nameBase, nameSub)
+        CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
+
+        // assert schema
+        val schema = environment.schema
+        assertThat(schema).isNotNull()
+        assertThat(schema.entities).hasSize(1)
+
+        val expectedNumberOfProperties = 3
+
+        // assert schema entity
+        val schemaEntity = schema.entities.find { it.className == nameSub }
+        assertThat(schemaEntity!!.properties.size).isEqualTo(expectedNumberOfProperties)
+        for (prop in schemaEntity.properties) {
+            when (prop.propertyName) {
+                "id" -> {
+                    assertThat(prop.isPrimaryKey).isTrue()
+                    assertPrimitiveType(prop, PropertyType.Long)
+                }
+                "baseString" -> assertType(prop, PropertyType.String)
+                "subString" -> assertType(prop, PropertyType.String)
+                else -> Assert.fail("Found stray field '${prop.propertyName}' in schema.")
+            }
+        }
+
+        // assert model
+        val model = environment.readModel()
+
+        val modelEntity = model.findEntity(nameSub, null)
+        assertThat(modelEntity).isNotNull()
+        val modelProperties = modelEntity!!.properties
+        assertThat(modelProperties.size).isEqualTo(expectedNumberOfProperties)
+        val modelPropertyNames = listOf(
+                "id",
+                "baseString",
+                "subString"
+        )
+        modelProperties
+                .filterNot { modelPropertyNames.contains(it.name) }
+                .forEach { Assert.fail("Found stray property '${it.name}' in model file.") }
+    }
+
     /**
      * Tests if both entities are used, properties from super @Entity class are inherited, the interface is ignored.
      */
