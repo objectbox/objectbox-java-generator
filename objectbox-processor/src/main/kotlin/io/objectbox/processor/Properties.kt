@@ -294,24 +294,32 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
 
     /**
      * Tries to find a getter method name for the given property.
-     * Prefers isPropertyName over getPropertyName for boolean.
+     * Prefers isPropertyName over getPropertyName if property starts with 'is' then uppercase letter.
+     * Prefers isPropertyName over getPropertyName if property is Boolean.
+     * Otherwise looks for getPropertyName method.
      * If none is found, returns null.
      */
     private fun getGetterMethodNameFor(property: Property): String? {
         val propertyName = property.propertyName
         val propertyNameCapitalized = propertyName.capitalize()
-        if (property.propertyType == PropertyType.Boolean) {
-            // Kotlin: 'isProperty' (not 'isproperty')
-            if (propertyName.startsWith("is") && propertyName[2].isUpperCase()) {
-                methods.find { it == propertyName }?.let {
-                    return it // getter is called 'isProperty' (setter 'setProperty')
-                }
+
+        // https://kotlinlang.org/docs/reference/java-to-kotlin-interop.html#properties
+        // Kotlin: 'isProperty' (but not 'isproperty')
+        if (propertyName.startsWith("is") && propertyName[2].isUpperCase()) {
+            methods.find { it == propertyName }?.let {
+                return it // getter is called 'isProperty' (setter 'setProperty')
             }
-            // Java Beans
+        }
+
+        // https://docs.oracle.com/javase/tutorial/javabeans/writing/properties.html
+        // Java: 'isProperty' for booleans (JavaBeans spec)
+        if (property.propertyType == PropertyType.Boolean) {
             methods.find { it == "is$propertyNameCapitalized" }?.let {
                 return it // getter is called 'isPropertyName'
             }
         }
+
+        // at last, check for regular getter
         return methods.find { it == "get$propertyNameCapitalized" }
     }
 
