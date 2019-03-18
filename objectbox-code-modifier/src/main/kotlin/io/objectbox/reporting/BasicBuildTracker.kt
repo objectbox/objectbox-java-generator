@@ -23,10 +23,6 @@ import io.objectbox.CodeModifierBuildConfig
 import okio.Buffer
 import org.greenrobot.essentials.Base64
 import org.greenrobot.essentials.hash.Murmur3F
-import java.io.File
-import java.io.FileReader
-import java.io.FileWriter
-import java.io.IOException
 import java.io.PrintWriter
 import java.io.StringWriter
 import java.net.HttpURLConnection
@@ -38,13 +34,17 @@ import java.util.*
  * Track build errors for non-Gradle modules.
  */
 // Non-final for easier mocking
-open class BasicBuildTracker(val toolName: String) {
+open class BasicBuildTracker(private val toolName: String) {
     private companion object {
+        private const val PROPERTIES_KEY_UID = "uid"
+
         const val BASE_URL = "https://api.mixpanel.com/track/?data="
         const val TOKEN = "REPLACE_WITH_TOKEN"
         const val TIMEOUT_READ = 15000
         const val TIMEOUT_CONNECT = 20000
     }
+
+    private val buildPropertiesFile = BuildPropertiesFile()
 
     var disconnect = true
 
@@ -182,39 +182,18 @@ open class BasicBuildTracker(val toolName: String) {
 
     // public for tests in another module
     fun uniqueIdentifier(): String {
-        var file: File? = null
-        val fileName = ".objectbox-build.properties"
-        try {
-            val dir = File(System.getProperty("user.home"))
-            if (dir.isDirectory) file = File(dir, fileName)
-        } catch (e: Exception) {
-            System.err.println("Could not get user dir: $e") // No stack trace
-        }
-        if (file == null) file = File(System.getProperty("java.io.tmpdir"), fileName) // Plan B
-        val keyUid = "uid"
-        var uid: String? = null
-        var properties = Properties()
-        if (file.exists()) {
-            try {
-                FileReader(file).use {
-                    properties.load(it)
-                    uid = properties.getProperty(keyUid)
-                }
-            } catch (e: IOException) {
-                e.printStackTrace()
-                properties = Properties()
-            }
-        }
-        if (uid.isNullOrBlank()) {
+        val uid: String? = buildPropertiesFile.properties.getProperty(PROPERTIES_KEY_UID)
+
+        return if (uid.isNullOrBlank()) {
             val bytes = ByteArray(8)
             SecureRandom().nextBytes(bytes)
-            uid = encodeBase64WithoutPadding(bytes)
-            properties[keyUid] = uid
-            FileWriter(file).use {
-                properties.store(it, "Properties for ObjectBox build tools")
-            }
+            val newUid = encodeBase64WithoutPadding(bytes)
+            buildPropertiesFile.properties[PROPERTIES_KEY_UID] = newUid
+            buildPropertiesFile.write()
+            newUid
+        } else {
+            uid
         }
-        return uid!!
     }
 
     protected fun encodeBase64WithoutPadding(valueBytesBigEndian: ByteArray?) =
