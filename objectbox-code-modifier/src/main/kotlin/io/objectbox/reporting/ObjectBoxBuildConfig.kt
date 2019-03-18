@@ -16,7 +16,7 @@
  * along with ObjectBox Build Tools.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.objectbox.build
+package io.objectbox.reporting
 
 class ObjectBoxBuildConfig (val projectDir: String, val flavor: String? = null) {
     companion object {

@@ -22,7 +22,7 @@ import com.android.build.gradle.AppExtension
 import com.android.build.gradle.AppPlugin
 import com.android.build.gradle.LibraryExtension
 import com.android.build.gradle.LibraryPlugin
-import io.objectbox.build.BasicBuildTracker
+import io.objectbox.reporting.BasicBuildTracker
 import org.gradle.api.plugins.ExtensionContainer
 import kotlin.reflect.KClass
 

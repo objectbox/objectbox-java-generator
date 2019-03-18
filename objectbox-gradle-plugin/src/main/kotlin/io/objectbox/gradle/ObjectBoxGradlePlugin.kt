@@ -20,7 +20,7 @@ package io.objectbox.gradle
 
 import com.squareup.moshi.JsonWriter
 import com.squareup.moshi.Moshi
-import io.objectbox.build.ObjectBoxBuildConfig
+import io.objectbox.reporting.ObjectBoxBuildConfig
 import io.objectbox.gradle.transform.ObjectBoxAndroidTransform
 import io.objectbox.gradle.transform.ObjectBoxJavaTransform
 import io.objectbox.gradle.transform.TransformException

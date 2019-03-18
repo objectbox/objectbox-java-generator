@@ -18,7 +18,7 @@
 
 package io.objectbox.processor
 
-import io.objectbox.build.ObjectBoxBuildConfig
+import io.objectbox.reporting.ObjectBoxBuildConfig
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException

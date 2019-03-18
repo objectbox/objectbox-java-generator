@@ -18,7 +18,7 @@
 
 package io.objectbox.processor
 
-import io.objectbox.build.BasicBuildTracker
+import io.objectbox.reporting.BasicBuildTracker
 import io.objectbox.generator.model.HasParsedElement
 import javax.annotation.processing.Messager
 import javax.lang.model.element.Element

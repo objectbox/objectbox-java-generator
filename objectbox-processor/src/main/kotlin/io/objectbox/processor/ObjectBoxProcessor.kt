@@ -22,7 +22,7 @@ import io.objectbox.annotation.BaseEntity
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.NameInDb
 import io.objectbox.annotation.Uid
-import io.objectbox.build.BasicBuildTracker
+import io.objectbox.reporting.BasicBuildTracker
 import io.objectbox.generator.BoxGenerator
 import io.objectbox.generator.GeneratorJob
 import io.objectbox.generator.GeneratorOutput

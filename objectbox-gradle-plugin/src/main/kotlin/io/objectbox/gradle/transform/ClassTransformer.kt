@@ -19,7 +19,7 @@
 package io.objectbox.gradle.transform
 
 import io.objectbox.BoxStoreBuilder
-import io.objectbox.build.BasicBuildTracker
+import io.objectbox.reporting.BasicBuildTracker
 import javassist.ClassPool
 import javassist.CtClass
 import javassist.CtConstructor
