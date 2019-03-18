@@ -37,7 +37,7 @@ open class GradleBuildTracker(toolName: String) : BasicBuildTracker(toolName) {
     }
 
     fun trackBuild(env: ProjectEnv) {
-        sendEventAsync("Build", buildEventProperties(env))
+        if (shouldSendBuildEvent()) sendEventAsync("Build", buildEventProperties(env))
     }
 
     // Use internal once fixed (Kotlin 1.1.4?)

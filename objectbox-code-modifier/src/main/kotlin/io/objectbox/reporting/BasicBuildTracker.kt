@@ -37,6 +37,9 @@ import java.util.*
 open class BasicBuildTracker(private val toolName: String) {
     private companion object {
         private const val PROPERTIES_KEY_UID = "uid"
+        private const val PROPERTIES_KEY_LAST_DAY_BUILD_SENT = "lastBuildEvent"
+
+        private const val HOUR_IN_MILLIS = 3600 * 1000
 
         const val BASE_URL = "https://api.mixpanel.com/track/?data="
         const val TOKEN = "REPLACE_WITH_TOKEN"
@@ -47,6 +50,23 @@ open class BasicBuildTracker(private val toolName: String) {
     private val buildPropertiesFile = BuildPropertiesFile()
 
     var disconnect = true
+
+    /**
+     * Returns true if the time stamp of the last sent build event in the build properties file does not exist or is
+     * older than 24 hours. If so updates the time stamp to the current time.
+     */
+    fun shouldSendBuildEvent(): Boolean {
+        val property: String? = buildPropertiesFile.properties.getProperty(PROPERTIES_KEY_LAST_DAY_BUILD_SENT)
+        val timestamp = property?.toLongOrNull()
+        return if (timestamp == null || timestamp < System.currentTimeMillis() - 24 * HOUR_IN_MILLIS) {
+            // set last sent to current time
+            buildPropertiesFile.properties[PROPERTIES_KEY_LAST_DAY_BUILD_SENT] = System.currentTimeMillis().toString()
+            buildPropertiesFile.write()
+            true // allow sending
+        } else {
+            false // prevent sending
+        }
+    }
 
     fun trackError(message: String?, throwable: Throwable? = null) {
         sendEventAsync("Error", errorProperties(message, throwable))
