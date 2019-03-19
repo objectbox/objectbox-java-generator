@@ -12,7 +12,11 @@ import java.util.*
  * Reads [Properties] from and stores them in a file in the user directory
  * or alternatively the temporary files directory.
  */
-class BuildPropertiesFile {
+class BuildPropertiesFile(fileCreateListener: FileCreateListener) {
+
+    interface FileCreateListener {
+        fun onFailedToCreateFile(message: String, e: Exception)
+    }
 
     private val file = try {
         val dir = File(System.getProperty("user.home"))
@@ -22,30 +26,38 @@ class BuildPropertiesFile {
             throw UnsupportedOperationException("user.home is not a directory")
         }
     } catch (e: Exception) {
-        System.err.println("Could not get user dir: $e") // No stack trace
-        File(System.getProperty("java.io.tmpdir"), FILE_NAME) // Plan B
+        val message = "Could not get user dir: $e"
+        System.err.println(message) // No stack trace
+        fileCreateListener.onFailedToCreateFile(message, e)
+        null
     }
+
+    val hasNoFile = file == null
 
     val properties: Properties
 
     init {
         var propertiesTemp = Properties()
-        if (file.exists()) {
-            try {
-                FileReader(file).use {
-                    propertiesTemp.load(it)
+        file?.let { file ->
+            if (file.exists()) {
+                try {
+                    FileReader(file).use {
+                        propertiesTemp.load(it)
+                    }
+                } catch (e: IOException) {
+                    e.printStackTrace()
+                    propertiesTemp = Properties()
                 }
-            } catch (e: IOException) {
-                e.printStackTrace()
-                propertiesTemp = Properties()
             }
         }
         properties = propertiesTemp
     }
 
     fun write() {
-        FileWriter(file).use {
-            properties.store(it, "Properties for ObjectBox build tools")
+        file?.let { file ->
+            FileWriter(file).use {
+                properties.store(it, "Properties for ObjectBox build tools")
+            }
         }
     }
 

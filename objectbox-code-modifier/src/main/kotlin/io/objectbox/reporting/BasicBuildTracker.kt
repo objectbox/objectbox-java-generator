@@ -48,7 +48,11 @@ open class BasicBuildTracker(private val toolName: String) {
         const val TIMEOUT_CONNECT = 20000
     }
 
-    private val buildPropertiesFile = BuildPropertiesFile()
+    private val buildPropertiesFile = BuildPropertiesFile(object : BuildPropertiesFile.FileCreateListener {
+        override fun onFailedToCreateFile(message: String, e: Exception) {
+            trackNoBuildPropertiesFile(message, e)
+        }
+    })
 
     var disconnect = true
 
@@ -106,6 +110,10 @@ open class BasicBuildTracker(private val toolName: String) {
         sendEventAsync("Fatal", errorProperties(message, throwable))
     }
 
+    fun trackNoBuildPropertiesFile(message: String?, throwable: Throwable? = null) {
+        sendEventAsync("NoBuildProperties", errorProperties(message, throwable), false)
+    }
+
     fun trackStats(completed: Boolean, daoCompat: Boolean, entityCount: Int, propertyCount: Int, toOneCount: Int, toManyCount: Int) {
         val event = StringBuilder()
         event.key("DC").value(daoCompat.toString()).comma()
@@ -117,12 +125,15 @@ open class BasicBuildTracker(private val toolName: String) {
         sendEventAsync("Stats", event.toString())
     }
 
-    fun sendEventAsync(eventName: String, eventProperties: String) {
-        Thread(Runnable { sendEvent(eventName, eventProperties) }).start()
+    fun sendEventAsync(eventName: String, eventProperties: String, sendUniqueId: Boolean = true) {
+        if (sendUniqueId && buildPropertiesFile.hasNoFile) {
+            return // can not save state (e.g. unique ID) so do not send events
+        }
+        Thread(Runnable { sendEvent(eventName, eventProperties, sendUniqueId) }).start()
     }
 
-    private fun sendEvent(eventName: String, eventProperties: String) {
-        val event = eventData(eventName, eventProperties)
+    private fun sendEvent(eventName: String, eventProperties: String, sendUniqueId: Boolean) {
+        val event = eventData(eventName, eventProperties, sendUniqueId)
 
         // https://mixpanel.com/help/reference/http#base64
         val eventEncoded = Base64.encodeBytes(event.toByteArray())
@@ -139,7 +150,7 @@ open class BasicBuildTracker(private val toolName: String) {
     }
 
     // public for tests in another module
-    fun eventData(eventName: String, properties: String): String {
+    fun eventData(eventName: String, properties: String, addUniqueId: Boolean): String {
         // https://mixpanel.com/help/reference/http#tracking-events
         val event = StringBuilder()
         event.append("{")
@@ -147,7 +158,9 @@ open class BasicBuildTracker(private val toolName: String) {
         event.key("properties").append(" {")
 
         event.key("token").value(TOKEN).comma()
-        event.key("distinct_id").value(uniqueIdentifier()).comma()
+        if (addUniqueId) {
+            event.key("distinct_id").value(uniqueIdentifier()).comma()
+        }
         event.key("ip").append("true").comma()
 //        event.key("ip").value("1").comma()
         event.key("Tool").value(toolName).comma()

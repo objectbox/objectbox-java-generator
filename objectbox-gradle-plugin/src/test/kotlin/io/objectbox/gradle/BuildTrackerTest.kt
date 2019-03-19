@@ -62,7 +62,7 @@ class BuildTrackerTest {
         val aid = "my.test.app"
         doReturn(aid).`when`(analytics).androidAppId(env)
 
-        val eventData = analytics.eventData("Build", analytics.buildEventProperties(env))
+        val eventData = analytics.eventData("Build", analytics.buildEventProperties(env), true)
         val json = parseJsonAndAssertBasics(eventData, "Build")
         @Suppress("UNCHECKED_CAST")
         val properties = json["properties"] as Map<String, Any>
@@ -79,7 +79,7 @@ class BuildTrackerTest {
     fun testErrorEventData() {
         val analytics = spy(GradleBuildTracker(toolName))
         val cause = RuntimeException("Banana")
-        val eventData = analytics.eventData("Error", analytics.errorProperties("Boo", Exception("Bad", cause)))
+        val eventData = analytics.eventData("Error", analytics.errorProperties("Boo", Exception("Bad", cause)), true)
 
         val json = parseJsonAndAssertBasics(eventData, "Error")
         @Suppress("UNCHECKED_CAST")
