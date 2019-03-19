@@ -51,7 +51,7 @@ public class SimpleBoxGeneratorTest {
         File entityInfoFile = fileDeleteIfExists(outputDir, baseName + "_.java");
 
         assignIdsUids(schema);
-        new BoxGenerator().generateAll(schema, outputDir.getPath());
+        new BoxGenerator().generateAll(jobForFileForceExists(schema, outputDir));
 
         // Assert Cursor file
         assertTrue(cursorFile.toString(), cursorFile.exists());
@@ -77,6 +77,10 @@ public class SimpleBoxGeneratorTest {
         file.delete();
         assertFalse(file.exists());
         return file;
+    }
+
+    private GeneratorJob jobForFileForceExists(Schema schema, File outDir) throws Exception {
+        return new GeneratorJob(schema, GeneratorOutput.create(outDir.getPath()));
     }
 
     private void assignIdsUids(Schema schema) {
@@ -106,7 +110,7 @@ public class SimpleBoxGeneratorTest {
         File cursorFile = fileDeleteIfExists(outputDir, fileNameCursor);
 
         assignIdsUids(schema);
-        new BoxGenerator().generateAll(schema, outputDir.getPath());
+        new BoxGenerator().generateAll(jobForFileForceExists(schema, outputDir));
 
         assertTrue(cursorFile.toString(), cursorFile.exists());
         final String cursorContent = FileUtils.readUtf8(cursorFile);
@@ -132,7 +136,7 @@ public class SimpleBoxGeneratorTest {
         File cursorFile = fileDeleteIfExists(outputDir, fileNameCursor);
 
         assignIdsUids(schema);
-        new BoxGenerator().generateAll(schema, outputDir.getPath());
+        new BoxGenerator().generateAll(jobForFileForceExists(schema, outputDir));
 
         assertTrue(cursorFile.toString(), cursorFile.exists());
         final String cursorContent = FileUtils.readUtf8(cursorFile);
@@ -206,7 +210,7 @@ public class SimpleBoxGeneratorTest {
         assertFalse(myObjectBoxFile.exists());
 
         assignIdsUids(schema);
-        new BoxGenerator().generateAll(schema, outputDir.getPath());
+        new BoxGenerator().generateAll(jobForFileForceExists(schema, outputDir));
 
         // Assert Cursor file
         assertTrue(cursorFile.toString(), cursorFile.exists());

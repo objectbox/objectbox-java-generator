@@ -114,18 +114,6 @@ public class BoxGenerator {
                 + " END.*?\n", flags);
     }
 
-    /** Generates all classes and other artifacts for the schema into the given directory. */
-    public void generateAll(Schema schema, String outDir) throws Exception {
-        GeneratorJob job = new GeneratorJob(schema, GeneratorOutput.create(outDir));
-        generateAll(job);
-    }
-
-    /** Generates all classes and other artifacts for the schema using the given Filer (annotation processing). */
-    public void generateAll(Schema schema, Filer filer) throws Exception {
-        GeneratorJob job = new GeneratorJob(schema, GeneratorOutput.create(filer));
-        generateAll(job);
-    }
-
     /** Generates all classes and other artifacts for the given job. */
     public void generateAll(GeneratorJob job) throws Exception {
         long start = System.currentTimeMillis();
