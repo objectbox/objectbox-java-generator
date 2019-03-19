@@ -26,6 +26,8 @@ import java.io.Writer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -37,6 +39,8 @@ import freemarker.template.TemplateNotFoundException;
 import io.objectbox.generator.model.Entity;
 import io.objectbox.generator.model.InternalAccess;
 import io.objectbox.generator.model.Schema;
+import io.objectbox.generator.model.ToManyBase;
+import io.objectbox.generator.model.ToOne;
 
 /**
  * Once you have your model created, use this class to generate box cursors as required by ObjectBox.
@@ -140,13 +144,12 @@ public class BoxGenerator {
 
         for (Entity entity : entities) {
             Map<String, Object> additionalData = createAdditionalDataForCursor(entity);
-            generate(templateCursor, job.getOutput(), entity.getJavaPackageDao(), entity.getClassNameDao(), ".java",
-                    schema, entity, additionalData);
+            generate(templateCursor, job, entity.getJavaPackageDao(), entity.getClassNameDao(), entity, additionalData);
             if (!entity.isProtobuf() && !entity.isSkipGeneration()) {
                 generate(templateEntity, job, entity.getJavaPackage(), entity.getClassName(), entity);
             }
             generate(templateEntityInfo, job, entity.getJavaPackageDao(), entity.getClassName() + "_",
-                    entity);
+                    entity, createExtrasForEntityInfo(entity));
             GeneratorOutput outputTest = job.getOutputTest();
             if (outputTest != null && !entity.isSkipGenerationTest()) {
                 String javaPackageTest = entity.getJavaPackageTest();
@@ -164,8 +167,8 @@ public class BoxGenerator {
             generate(templateFlatbuffersSchema, job.getOutputFlatbuffersSchema(), "", "flatbuffers", ".fbs",
                     job.getSchema(), null, null);
         }
-        generate(templateMyObjectBox, job, schema.getDefaultJavaPackageDao(), "My" + schema.getPrefix() + "ObjectBox",
-                null);
+        generate(templateMyObjectBox, job, schema.getDefaultJavaPackageDao(),
+                "My" + schema.getPrefix() + "ObjectBox", null, createExtrasForMyObjectBox(schema));
 
         if (job.isDaoCompat()) {
             // generate DAO classes
@@ -183,16 +186,148 @@ public class BoxGenerator {
         System.out.println("Processed " + entities.size() + " entities in " + time + "ms");
     }
 
+    /**
+     * Builds a sorted set of imports, returns it mapped as 'imports'.
+     */
+    private Map<String, Object> createExtrasForMyObjectBox(Schema schema) {
+        Set<String> imports = new TreeSet<>(); // instead of HashSet + then sorting that
+
+        imports.add("io.objectbox.BoxStore");
+        imports.add("io.objectbox.BoxStoreBuilder");
+        imports.add("io.objectbox.ModelBuilder");
+        imports.add("io.objectbox.ModelBuilder.EntityBuilder");
+        imports.add("io.objectbox.model.PropertyFlags");
+        imports.add("io.objectbox.model.PropertyType");
+
+        for (Entity entity : schema.getEntities()) {
+            String javaPackage = entity.getJavaPackage();
+            if (!javaPackage.equals(schema.getDefaultJavaPackage())) {
+                imports.add(String.format("%s.%s", javaPackage, entity.getClassName()));
+            }
+            String javaPackageDao = entity.getJavaPackageDao();
+            if (!javaPackageDao.equals(schema.getDefaultJavaPackageDao())) {
+                imports.add(String.format("%s.%s", javaPackageDao, entity.getClassNameDao()));
+                imports.add(String.format("%s.%s_", javaPackageDao, entity.getClassName()));
+            }
+        }
+
+        Map<String, Object> extras = new HashMap<>();
+        extras.put("imports", imports);
+        return extras;
+    }
+
+    /**
+     * Builds a sorted set of imports, returns it mapped as 'imports'.
+     * And builds collect method code, returns it mapped as 'propertyCollector'.
+     */
     private Map<String, Object> createAdditionalDataForCursor(Entity entity) {
+        Set<String> imports = new TreeSet<>(); // instead of HashSet + then sorting that
+
+        /*
+        Note: Some ObjectBox classes which names are likely to conflict
+        with user-defined entity classes are imported as fully qualified
+        imports instead. See cursor.ftl.
+        */
+
+        imports.add("io.objectbox.BoxStore");
+        imports.add("io.objectbox.Cursor");
+        imports.add("io.objectbox.annotation.apihint.Internal");
+        imports.add("io.objectbox.internal.CursorFactory");
+
+        if (isNotEmpty(entity.getIncomingToManyRelations()) || isNotEmpty(entity.getToManyRelations())) {
+            imports.add("java.util.List");
+        }
+        if (isNotEmpty(entity.getToManyRelations())) {
+            imports.add("io.objectbox.relation.ToMany");
+        }
+        if (isNotEmpty(entity.getToOneRelations())) {
+            imports.add("io.objectbox.relation.ToOne");
+        }
+
+        String javaPackage = entity.getJavaPackage();
+        if (isNotEmpty(javaPackage) && !javaPackage.equals(entity.getJavaPackageDao())) {
+            imports.add(String.format("%s.%s", javaPackage, entity.getClassName()));
+        }
+        if (entity.isProtobuf() && isNotEmpty(javaPackage)) {
+            imports.add(String.format("%s.%s.Builder", javaPackage, entity.getClassName()));
+        }
+
+        imports.addAll(entity.getAdditionalImportsDao());
+
         final HashMap<String, Object> map = new HashMap<>();
+        map.put("imports", imports);
         map.put("propertyCollector", new PropertyCollector(entity).createPropertyCollector());
         return map;
     }
 
+    /**
+     * Builds a sorted set of imports, returns it mapped as 'imports'.
+     */
+    private Map<String, Object> createExtrasForEntityInfo(Entity entity) {
+        Set<String> imports = new TreeSet<>(); // instead of HashSet + then sorting that
+
+        /*
+        Note: Some ObjectBox classes which names are likely to conflict
+        with user-defined entity classes are imported as fully qualified
+        imports instead. See entity-info.ftl.
+        */
+
+        // note: need to check package, could be unnamed package
+        String javaPackageDao = entity.getJavaPackageDao();
+        if (isNotEmpty(javaPackageDao)) {
+            imports.add(String.format("%s.%s.Factory", javaPackageDao, entity.getClassNameDao()));
+        }
+
+        imports.add("io.objectbox.EntityInfo");
+        imports.add("io.objectbox.annotation.apihint.Internal");
+        imports.add("io.objectbox.internal.CursorFactory");
+        imports.add("io.objectbox.internal.IdGetter");
+
+        if (entity.hasRelations()) {
+            imports.add("io.objectbox.relation.RelationInfo");
+            imports.add("io.objectbox.relation.ToOne");
+            imports.add("io.objectbox.internal.ToOneGetter");
+            List<ToManyBase> toManyRelations = entity.getToManyRelations();
+            if (isNotEmpty(toManyRelations)) {
+                imports.add("io.objectbox.internal.ToManyGetter");
+                imports.add("java.util.List");
+            }
+            for (ToOne toOne : entity.getToOneRelations()) {
+                addImportIfPackageDiffers(imports, entity, toOne.getTargetEntity());
+            }
+            for (ToManyBase toMany : toManyRelations) {
+                addImportIfPackageDiffers(imports, entity, toMany.getTargetEntity());
+            }
+        }
+
+        // for custom types only
+        imports.addAll(entity.getAdditionalImportsDao());
+
+        Map<String, Object> extras = new HashMap<>();
+        extras.put("imports", imports);
+        return extras;
+    }
+
+    /**
+     * Adds _-class import if target entity has a package name set
+     * and it is not equal to that of the entity.
+     */
+    private void addImportIfPackageDiffers(Set<String> imports, Entity entity, Entity targetEntity) {
+        String targetPackageDao = targetEntity.getJavaPackageDao();
+        if (isNotEmpty(targetPackageDao) && !targetPackageDao.equals(entity.getJavaPackageDao())) {
+            imports.add(String.format("%s.%s_", targetPackageDao, targetEntity.getClassName()));
+        }
+    }
 
     private void generate(Template template, GeneratorJob job, String javaPackage, String javaClassName, Entity entity)
             throws Exception {
         generate(template, job.getOutput(), javaPackage, javaClassName, ".java", job.getSchema(), entity, null);
+    }
+
+    private void generate(Template template, GeneratorJob job, String javaPackage, String javaClassName, Entity entity,
+            Map<String, Object> extrasForTemplate) throws Exception {
+        generate(template, job.getOutput(), javaPackage, javaClassName, ".java", job.getSchema(), entity,
+                extrasForTemplate);
     }
 
     private void generate(Template template, GeneratorOutput output,
@@ -251,6 +386,14 @@ public class BoxGenerator {
                 e.printStackTrace();
             }
         }
+    }
+
+    private boolean isNotEmpty(String value) {
+        return value != null && value.length() > 0;
+    }
+
+    private boolean isNotEmpty(List list) {
+        return list != null && !list.isEmpty();
     }
 
 }
