@@ -1,17 +1,14 @@
 package io.objectbox.processor.test;
 
-import java.util.List;
-
 import io.objectbox.BoxStore;
 import io.objectbox.Cursor;
 import io.objectbox.annotation.apihint.Internal;
 import io.objectbox.internal.CursorFactory;
-import io.objectbox.relation.ToMany;
-import io.objectbox.relation.ToOne;
-
 import io.objectbox.processor.test.SimpleEntity.SimpleEnum;
 import io.objectbox.processor.test.SimpleEntity.SimpleEnumConverter;
 import io.objectbox.processor.test.SimpleEntity.SimpleEnumListConverter;
+import io.objectbox.relation.ToMany;
+import io.objectbox.relation.ToOne;
 import java.util.List;
 
 //////

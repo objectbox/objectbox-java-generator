@@ -187,8 +187,46 @@ public class BoxGenerator {
         System.out.println("Processed " + entities.size() + " entities in " + time + "ms");
     }
 
+    /**
+     * Builds a sorted set of imports, returns it mapped as 'imports'.
+     * And builds collect method code, returns it mapped as 'propertyCollector'.
+     */
     private Map<String, Object> createAdditionalDataForCursor(Entity entity) {
+        Set<String> imports = new TreeSet<>(); // instead of HashSet + then sorting that
+
+        /*
+        Note: Some ObjectBox classes which names are likely to conflict
+        with user-defined entity classes are imported as fully qualified
+        imports instead. See cursor.ftl.
+        */
+
+        imports.add("io.objectbox.BoxStore");
+        imports.add("io.objectbox.Cursor");
+        imports.add("io.objectbox.annotation.apihint.Internal");
+        imports.add("io.objectbox.internal.CursorFactory");
+
+        if (isNotEmpty(entity.getIncomingToManyRelations()) || isNotEmpty(entity.getToManyRelations())) {
+            imports.add("java.util.List");
+        }
+        if (isNotEmpty(entity.getToManyRelations())) {
+            imports.add("io.objectbox.relation.ToMany");
+        }
+        if (isNotEmpty(entity.getToOneRelations())) {
+            imports.add("io.objectbox.relation.ToOne");
+        }
+
+        String javaPackage = entity.getJavaPackage();
+        if (isNotEmpty(javaPackage) && !javaPackage.equals(entity.getJavaPackageDao())) {
+            imports.add(String.format("%s.%s", javaPackage, entity.getClassName()));
+        }
+        if (entity.isProtobuf() && isNotEmpty(javaPackage)) {
+            imports.add(String.format("%s.%s.Builder", javaPackage, entity.getClassName()));
+        }
+
+        imports.addAll(entity.getAdditionalImportsDao());
+
         final HashMap<String, Object> map = new HashMap<>();
+        map.put("imports", imports);
         map.put("propertyCollector", new PropertyCollector(entity).createPropertyCollector());
         return map;
     }
@@ -207,7 +245,7 @@ public class BoxGenerator {
 
         // note: need to check package, could be unnamed package
         String javaPackageDao = entity.getJavaPackageDao();
-        if (javaPackageDao != null && javaPackageDao.length() > 0) {
+        if (isNotEmpty(javaPackageDao)) {
             imports.add(String.format("%s.%s.Factory", javaPackageDao, entity.getClassNameDao()));
         }
 
@@ -221,7 +259,7 @@ public class BoxGenerator {
             imports.add("io.objectbox.relation.ToOne");
             imports.add("io.objectbox.internal.ToOneGetter");
             List<ToManyBase> toManyRelations = entity.getToManyRelations();
-            if (!toManyRelations.isEmpty()) {
+            if (isNotEmpty(toManyRelations)) {
                 imports.add("io.objectbox.internal.ToManyGetter");
                 imports.add("java.util.List");
             }
@@ -247,8 +285,7 @@ public class BoxGenerator {
      */
     private void addImportIfPackageDiffers(Set<String> imports, Entity entity, Entity targetEntity) {
         String targetPackageDao = targetEntity.getJavaPackageDao();
-        if (targetPackageDao != null && targetPackageDao.length() > 0
-                && !targetPackageDao.equals(entity.getJavaPackageDao())) {
+        if (isNotEmpty(targetPackageDao) && !targetPackageDao.equals(entity.getJavaPackageDao())) {
             imports.add(String.format("%s.%s_", targetPackageDao, targetEntity.getClassName()));
         }
     }
@@ -314,6 +351,14 @@ public class BoxGenerator {
                 e.printStackTrace();
             }
         }
+    }
+
+    private boolean isNotEmpty(String value) {
+        return value != null && value.length() > 0;
+    }
+
+    private boolean isNotEmpty(List list) {
+        return list != null && !list.isEmpty();
     }
 
 }
