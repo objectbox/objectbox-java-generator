@@ -51,6 +51,7 @@ open class GradleBuildTracker(toolName: String) : BasicBuildTracker(toolName) {
         }
         event.key("BuildOS").valueEscaped(System.getProperty("os.name")).comma()
         event.key("BuildOSVersion").valueEscaped(System.getProperty("os.version")).comma()
+        event.key("BuildCount").value(getAndResetBuildCount().toString()).comma()
 
         val ci = checkCI()
         if (ci != null) {

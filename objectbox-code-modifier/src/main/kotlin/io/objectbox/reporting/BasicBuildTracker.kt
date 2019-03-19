@@ -38,6 +38,7 @@ open class BasicBuildTracker(private val toolName: String) {
     private companion object {
         private const val PROPERTIES_KEY_UID = "uid"
         private const val PROPERTIES_KEY_LAST_DAY_BUILD_SENT = "lastBuildEvent"
+        private const val PROPERTIES_KEY_BUILD_COUNT = "buildCount"
 
         private const val HOUR_IN_MILLIS = 3600 * 1000
 
@@ -54,18 +55,49 @@ open class BasicBuildTracker(private val toolName: String) {
     /**
      * Returns true if the time stamp of the last sent build event in the build properties file does not exist or is
      * older than 24 hours. If so updates the time stamp to the current time.
+     *
+     * Always increments the build counter. The counter is not reset here, that happens in [getAndResetBuildCount].
      */
     fun shouldSendBuildEvent(): Boolean {
-        val property: String? = buildPropertiesFile.properties.getProperty(PROPERTIES_KEY_LAST_DAY_BUILD_SENT)
-        val timestamp = property?.toLongOrNull()
-        return if (timestamp == null || timestamp < System.currentTimeMillis() - 24 * HOUR_IN_MILLIS) {
+        // count builds
+        val countProperty: String? = buildPropertiesFile.properties.getProperty(PROPERTIES_KEY_BUILD_COUNT)
+        val buildCount = countProperty?.toIntOrNull()
+        val newBuildCount = if (buildCount == null || buildCount < 0) {
+            1
+        } else {
+            buildCount + 1
+        }
+        buildPropertiesFile.properties[PROPERTIES_KEY_BUILD_COUNT] = newBuildCount.toString()
+
+        // check if it's time to send a build event
+        val timeProperty: String? = buildPropertiesFile.properties.getProperty(PROPERTIES_KEY_LAST_DAY_BUILD_SENT)
+        val timestamp = timeProperty?.toLongOrNull()
+        val shouldSend = if (timestamp == null || timestamp < System.currentTimeMillis() - 24 * HOUR_IN_MILLIS) {
             // set last sent to current time
             buildPropertiesFile.properties[PROPERTIES_KEY_LAST_DAY_BUILD_SENT] = System.currentTimeMillis().toString()
-            buildPropertiesFile.write()
             true // allow sending
         } else {
             false // prevent sending
         }
+
+        // write changes to properties
+        buildPropertiesFile.write()
+
+        return shouldSend
+    }
+
+    /**
+     * Gets the number of builds that were counted so far, or 1 if none were counted. Resets the counter to 0.
+     *
+     * Builds are counted when calling [shouldSendBuildEvent].
+     */
+    fun getAndResetBuildCount(): Int {
+        val countProperty: String? = buildPropertiesFile.properties.getProperty(PROPERTIES_KEY_BUILD_COUNT)
+
+        buildPropertiesFile.properties[PROPERTIES_KEY_BUILD_COUNT] = "0"
+        buildPropertiesFile.write()
+
+        return countProperty?.toIntOrNull() ?: 1
     }
 
     fun trackError(message: String?, throwable: Throwable? = null) {
