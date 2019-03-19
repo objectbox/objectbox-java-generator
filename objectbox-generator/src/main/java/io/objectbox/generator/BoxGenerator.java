@@ -26,6 +26,8 @@ import java.io.Writer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -37,6 +39,8 @@ import freemarker.template.TemplateNotFoundException;
 import io.objectbox.generator.model.Entity;
 import io.objectbox.generator.model.InternalAccess;
 import io.objectbox.generator.model.Schema;
+import io.objectbox.generator.model.ToManyBase;
+import io.objectbox.generator.model.ToOne;
 
 /**
  * Once you have your model created, use this class to generate box cursors as required by ObjectBox.
@@ -145,8 +149,8 @@ public class BoxGenerator {
             if (!entity.isProtobuf() && !entity.isSkipGeneration()) {
                 generate(templateEntity, job, entity.getJavaPackage(), entity.getClassName(), entity);
             }
-            generate(templateEntityInfo, job, entity.getJavaPackageDao(), entity.getClassName() + "_",
-                    entity);
+            generate(templateEntityInfo, job.getOutput(), entity.getJavaPackageDao(), entity.getClassName() + "_",
+                    ".java", job.getSchema(), entity, createExtrasForEntityInfo(entity));
             GeneratorOutput outputTest = job.getOutputTest();
             if (outputTest != null && !entity.isSkipGenerationTest()) {
                 String javaPackageTest = entity.getJavaPackageTest();
@@ -189,6 +193,65 @@ public class BoxGenerator {
         return map;
     }
 
+    /**
+     * Builds a sorted set of imports, returns it mapped as 'imports'.
+     */
+    private Map<String, Object> createExtrasForEntityInfo(Entity entity) {
+        Set<String> imports = new TreeSet<>(); // instead of HashSet + then sorting that
+
+        /*
+        Note: Some ObjectBox classes which names are likely to conflict
+        with user-defined entity classes are imported as fully qualified
+        imports instead. See entity-info.ftl.
+        */
+
+        // note: need to check package, could be unnamed package
+        String javaPackageDao = entity.getJavaPackageDao();
+        if (javaPackageDao != null && javaPackageDao.length() > 0) {
+            imports.add(String.format("%s.%s.Factory", javaPackageDao, entity.getClassNameDao()));
+        }
+
+        imports.add("io.objectbox.EntityInfo");
+        imports.add("io.objectbox.annotation.apihint.Internal");
+        imports.add("io.objectbox.internal.CursorFactory");
+        imports.add("io.objectbox.internal.IdGetter");
+
+        if (entity.hasRelations()) {
+            imports.add("io.objectbox.relation.RelationInfo");
+            imports.add("io.objectbox.relation.ToOne");
+            imports.add("io.objectbox.internal.ToOneGetter");
+            List<ToManyBase> toManyRelations = entity.getToManyRelations();
+            if (!toManyRelations.isEmpty()) {
+                imports.add("io.objectbox.internal.ToManyGetter");
+                imports.add("java.util.List");
+            }
+            for (ToOne toOne : entity.getToOneRelations()) {
+                addImportIfPackageDiffers(imports, entity, toOne.getTargetEntity());
+            }
+            for (ToManyBase toMany : toManyRelations) {
+                addImportIfPackageDiffers(imports, entity, toMany.getTargetEntity());
+            }
+        }
+
+        // for custom types only
+        imports.addAll(entity.getAdditionalImportsDao());
+
+        Map<String, Object> extras = new HashMap<>();
+        extras.put("imports", imports);
+        return extras;
+    }
+
+    /**
+     * Adds _-class import if target entity has a package name set
+     * and it is not equal to that of the entity.
+     */
+    private void addImportIfPackageDiffers(Set<String> imports, Entity entity, Entity targetEntity) {
+        String targetPackageDao = targetEntity.getJavaPackageDao();
+        if (targetPackageDao != null && targetPackageDao.length() > 0
+                && !targetPackageDao.equals(entity.getJavaPackageDao())) {
+            imports.add(String.format("%s.%s_", targetPackageDao, targetEntity.getClassName()));
+        }
+    }
 
     private void generate(Template template, GeneratorJob job, String javaPackage, String javaClassName, Entity entity)
             throws Exception {
