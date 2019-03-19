@@ -143,8 +143,8 @@ public class BoxGenerator {
         System.out.println("Processing schema version " + schema.getVersion() + "...");
 
         for (Entity entity : entities) {
-            Map<String, Object> additionalData = createAdditionalDataForCursor(entity);
-            generate(templateCursor, job, entity.getJavaPackageDao(), entity.getClassNameDao(), entity, additionalData);
+            Map<String, Object> extras = createExtrasForCursor(entity);
+            generate(templateCursor, job, entity.getJavaPackageDao(), entity.getClassNameDao(), entity, extras);
             if (!entity.isProtobuf() && !entity.isSkipGeneration()) {
                 generate(templateEntity, job, entity.getJavaPackage(), entity.getClassName(), entity);
             }
@@ -220,7 +220,7 @@ public class BoxGenerator {
      * Builds a sorted set of imports, returns it mapped as 'imports'.
      * And builds collect method code, returns it mapped as 'propertyCollector'.
      */
-    private Map<String, Object> createAdditionalDataForCursor(Entity entity) {
+    private Map<String, Object> createExtrasForCursor(Entity entity) {
         Set<String> imports = new TreeSet<>(); // instead of HashSet + then sorting that
 
         /*
@@ -332,13 +332,13 @@ public class BoxGenerator {
 
     private void generate(Template template, GeneratorOutput output,
             String javaPackage, String fileName, String fileExtension,
-            Schema schema, Entity entity, Map<String, Object> additionalObjectsForTemplate)
+            Schema schema, Entity entity, Map<String, Object> extrasForTemplate)
             throws Exception {
         Map<String, Object> root = new HashMap<>();
         root.put("schema", schema);
         root.put("entity", entity);
-        if (additionalObjectsForTemplate != null) {
-            root.putAll(additionalObjectsForTemplate);
+        if (extrasForTemplate != null) {
+            root.putAll(extrasForTemplate);
         }
         String filePath = javaPackage + "." + fileName + fileExtension;
         try {
