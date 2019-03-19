@@ -6,13 +6,12 @@ import io.objectbox.ModelBuilder;
 import io.objectbox.ModelBuilder.EntityBuilder;
 import io.objectbox.model.PropertyFlags;
 import io.objectbox.model.PropertyType;
-
-import io.objectbox.processor.test.SimpleEntity;
 import io.objectbox.processor.test.IdEntity;
-import io.objectbox.processor.test.SimpleEntityCursor;
-import io.objectbox.processor.test.SimpleEntity_;
 import io.objectbox.processor.test.IdEntityCursor;
 import io.objectbox.processor.test.IdEntity_;
+import io.objectbox.processor.test.SimpleEntity;
+import io.objectbox.processor.test.SimpleEntityCursor;
+import io.objectbox.processor.test.SimpleEntity_;
 
 //////
 // NOTE: this is the EXPECTED generated source.

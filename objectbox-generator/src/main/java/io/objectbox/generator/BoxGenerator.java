@@ -144,13 +144,12 @@ public class BoxGenerator {
 
         for (Entity entity : entities) {
             Map<String, Object> additionalData = createAdditionalDataForCursor(entity);
-            generate(templateCursor, job.getOutput(), entity.getJavaPackageDao(), entity.getClassNameDao(), ".java",
-                    schema, entity, additionalData);
+            generate(templateCursor, job, entity.getJavaPackageDao(), entity.getClassNameDao(), entity, additionalData);
             if (!entity.isProtobuf() && !entity.isSkipGeneration()) {
                 generate(templateEntity, job, entity.getJavaPackage(), entity.getClassName(), entity);
             }
-            generate(templateEntityInfo, job.getOutput(), entity.getJavaPackageDao(), entity.getClassName() + "_",
-                    ".java", job.getSchema(), entity, createExtrasForEntityInfo(entity));
+            generate(templateEntityInfo, job, entity.getJavaPackageDao(), entity.getClassName() + "_",
+                    entity, createExtrasForEntityInfo(entity));
             GeneratorOutput outputTest = job.getOutputTest();
             if (outputTest != null && !entity.isSkipGenerationTest()) {
                 String javaPackageTest = entity.getJavaPackageTest();
@@ -168,8 +167,8 @@ public class BoxGenerator {
             generate(templateFlatbuffersSchema, job.getOutputFlatbuffersSchema(), "", "flatbuffers", ".fbs",
                     job.getSchema(), null, null);
         }
-        generate(templateMyObjectBox, job, schema.getDefaultJavaPackageDao(), "My" + schema.getPrefix() + "ObjectBox",
-                null);
+        generate(templateMyObjectBox, job, schema.getDefaultJavaPackageDao(),
+                "My" + schema.getPrefix() + "ObjectBox", null, createExtrasForMyObjectBox(schema));
 
         if (job.isDaoCompat()) {
             // generate DAO classes
@@ -185,6 +184,36 @@ public class BoxGenerator {
 
         long time = System.currentTimeMillis() - start;
         System.out.println("Processed " + entities.size() + " entities in " + time + "ms");
+    }
+
+    /**
+     * Builds a sorted set of imports, returns it mapped as 'imports'.
+     */
+    private Map<String, Object> createExtrasForMyObjectBox(Schema schema) {
+        Set<String> imports = new TreeSet<>(); // instead of HashSet + then sorting that
+
+        imports.add("io.objectbox.BoxStore");
+        imports.add("io.objectbox.BoxStoreBuilder");
+        imports.add("io.objectbox.ModelBuilder");
+        imports.add("io.objectbox.ModelBuilder.EntityBuilder");
+        imports.add("io.objectbox.model.PropertyFlags");
+        imports.add("io.objectbox.model.PropertyType");
+
+        for (Entity entity : schema.getEntities()) {
+            String javaPackage = entity.getJavaPackage();
+            if (!javaPackage.equals(schema.getDefaultJavaPackage())) {
+                imports.add(String.format("%s.%s", javaPackage, entity.getClassName()));
+            }
+            String javaPackageDao = entity.getJavaPackageDao();
+            if (!javaPackageDao.equals(schema.getDefaultJavaPackageDao())) {
+                imports.add(String.format("%s.%s", javaPackageDao, entity.getClassNameDao()));
+                imports.add(String.format("%s.%s_", javaPackageDao, entity.getClassName()));
+            }
+        }
+
+        Map<String, Object> extras = new HashMap<>();
+        extras.put("imports", imports);
+        return extras;
     }
 
     /**
@@ -293,6 +322,12 @@ public class BoxGenerator {
     private void generate(Template template, GeneratorJob job, String javaPackage, String javaClassName, Entity entity)
             throws Exception {
         generate(template, job.getOutput(), javaPackage, javaClassName, ".java", job.getSchema(), entity, null);
+    }
+
+    private void generate(Template template, GeneratorJob job, String javaPackage, String javaClassName, Entity entity,
+            Map<String, Object> extrasForTemplate) throws Exception {
+        generate(template, job.getOutput(), javaPackage, javaClassName, ".java", job.getSchema(), entity,
+                extrasForTemplate);
     }
 
     private void generate(Template template, GeneratorOutput output,
