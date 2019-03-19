@@ -37,7 +37,10 @@ open class GradleBuildTracker(toolName: String) : BasicBuildTracker(toolName) {
     }
 
     fun trackBuild(env: ProjectEnv) {
-        sendEventAsync("Build", buildEventProperties(env))
+        countBuild()
+        if (shouldSendBuildEvent()) {
+            sendEventAsync("Build", buildEventProperties(env))
+        }
     }
 
     // Use internal once fixed (Kotlin 1.1.4?)
@@ -51,6 +54,7 @@ open class GradleBuildTracker(toolName: String) : BasicBuildTracker(toolName) {
         }
         event.key("BuildOS").valueEscaped(System.getProperty("os.name")).comma()
         event.key("BuildOSVersion").valueEscaped(System.getProperty("os.version")).comma()
+        event.key("BuildCount").value(getAndResetBuildCount().toString()).comma()
 
         val ci = checkCI()
         if (ci != null) {

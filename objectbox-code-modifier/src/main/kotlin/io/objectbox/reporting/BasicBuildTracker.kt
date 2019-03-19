@@ -23,10 +23,6 @@ import io.objectbox.CodeModifierBuildConfig
 import okio.Buffer
 import org.greenrobot.essentials.Base64
 import org.greenrobot.essentials.hash.Murmur3F
-import java.io.File
-import java.io.FileReader
-import java.io.FileWriter
-import java.io.IOException
 import java.io.PrintWriter
 import java.io.StringWriter
 import java.net.HttpURLConnection
@@ -38,15 +34,73 @@ import java.util.*
  * Track build errors for non-Gradle modules.
  */
 // Non-final for easier mocking
-open class BasicBuildTracker(val toolName: String) {
+open class BasicBuildTracker(private val toolName: String) {
     private companion object {
+        private const val PROPERTIES_KEY_UID = "uid"
+        private const val PROPERTIES_KEY_LAST_DAY_BUILD_SENT = "lastBuildEvent"
+        private const val PROPERTIES_KEY_BUILD_COUNT = "buildCount"
+
+        private const val HOUR_IN_MILLIS = 3600 * 1000
+
         const val BASE_URL = "https://api.mixpanel.com/track/?data="
         const val TOKEN = "REPLACE_WITH_TOKEN"
         const val TIMEOUT_READ = 15000
         const val TIMEOUT_CONNECT = 20000
     }
 
+    private val buildPropertiesFile = BuildPropertiesFile(object : BuildPropertiesFile.FileCreateListener {
+        override fun onFailedToCreateFile(message: String, e: Exception) {
+            trackNoBuildPropertiesFile(message, e)
+        }
+    })
+
     var disconnect = true
+
+    /**
+     * Returns true if the time stamp of the last sent build event in the build properties file does not exist or is
+     * older than 24 hours. If so updates the time stamp to the current time.
+     */
+    fun shouldSendBuildEvent(): Boolean {
+        val timeProperty: String? = buildPropertiesFile.properties.getProperty(PROPERTIES_KEY_LAST_DAY_BUILD_SENT)
+        val timestamp = timeProperty?.toLongOrNull()
+        return if (timestamp == null || timestamp < System.currentTimeMillis() - 24 * HOUR_IN_MILLIS) {
+            // set last sent to current time
+            buildPropertiesFile.properties[PROPERTIES_KEY_LAST_DAY_BUILD_SENT] = System.currentTimeMillis().toString()
+            buildPropertiesFile.write()
+            true // allow sending
+        } else {
+            false // prevent sending
+        }
+    }
+
+    /**
+     * Increments the build counter. To reset the counter see [getAndResetBuildCount].
+     */
+    fun countBuild() {
+        val countProperty: String? = buildPropertiesFile.properties.getProperty(PROPERTIES_KEY_BUILD_COUNT)
+        val buildCount = countProperty?.toIntOrNull()
+        val newBuildCount = if (buildCount == null || buildCount < 0) {
+            1
+        } else {
+            buildCount + 1
+        }
+        buildPropertiesFile.properties[PROPERTIES_KEY_BUILD_COUNT] = newBuildCount.toString()
+        buildPropertiesFile.write()
+    }
+
+    /**
+     * Gets the number of builds that were counted so far, or 1 if none were counted. Resets the counter to 0.
+     *
+     * Builds are counted with [countBuild].
+     */
+    fun getAndResetBuildCount(): Int {
+        val countProperty: String? = buildPropertiesFile.properties.getProperty(PROPERTIES_KEY_BUILD_COUNT)
+
+        buildPropertiesFile.properties[PROPERTIES_KEY_BUILD_COUNT] = "0"
+        buildPropertiesFile.write()
+
+        return countProperty?.toIntOrNull() ?: 1
+    }
 
     fun trackError(message: String?, throwable: Throwable? = null) {
         sendEventAsync("Error", errorProperties(message, throwable))
@@ -54,6 +108,10 @@ open class BasicBuildTracker(val toolName: String) {
 
     fun trackFatal(message: String?, throwable: Throwable? = null) {
         sendEventAsync("Fatal", errorProperties(message, throwable))
+    }
+
+    fun trackNoBuildPropertiesFile(message: String?, throwable: Throwable? = null) {
+        sendEventAsync("NoBuildProperties", errorProperties(message, throwable), false)
     }
 
     fun trackStats(completed: Boolean, daoCompat: Boolean, entityCount: Int, propertyCount: Int, toOneCount: Int, toManyCount: Int) {
@@ -67,12 +125,15 @@ open class BasicBuildTracker(val toolName: String) {
         sendEventAsync("Stats", event.toString())
     }
 
-    fun sendEventAsync(eventName: String, eventProperties: String) {
-        Thread(Runnable { sendEvent(eventName, eventProperties) }).start()
+    fun sendEventAsync(eventName: String, eventProperties: String, sendUniqueId: Boolean = true) {
+        if (sendUniqueId && buildPropertiesFile.hasNoFile) {
+            return // can not save state (e.g. unique ID) so do not send events
+        }
+        Thread(Runnable { sendEvent(eventName, eventProperties, sendUniqueId) }).start()
     }
 
-    private fun sendEvent(eventName: String, eventProperties: String) {
-        val event = eventData(eventName, eventProperties)
+    private fun sendEvent(eventName: String, eventProperties: String, sendUniqueId: Boolean) {
+        val event = eventData(eventName, eventProperties, sendUniqueId)
 
         // https://mixpanel.com/help/reference/http#base64
         val eventEncoded = Base64.encodeBytes(event.toByteArray())
@@ -89,7 +150,7 @@ open class BasicBuildTracker(val toolName: String) {
     }
 
     // public for tests in another module
-    fun eventData(eventName: String, properties: String): String {
+    fun eventData(eventName: String, properties: String, addUniqueId: Boolean): String {
         // https://mixpanel.com/help/reference/http#tracking-events
         val event = StringBuilder()
         event.append("{")
@@ -97,7 +158,9 @@ open class BasicBuildTracker(val toolName: String) {
         event.key("properties").append(" {")
 
         event.key("token").value(TOKEN).comma()
-        event.key("distinct_id").value(uniqueIdentifier()).comma()
+        if (addUniqueId) {
+            event.key("distinct_id").value(uniqueIdentifier()).comma()
+        }
         event.key("ip").append("true").comma()
 //        event.key("ip").value("1").comma()
         event.key("Tool").value(toolName).comma()
@@ -182,39 +245,18 @@ open class BasicBuildTracker(val toolName: String) {
 
     // public for tests in another module
     fun uniqueIdentifier(): String {
-        var file: File? = null
-        val fileName = ".objectbox-build.properties"
-        try {
-            val dir = File(System.getProperty("user.home"))
-            if (dir.isDirectory) file = File(dir, fileName)
-        } catch (e: Exception) {
-            System.err.println("Could not get user dir: $e") // No stack trace
-        }
-        if (file == null) file = File(System.getProperty("java.io.tmpdir"), fileName) // Plan B
-        val keyUid = "uid"
-        var uid: String? = null
-        var properties = Properties()
-        if (file.exists()) {
-            try {
-                FileReader(file).use {
-                    properties.load(it)
-                    uid = properties.getProperty(keyUid)
-                }
-            } catch (e: IOException) {
-                e.printStackTrace()
-                properties = Properties()
-            }
-        }
-        if (uid.isNullOrBlank()) {
+        val uid: String? = buildPropertiesFile.properties.getProperty(PROPERTIES_KEY_UID)
+
+        return if (uid.isNullOrBlank()) {
             val bytes = ByteArray(8)
             SecureRandom().nextBytes(bytes)
-            uid = encodeBase64WithoutPadding(bytes)
-            properties[keyUid] = uid
-            FileWriter(file).use {
-                properties.store(it, "Properties for ObjectBox build tools")
-            }
+            val newUid = encodeBase64WithoutPadding(bytes)
+            buildPropertiesFile.properties[PROPERTIES_KEY_UID] = newUid
+            buildPropertiesFile.write()
+            newUid
+        } else {
+            uid
         }
-        return uid!!
     }
 
     protected fun encodeBase64WithoutPadding(valueBytesBigEndian: ByteArray?) =
