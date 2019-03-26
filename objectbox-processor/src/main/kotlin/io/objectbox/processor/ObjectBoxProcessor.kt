@@ -41,6 +41,7 @@ import javax.lang.model.element.Element
 import javax.lang.model.element.ElementKind
 import javax.lang.model.element.TypeElement
 import javax.lang.model.element.VariableElement
+import javax.lang.model.type.TypeKind
 import javax.lang.model.util.ElementFilter
 import javax.lang.model.util.Elements
 import javax.lang.model.util.Types
@@ -289,8 +290,15 @@ open class ObjectBoxProcessor : AbstractProcessor() {
             // So erase any parameter types altogether (== ignore any type parameters on classes, e.g. BaseEntity)
             val supertypeErasure = typeUtils.erasure(supertype)
             rootElements.find {
-                val rootElementTypeErasure = typeUtils.erasure(it.asType())
-                typeUtils.isSameType(rootElementTypeErasure, supertypeErasure)
+                val type = it.asType()
+                if (type.kind != TypeKind.DECLARED) {
+                    // skip packages or modules
+                    // note: can't do check on MODULE, requires Java 9 (Android is Java 8)
+                    false
+                } else {
+                    val rootElementTypeErasure = typeUtils.erasure(type)
+                    typeUtils.isSameType(rootElementTypeErasure, supertypeErasure)
+                }
             }
         }
         if (classSupertypes.isNotEmpty()) {
