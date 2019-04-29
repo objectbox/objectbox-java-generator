@@ -225,7 +225,11 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
 
         if (env.hasKotlinPlugin || env.hasKotlinAndroidPlugin) {
             if (DEBUG) println("### Kotlin plugin detected")
-            project.addDep(compileConfig, "io.objectbox:objectbox-kotlin:$runtimeVersion")
+            if (project.hasObjectBoxDep("objectbox-kotlin")) {
+                if (DEBUG) println("### Detected objectbox-kotlin dependency, not auto-adding.")
+            } else {
+                project.addDep(compileConfig, "io.objectbox:objectbox-kotlin:$runtimeVersion")
+            }
         }
 
         if (env.hasAndroidPlugin) {
