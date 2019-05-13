@@ -1,6 +1,6 @@
 def COLOR_MAP = ['SUCCESS': 'good', 'FAILURE': 'danger', 'UNSTABLE': 'danger', 'ABORTED': 'danger']
 
-def gradleArgs = '-Dorg.gradle.daemon=false --stacktrace clean check install'
+def gradleArgs = '-Dorg.gradle.daemon=false --stacktrace'
 
 pipeline {
     agent none
@@ -20,7 +20,7 @@ pipeline {
                     agent { label 'linux' }
                     steps {
                         sh 'chmod +x gradlew'
-                        sh "./gradlew $gradleArgs"
+                        sh "./gradlew $gradleArgs clean check"
                     }
                     post {
                         always {
@@ -32,7 +32,7 @@ pipeline {
                 stage('build-windows') {
                     agent { label 'windows' }
                     steps {
-                        bat "gradlew $gradleArgs"
+                        bat "gradlew $gradleArgs clean check"
                     }
                     post {
                         always {
@@ -41,6 +41,18 @@ pipeline {
                     }
                 }
 
+            }
+        }
+
+        stage('upload-to-repo') {
+            when { expression { return BRANCH_NAME != 'objectbox-publish' } }
+            agent { label 'linux' }
+            environment {
+                MVN_REPO_URL = credentials('objectbox_internal_mvn_repo')
+                MVN_REPO_LOGIN = credentials('objectbox_internal_mvn_user')
+            }
+            steps {
+                sh "./gradlew $gradleArgs -PpreferredRepo=${MVN_REPO_URL} -PpreferredUsername=${MVN_REPO_LOGIN_USR} -PpreferredPassword=${MVN_REPO_LOGIN_PSW} uploadArchives"
             }
         }
 
