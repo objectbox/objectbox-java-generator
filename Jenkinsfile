@@ -9,6 +9,9 @@ pipeline {
 
     environment {
         GITLAB_URL = credentials('gitlab_url')
+        MVN_REPO_URL = credentials('objectbox_internal_mvn_repo_http')
+        MVN_REPO_URL_PUBLISH = credentials('objectbox_internal_mvn_repo')
+        MVN_REPO_LOGIN = credentials('objectbox_internal_mvn_user')
     }
 
     options {
@@ -22,7 +25,9 @@ pipeline {
                     agent { label 'linux' }
                     steps {
                         sh 'chmod +x gradlew'
-                        sh "./gradlew $gradleArgs clean check"
+                        sh "./gradlew $gradleArgs " +
+                           "-PinternalObjectBoxRepo=${MVN_REPO_URL} -PinternalObjectBoxRepoUser=${MVN_REPO_LOGIN_USR} -PinternalObjectBoxRepoPassword=${MVN_REPO_LOGIN_PSW} " +
+                           "clean check"
                     }
                     post {
                         always {
@@ -34,7 +39,9 @@ pipeline {
                 stage('build-windows') {
                     agent { label 'windows' }
                     steps {
-                        bat "gradlew $gradleArgs clean check"
+                        bat "gradlew $gradleArgs " +
+                            "-PinternalObjectBoxRepo=${MVN_REPO_URL} -PinternalObjectBoxRepoUser=${MVN_REPO_LOGIN_USR} -PinternalObjectBoxRepoPassword=${MVN_REPO_LOGIN_PSW} " +
+                            "clean check"
                     }
                     post {
                         always {
@@ -49,12 +56,11 @@ pipeline {
         stage('upload-to-repo') {
             when { expression { return BRANCH_NAME != publishBranch } }
             agent { label 'linux' }
-            environment {
-                MVN_REPO_URL = credentials('objectbox_internal_mvn_repo')
-                MVN_REPO_LOGIN = credentials('objectbox_internal_mvn_user')
-            }
             steps {
-                sh "./gradlew $gradleArgs -PversionPostFix=${versionPostfix} -PpreferredRepo=${MVN_REPO_URL} -PpreferredUsername=${MVN_REPO_LOGIN_USR} -PpreferredPassword=${MVN_REPO_LOGIN_PSW} uploadArchives"
+                sh "./gradlew $gradleArgs -PinternalObjectBoxRepo=${MVN_REPO_URL} -PinternalObjectBoxRepoUser=${MVN_REPO_LOGIN_USR} -PinternalObjectBoxRepoPassword=${MVN_REPO_LOGIN_PSW} " +
+                   "-PversionPostFix=${versionPostfix} " +
+                   "-PpreferredRepo=${MVN_REPO_URL_PUBLISH} -PpreferredUsername=${MVN_REPO_LOGIN_USR} -PpreferredPassword=${MVN_REPO_LOGIN_PSW} " +
+                   "uploadArchives"
             }
         }
 
@@ -71,7 +77,10 @@ pipeline {
                     slackSend color: "#42ebf4",
                             message: "Publishing ${currentBuild.fullDisplayName} to Bintray...\n${env.BUILD_URL}"
                 }
-                sh './gradlew -Dorg.gradle.daemon=false --stacktrace -PpreferredRepo=${BINTRAY_URL} -PpreferredUsername=${BINTRAY_LOGIN_USR} -PpreferredPassword=${BINTRAY_LOGIN_PSW} uploadArchives'
+                sh "./gradlew -Dorg.gradle.daemon=false --stacktrace " +
+                   "-PinternalObjectBoxRepo=${MVN_REPO_URL} -PinternalObjectBoxRepoUser=${MVN_REPO_LOGIN_USR} -PinternalObjectBoxRepoPassword=${MVN_REPO_LOGIN_PSW} " +
+                   "-PpreferredRepo=${BINTRAY_URL} -PpreferredUsername=${BINTRAY_LOGIN_USR} -PpreferredPassword=${BINTRAY_LOGIN_PSW} " +
+                   "uploadArchives"
                 script {
                     slackSend color: "##41f4cd",
                             message: "Published ${currentBuild.fullDisplayName} successfully to Bintray - check https://bintray.com/objectbox/objectbox\n${env.BUILD_URL}"

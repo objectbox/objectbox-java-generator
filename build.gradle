@@ -40,6 +40,19 @@ subprojects {
     repositories {
         jcenter()
         mavenCentral()
+        google()
+        if (project.hasProperty('internalObjectBoxRepo')) {
+            println("Using internal ObjectBox repository $internalObjectBoxRepo.")
+            maven {
+                credentials {
+                    username internalObjectBoxRepoUser
+                    password internalObjectBoxRepoPassword
+                }
+                url internalObjectBoxRepo
+            }
+        } else {
+            println "Warning: internalObjectBoxRepo, internalObjectBoxRepoUser and internalObjectBoxRepoPassword missing from gradle.properties."
+        }
         mavenLocal()
     }
 }
