@@ -8,6 +8,9 @@ buildscript {
         objectbox_plugin_version = objectbox_version // used to version this projects' artifacts
         objectbox_java_version = objectbox_version // used for plugin dependencies
         objectbox_runtime_version = objectbox_version // used as runtime library (projects using plugin)
+
+        println "Version $objectbox_plugin_version with dependency on Java $objectbox_java_version. " +
+                "Adds dependencies with version $objectbox_runtime_version."
     }
 
     repositories {

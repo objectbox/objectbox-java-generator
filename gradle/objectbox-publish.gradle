@@ -1,17 +1,5 @@
 // Configures common publishing settings
 
-buildscript {
-    ext {
-        hasPreferredRepo = project.hasProperty('preferredRepo')
-        preferredRepo = hasPreferredRepo ? project.property('preferredRepo') : null
-    }
-    if (hasPreferredRepo) {
-        println "********************************************"
-        println "*** PREFERRED REPO = $preferredRepo"
-        println "********************************************"
-    }
-}
-
 apply plugin: "maven"
 apply plugin: "signing"
 
@@ -20,8 +8,9 @@ configurations {
 }
 
 dependencies {
-    deployerJars 'org.apache.maven.wagon:wagon-webdav:1.0-beta-2'
-    deployerJars 'org.apache.maven.wagon:wagon-ftp:2.2'
+    // Using an older version to remain compatible with Wagon API used by Gradle/Maven
+    deployerJars 'org.apache.maven.wagon:wagon-webdav-jackrabbit:3.2.0'
+    deployerJars 'org.apache.maven.wagon:wagon-ftp:3.3.2'
 }
 
 javadoc {
@@ -44,20 +33,24 @@ afterEvaluate { project ->
     uploadArchives {
         repositories {
             mavenDeployer {
-                if (hasPreferredRepo && preferredRepo == 'local') {
+                def preferredRepo = project.findProperty('preferredRepo')
+                println "preferredRepo=$preferredRepo"
+
+                if (preferredRepo == 'local') {
                     repository url: repositories.mavenLocal().url
-                } else if (hasPreferredRepo
+                } else if (preferredRepo != null
                         && project.hasProperty('preferredUsername')
                         && project.hasProperty('preferredPassword')) {
                     configuration = configurations.deployerJars
-                    // Replace for bintray's dynamic URL
-                    def bintrayRepositoryUrl = preferredRepo
+                    // replace placeholders
+                    def repositoryUrl = preferredRepo
                             .replace('__groupId__', project.group)
                             .replace('__artifactId__', project.archivesBaseName)
-                    repository(url: bintrayRepositoryUrl) {
+                    repository(url: repositoryUrl) {
                         authentication(userName: preferredUsername, password: preferredPassword)
                     }
-                } else if (project.hasProperty('sonatypeUsername') && project.hasProperty('sonatypePassword')) {
+                } else if (project.hasProperty('sonatypeUsername')
+                        && project.hasProperty('sonatypePassword')) {
                     beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
                     def isSnapshot = version.endsWith('-SNAPSHOT')
                     def sonatypeRepositoryUrl = isSnapshot ?
@@ -67,7 +60,7 @@ afterEvaluate { project ->
                         authentication(userName: sonatypeUsername, password: sonatypePassword)
                     }
                 } else {
-                    println "Deployment settings missing/incomplete for ${project.name}"
+                    println "Deployment settings missing/incomplete for ${project.name}."
                 }
 
                 // Common properties, projects still need to set name, description and license
