@@ -1,6 +1,8 @@
 def COLOR_MAP = ['SUCCESS': 'good', 'FAILURE': 'danger', 'UNSTABLE': 'danger', 'ABORTED': 'danger']
 
 def gradleArgs = '-Dorg.gradle.daemon=false --stacktrace'
+def publishBranch = 'objectbox-publish'
+String versionPostfix = BRANCH_NAME == 'objectbox-dev' ? '' : BRANCH_NAME // build script detects empty string as not set
 
 pipeline {
     agent none
@@ -45,19 +47,19 @@ pipeline {
         }
 
         stage('upload-to-repo') {
-            when { expression { return BRANCH_NAME != 'objectbox-publish' } }
+            when { expression { return BRANCH_NAME != publishBranch } }
             agent { label 'linux' }
             environment {
                 MVN_REPO_URL = credentials('objectbox_internal_mvn_repo')
                 MVN_REPO_LOGIN = credentials('objectbox_internal_mvn_user')
             }
             steps {
-                sh "./gradlew $gradleArgs -PpreferredRepo=${MVN_REPO_URL} -PpreferredUsername=${MVN_REPO_LOGIN_USR} -PpreferredPassword=${MVN_REPO_LOGIN_PSW} uploadArchives"
+                sh "./gradlew $gradleArgs -PversionPostFix=${versionPostfix} -PpreferredRepo=${MVN_REPO_URL} -PpreferredUsername=${MVN_REPO_LOGIN_USR} -PpreferredPassword=${MVN_REPO_LOGIN_PSW} uploadArchives"
             }
         }
 
         stage('upload-to-bintray') {
-            when { expression { return BRANCH_NAME == 'objectbox-publish' } }
+            when { expression { return BRANCH_NAME == publishBranch } }
             agent { label 'linux' }
 
             environment {
