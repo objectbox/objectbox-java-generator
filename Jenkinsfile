@@ -7,7 +7,9 @@ String versionPostfix = BRANCH_NAME == 'objectbox-dev' ? 'dev'
                       : BRANCH_NAME
 
 pipeline {
-    agent none
+    // It should be "agent none", but googlechatnotification requires a agent (bug?).
+    // As a workaround we use label 'gchat' instead; don't use a agent used for stages here as it can deadlock.
+    agent { label 'gchat' }
 
     environment {
         GITLAB_URL = credentials('gitlab_url')
