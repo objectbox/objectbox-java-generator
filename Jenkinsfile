@@ -1,8 +1,10 @@
 def COLOR_MAP = ['SUCCESS': 'good', 'FAILURE': 'danger', 'UNSTABLE': 'danger', 'ABORTED': 'danger']
 
 def gradleArgs = '-Dorg.gradle.daemon=false --stacktrace'
-def publishBranch = 'objectbox-publish'
-String versionPostfix = BRANCH_NAME == 'objectbox-dev' ? '' : BRANCH_NAME // build script detects empty string as not set
+def isPublish = BRANCH_NAME == 'objectbox-publish'
+String versionPostfix = BRANCH_NAME == 'objectbox-dev' ? 'dev'
+                      : isPublish ? '' // build script detects empty string as not set
+                      : BRANCH_NAME
 
 pipeline {
     agent none
@@ -53,8 +55,7 @@ pipeline {
             }
         }
 
-        stage('upload-to-repo') {
-            when { expression { return BRANCH_NAME != publishBranch } }
+        stage('upload-to-internal') {
             agent { label 'linux' }
             steps {
                 sh "./gradlew $gradleArgs -PinternalObjectBoxRepo=${MVN_REPO_URL} -PinternalObjectBoxRepoUser=${MVN_REPO_LOGIN_USR} -PinternalObjectBoxRepoPassword=${MVN_REPO_LOGIN_PSW} " +
@@ -65,7 +66,7 @@ pipeline {
         }
 
         stage('upload-to-bintray') {
-            when { expression { return BRANCH_NAME == publishBranch } }
+            when { expression { return isPublish } }
             agent { label 'linux' }
 
             environment {
@@ -91,8 +92,28 @@ pipeline {
 
     post {
         // For global vars see /jenkins/pipeline-syntax/globals
+
+        always {
+            googlechatnotification url: 'id:gchat_java', message: "${currentBuild.currentResult}: ${currentBuild.fullDisplayName}\n${env.BUILD_URL}",
+                                   notifyFailure: 'true', notifyUnstable: 'true', notifyBackToNormal: 'true'
+        }
+
         failure {
             updateGitlabCommitStatus name: 'build', state: 'failed'
+
+            emailext (
+                subject: "${currentBuild.currentResult}: ${currentBuild.fullDisplayName}",
+                mimeType: 'text/html',
+                recipientProviders: [[$class: 'DevelopersRecipientProvider']],
+                body: """
+                    <p>${currentBuild.currentResult}:
+                        <a href='${env.BUILD_URL}'>${currentBuild.fullDisplayName}</a>
+                        (<a href='${env.BUILD_URL}/console'>console</a>)
+                    </p>
+                    <p>Git: ${GIT_COMMIT} (${GIT_BRANCH})
+                    <p>Build time: ${currentBuild.durationString}
+                """
+            )
         }
 
         success {
