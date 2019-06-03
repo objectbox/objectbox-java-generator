@@ -246,8 +246,10 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
 
             // for local unit tests
             addNativeDependency(env, env.configTestImplOrCompile, true)
-        } else if (!project.hasObjectBoxDep("objectbox-java")) {
-            project.addDep(compileConfig, "io.objectbox:objectbox-java:$runtimeVersion")
+        } else {
+            if (!project.hasObjectBoxDep("objectbox-java")) {
+                project.addDep(compileConfig, "io.objectbox:objectbox-java:$runtimeVersion")
+            }
             addNativeDependency(env, compileConfig, false)
         }
     }
