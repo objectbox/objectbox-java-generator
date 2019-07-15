@@ -192,9 +192,10 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
         val processorDep = "io.objectbox:objectbox-processor:${ProjectEnv.Const.pluginVersion}"
         val project = env.project
         if (project.hasConfig("kapt")) {
+            // Kotlin (Android + Desktop).
             project.addDep("kapt", processorDep)
         } else if (project.hasConfig("annotationProcessor")) {
-            // Android uses annotationProcessor
+            // Android (Java), also Java Desktop with Gradle 5.0 (best as of 5.2) uses annotationProcessor.
             project.addDep("annotationProcessor", processorDep)
         } else if (project.hasConfig("apt")) {
             // https://bitbucket.org/hvisser/android-apt or custom apt
