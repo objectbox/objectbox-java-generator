@@ -117,7 +117,7 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
             propertyBuilder.fieldAccessible()
         }
         // find getter method name
-        val getterMethodName = getGetterMethodNameFor(propertyBuilder.property)
+        val getterMethodName = getGetterMethodNameFor(field.asType(), propertyBuilder.property)
         propertyBuilder.getterMethodName(getterMethodName)
 
         // @Id
@@ -294,20 +294,22 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
     }
 
     /**
-     * Tries to find a getter method name for the given property.
+     * Tries to find a getter method name for the given property that returns the given type.
      * Prefers isPropertyName over getPropertyName if property starts with 'is' then uppercase letter.
      * Prefers isPropertyName over getPropertyName if property is Boolean.
      * Otherwise looks for getPropertyName method.
-     * If none is found, returns null.
+     * If none is found, returns null (Property falls back to expecting regular getter).
      */
-    private fun getGetterMethodNameFor(property: Property): String? {
+    private fun getGetterMethodNameFor(fieldType: TypeMirror, property: Property): String? {
         val propertyName = property.propertyName
         val propertyNameCapitalized = propertyName.capitalize()
 
         // https://kotlinlang.org/docs/reference/java-to-kotlin-interop.html#properties
         // Kotlin: 'isProperty' (but not 'isproperty').
         if (propertyName.startsWith("is") && propertyName[2].isUpperCase()) {
-            methods.find { it.simpleName.toString() == propertyName }?.let {
+            methods.find {
+                it.simpleName.toString() == propertyName && typeUtils.isSameType(it.returnType, fieldType)
+            }?.let {
                 return it.simpleName.toString() // Getter is called 'isProperty' (setter 'setProperty').
             }
         }
@@ -315,13 +317,17 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
         // https://docs.oracle.com/javase/tutorial/javabeans/writing/properties.html
         // Java: 'isProperty' for booleans (JavaBeans spec).
         if (property.propertyType == PropertyType.Boolean) {
-            methods.find { it.simpleName.toString() == "is$propertyNameCapitalized" }?.let {
+            methods.find {
+                it.simpleName.toString() == "is$propertyNameCapitalized" && typeUtils.isSameType(it.returnType, fieldType)
+            }?.let {
                 return it.simpleName.toString() // Getter is called 'isPropertyName'.
             }
         }
 
         // At last, check for regular getter.
-        return methods.find { it.simpleName.toString() == "get$propertyNameCapitalized" }?.simpleName?.toString()
+        return methods.find {
+            it.simpleName.toString() == "get$propertyNameCapitalized" && typeUtils.isSameType(it.returnType, fieldType)
+        }?.simpleName?.toString()
     }
 
     companion object {
