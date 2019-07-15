@@ -13,8 +13,12 @@ dependencies {
     compile "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
     compile "io.objectbox:objectbox-java-api:$objectbox_java_version"
     compile "io.objectbox:objectbox-java:$objectbox_java_version"
-    // auto-service generates service configuration
-    compileOnly 'com.google.auto.service:auto-service:1.0-rc4'
+    // auto-service generates service configuration for annotation processor.
+    def autoService = '1.0-rc5'
+    compileOnly "com.google.auto.service:auto-service-annotations:$autoService"
+    // Since Gradle 5.0 annotation processors are no longer detected on the compile classpath, 
+    // so add to processor classpath instead.
+    annotationProcessor "com.google.auto.service:auto-service:$autoService"
 
     // manually add tools.jar required by compile-testing
     def jvm = org.gradle.internal.jvm.Jvm.current()
@@ -33,12 +37,12 @@ dependencies {
 apply from: rootProject.file("gradle/objectbox-publish.gradle")
 
 task sourcesJar(type: Jar) {
-    classifier = 'sources'
+    archiveClassifier = 'sources'
     from 'README'
 }
 
 artifacts {
-    archives jar
+    // jar added by java plugin.
     archives sourcesJar
 }
 

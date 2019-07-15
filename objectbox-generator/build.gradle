@@ -45,18 +45,18 @@ javadoc {
 apply from: rootProject.file("gradle/objectbox-publish.gradle")
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
+    archiveClassifier = 'javadoc'
     from 'build/docs/javadoc'
 }
 
 task sourcesJar(type: Jar) {
-    classifier = 'sources'
+    archiveClassifier = 'sources'
 //    from sourceSets.main.allSource
     from 'README'
 }
 
 artifacts {
-    archives jar
+    // jar added by java plugin.
     archives javadocJar
     archives sourcesJar
 }
