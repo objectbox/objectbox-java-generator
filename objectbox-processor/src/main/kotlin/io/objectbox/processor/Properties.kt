@@ -35,6 +35,7 @@ import io.objectbox.relation.ToMany
 import io.objectbox.relation.ToOne
 import javax.lang.model.element.AnnotationMirror
 import javax.lang.model.element.Element
+import javax.lang.model.element.ExecutableElement
 import javax.lang.model.element.Modifier
 import javax.lang.model.element.VariableElement
 import javax.lang.model.type.TypeMirror
@@ -51,7 +52,7 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
     val typeHelper = TypeHelper(typeUtils)
 
     val fields: List<VariableElement> = ElementFilter.fieldsIn(entityElement.enclosedElements)
-    val methods: List<String> = ElementFilter.methodsIn(entityElement.enclosedElements).map { it.simpleName.toString() }
+    val methods: List<ExecutableElement> = ElementFilter.methodsIn(entityElement.enclosedElements)
 
     fun hasBoxStoreField(): Boolean {
         return fields.find { it.simpleName.toString() == "__boxStore" } != null
@@ -304,23 +305,23 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
         val propertyNameCapitalized = propertyName.capitalize()
 
         // https://kotlinlang.org/docs/reference/java-to-kotlin-interop.html#properties
-        // Kotlin: 'isProperty' (but not 'isproperty')
+        // Kotlin: 'isProperty' (but not 'isproperty').
         if (propertyName.startsWith("is") && propertyName[2].isUpperCase()) {
-            methods.find { it == propertyName }?.let {
-                return it // getter is called 'isProperty' (setter 'setProperty')
+            methods.find { it.simpleName.toString() == propertyName }?.let {
+                return it.simpleName.toString() // Getter is called 'isProperty' (setter 'setProperty').
             }
         }
 
         // https://docs.oracle.com/javase/tutorial/javabeans/writing/properties.html
-        // Java: 'isProperty' for booleans (JavaBeans spec)
+        // Java: 'isProperty' for booleans (JavaBeans spec).
         if (property.propertyType == PropertyType.Boolean) {
-            methods.find { it == "is$propertyNameCapitalized" }?.let {
-                return it // getter is called 'isPropertyName'
+            methods.find { it.simpleName.toString() == "is$propertyNameCapitalized" }?.let {
+                return it.simpleName.toString() // Getter is called 'isPropertyName'.
             }
         }
 
-        // at last, check for regular getter
-        return methods.find { it == "get$propertyNameCapitalized" }
+        // At last, check for regular getter.
+        return methods.find { it.simpleName.toString() == "get$propertyNameCapitalized" }?.simpleName?.toString()
     }
 
     companion object {
