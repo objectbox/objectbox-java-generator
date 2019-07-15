@@ -43,4 +43,42 @@ class GetterTest : BaseProcessorTest() {
         Truth.assertThat(property.getterMethodName).isEqualTo("isProperty")
     }
 
+    /**
+     * Instead of compile error due to return type mismatch on is-getter, use the non-is getter with matching type.
+     */
+    @Test
+    fun getter_matchingReturnType_isPreferred() {
+        val source = """
+        package com.example.objectbox;
+        import io.objectbox.annotation.Entity;
+        import io.objectbox.annotation.Id;
+
+        @Entity
+        public class Example {
+            @Id long id;
+            
+            private Integer isProperty;
+
+            // Should use this one.
+            public Integer getIsProperty() {
+                return isProperty;
+            }
+            // Prefer, but skip this one as return type not matching.
+            public Boolean isProperty() {
+                return isProperty == 1;
+            }
+        }
+        """
+        val javaFileObject = JavaFileObjects.forSourceString("com.example.objectbox.Example", source)
+
+        val environment = TestEnvironment("getter-matching-return-temp.json")
+
+        val compilation = environment.compile(listOf(javaFileObject))
+        CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
+
+        val entity = environment.schema.entities[0]!!
+        val property = entity.properties!!.find { it.propertyName == "isProperty" }!!
+        Truth.assertThat(property.getterMethodName).isEqualTo("getIsProperty")
+    }
+
 }
