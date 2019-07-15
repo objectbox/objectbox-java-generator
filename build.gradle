@@ -15,6 +15,14 @@ buildscript {
 
         println "Version $objectbox_plugin_version with dependency on Java $objectbox_java_version. " +
                 "Adds dependencies with version $objectbox_runtime_version."
+
+        // Internal Maven repo: used in all projects, printing info/warning only once here.
+        hasInternalObjectBoxRepo = project.hasProperty('internalObjectBoxRepo')
+        if (hasInternalObjectBoxRepo) {
+            println("Using internal ObjectBox repository $internalObjectBoxRepo.")
+        } else {
+            println "Warning: internalObjectBoxRepo, internalObjectBoxRepoUser and internalObjectBoxRepoPassword missing from gradle.properties."
+        }
     }
 
     repositories {
@@ -41,8 +49,7 @@ subprojects {
         jcenter()
         mavenCentral()
         google()
-        if (project.hasProperty('internalObjectBoxRepo')) {
-            println("Using internal ObjectBox repository $internalObjectBoxRepo.")
+        if (hasInternalObjectBoxRepo) {
             maven {
                 credentials {
                     username internalObjectBoxRepoUser
@@ -50,8 +57,6 @@ subprojects {
                 }
                 url internalObjectBoxRepo
             }
-        } else {
-            println "Warning: internalObjectBoxRepo, internalObjectBoxRepoUser and internalObjectBoxRepoPassword missing from gradle.properties."
         }
         mavenLocal()
     }
