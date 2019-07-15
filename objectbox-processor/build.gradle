@@ -38,7 +38,7 @@ task sourcesJar(type: Jar) {
 }
 
 artifacts {
-    archives jar
+    // jar added by java plugin.
     archives sourcesJar
 }
 
