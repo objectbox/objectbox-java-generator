@@ -69,3 +69,7 @@ task cleanOut {
         }
     }
 }
+
+wrapper {
+    distributionType Wrapper.DistributionType.ALL
+}
