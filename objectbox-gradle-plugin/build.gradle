@@ -39,12 +39,12 @@ buildConfig {
 apply from: rootProject.file("gradle/objectbox-publish.gradle")
 
 task javadocJar(type: Jar) {
-    classifier = 'javadoc'
+    archiveClassifier = 'javadoc'
     from 'README'
 }
 
 task sourcesJar(type: Jar) {
-    classifier = 'sources'
+    archiveClassifier = 'sources'
     from 'README'
 }
 
