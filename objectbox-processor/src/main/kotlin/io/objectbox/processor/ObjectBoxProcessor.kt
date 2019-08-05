@@ -239,6 +239,12 @@ open class ObjectBoxProcessor : AbstractProcessor() {
     private fun parseEntity(rootElements: Set<Element>, schema: Schema, relations: Relations, entity: Element) {
         val name = entity.simpleName.toString()
         if (debug) messages.debug("Parsing entity $name...")
+
+        schema.entities.find { it.className == name }?.let {
+            messages.error("There is already an entity class '$name': '${it.javaPackage}.${it.className}'.", entity)
+            return
+        }
+
         val entityModel = schema.addEntity(name)
         entityModel.isSkipGeneration = true // processor may not generate duplicate entity source files
         entityModel.isSkipCreationInDb = false
