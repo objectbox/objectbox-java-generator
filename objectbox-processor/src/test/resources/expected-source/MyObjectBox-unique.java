@@ -22,20 +22,25 @@ public class MyObjectBox {
         modelBuilder.lastIndexId(2, 8578641540773014588L);
         modelBuilder.lastRelationId(0, 0L);
 
-        EntityBuilder entityBuilder;
+        buildEntityUniqueGenerated(modelBuilder);
 
-        entityBuilder = modelBuilder.entity("UniqueGenerated");
+        return modelBuilder.build();
+    }
+
+    private static void buildEntityUniqueGenerated(ModelBuilder modelBuilder) {
+        EntityBuilder entityBuilder = modelBuilder.entity("UniqueGenerated");
         entityBuilder.id(1, 1699443392711810012L).lastPropertyId(3, 3165064094626578066L);
         entityBuilder.flags(io.objectbox.model.EntityFlags.USE_NO_ARG_CONSTRUCTOR);
+
         entityBuilder.property("id", PropertyType.Long).id(1, 1304105407891414803L)
                 .flags(PropertyFlags.ID | PropertyFlags.NOT_NULL);
         entityBuilder.property("intProp", PropertyType.Int).id(2, 1326107629162952823L)
                 .flags(PropertyFlags.NOT_NULL | PropertyFlags.INDEXED | PropertyFlags.UNIQUE).indexId(1, 1990008421926689894L);
         entityBuilder.property("stringProp", PropertyType.String).id(3, 3165064094626578066L)
                 .flags(PropertyFlags.INDEXED | PropertyFlags.UNIQUE).indexId(2, 8578641540773014588L);
-        entityBuilder.entityDone();
 
-        return modelBuilder.build();
+
+        entityBuilder.entityDone();
     }
 
 }

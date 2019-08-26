@@ -55,20 +55,28 @@ public class MyObjectBox {
         modelBuilder.lastRelationId(${schema.lastRelationId.id?c}, ${schema.lastRelationId.uid?c}L);
 </#if>
 
-        EntityBuilder entityBuilder;
+<#-- To avoid reaching Java method size limit of 65534 bytes add separate method for each entity. -->
+<#list schema.entities as entity>
+        buildEntity${entity.className}(modelBuilder);
+</#list>
+
+        return modelBuilder.build();
+    }
 
 <#list schema.entities as entity>
-        entityBuilder = modelBuilder.entity("${entity.dbName}");
-<#if entity.modelId??>
+    private static void buildEntity${entity.className}(ModelBuilder modelBuilder) {
+        EntityBuilder entityBuilder = modelBuilder.entity("${entity.dbName}");
+    <#if entity.modelId??>
         entityBuilder.id(${entity.modelId?c}, ${entity.modelUid?c}L)<#if
-            entity.lastPropertyId??>.lastPropertyId(${entity.lastPropertyId.id?c}, ${entity.lastPropertyId.uid?c}L)</#if>;
-</#if>
-<#assign entityFlags = entity.entityFlagsNames>
-<#if (entityFlags?size > 0)>
+        entity.lastPropertyId??>.lastPropertyId(${entity.lastPropertyId.id?c}, ${entity.lastPropertyId.uid?c}L)</#if>;
+    </#if>
+    <#assign entityFlags = entity.entityFlagsNames>
+    <#if (entityFlags?size > 0)>
         entityBuilder.flags(${entityFlags?join(" | ")});
-</#if>
-<#list entity.propertiesColumns as property>
-    <#assign propertyFlags = property.propertyFlagsNames>
+    </#if>
+
+    <#list entity.propertiesColumns as property>
+        <#assign propertyFlags = property.propertyFlagsNames>
         entityBuilder.property("${property.dbName}", <#--
         --><#if property.targetEntity??>"${property.targetEntity.dbName}", <#--
             --><#if property.virtualTargetName??>"${property.virtualTargetName}", </#if></#if><#--
@@ -77,20 +85,20 @@ public class MyObjectBox {
         --><#if property.modelId??>.id(${property.modelId.id?c}, ${property.modelId.uid?c}L)</#if><#--
         --><#if (propertyFlags?size > 0)>
 
-            .flags(${propertyFlags?join(" | ")})</#if><#--
+                .flags(${propertyFlags?join(" | ")})</#if><#--
         --><#if property.index?? && (property.index.maxValueLength > 0)>.indexMaxValueLength(${property.index.maxValueLength?c})</#if><#--
         --><#if property.modelIndexId??>.indexId(${property.modelIndexId.id?c}, ${property.modelIndexId.uid?c}L)</#if>;
-</#list>
-<#list entity.toManyRelations as toMany>
-<#if toMany.modelId??>
+    </#list>
 
+    <#list entity.toManyRelations as toMany>
+        <#if toMany.modelId??>
         entityBuilder.relation("${toMany.dbName}", ${toMany.modelId.id?c}, ${toMany.modelId.uid?c}L, ${toMany.targetEntity.modelId?c}, ${toMany.targetEntity.modelUid?c}L);
-</#if>
-</#list>
+        </#if>
+    </#list>
+
         entityBuilder.entityDone();
+    }
 
 </#list>
-        return modelBuilder.build();
-    }
 
 }

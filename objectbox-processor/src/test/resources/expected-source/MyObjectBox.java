@@ -26,11 +26,17 @@ public class MyObjectBox {
         modelBuilder.lastIndexId(2, 6174264050444102923L);
         modelBuilder.lastRelationId(1, 1588763188636253926L);
 
-        EntityBuilder entityBuilder;
+        buildEntitySimpleEntity(modelBuilder);
+        buildEntityIdEntity(modelBuilder);
 
-        entityBuilder = modelBuilder.entity("A");
+        return modelBuilder.build();
+    }
+
+    private static void buildEntitySimpleEntity(ModelBuilder modelBuilder) {
+        EntityBuilder entityBuilder = modelBuilder.entity("A");
         entityBuilder.id(1, 4858050548069557694L).lastPropertyId(25, 8807838229280449251L);
         entityBuilder.flags(io.objectbox.model.EntityFlags.USE_NO_ARG_CONSTRUCTOR);
+
         entityBuilder.property("id", PropertyType.Long).id(1, 8303367770402050741L)
                 .flags(PropertyFlags.ID | PropertyFlags.ID_SELF_ASSIGNABLE | PropertyFlags.NON_PRIMITIVE_TYPE);
         entityBuilder.property("simpleShortPrimitive", PropertyType.Short).id(2, 2547454299149596320L)
@@ -79,16 +85,20 @@ public class MyObjectBox {
                 .flags(PropertyFlags.NOT_NULL | PropertyFlags.VIRTUAL | PropertyFlags.INDEXED | PropertyFlags.INDEX_PARTIAL_SKIP_ZERO).indexId(2, 6174264050444102923L);
 
         entityBuilder.relation("toMany", 1, 1588763188636253926L, 2, 7806468668391521694L);
-        entityBuilder.entityDone();
 
-        entityBuilder = modelBuilder.entity("IdEntity");
+        entityBuilder.entityDone();
+    }
+
+    private static void buildEntityIdEntity(ModelBuilder modelBuilder) {
+        EntityBuilder entityBuilder = modelBuilder.entity("IdEntity");
         entityBuilder.id(2, 7806468668391521694L).lastPropertyId(1, 4951803424764837731L);
         entityBuilder.flags(io.objectbox.model.EntityFlags.USE_NO_ARG_CONSTRUCTOR);
+
         entityBuilder.property("id", PropertyType.Long).id(1, 4951803424764837731L)
                 .flags(PropertyFlags.ID | PropertyFlags.NON_PRIMITIVE_TYPE);
-        entityBuilder.entityDone();
 
-        return modelBuilder.build();
+
+        entityBuilder.entityDone();
     }
 
 }

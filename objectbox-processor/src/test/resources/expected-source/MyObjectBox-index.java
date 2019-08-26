@@ -22,11 +22,16 @@ public class MyObjectBox {
         modelBuilder.lastIndexId(4, 6816316644989602931L);
         modelBuilder.lastRelationId(0, 0L);
 
-        EntityBuilder entityBuilder;
+        buildEntityIndexGenerated(modelBuilder);
 
-        entityBuilder = modelBuilder.entity("IndexGenerated");
+        return modelBuilder.build();
+    }
+
+    private static void buildEntityIndexGenerated(ModelBuilder modelBuilder) {
+        EntityBuilder entityBuilder = modelBuilder.entity("IndexGenerated");
         entityBuilder.id(1, 8909216917646328500L).lastPropertyId(5, 386689427203097845L);
         entityBuilder.flags(io.objectbox.model.EntityFlags.USE_NO_ARG_CONSTRUCTOR);
+
         entityBuilder.property("id", PropertyType.Long).id(1, 5446539300635330200L)
                 .flags(PropertyFlags.ID | PropertyFlags.NOT_NULL);
         entityBuilder.property("defaultProp", PropertyType.Int).id(2, 5084698942674518401L)
@@ -37,9 +42,8 @@ public class MyObjectBox {
                 .flags(PropertyFlags.INDEX_HASH).indexId(3, 1690874977862683848L);
         entityBuilder.property("hash64Prop", PropertyType.String).id(5, 386689427203097845L)
                 .flags(PropertyFlags.INDEX_HASH64).indexId(4, 6816316644989602931L);
-        entityBuilder.entityDone();
 
-        return modelBuilder.build();
+        entityBuilder.entityDone();
     }
 
 }
