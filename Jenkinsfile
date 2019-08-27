@@ -63,7 +63,7 @@ pipeline {
         stage('upload-to-internal') {
             agent { label 'linux' }
             steps {
-                sh "./gradlew $gradleArgs $MVN_REPO_ARGS uploadArchives $MVN_REPO_UPLOAD_ARGS"
+                sh "./gradlew $gradleArgs $MVN_REPO_ARGS $MVN_REPO_UPLOAD_ARGS uploadArchives"
             }
         }
 
@@ -78,7 +78,7 @@ pipeline {
             steps {
                 // Not supplying internal Maven repo info to ensure dependencies are fetched from public repo.
                 // Note: add quotes around URL parameter to avoid line breaks due to semicolon in URL.
-                sh "./gradlew -Dorg.gradle.daemon=false --stacktrace " +
+                sh "./gradlew $gradleArgs " +
                    "\"-PpreferredRepo=${BINTRAY_URL}\" -PpreferredUsername=${BINTRAY_LOGIN_USR} -PpreferredPassword=${BINTRAY_LOGIN_PSW} " +
                    "uploadArchives"
             }
