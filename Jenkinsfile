@@ -77,8 +77,9 @@ pipeline {
             }
             steps {
                 // Not supplying internal Maven repo info to ensure dependencies are fetched from public repo.
+                // Note: add quotes around URL parameter to avoid line breaks due to semicolon in URL.
                 sh "./gradlew -Dorg.gradle.daemon=false --stacktrace " +
-                   "-PpreferredRepo=${BINTRAY_URL} -PpreferredUsername=${BINTRAY_LOGIN_USR} -PpreferredPassword=${BINTRAY_LOGIN_PSW} " +
+                   "\"-PpreferredRepo=${BINTRAY_URL}\" -PpreferredUsername=${BINTRAY_LOGIN_USR} -PpreferredPassword=${BINTRAY_LOGIN_PSW} " +
                    "uploadArchives"
             }
         }
