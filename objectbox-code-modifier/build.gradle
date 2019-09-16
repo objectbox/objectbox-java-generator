@@ -1,4 +1,5 @@
 apply plugin: 'kotlin'
+apply plugin: 'kotlin-kapt'
 apply plugin: 'de.fuerstenau.buildconfig'
 apply plugin: 'idea' // to pick up generated BuildConfig in IntelliJ
 
@@ -13,6 +14,7 @@ dependencies {
     compile "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
     compile 'org.greenrobot:essentials:3.0.0-RC1'
     compile 'com.squareup.moshi:moshi:1.8.0'
+    kapt 'com.squareup.moshi:moshi-kotlin-codegen:1.8.0'
 
     compile "io.objectbox:objectbox-java-api:$objectbox_java_version"
     compile project (':objectbox-generator')

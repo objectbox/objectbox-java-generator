@@ -10,19 +10,24 @@
       "properties": [
         {
           "id": "1:7897312306244420406",
-          "name": "subString"
+          "name": "subString",
+          "type": 9
         },
         {
           "id": "2:2835880266543346996",
-          "name": "id"
+          "name": "id",
+          "type": 6,
+          "flags": 5
         },
         {
           "id": "3:3040274300446727492",
-          "name": "baseString"
+          "name": "baseString",
+          "type": 9
         },
         {
           "id": "4:8706917417771476669",
-          "name": "overriddenString"
+          "name": "overriddenString",
+          "type": 9
         }
       ],
       "relations": []
@@ -34,23 +39,29 @@
       "properties": [
         {
           "id": "1:8770338956441809551",
-          "name": "subSubString"
+          "name": "subSubString",
+          "type": 9
         },
         {
           "id": "2:1520111232980023478",
-          "name": "subString"
+          "name": "subString",
+          "type": 9
         },
         {
           "id": "3:3305894056039370932",
-          "name": "id"
+          "name": "id",
+          "type": 6,
+          "flags": 5
         },
         {
           "id": "4:6204221825330564790",
-          "name": "baseString"
+          "name": "baseString",
+          "type": 9
         },
         {
           "id": "5:4615967338636652953",
-          "name": "overriddenString"
+          "name": "overriddenString",
+          "type": 9
         }
       ],
       "relations": []
@@ -60,8 +71,8 @@
   "lastIndexId": "0:0",
   "lastRelationId": "0:0",
   "lastSequenceId": "0:0",
-  "modelVersion": 4,
-  "modelVersionParserMinimum": 4,
+  "modelVersion": 5,
+  "modelVersionParserMinimum": 5,
   "retiredEntityUids": [],
   "retiredIndexUids": [],
   "retiredPropertyUids": [],

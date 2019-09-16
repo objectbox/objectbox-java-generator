@@ -106,7 +106,8 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
 
         // assert properties
         assertThat(schemaEntity.properties.size).isAtLeast(1)
-        for (prop in schemaEntity.properties) {
+        val schemaProperties = schemaEntity.properties
+        for (prop in schemaProperties) {
             when (prop.propertyName) {
                 "id" -> {
                     assertThat(prop.isPrimaryKey).isTrue()
@@ -225,6 +226,10 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
             assertWithMessage("Property '$name' has no id").that(property!!.id).isNotNull()
             assertWithMessage("Property '$name' id:uid is 0:0").that(property.id).isNotEqualTo(IdUid())
 
+            val schemaProperty = schemaProperties.find { it.dbName == name }!!
+            assertThat(property.type).isEqualTo(schemaProperty.dbTypeId)
+            assertThat(property.flags).isEqualTo(if (schemaProperty.propertyFlags != 0) schemaProperty.propertyFlags else null)
+
             when (name) {
                 "indexedProperty" -> {
                     // has valid IdUid
@@ -236,6 +241,8 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
                     assertThat(property.indexId).isNotNull()
                     assertThat(property.indexId).isNotEqualTo(IdUid())
 
+                    assertThat(property.relationTarget).isEqualTo(schemaProperty.targetEntity.dbName)
+
                     // is last index
                     assertThat(property.indexId).isEqualTo(model.lastIndexId)
 
@@ -246,13 +253,17 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
         }
 
         // assert standalone relation
-        val relations = modelEntity.relations
+        val relations = modelEntity.relations!!
         assertThat(relations).isNotEmpty()
         for (relation in relations) {
             when (relation.name) {
                 "toMany" -> {
                     assertThat(relation.id).isNotNull()
                     assertThat(relation.id).isNotEqualTo(IdUid())
+                    assertThat(relation.targetId).isNotNull()
+                    val targetEntityIdUid = model.findEntity(relatedClassName, null)!!.id
+                    assertThat(targetEntityIdUid).isNotEqualTo(IdUid())
+                    assertThat(relation.targetId).isEqualTo(targetEntityIdUid)
                 }
                 else -> fail("Found stray relation '${relation.name}' in model file.")
             }
