@@ -488,4 +488,37 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
     }
 
+    @Test
+    fun entity_duplicateWithSameName_shouldError() {
+        val javaFileObjectOriginal = """
+        package com.example.original;
+        import io.objectbox.annotation.Entity;
+        import io.objectbox.annotation.Id;
+
+        @Entity
+        public class Example {
+            @Id long id;
+        }
+        """.let {
+            JavaFileObjects.forSourceString("com.example.original.Example", it)
+        }
+        val javaFileObjectDuplicate = """
+        package com.example.duplicate;
+        import io.objectbox.annotation.Entity;
+        import io.objectbox.annotation.Id;
+
+        @Entity
+        public class Example {
+            @Id long id;
+        }
+        """.let {
+            JavaFileObjects.forSourceString("com.example.duplicate.Example", it)
+        }
+
+        val environment = TestEnvironment("getter-matching-return-temp.json")
+
+        val compilation = environment.compile(listOf(javaFileObjectOriginal, javaFileObjectDuplicate))
+        CompilationSubject.assertThat(compilation)
+            .hadErrorContaining("There is already an entity class 'Example': 'com.example.original.Example'.")
+    }
 }
