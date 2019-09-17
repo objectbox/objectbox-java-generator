@@ -20,7 +20,7 @@ import io.objectbox.relation.ToOne;
 public class SimpleEntity {
 
     @Id(assignable = true)
-    Long id;
+    long id;
 
     short simpleShortPrimitive;
     Short simpleShort;

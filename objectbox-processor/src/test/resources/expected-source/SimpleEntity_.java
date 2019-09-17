@@ -39,7 +39,7 @@ public final class SimpleEntity_ implements EntityInfo<SimpleEntity> {
     public final static SimpleEntity_ __INSTANCE = new SimpleEntity_();
 
     public final static io.objectbox.Property<SimpleEntity> id =
-            new io.objectbox.Property<>(__INSTANCE, 0, 1, Long.class, "id", true, "id");
+            new io.objectbox.Property<>(__INSTANCE, 0, 1, long.class, "id", true, "id");
 
     public final static io.objectbox.Property<SimpleEntity> simpleShortPrimitive =
             new io.objectbox.Property<>(__INSTANCE, 1, 2, short.class, "simpleShortPrimitive");
@@ -188,8 +188,7 @@ public final class SimpleEntity_ implements EntityInfo<SimpleEntity> {
     static final class SimpleEntityIdGetter implements IdGetter<SimpleEntity> {
         @Override
         public long getId(SimpleEntity object) {
-            Long id = object.id;
-            return id != null? id : 0;
+            return object.id;
         }
     }
 

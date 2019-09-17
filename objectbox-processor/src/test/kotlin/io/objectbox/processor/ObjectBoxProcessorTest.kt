@@ -113,7 +113,7 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
                     assertThat(prop.isPrimaryKey).isTrue()
                     assertThat(prop.isIdAssignable).isTrue()
                     assertThat(prop.dbName).isEqualTo("id")
-                    assertType(prop, PropertyType.Long)
+                    assertPrimitiveType(prop, PropertyType.Long)
                 }
                 "simpleShortPrimitive" -> assertPrimitiveType(prop, PropertyType.Short)
                 "simpleShort" -> assertType(prop, PropertyType.Short)
