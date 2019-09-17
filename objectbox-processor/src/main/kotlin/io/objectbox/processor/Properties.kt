@@ -317,10 +317,7 @@ class Properties(
         val propertyBuilder = entityModel.tryToAddProperty(propertyType, field) ?: return null
 
         val isPrimitive = typeMirror.kind.isPrimitive
-        if (isPrimitive) {
-            // treat primitive types as non-null
-            propertyBuilder.notNull()
-        } else if (propertyType.isScalar) {
+        if (!isPrimitive && propertyType.isScalar) {
             // treat wrapper types (Long, Integer, ...) of scalar types as non-primitive
             propertyBuilder.nonPrimitiveType()
         }

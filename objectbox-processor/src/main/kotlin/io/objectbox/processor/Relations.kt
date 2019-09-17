@@ -147,7 +147,6 @@ class Relations(private val messages: Messages) {
             // Target ID reference property not explicitly defined in entity, create a virtual one.
 
             val propertyBuilder = entityModel.addProperty(PropertyType.Long, toOne.idRefPropertyName)
-            propertyBuilder.notNull()
             propertyBuilder.fieldAccessible()
             propertyBuilder.dbName(toOne.idRefPropertyNameInDb)
             // just storing uid, id model sync will replace with correct id+uid

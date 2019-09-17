@@ -45,7 +45,7 @@ class UnsignedTest : BaseProcessorTest() {
         val model = environment.readModel()
         val entity = model.findEntity("Example", null)!!
         val property = entity.properties.find { it.name == "unsigned" }!!
-        assertThat(property.flags).isEqualTo(PropertyFlags.NOT_NULL.or(PropertyFlags.UNSIGNED))
+        assertThat(property.flags).isEqualTo(PropertyFlags.UNSIGNED)
     }
 
     @Test

@@ -45,37 +45,29 @@ public class MyObjectBox {
 
         entityBuilder.property("id", PropertyType.Long).id(1, 8303367770402050741L)
                 .flags(PropertyFlags.ID | PropertyFlags.ID_SELF_ASSIGNABLE);
-        entityBuilder.property("simpleShortPrimitive", PropertyType.Short).id(2, 2547454299149596320L)
-                .flags(PropertyFlags.NOT_NULL);
+        entityBuilder.property("simpleShortPrimitive", PropertyType.Short).id(2, 2547454299149596320L);
         entityBuilder.property("simpleShort", PropertyType.Short).id(3, 1065398153566608274L)
                 .flags(PropertyFlags.NON_PRIMITIVE_TYPE);
-        entityBuilder.property("simpleIntPrimitive", PropertyType.Int).id(4, 7019841740086346212L)
-                .flags(PropertyFlags.NOT_NULL);
+        entityBuilder.property("simpleIntPrimitive", PropertyType.Int).id(4, 7019841740086346212L);
         entityBuilder.property("simpleInt", PropertyType.Int).id(5, 2149606992334875025L)
                 .flags(PropertyFlags.NON_PRIMITIVE_TYPE);
-        entityBuilder.property("simpleLongPrimitive", PropertyType.Long).id(6, 3870774530785480176L)
-                .flags(PropertyFlags.NOT_NULL);
+        entityBuilder.property("simpleLongPrimitive", PropertyType.Long).id(6, 3870774530785480176L);
         entityBuilder.property("simpleLong", PropertyType.Long).id(7, 6076934711032013633L)
                 .flags(PropertyFlags.NON_PRIMITIVE_TYPE);
-        entityBuilder.property("simpleFloatPrimitive", PropertyType.Float).id(8, 1005325329902505869L)
-                .flags(PropertyFlags.NOT_NULL);
+        entityBuilder.property("simpleFloatPrimitive", PropertyType.Float).id(8, 1005325329902505869L);
         entityBuilder.property("simpleFloat", PropertyType.Float).id(9, 6013849627054382655L)
                 .flags(PropertyFlags.NON_PRIMITIVE_TYPE);
-        entityBuilder.property("simpleDoublePrimitive", PropertyType.Double).id(10, 1714793024529017564L)
-                .flags(PropertyFlags.NOT_NULL);
+        entityBuilder.property("simpleDoublePrimitive", PropertyType.Double).id(10, 1714793024529017564L);
         entityBuilder.property("simpleDouble", PropertyType.Double).id(11, 1265968316355477242L)
                 .flags(PropertyFlags.NON_PRIMITIVE_TYPE);
-        entityBuilder.property("simpleBooleanPrimitive", PropertyType.Bool).id(12, 4472277657621006188L)
-                .flags(PropertyFlags.NOT_NULL);
+        entityBuilder.property("simpleBooleanPrimitive", PropertyType.Bool).id(12, 4472277657621006188L);
         entityBuilder.property("simpleBoolean", PropertyType.Bool).id(13, 7658102659822256293L)
                 .flags(PropertyFlags.NON_PRIMITIVE_TYPE);
-        entityBuilder.property("simpleBytePrimitive", PropertyType.Byte).id(14, 4560729911540009437L)
-                .flags(PropertyFlags.NOT_NULL);
+        entityBuilder.property("simpleBytePrimitive", PropertyType.Byte).id(14, 4560729911540009437L);
         entityBuilder.property("simpleByte", PropertyType.Byte).id(15, 1331388668561714029L)
                 .flags(PropertyFlags.NON_PRIMITIVE_TYPE);
         entityBuilder.property("simpleDate", PropertyType.Date).id(16, 3711768428068804965L);
-        entityBuilder.property("simpleCharPrimitive", PropertyType.Char).id(23, 1838261170942203646L)
-                .flags(PropertyFlags.NOT_NULL);
+        entityBuilder.property("simpleCharPrimitive", PropertyType.Char).id(23, 1838261170942203646L);
         entityBuilder.property("simpleChar", PropertyType.Char).id(24, 2870459311547136401L)
                 .flags(PropertyFlags.NON_PRIMITIVE_TYPE);
         entityBuilder.property("simpleString", PropertyType.String).id(17, 6798801512033870238L);
@@ -89,7 +81,7 @@ public class MyObjectBox {
         entityBuilder.property("customTypes", PropertyType.Int).id(22, 4772590935549770830L)
                 .flags(PropertyFlags.NON_PRIMITIVE_TYPE);
         entityBuilder.property("toOneId", "IdEntity", "toOne", PropertyType.Relation).id(25, 8807838229280449251L)
-                .flags(PropertyFlags.NOT_NULL | PropertyFlags.VIRTUAL | PropertyFlags.INDEXED | PropertyFlags.INDEX_PARTIAL_SKIP_ZERO).indexId(2, 6174264050444102923L);
+                .flags(PropertyFlags.VIRTUAL | PropertyFlags.INDEXED | PropertyFlags.INDEX_PARTIAL_SKIP_ZERO).indexId(2, 6174264050444102923L);
 
         entityBuilder.relation("toMany", 1, 1588763188636253926L, 2, 7806468668391521694L);
 

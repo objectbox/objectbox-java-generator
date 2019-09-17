@@ -13,7 +13,7 @@ abstract class BaseProcessorTest {
 
     protected fun assertPrimitiveType(prop: Property, type: PropertyType) {
         assertThat(prop.propertyType).isEqualTo(type)
-        assertThat(prop.isNotNull).isTrue()
+        assertThat(prop.isNotNull).isFalse()
         assertThat(prop.isNonPrimitiveType).isFalse()
     }
 

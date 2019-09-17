@@ -34,7 +34,7 @@ public class MyObjectBox {
         entityBuilder.property("id", PropertyType.Long).id(1, 3994720554222568692L)
                 .flags(PropertyFlags.ID);
         entityBuilder.property("unsigned", PropertyType.Int).id(2, 2170682118991606844L)
-                .flags(PropertyFlags.NOT_NULL | PropertyFlags.UNSIGNED);
+                .flags(PropertyFlags.UNSIGNED);
 
 
         entityBuilder.entityDone();
