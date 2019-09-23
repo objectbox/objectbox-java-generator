@@ -32,6 +32,7 @@ import javassist.bytecode.SignatureAttribute
 import javassist.expr.ExprEditor
 import javassist.expr.FieldAccess
 import java.io.File
+import java.net.URLDecoder
 
 /**
  * Transforms entity class files: adds a BoxStore field and adds relation field (ToOne, ToMany) initialization to
@@ -54,17 +55,9 @@ class ClassTransformer(val debug: Boolean = false) {
             // 3) ObjectBox is separated for mainly for tests (we make this configurable, treat tests as special)
             // 4) Don't fake java.lang.Object, it may cause stack overflows because superclass != null
             val objectBoxPath = BoxStoreBuilder::class.java.protectionDomain.codeSource.location.path
-            try {
-                classPool.appendClassPath(objectBoxPath)
-            } catch (e: NotFoundException) {
-                if (objectBoxPath.contains("%20")) {
-                    // Spaces in user path can be problematic (at least on Windows).
-                    // See https://github.com/greenrobot/ObjectBox/issues/135#issuecomment-325219079
-                    classPool.appendClassPath(objectBoxPath.replace("%20", " "))
-                } else {
-                    throw e
-                }
-            }
+            // location.path is a URL, but javassist expects a path: so decode the URL first.
+            val decodedObjectBoxPath = URLDecoder.decode(objectBoxPath, "UTF-8")
+            classPool.appendClassPath(decodedObjectBoxPath)
             classPool.appendClassPath(PrefixedClassPath("java.", java.lang.Object::class.java))
         }
 
