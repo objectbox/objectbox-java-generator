@@ -1,16 +1,16 @@
 package io.objectbox.reporting
 
+import io.objectbox.reporting.BuildPropertiesFile.FileCreateListener
 import java.io.File
 import java.io.FileReader
 import java.io.FileWriter
 import java.io.IOException
-import java.lang.UnsupportedOperationException
 import java.util.*
 
 
 /**
- * Reads [Properties] from and stores them in a file in the user directory
- * or alternatively the temporary files directory.
+ * Reads [Properties] from and stores them in a file in the user directory.
+ * If the file can't be created calls the given [FileCreateListener].
  */
 class BuildPropertiesFile(fileCreateListener: FileCreateListener) {
 
