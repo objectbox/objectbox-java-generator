@@ -92,13 +92,15 @@ open class GradleBuildTracker(toolName: String) : BasicBuildTracker(toolName) {
 
     private fun checkCI(): String? {
         return when {
-        //https://docs.travis-ci.com/user/environment-variables/#Default-Environment-Variables
+            // https://docs.travis-ci.com/user/environment-variables/#Default-Environment-Variables
             System.getenv("CI") == "true" -> "T"
-        // https://wiki.jenkins.io/display/JENKINS/Building+a+software+project#Buildingasoftwareproject-below
+            // https://wiki.jenkins.io/display/JENKINS/Building+a+software+project#Buildingasoftwareproject-below
             System.getenv("JENKINS_URL") != null -> "J"
-            System.getenv("GITLAB_CI") != null -> "GL" // https://docs.gitlab.com/ee/ci/variables/
-            System.getenv("CIRCLECI") != null -> "C" // https://circleci.com/docs/1.0/environment-variables/
-        // https://documentation.codeship.com/pro/builds-and-configuration/steps/
+            // https://docs.gitlab.com/ee/ci/variables/
+            System.getenv("GITLAB_CI") != null -> "GL"
+            // https://circleci.com/docs/1.0/environment-variables/
+            System.getenv("CIRCLECI") != null -> "C"
+            // https://documentation.codeship.com/pro/builds-and-configuration/steps/
             System.getenv("CI_NAME")?.toLowerCase() == "codeship" -> "CS"
             System.getenv("CI") != null -> "Other"
             else -> null

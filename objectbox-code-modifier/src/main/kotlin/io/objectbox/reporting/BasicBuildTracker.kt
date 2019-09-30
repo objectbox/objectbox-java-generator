@@ -115,7 +115,14 @@ open class BasicBuildTracker(private val toolName: String) {
         sendEventAsync("NoBuildProperties", errorProperties(message, throwable), false)
     }
 
-    fun trackStats(completed: Boolean, daoCompat: Boolean, entityCount: Int, propertyCount: Int, toOneCount: Int, toManyCount: Int) {
+    fun trackStats(
+        completed: Boolean,
+        daoCompat: Boolean,
+        entityCount: Int,
+        propertyCount: Int,
+        toOneCount: Int,
+        toManyCount: Int
+    ) {
         val event = StringBuilder()
         event.key("DC").value(daoCompat.toString()).comma()
         event.key("EC").value(entityCount.toString()).comma()
@@ -261,6 +268,6 @@ open class BasicBuildTracker(private val toolName: String) {
     }
 
     private fun encodeBase64WithoutPadding(valueBytesBigEndian: ByteArray?) =
-            Base64.encodeBytes(valueBytesBigEndian).removeSuffix("=").removeSuffix("=")
+        Base64.encodeBytes(valueBytesBigEndian).removeSuffix("=").removeSuffix("=")
 
 }
