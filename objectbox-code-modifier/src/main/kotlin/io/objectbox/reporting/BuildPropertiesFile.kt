@@ -9,8 +9,8 @@ import java.util.*
 
 
 /**
- * Reads [Properties] from and stores them in a file in the user directory
- * or alternatively the temporary files directory.
+ * Reads [Properties] from and stores them in a file in the user directory.
+ * If the file can't be created calls the given [FileCreateListener].
  */
 class BuildPropertiesFile(fileCreateListener: FileCreateListener) {
 
