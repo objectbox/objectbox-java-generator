@@ -42,6 +42,7 @@ open class BasicBuildTracker(private val toolName: String) {
 
         private const val HOUR_IN_MILLIS = 3600 * 1000
 
+        // https://developer.mixpanel.com/docs/http
         const val BASE_URL = "https://api.mixpanel.com/track/?data="
         const val TOKEN = "REPLACE_WITH_TOKEN"
         const val TIMEOUT_READ = 15000
@@ -135,7 +136,7 @@ open class BasicBuildTracker(private val toolName: String) {
     private fun sendEvent(eventName: String, eventProperties: String, sendUniqueId: Boolean) {
         val event = eventData(eventName, eventProperties, sendUniqueId)
 
-        // https://mixpanel.com/help/reference/http#base64
+        // https://developer.mixpanel.com/docs/http#section-base64-for-mixpanel
         val eventEncoded = Base64.encodeBytes(event.toByteArray())
         try {
             val url = URL(BASE_URL + eventEncoded)
@@ -151,7 +152,7 @@ open class BasicBuildTracker(private val toolName: String) {
 
     // public for tests in another module
     fun eventData(eventName: String, properties: String, addUniqueId: Boolean): String {
-        // https://mixpanel.com/help/reference/http#tracking-events
+        // https://developer.mixpanel.com/docs/http#section-tracking-events
         val event = StringBuilder()
         event.append("{")
         event.key("event").value(eventName).comma()
@@ -180,7 +181,7 @@ open class BasicBuildTracker(private val toolName: String) {
         return event.toString()
     }
 
-    open protected fun version(): String? = CodeModifierBuildConfig.VERSION
+    protected open fun version(): String? = CodeModifierBuildConfig.VERSION
 
     // public for tests in another module
     fun errorProperties(message: String?, throwable: Throwable?): String {
@@ -259,7 +260,7 @@ open class BasicBuildTracker(private val toolName: String) {
         }
     }
 
-    protected fun encodeBase64WithoutPadding(valueBytesBigEndian: ByteArray?) =
+    private fun encodeBase64WithoutPadding(valueBytesBigEndian: ByteArray?) =
             Base64.encodeBytes(valueBytesBigEndian).removeSuffix("=").removeSuffix("=")
 
 }
