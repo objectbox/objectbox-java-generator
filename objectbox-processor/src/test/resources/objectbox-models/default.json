@@ -5,7 +5,7 @@
   "entities": [
     {
       "id": "1:4858050548069557694",
-      "lastPropertyId": "28:3312356255575143881",
+      "lastPropertyId": "29:5381545072285823697",
       "name": "A",
       "properties": [
         {
@@ -153,6 +153,12 @@
           "id": "28:3312356255575143881",
           "name": "dateNano",
           "type": 12
+        },
+        {
+          "id": "29:5381545072285823697",
+          "name": "idCompanion",
+          "type": 10,
+          "flags": 16384
         }
       ],
       "relations": [

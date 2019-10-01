@@ -59,6 +59,7 @@ public final class SimpleEntityCursor extends Cursor<SimpleEntity> {
     private final static int __ID_customTypes = SimpleEntity_.customTypes.id;
     private final static int __ID_dateNanoPrimitive = SimpleEntity_.dateNanoPrimitive.id;
     private final static int __ID_dateNano = SimpleEntity_.dateNano.id;
+    private final static int __ID_idCompanion = SimpleEntity_.idCompanion.id;
     private final static int __ID_toOneId = SimpleEntity_.toOneId.id;
 
     public SimpleEntityCursor(io.objectbox.Transaction tx, long cursor, BoxStore boxStore) {
@@ -134,14 +135,16 @@ public final class SimpleEntityCursor extends Cursor<SimpleEntity> {
                 __id24, __id24 != 0 ? customTypesConverter.convertToDatabaseValue(customTypes) : 0, __ID_simpleShortPrimitive, entity.simpleShortPrimitive,
                 __id8, __id8 != 0 ? simpleFloat : 0, __id10, __id10 != 0 ? simpleDouble : 0);
 
+        java.util.Date idCompanion = entity.idCompanion;
+        int __id27 = idCompanion != null ? __ID_idCompanion : 0;
         Short simpleShort = entity.simpleShort;
         int __id2 = simpleShort != null ? __ID_simpleShort : 0;
         Character simpleChar = entity.simpleChar;
         int __id17 = simpleChar != null ? __ID_simpleChar : 0;
 
         collect004000(cursor, 0, 0,
-                __id2, __id2 != 0 ? simpleShort : 0, __ID_simpleCharPrimitive, entity.simpleCharPrimitive,
-                __id17, __id17 != 0 ? simpleChar : 0, __ID_simpleBytePrimitive, entity.simpleBytePrimitive);
+                __id27, __id27 != 0 ? idCompanion.getTime() : 0, __id2, __id2 != 0 ? simpleShort : 0,
+                __ID_simpleCharPrimitive, entity.simpleCharPrimitive, __id17, __id17 != 0 ? simpleChar : 0);
 
         Byte simpleByte = entity.simpleByte;
         int __id14 = simpleByte != null ? __ID_simpleByte : 0;
@@ -149,8 +152,8 @@ public final class SimpleEntityCursor extends Cursor<SimpleEntity> {
         int __id12 = simpleBoolean != null ? __ID_simpleBoolean : 0;
 
         long __assignedId = collect004000(cursor, entity.id, PUT_FLAG_COMPLETE,
-                __id14, __id14 != 0 ? simpleByte : 0, __ID_simpleBooleanPrimitive, entity.isSimpleBooleanPrimitive() ? 1 : 0,
-                __id12, __id12 != 0 ? simpleBoolean ? 1 : 0 : 0, 0, 0);
+                __ID_simpleBytePrimitive, entity.simpleBytePrimitive, __id14, __id14 != 0 ? simpleByte : 0,
+                __ID_simpleBooleanPrimitive, entity.isSimpleBooleanPrimitive() ? 1 : 0, __id12, __id12 != 0 ? simpleBoolean ? 1 : 0 : 0);
 
         entity.id = __assignedId;
 

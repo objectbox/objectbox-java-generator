@@ -62,6 +62,14 @@ public class Property implements HasParsedElement {
             return this;
         }
 
+        public PropertyBuilder idCompanion() {
+            if (property.propertyType != PropertyType.Date && property.propertyType != PropertyType.DateNano) {
+                throw new RuntimeException("Only Date or DateNano properties can be an ID companion.");
+            }
+            property.idCompanion = true;
+            return this;
+        }
+
         public PropertyBuilder notNull() {
             property.notNull = true;
             return this;
@@ -161,6 +169,7 @@ public class Property implements HasParsedElement {
     private String converterClassName;
 
     private boolean primaryKey;
+    private boolean idCompanion;
 
     private boolean notNull;
     private boolean nonPrimitiveType;
@@ -236,6 +245,10 @@ public class Property implements HasParsedElement {
 
     public boolean isPrimaryKey() {
         return primaryKey;
+    }
+
+    public boolean isIdCompanion() {
+        return idCompanion;
     }
 
     public boolean isNotNull() {
@@ -432,6 +445,10 @@ public class Property implements HasParsedElement {
         if (isIdAssignable()) {
             flagsModelFile |= PropertyFlags.ID_SELF_ASSIGNABLE;
             flagsGeneratedCode.add("PropertyFlags.ID_SELF_ASSIGNABLE");
+        }
+        if (isIdCompanion()) {
+            flagsModelFile |= PropertyFlags.ID_COMPANION;
+            flagsGeneratedCode.add("PropertyFlags.ID_COMPANION");
         }
         // Note: Primary key/ID properties must always be not null. Do not explicitly add this flag for them.
         if (isNotNull() && !isPrimaryKey()) {

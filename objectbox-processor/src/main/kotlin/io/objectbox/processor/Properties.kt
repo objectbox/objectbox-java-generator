@@ -23,6 +23,7 @@ import io.objectbox.annotation.Convert
 import io.objectbox.annotation.DatabaseType
 import io.objectbox.annotation.DefaultValue
 import io.objectbox.annotation.Id
+import io.objectbox.annotation.IdCompanion
 import io.objectbox.annotation.Index
 import io.objectbox.annotation.IndexType
 import io.objectbox.annotation.NameInDb
@@ -156,6 +157,26 @@ class Properties(
             propertyBuilder.primaryKey()
             if (idAnnotation.assignable) {
                 propertyBuilder.idAssignable()
+            }
+        }
+
+        // @IdCompanion
+        if (field.hasAnnotation(IdCompanion::class.java)) {
+            // Ensure there is at most one @IdCompanion.
+            val existing = entityModel.properties.find { it.isIdCompanion }
+            if (existing != null) {
+                messages.error("'${existing.propertyName}' is already an @IdCompanion property, there can only be one.")
+            } else {
+                // Only Date or DateNano are supported.
+                if (propertyBuilder.property.propertyType != PropertyType.Date
+                    && propertyBuilder.property.propertyType != PropertyType.DateNano) {
+                    messages.error(
+                        "@IdCompanion has to be of type Date or a long annotated with @Type(DateNano).",
+                        field
+                    )
+                } else {
+                    propertyBuilder.idCompanion()
+                }
             }
         }
 

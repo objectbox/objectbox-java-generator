@@ -119,8 +119,11 @@ public final class SimpleEntity_ implements EntityInfo<SimpleEntity> {
     public final static io.objectbox.Property<SimpleEntity> dateNano =
             new io.objectbox.Property<>(__INSTANCE, 26, 28, Long.class, "dateNano");
 
+    public final static io.objectbox.Property<SimpleEntity> idCompanion =
+            new io.objectbox.Property<>(__INSTANCE, 27, 29, java.util.Date.class, "idCompanion");
+
     public final static io.objectbox.Property<SimpleEntity> toOneId =
-            new io.objectbox.Property<>(__INSTANCE, 27, 25, long.class, "toOneId", true);
+            new io.objectbox.Property<>(__INSTANCE, 28, 25, long.class, "toOneId", true);
 
     @SuppressWarnings("unchecked")
     public final static io.objectbox.Property<SimpleEntity>[] __ALL_PROPERTIES = new io.objectbox.Property[]{
@@ -151,6 +154,7 @@ public final class SimpleEntity_ implements EntityInfo<SimpleEntity> {
             customTypes,
             dateNanoPrimitive,
             dateNano,
+            idCompanion,
             toOneId
     };
 

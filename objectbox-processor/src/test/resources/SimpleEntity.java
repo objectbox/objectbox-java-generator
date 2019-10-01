@@ -8,6 +8,7 @@ import io.objectbox.annotation.Convert;
 import io.objectbox.annotation.DatabaseType;
 import io.objectbox.annotation.Entity;
 import io.objectbox.annotation.Id;
+import io.objectbox.annotation.IdCompanion;
 import io.objectbox.annotation.Index;
 import io.objectbox.annotation.NameInDb;
 import io.objectbox.annotation.Transient;
@@ -77,6 +78,9 @@ public class SimpleEntity {
     long dateNanoPrimitive;
     @Type(DatabaseType.DateNano)
     Long dateNano;
+
+    @IdCompanion
+    Date idCompanion;
 
     ToOne<IdEntity> toOne = new ToOne<>(this, SimpleEntity_.toOne);
 

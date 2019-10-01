@@ -28,6 +28,7 @@ import io.objectbox.model.PropertyFlags
 import org.junit.Assert.assertEquals
 import org.junit.Assert.fail
 import org.junit.Test
+import javax.tools.JavaFileObject
 
 class ObjectBoxProcessorTest : BaseProcessorTest() {
 
@@ -158,6 +159,10 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
                 }
                 "dateNanoPrimitive" -> { assertPrimitiveType(prop, PropertyType.DateNano) }
                 "dateNano" -> { assertType(prop, PropertyType.DateNano) }
+                "idCompanion" -> {
+                    assertThat(prop.isIdCompanion).isTrue()
+                    assertType(prop, PropertyType.Date)
+                }
                 "toOneId" -> {
                     assertThat(prop.dbName).isEqualTo(prop.propertyName)
                     assertThat(prop.virtualTargetName).isEqualTo("toOne")
@@ -217,6 +222,7 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
                 "customTypes",
                 "dateNanoPrimitive",
                 "dateNano",
+                "idCompanion",
                 "toOneId" // last
         )
         val modelProperties = modelEntity.properties
