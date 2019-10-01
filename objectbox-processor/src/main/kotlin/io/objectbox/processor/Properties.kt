@@ -20,12 +20,14 @@ package io.objectbox.processor
 
 import io.objectbox.annotation.ConflictStrategy
 import io.objectbox.annotation.Convert
+import io.objectbox.annotation.DatabaseType
 import io.objectbox.annotation.DefaultValue
 import io.objectbox.annotation.Id
 import io.objectbox.annotation.Index
 import io.objectbox.annotation.IndexType
 import io.objectbox.annotation.NameInDb
 import io.objectbox.annotation.Transient
+import io.objectbox.annotation.Type
 import io.objectbox.annotation.Uid
 import io.objectbox.annotation.Unique
 import io.objectbox.annotation.Unsigned
@@ -282,14 +284,15 @@ class Properties(
             ?: return null // did not find @Convert mirror
 
         // converter and dbType value existence guaranteed by compiler
-        val converter = getAnnotationValueType(annotationMirror, "converter")
-        val dbType = getAnnotationValueType(annotationMirror, "dbType")
+        val converter = getAnnotationValueType(annotationMirror, "converter")!!
+        val dbType = getAnnotationValueType(annotationMirror, "dbType")!!
 
-        val propertyType = typeHelper.getPropertyType(dbType)
-        if (propertyType == null) {
-            messages.error("@Convert dbType type is not supported, use a Java primitive wrapper class.", field)
-            return null
-        }
+        // Detect property type based on dbType of annotation.
+        val propertyType = determinePropertyType(
+            field,
+            dbType,
+            "@Convert dbType type is not supported, use a Java primitive wrapper class."
+        ) ?: return null
 
         // may be a parameterized type like List<CustomType>, so erase any type parameters
         val customType = typeUtils.erasure(field.asType())
@@ -306,23 +309,54 @@ class Properties(
      * If adding the property to the model fails, prints an error and returns null.
      */
     private fun supportedPropertyBuilderOrNull(field: VariableElement): Property.PropertyBuilder? {
-        val typeMirror = field.asType()
-        val propertyType = typeHelper.getPropertyType(typeMirror)
-        if (propertyType == null) {
-            messages.error("Field type \"$typeMirror\" is not supported. Consider making the target an @Entity, " +
-                    "or using @Convert or @Transient on the field (see docs).", field)
-            return null
-        }
+        // Detect property type based on field type.
+        val fieldType = field.asType()
+        val propertyType = determinePropertyType(
+            field,
+            fieldType,
+            "Field type $fieldType is not supported. Consider making the target an @Entity, " +
+                    "or using @Convert or @Transient on the field (see docs)."
+        ) ?: return null
 
         val propertyBuilder = entityModel.tryToAddProperty(propertyType, field) ?: return null
 
-        val isPrimitive = typeMirror.kind.isPrimitive
+        val isPrimitive = field.asType().kind.isPrimitive
         if (!isPrimitive && propertyType.isScalar) {
             // treat wrapper types (Long, Integer, ...) of scalar types as non-primitive
             propertyBuilder.nonPrimitiveType()
         }
 
         return propertyBuilder
+    }
+
+    private fun determinePropertyType(field: VariableElement, type: TypeMirror, errorIfNotSupported: String): PropertyType? {
+        val propertyType = typeHelper.getPropertyType(type)
+        if (propertyType == null) {
+            messages.error(errorIfNotSupported, field)
+            return null
+        }
+
+        // Check if detected property type is overridden using @Type annotation.
+        val typeAnnotation = field.getAnnotation(Type::class.java)
+        if (typeAnnotation != null) {
+            return when (typeAnnotation.value) {
+                DatabaseType.DateNano -> {
+                    if (propertyType == PropertyType.Long) {
+                        PropertyType.DateNano
+                    } else {
+                        messages.error("@Type(DateNano) only supports properties with type Long.", field)
+                        null
+                    }
+                }
+                else -> {
+                    messages.error("@Type does not support the given type.", field)
+                    null
+                }
+            }
+        }
+
+        // Not overridden, use property type detected based on field type.
+        return propertyType
     }
 
     private fun Entity.tryToAddProperty(propertyType: PropertyType, field: VariableElement): Property.PropertyBuilder? {
