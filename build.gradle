@@ -60,6 +60,13 @@ subprojects {
         }
         mavenLocal()
     }
+
+    configurations.all {
+        // Projects are using snapshot dependencies that may update more often than 24 hours.
+        resolutionStrategy {
+            cacheChangingModulesFor 0, 'seconds'
+        }
+    }
 }
 
 task cleanOut {
