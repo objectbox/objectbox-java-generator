@@ -110,7 +110,7 @@ class PropertyCollector {
         return propertiesByType.countElements(PropertyType.Date) + propertiesByType.countElements(PropertyType.Long) +
                 propertiesByType.countElements(PropertyType.Int) + propertiesByType.countElements(PropertyType.Short) +
                 propertiesByType.countElements(PropertyType.Char) + propertiesByType.countElements(PropertyType.Byte) +
-                propertiesByType.countElements(PropertyType.Boolean);
+                propertiesByType.countElements(PropertyType.Boolean) + propertiesByType.countElements(PropertyType.DateNano);
     }
 
     private String appendProperties313311(StringBuilder properties, StringBuilder preCall) {
@@ -181,6 +181,8 @@ class PropertyCollector {
             if (type == PropertyType.Long) {
                 return appendProperty(preCall, sb, PropertyType.RelationId, isScalar);
             } else if (type == PropertyType.RelationId) {
+                return appendProperty(preCall, sb, PropertyType.DateNano, isScalar);
+            } else if (type == PropertyType.DateNano) {
                 return appendProperty(preCall, sb, PropertyType.Date, isScalar);
             } else if (type == PropertyType.Date) {
                 return appendProperty(preCall, sb, PropertyType.Int, isScalar);
