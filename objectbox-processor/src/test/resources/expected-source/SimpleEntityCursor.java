@@ -57,6 +57,8 @@ public final class SimpleEntityCursor extends Cursor<SimpleEntity> {
     private final static int __ID_namedProperty = SimpleEntity_.namedProperty.id;
     private final static int __ID_customType = SimpleEntity_.customType.id;
     private final static int __ID_customTypes = SimpleEntity_.customTypes.id;
+    private final static int __ID_dateNanoPrimitive = SimpleEntity_.dateNanoPrimitive.id;
+    private final static int __ID_dateNano = SimpleEntity_.dateNano.id;
     private final static int __ID_toOneId = SimpleEntity_.toOneId.id;
 
     public SimpleEntityCursor(io.objectbox.Transaction tx, long cursor, BoxStore boxStore) {
@@ -89,7 +91,7 @@ public final class SimpleEntityCursor extends Cursor<SimpleEntity> {
 
         collectStringArray(cursor, 0, PUT_FLAG_FIRST,
                 __id20, simpleStringArray);
-        
+
         String simpleString = entity.simpleString;
         int __id18 = simpleString != null ? __ID_simpleString : 0;
         String namedProperty = entity.namedProperty;
@@ -111,14 +113,14 @@ public final class SimpleEntityCursor extends Cursor<SimpleEntity> {
                 __id4, __id4 != 0 ? simpleInt : 0, __id21, __id21 != 0 ? indexedProperty : 0,
                 __ID_simpleFloatPrimitive, entity.simpleFloatPrimitive, __ID_simpleDoublePrimitive, entity.simpleDoublePrimitive);
 
+        Long dateNano = entity.dateNano;
+        int __id26 = dateNano != null ? __ID_dateNano : 0;
         java.util.Date simpleDate = entity.simpleDate;
         int __id15 = simpleDate != null ? __ID_simpleDate : 0;
         SimpleEnum customType = entity.customType;
         int __id23 = customType != null ? __ID_customType : 0;
         List customTypes = entity.customTypes;
         int __id24 = customTypes != null ? __ID_customTypes : 0;
-        Short simpleShort = entity.simpleShort;
-        int __id2 = simpleShort != null ? __ID_simpleShort : 0;
         Float simpleFloat = entity.simpleFloat;
         int __id8 = simpleFloat != null ? __ID_simpleFloat : 0;
         Double simpleDouble = entity.simpleDouble;
@@ -127,25 +129,28 @@ public final class SimpleEntityCursor extends Cursor<SimpleEntity> {
         collect313311(cursor, 0, 0,
                 0, null, 0, null,
                 0, null, 0, null,
+                __ID_dateNanoPrimitive, entity.dateNanoPrimitive, __id26, __id26 != 0 ? dateNano : 0,
                 __id15, __id15 != 0 ? simpleDate.getTime() : 0, __id23, __id23 != 0 ? customTypeConverter.convertToDatabaseValue(customType) : 0,
                 __id24, __id24 != 0 ? customTypesConverter.convertToDatabaseValue(customTypes) : 0, __ID_simpleShortPrimitive, entity.simpleShortPrimitive,
-                __id2, __id2 != 0 ? simpleShort : 0, __ID_simpleCharPrimitive, entity.simpleCharPrimitive,
                 __id8, __id8 != 0 ? simpleFloat : 0, __id10, __id10 != 0 ? simpleDouble : 0);
 
+        Short simpleShort = entity.simpleShort;
+        int __id2 = simpleShort != null ? __ID_simpleShort : 0;
         Character simpleChar = entity.simpleChar;
         int __id17 = simpleChar != null ? __ID_simpleChar : 0;
+
+        collect004000(cursor, 0, 0,
+                __id2, __id2 != 0 ? simpleShort : 0, __ID_simpleCharPrimitive, entity.simpleCharPrimitive,
+                __id17, __id17 != 0 ? simpleChar : 0, __ID_simpleBytePrimitive, entity.simpleBytePrimitive);
+
         Byte simpleByte = entity.simpleByte;
         int __id14 = simpleByte != null ? __ID_simpleByte : 0;
         Boolean simpleBoolean = entity.getSimpleBoolean();
         int __id12 = simpleBoolean != null ? __ID_simpleBoolean : 0;
 
-        long __assignedId = collect313311(cursor, entity.id, PUT_FLAG_COMPLETE,
-                0, null, 0, null,
-                0, null, 0, null,
-                __id17, __id17 != 0 ? simpleChar : 0, __ID_simpleBytePrimitive, entity.simpleBytePrimitive,
+        long __assignedId = collect004000(cursor, entity.id, PUT_FLAG_COMPLETE,
                 __id14, __id14 != 0 ? simpleByte : 0, __ID_simpleBooleanPrimitive, entity.isSimpleBooleanPrimitive() ? 1 : 0,
-                __id12, __id12 != 0 ? simpleBoolean ? 1 : 0 : 0, 0, 0,
-                0, 0, 0, 0);
+                __id12, __id12 != 0 ? simpleBoolean ? 1 : 0 : 0, 0, 0);
 
         entity.id = __assignedId;
 
