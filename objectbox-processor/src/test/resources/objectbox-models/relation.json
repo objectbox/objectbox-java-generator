@@ -10,12 +10,17 @@
       "properties": [
         {
           "id": "1:6092576657291525219",
-          "name": "id"
+          "name": "id",
+          "type": 6,
+          "flags": 3
         },
         {
           "id": "2:8291817030601857585",
+          "name": "parentId",
           "indexId": "2:1826750784658909321",
-          "name": "parentId"
+          "type": 11,
+          "flags": 524,
+          "relationTarget": "RelationParent"
         }
       ],
       "relations": []
@@ -27,7 +32,9 @@
       "properties": [
         {
           "id": "1:3099448933659209799",
-          "name": "id"
+          "name": "id",
+          "type": 6,
+          "flags": 3
         }
       ],
       "relations": []
@@ -37,8 +44,8 @@
   "lastIndexId": "2:1826750784658909321",
   "lastRelationId": "0:0",
   "lastSequenceId": "0:0",
-  "modelVersion": 4,
-  "modelVersionParserMinimum": 4,
+  "modelVersion": 5,
+  "modelVersionParserMinimum": 5,
   "retiredEntityUids": [],
   "retiredIndexUids": [
     2796291973695010246

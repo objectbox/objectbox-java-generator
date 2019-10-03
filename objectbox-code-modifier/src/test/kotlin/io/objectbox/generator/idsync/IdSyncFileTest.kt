@@ -72,7 +72,7 @@ class IdSyncFileTest {
         val file = File(dir, "future-version-compatible.json")
         assertTrue(file.exists())
         val idSyncModel = IdSync(file).justRead()!!
-        assertEquals(3, idSyncModel.modelVersionParserMinimum)
+        assertEquals(3L, idSyncModel.modelVersionParserMinimum)
     }
 
     @Test

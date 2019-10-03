@@ -37,7 +37,6 @@ import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateNotFoundException;
 import io.objectbox.generator.model.Entity;
-import io.objectbox.generator.model.InternalAccess;
 import io.objectbox.generator.model.Schema;
 import io.objectbox.generator.model.ToManyBase;
 import io.objectbox.generator.model.ToOne;
@@ -114,22 +113,18 @@ public class BoxGenerator {
                 + " END.*?\n", flags);
     }
 
-    /** Generates all classes and other artifacts for the given job. */
+    /** Generates all classes and other artifacts for the given job. Assumes the given schema is finished. */
     public void generateAll(GeneratorJob job) throws Exception {
         long start = System.currentTimeMillis();
 
         Schema schema = job.getSchema();
-        List<Entity> entities = schema.getEntities();
-        for (Entity entity : entities) {
-            if (entity.getClassNameDao() == null) {
-                entity.setClassNameDao(entity.getClassName() + "Cursor");
-            }
+        if (!schema.isFinished()) {
+            throw new IllegalStateException("Must call schema.finish() first");
         }
-
-        InternalAccess.init2ndAnd3rdPass(schema);
 
         System.out.println("Processing schema version " + schema.getVersion() + "...");
 
+        List<Entity> entities = schema.getEntities();
         for (Entity entity : entities) {
             Map<String, Object> extras = createExtrasForCursor(entity);
             generate(templateCursor, job, entity.getJavaPackageDao(), entity.getClassNameDao(), entity, extras);

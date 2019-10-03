@@ -33,7 +33,7 @@ public class MyObjectBox {
         entityBuilder.flags(io.objectbox.model.EntityFlags.USE_NO_ARG_CONSTRUCTOR);
 
         entityBuilder.property("id", PropertyType.Long).id(1, 1304105407891414803L)
-                .flags(PropertyFlags.ID | PropertyFlags.NOT_NULL);
+                .flags(PropertyFlags.ID);
         entityBuilder.property("intProp", PropertyType.Int).id(2, 1326107629162952823L)
                 .flags(PropertyFlags.NOT_NULL | PropertyFlags.INDEXED | PropertyFlags.UNIQUE).indexId(1, 1990008421926689894L);
         entityBuilder.property("stringProp", PropertyType.String).id(3, 3165064094626578066L)

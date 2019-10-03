@@ -10,27 +10,37 @@
       "properties": [
         {
           "id": "1:5446539300635330200",
-          "name": "id"
+          "name": "id",
+          "type": 6,
+          "flags": 1
         },
         {
           "id": "2:5084698942674518401",
+          "name": "defaultProp",
           "indexId": "1:6484382999829587572",
-          "name": "defaultProp"
+          "type": 5,
+          "flags": 12
         },
         {
           "id": "3:7492569418772139189",
+          "name": "valueProp",
           "indexId": "2:6991639645044933453",
-          "name": "valueProp"
+          "type": 1,
+          "flags": 12
         },
         {
           "id": "4:104351152796407233",
+          "name": "hashProp",
           "indexId": "3:1690874977862683848",
-          "name": "hashProp"
+          "type": 9,
+          "flags": 2048
         },
         {
           "id": "5:386689427203097845",
+          "name": "hash64Prop",
           "indexId": "4:6816316644989602931",
-          "name": "hash64Prop"
+          "type": 9,
+          "flags": 4096
         }
       ],
       "relations": []
@@ -40,8 +50,8 @@
   "lastIndexId": "4:6816316644989602931",
   "lastRelationId": "0:0",
   "lastSequenceId": "0:0",
-  "modelVersion": 4,
-  "modelVersionParserMinimum": 4,
+  "modelVersion": 5,
+  "modelVersionParserMinimum": 5,
   "retiredEntityUids": [],
   "retiredIndexUids": [],
   "retiredPropertyUids": [],

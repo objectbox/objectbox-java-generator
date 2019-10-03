@@ -35,6 +35,7 @@ import io.objectbox.relation.ToMany
 import io.objectbox.relation.ToOne
 import javax.lang.model.element.AnnotationMirror
 import javax.lang.model.element.Element
+import javax.lang.model.element.ExecutableElement
 import javax.lang.model.element.Modifier
 import javax.lang.model.element.VariableElement
 import javax.lang.model.type.TypeMirror
@@ -51,7 +52,7 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
     val typeHelper = TypeHelper(typeUtils)
 
     val fields: List<VariableElement> = ElementFilter.fieldsIn(entityElement.enclosedElements)
-    val methods: List<String> = ElementFilter.methodsIn(entityElement.enclosedElements).map { it.simpleName.toString() }
+    val methods: List<ExecutableElement> = ElementFilter.methodsIn(entityElement.enclosedElements)
 
     fun hasBoxStoreField(): Boolean {
         return fields.find { it.simpleName.toString() == "__boxStore" } != null
@@ -116,7 +117,7 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
             propertyBuilder.fieldAccessible()
         }
         // find getter method name
-        val getterMethodName = getGetterMethodNameFor(propertyBuilder.property)
+        val getterMethodName = getGetterMethodNameFor(field.asType(), propertyBuilder.property)
         propertyBuilder.getterMethodName(getterMethodName)
 
         // @Id
@@ -293,34 +294,40 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
     }
 
     /**
-     * Tries to find a getter method name for the given property.
+     * Tries to find a getter method name for the given property that returns the given type.
      * Prefers isPropertyName over getPropertyName if property starts with 'is' then uppercase letter.
      * Prefers isPropertyName over getPropertyName if property is Boolean.
      * Otherwise looks for getPropertyName method.
-     * If none is found, returns null.
+     * If none is found, returns null (Property falls back to expecting regular getter).
      */
-    private fun getGetterMethodNameFor(property: Property): String? {
+    private fun getGetterMethodNameFor(fieldType: TypeMirror, property: Property): String? {
         val propertyName = property.propertyName
         val propertyNameCapitalized = propertyName.capitalize()
 
         // https://kotlinlang.org/docs/reference/java-to-kotlin-interop.html#properties
-        // Kotlin: 'isProperty' (but not 'isproperty')
+        // Kotlin: 'isProperty' (but not 'isproperty').
         if (propertyName.startsWith("is") && propertyName[2].isUpperCase()) {
-            methods.find { it == propertyName }?.let {
-                return it // getter is called 'isProperty' (setter 'setProperty')
+            methods.find {
+                it.simpleName.toString() == propertyName && typeUtils.isSameType(it.returnType, fieldType)
+            }?.let {
+                return it.simpleName.toString() // Getter is called 'isProperty' (setter 'setProperty').
             }
         }
 
         // https://docs.oracle.com/javase/tutorial/javabeans/writing/properties.html
-        // Java: 'isProperty' for booleans (JavaBeans spec)
+        // Java: 'isProperty' for booleans (JavaBeans spec).
         if (property.propertyType == PropertyType.Boolean) {
-            methods.find { it == "is$propertyNameCapitalized" }?.let {
-                return it // getter is called 'isPropertyName'
+            methods.find {
+                it.simpleName.toString() == "is$propertyNameCapitalized" && typeUtils.isSameType(it.returnType, fieldType)
+            }?.let {
+                return it.simpleName.toString() // Getter is called 'isPropertyName'.
             }
         }
 
-        // at last, check for regular getter
-        return methods.find { it == "get$propertyNameCapitalized" }
+        // At last, check for regular getter.
+        return methods.find {
+            it.simpleName.toString() == "get$propertyNameCapitalized" && typeUtils.isSameType(it.returnType, fieldType)
+        }?.simpleName?.toString()
     }
 
     companion object {

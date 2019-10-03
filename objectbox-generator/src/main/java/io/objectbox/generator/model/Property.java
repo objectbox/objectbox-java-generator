@@ -239,6 +239,7 @@ public class Property implements HasParsedElement {
 
     private String dbName;
     private String dbType;
+    private Short dbTypeId;
 
     private String customType;
     private String customTypeClassName;
@@ -334,6 +335,10 @@ public class Property implements HasParsedElement {
 
     public String getDbType() {
         return dbType;
+    }
+
+    public Short getDbTypeId() {
+        return dbTypeId;
     }
 
     public boolean isPrimaryKey() {
@@ -559,6 +564,7 @@ public class Property implements HasParsedElement {
         }
         if (dbType == null) {
             dbType = schema.mapToDbType(propertyType);
+            dbTypeId = schema.mapToDbTypeId(propertyType);
         }
         if (dbName == null) {
             dbName = TextUtil.dbName(propertyName);
@@ -602,7 +608,8 @@ public class Property implements HasParsedElement {
             flags |= PropertyFlags.ID_SELF_ASSIGNABLE;
             flagsNames.add("PropertyFlags.ID_SELF_ASSIGNABLE");
         }
-        if (isNotNull()) {
+        // Note: Primary key/ID properties must always be not null. Do not explicitly add this flag for them.
+        if (isNotNull() && !isPrimaryKey()) {
             flags |= PropertyFlags.NOT_NULL;
             flagsNames.add("PropertyFlags.NOT_NULL");
         }

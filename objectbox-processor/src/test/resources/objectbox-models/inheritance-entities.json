@@ -10,11 +10,14 @@
       "properties": [
         {
           "id": "1:2062290025845287711",
-          "name": "id"
+          "name": "id",
+          "type": 6,
+          "flags": 1
         },
         {
           "id": "2:5984231264292502640",
-          "name": "simpleString"
+          "name": "simpleString",
+          "type": 9
         }
       ],
       "relations": []
@@ -26,15 +29,19 @@
       "properties": [
         {
           "id": "1:4445502405080662938",
-          "name": "id"
+          "name": "id",
+          "type": 6,
+          "flags": 1
         },
         {
           "id": "2:1216723564030583587",
-          "name": "simpleString"
+          "name": "simpleString",
+          "type": 9
         },
         {
           "id": "3:6567076261482873117",
-          "name": "subString"
+          "name": "subString",
+          "type": 9
         }
       ],
       "relations": []
@@ -44,8 +51,8 @@
   "lastIndexId": "0:0",
   "lastRelationId": "0:0",
   "lastSequenceId": "0:0",
-  "modelVersion": 4,
-  "modelVersionParserMinimum": 4,
+  "modelVersion": 5,
+  "modelVersionParserMinimum": 5,
   "retiredEntityUids": [],
   "retiredIndexUids": [],
   "retiredPropertyUids": [],

@@ -63,7 +63,7 @@ pipeline {
         stage('upload-to-internal') {
             agent { label 'linux' }
             steps {
-                sh "./gradlew $gradleArgs $MVN_REPO_ARGS uploadArchives $MVN_REPO_UPLOAD_ARGS"
+                sh "./gradlew $gradleArgs $MVN_REPO_ARGS $MVN_REPO_UPLOAD_ARGS uploadArchives"
             }
         }
 

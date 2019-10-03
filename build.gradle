@@ -7,11 +7,11 @@ buildscript {
         // version post fix: '-<value>' or '' if not defined
         def versionPostFixValue = project.findProperty('versionPostFix')
         def versionPostFix = versionPostFixValue ? "-$versionPostFixValue" : ''
-
-//        objectbox_plugin_version = "2.4.0$versionPostFix-SNAPSHOT" // plugin, processor, generator and code-modifier version
-        objectbox_plugin_version = "2.3.5-rc1" // plugin, processor, generator and code-modifier version
-//        def dependencies_version = '2.4.0-SNAPSHOT'
-        def dependencies_version = '2.3.4'
+        
+        //objectbox_plugin_version = "2.4.0$versionPostFix-SNAPSHOT" // plugin, processor, generator and code-modifier version
+        objectbox_plugin_version = "2.4.0-RC" // plugin, processor, generator and code-modifier version
+        //def dependencies_version = '2.4.0-SNAPSHOT'
+        def dependencies_version = '2.4.0-RC'
         objectbox_java_version = dependencies_version // Java version used by code and tests
         objectbox_runtime_version = dependencies_version // The plugin adds dependencies with this version to projects applying it
 
@@ -61,6 +61,13 @@ subprojects {
             }
         }
         mavenLocal()
+    }
+
+    configurations.all {
+        // Projects are using snapshot dependencies that may update more often than 24 hours.
+        resolutionStrategy {
+            cacheChangingModulesFor 0, 'seconds'
+        }
     }
 }
 

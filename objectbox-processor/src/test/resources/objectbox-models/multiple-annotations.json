@@ -10,12 +10,16 @@
       "properties": [
         {
           "id": "1:994834629804652668",
-          "name": "id"
+          "name": "id",
+          "type": 6,
+          "flags": 3
         },
         {
           "id": "2:167962951075785953",
+          "name": "A",
           "indexId": "1:473742723475921156",
-          "name": "A"
+          "type": 9,
+          "flags": 2048
         }
       ],
       "relations": []
@@ -25,8 +29,8 @@
   "lastIndexId": "1:473742723475921156",
   "lastRelationId": "0:0",
   "lastSequenceId": "0:0",
-  "modelVersion": 4,
-  "modelVersionParserMinimum": 4,
+  "modelVersion": 5,
+  "modelVersionParserMinimum": 5,
   "retiredEntityUids": [],
   "retiredIndexUids": [],
   "retiredPropertyUids": [],

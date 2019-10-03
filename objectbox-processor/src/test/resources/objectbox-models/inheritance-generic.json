@@ -10,15 +10,19 @@
       "properties": [
         {
           "id": "1:4417593930597596410",
-          "name": "baseString"
+          "name": "baseString",
+          "type": 9
         },
         {
           "id": "2:6633880843568301024",
-          "name": "id"
+          "name": "id",
+          "type": 6,
+          "flags": 1
         },
         {
           "id": "3:8226874054483449253",
-          "name": "subString"
+          "name": "subString",
+          "type": 9
         }
       ],
       "relations": []
@@ -28,8 +32,8 @@
   "lastIndexId": "0:0",
   "lastRelationId": "0:0",
   "lastSequenceId": "0:0",
-  "modelVersion": 4,
-  "modelVersionParserMinimum": 4,
+  "modelVersion": 5,
+  "modelVersionParserMinimum": 5,
   "retiredEntityUids": [],
   "retiredIndexUids": [],
   "retiredPropertyUids": [],
