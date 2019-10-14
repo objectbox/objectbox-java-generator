@@ -42,7 +42,10 @@ open class BasicBuildTracker(private val toolName: String) {
 
         private const val HOUR_IN_MILLIS = 3600 * 1000
 
-        // https://developer.mixpanel.com/docs/http
+        // https://developer.mixpanel.com/docs/http#section-event-request-parameters
+        // Note: adding query param `ip=1` only sets request IP as `distinct_id` if that has no value, yet.
+        // For all but the NoBuildProperties event a unique ID is generated and set,
+        // so no point in setting the ip param (is better for privacy anyhow).
         const val BASE_URL = "https://api.mixpanel.com/track/?data="
         const val TOKEN = "REPLACE_WITH_TOKEN"
         const val TIMEOUT_READ = 15000
@@ -169,8 +172,6 @@ open class BasicBuildTracker(private val toolName: String) {
         if (addUniqueId) {
             event.key("distinct_id").value(uniqueIdentifier()).comma()
         }
-        event.key("ip").append("true").comma()
-//        event.key("ip").value("1").comma()
         event.key("Tool").value(toolName).comma()
         try {
             val locale = Locale.getDefault()
