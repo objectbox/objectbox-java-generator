@@ -175,8 +175,8 @@ open class BasicBuildTracker(private val toolName: String) {
         event.key("Tool").value(toolName).comma()
         try {
             val locale = Locale.getDefault()
-            val language = locale.isO3Language
-            val country = locale.isO3Country
+            val language = locale.isO3Language // ISO 639-2 (three letters).
+            val country = locale.isO3Country // ISO 3166-1 alpha-3 (three letters).
             event.key("lang").append("\"$language\"").comma()
             event.key("c").append("\"$country\"").comma()
         } catch (e: Exception) {
