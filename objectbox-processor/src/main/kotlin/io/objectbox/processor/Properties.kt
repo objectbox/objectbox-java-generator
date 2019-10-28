@@ -95,7 +95,7 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
         val hasIndex = field.hasAnnotation(Index::class.java)
         if (hasIndex || field.hasAnnotation(Unique::class.java)) {
             val annotationName = if (hasIndex) "Index" else "Unique"
-            messages.error("'$field' @$annotationName can not be used with a $relationType relation.")
+            messages.error("'$field' @$annotationName can not be used with a $relationType relation, remove @$annotationName.")
         }
     }
 
@@ -128,7 +128,7 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
                 messages.error("An @Id property has to be of type Long.", field)
             }
             if (isPrivate && getterMethodName == null) {
-                messages.error("An @Id property can not be private, or add a getter and setter.")
+                messages.error("An @Id property must not be private or have a not-private getter and setter.")
             }
             propertyBuilder.primaryKey()
             if (idAnnotation.assignable) {
@@ -193,14 +193,14 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
         // error if used with @Id
         if (hasIdAnnotation) {
             val annotationName =  if(indexAnnotation != null) "Index" else "Unique"
-            messages.error("'$field' @$annotationName can not be used with @Id.")
+            messages.error("'$field' @Id property is unique and indexed by default, remove @$annotationName.")
         }
 
         // error if unsupported property type
         if (propertyType == PropertyType.ByteArray || propertyType == PropertyType.Float ||
                 propertyType == PropertyType.Double) {
             val annotationName =  if(indexAnnotation != null) "Index" else "Unique"
-            messages.error("'$field' @$annotationName is not supported for $propertyType. Remove @$annotationName.")
+            messages.error("'$field' @$annotationName is not supported for $propertyType, remove @$annotationName.")
         }
 
         propertyBuilder.indexAsc(null, indexFlags, 0, uniqueAnnotation != null)

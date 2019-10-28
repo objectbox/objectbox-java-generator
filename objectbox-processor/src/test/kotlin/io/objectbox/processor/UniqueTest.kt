@@ -43,15 +43,15 @@ class UniqueTest : BaseProcessorTest() {
         val compilation = environment.compile(entity)
         CompilationSubject.assertThat(compilation).failed()
 
-        CompilationSubject.assertThat(compilation).hadErrorContaining("@Unique can not be used with @Id.")
+        CompilationSubject.assertThat(compilation).hadErrorContaining("@Id property is unique and indexed by default, remove @Unique.")
 
-        CompilationSubject.assertThat(compilation).hadErrorContaining("@Unique can not be used with a ToOne relation.")
-        CompilationSubject.assertThat(compilation).hadErrorContaining("@Unique can not be used with a ToMany relation.")
-        CompilationSubject.assertThat(compilation).hadErrorContaining("@Unique can not be used with a List relation.")
+        CompilationSubject.assertThat(compilation).hadErrorContaining("@Unique can not be used with a ToOne relation, remove @Unique.")
+        CompilationSubject.assertThat(compilation).hadErrorContaining("@Unique can not be used with a ToMany relation, remove @Unique.")
+        CompilationSubject.assertThat(compilation).hadErrorContaining("@Unique can not be used with a List relation, remove @Unique.")
 
-        CompilationSubject.assertThat(compilation).hadErrorContaining("@Unique is not supported for Float.")
-        CompilationSubject.assertThat(compilation).hadErrorContaining("@Unique is not supported for Double.")
-        CompilationSubject.assertThat(compilation).hadErrorContaining("@Unique is not supported for ByteArray.")
+        CompilationSubject.assertThat(compilation).hadErrorContaining("@Unique is not supported for Float, remove @Unique.")
+        CompilationSubject.assertThat(compilation).hadErrorContaining("@Unique is not supported for Double, remove @Unique.")
+        CompilationSubject.assertThat(compilation).hadErrorContaining("@Unique is not supported for ByteArray, remove @Unique.")
     }
 
     @Test

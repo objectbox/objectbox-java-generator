@@ -342,7 +342,7 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
         val compilation = environment.compile(listOf(javaFileObject))
         CompilationSubject.assertThat(compilation).failed()
 
-        CompilationSubject.assertThat(compilation).hadErrorContaining("An @Id property can not be private, or add a getter and setter.")
+        CompilationSubject.assertThat(compilation).hadErrorContaining("An @Id property must not be private or have a not-private getter and setter.")
     }
 
     @Test

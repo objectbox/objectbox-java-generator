@@ -55,15 +55,15 @@ class IndexTest : BaseProcessorTest() {
         val compilation = environment.compile(entity)
         CompilationSubject.assertThat(compilation).failed()
 
-        CompilationSubject.assertThat(compilation).hadErrorContaining("@Index can not be used with @Id.")
+        CompilationSubject.assertThat(compilation).hadErrorContaining("@Id property is unique and indexed by default, remove @Index.")
 
-        CompilationSubject.assertThat(compilation).hadErrorContaining("@Index can not be used with a ToOne relation.")
-        CompilationSubject.assertThat(compilation).hadErrorContaining("@Index can not be used with a ToMany relation.")
-        CompilationSubject.assertThat(compilation).hadErrorContaining("@Index can not be used with a List relation.")
+        CompilationSubject.assertThat(compilation).hadErrorContaining("@Index can not be used with a ToOne relation, remove @Index.")
+        CompilationSubject.assertThat(compilation).hadErrorContaining("@Index can not be used with a ToMany relation, remove @Index.")
+        CompilationSubject.assertThat(compilation).hadErrorContaining("@Index can not be used with a List relation, remove @Index.")
 
-        CompilationSubject.assertThat(compilation).hadErrorContaining("@Index is not supported for Float.")
-        CompilationSubject.assertThat(compilation).hadErrorContaining("@Index is not supported for Double.")
-        CompilationSubject.assertThat(compilation).hadErrorContaining("@Index is not supported for ByteArray.")
+        CompilationSubject.assertThat(compilation).hadErrorContaining("@Index is not supported for Float, remove @Index.")
+        CompilationSubject.assertThat(compilation).hadErrorContaining("@Index is not supported for Double, remove @Index.")
+        CompilationSubject.assertThat(compilation).hadErrorContaining("@Index is not supported for ByteArray, remove @Index.")
     }
 
     @Test
