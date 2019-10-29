@@ -187,6 +187,10 @@ open class ObjectBoxProcessor : AbstractProcessor() {
             parseEntity(env.rootElements, schema, relations, entity)
         }
 
+        if (messages.errorRaised) {
+            return // Avoid errors during resolving relations caused by previous errors.
+        }
+
         if (!relations.resolve(schema)) {
             return // resolving relations failed
         }

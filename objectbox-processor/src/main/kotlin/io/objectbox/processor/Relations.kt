@@ -162,7 +162,7 @@ class Relations(private val messages: Messages) {
 
         val targetIdProperty = entityModel.findPropertyByName(toOne.targetIdName)
         if (targetIdProperty == null) {
-            // target ID property not explicitly defined in entity, create a virtual one
+            // Target ID property not explicitly defined in entity, create a virtual one.
 
             val propertyBuilder = entityModel.addProperty(PropertyType.Long, toOne.targetIdName)
             propertyBuilder.notNull()
@@ -182,6 +182,12 @@ class Relations(private val messages: Messages) {
             } else {
                 val targetName = "${toOne.propertyName}ToOne"
                 propertyBuilder.virtualTargetName(targetName)
+            }
+        } else {
+            // Target ID property explicitly defined (it's name matches the naming convention
+            // or was given using the @TargetIdProperty annotation), check type is valid.
+            if (targetIdProperty.propertyType != PropertyType.Long) {
+                messages.error("The target ID property '${toOne.targetIdName}' for ToOne relation '${toOne.propertyName}' in '${entityModel.className}' must be long.", targetIdProperty)
             }
         }
     }
