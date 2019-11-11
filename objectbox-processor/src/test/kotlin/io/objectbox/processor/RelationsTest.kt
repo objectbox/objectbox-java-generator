@@ -2,6 +2,7 @@ package io.objectbox.processor
 
 import com.google.common.truth.Truth.assertThat
 import com.google.testing.compile.CompilationSubject
+import com.google.testing.compile.JavaFileObjects
 import io.objectbox.generator.IdUid
 import io.objectbox.generator.model.Entity
 import io.objectbox.generator.model.Property
@@ -148,6 +149,87 @@ class RelationsTest : BaseProcessorTest() {
                 }
             }
         }
+    }
+
+    private val javaFileObjectToOneTarget = """
+        package com.example;
+        import io.objectbox.annotation.Entity;
+        import io.objectbox.annotation.Id;
+        
+        @Entity
+        public class ToOneTarget {
+            @Id long id;
+        }
+        """.trimIndent().let {
+        JavaFileObjects.forSourceString("com.example.ToOneTarget", it)
+    }
+
+    @Test
+    fun toOne_targetIdTypeNotLong_errors() {
+        val javaFileObjectSource = """
+        package com.example;
+        import io.objectbox.BoxStore;
+        import io.objectbox.annotation.Entity;
+        import io.objectbox.annotation.Id;
+        import io.objectbox.relation.ToOne;
+        
+        @Entity
+        public class ToOneSource {
+            @Id long id;
+        
+            String targetId;
+        
+            ToOne<ToOneTarget> target = new ToOne<>(this, ToOneSource_.target);
+        
+            // need to add manually, as processor can not modify entity
+            transient BoxStore __boxStore;
+        }
+        """.trimIndent().let {
+            JavaFileObjects.forSourceString("com.example.ToOneSource", it)
+        }
+
+        val environment = TestEnvironment("not-generated.json")
+
+        val compilation = environment.compile(listOf(javaFileObjectSource, javaFileObjectToOneTarget))
+        CompilationSubject.assertThat(compilation).failed()
+
+        CompilationSubject.assertThat(compilation)
+            .hadErrorContaining("The target ID property 'targetId' for ToOne relation 'target' in 'ToOneSource' must be long.")
+    }
+
+    @Test
+    fun toOne_targetIdAnnotationTypeNotLong_errors() {
+        val javaFileObjectSource = """
+        package com.example;
+        import io.objectbox.BoxStore;
+        import io.objectbox.annotation.Entity;
+        import io.objectbox.annotation.Id;
+        import io.objectbox.annotation.TargetIdProperty;
+        import io.objectbox.relation.ToOne;
+        
+        @Entity
+        public class ToOneSource {
+            @Id long id;
+        
+            String targetIdUnconventionalName;
+        
+            @TargetIdProperty("targetIdUnconventionalName")
+            ToOne<ToOneTarget> target = new ToOne<>(this, ToOneSource_.target);
+        
+            // need to add manually, as processor can not modify entity
+            transient BoxStore __boxStore;
+        }
+        """.trimIndent().let {
+            JavaFileObjects.forSourceString("com.example.ToOneSource", it)
+        }
+
+        val environment = TestEnvironment("not-generated.json")
+
+        val compilation = environment.compile(listOf(javaFileObjectSource, javaFileObjectToOneTarget))
+        CompilationSubject.assertThat(compilation).failed()
+
+        CompilationSubject.assertThat(compilation)
+            .hadErrorContaining("The target ID property 'targetIdUnconventionalName' for ToOne relation 'target' in 'ToOneSource' must be long.")
     }
 
     @Test

@@ -460,7 +460,7 @@ public class Property implements HasParsedElement {
      */
     public void convertToRelationId(Entity target) {
         if (propertyType != PropertyType.Long && propertyType != PropertyType.RelationId) {
-            throw new RuntimeException("@Relation ID property must be of type long: " + this);
+            throw new RuntimeException("Relation ID property must be of type long: " + this);
         }
         setPropertyType(PropertyType.RelationId);
         targetEntity = target;
