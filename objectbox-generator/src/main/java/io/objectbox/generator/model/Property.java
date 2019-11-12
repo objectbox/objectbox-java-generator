@@ -83,6 +83,18 @@ public class Property implements HasParsedElement {
             return this;
         }
 
+        public PropertyBuilder unsigned() {
+            if (property.primaryKey || (
+                    property.propertyType != PropertyType.Short
+                            && property.propertyType != PropertyType.Int
+                            && property.propertyType != PropertyType.Long
+            )) {
+                throw new RuntimeException("Only non-primary key and integer properties can be marked unsigned.");
+            }
+            property.isUnsigned = true;
+            return this;
+        }
+
         public PropertyBuilder index() {
             return index(PropertyFlags.INDEXED, 0, false);
         }
@@ -148,6 +160,7 @@ public class Property implements HasParsedElement {
 
     private boolean notNull;
     private boolean nonPrimitiveType;
+    private boolean isUnsigned;
     private boolean idAssignable;
     private boolean fieldAccessible;
 
@@ -228,6 +241,10 @@ public class Property implements HasParsedElement {
     /** Either explicitly tagged as nonPrimitiveType OR non-scalar type (String, Date, ...) OR custom type */
     public boolean isNonPrimitiveType() {
         return nonPrimitiveType || !propertyType.isScalar() || customType != null;
+    }
+
+    public boolean isUnsigned() {
+        return isUnsigned;
     }
 
     public boolean isIdAssignable() {
@@ -420,6 +437,10 @@ public class Property implements HasParsedElement {
         if (isVirtual()) {
             flags |= PropertyFlags.VIRTUAL;
             flagsNames.add("PropertyFlags.VIRTUAL");
+        }
+        if (isUnsigned()) {
+            flags |= PropertyFlags.UNSIGNED;
+            flagsNames.add("PropertyFlags.UNSIGNED");
         }
 
         if (getPropertyType() == PropertyType.RelationId) {
