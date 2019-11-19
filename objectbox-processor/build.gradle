@@ -14,7 +14,7 @@ dependencies {
     compile "io.objectbox:objectbox-java-api:$objectbox_java_version"
     compile "io.objectbox:objectbox-java:$objectbox_java_version"
     // auto-service generates service configuration for annotation processor.
-    def autoService = '1.0-rc5'
+    def autoService = '1.0-rc6'
     compileOnly "com.google.auto.service:auto-service-annotations:$autoService"
     // Since Gradle 5.0 annotation processors are no longer detected on the compile classpath, 
     // so add to processor classpath instead.
