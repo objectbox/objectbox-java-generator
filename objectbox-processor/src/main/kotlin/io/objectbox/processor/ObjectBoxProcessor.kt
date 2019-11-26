@@ -30,6 +30,7 @@ import io.objectbox.generator.idsync.IdSyncException
 import io.objectbox.generator.model.Property
 import io.objectbox.generator.model.Schema
 import io.objectbox.reporting.BasicBuildTracker
+import net.ltgt.gradle.incap.IncrementalAnnotationProcessorType
 import java.io.File
 import java.io.FileNotFoundException
 import javax.annotation.processing.AbstractProcessor
@@ -58,6 +59,13 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         /** Set by ObjectBox plugin */
         const val OPTION_TRANSFORMATION_ENABLED: String = "objectbox.transformationEnabled"
         const val OPTION_ALLOW_NUMBERED_CONSTRUCTOR_ARGS: String = "objectbox.allowNumberedConstructorArgs"
+        /**
+         * Set to false to turn off incremental processing.
+         *
+         * This is useful when using indirect (base) entity super classes,
+         * as when incremental processing is turned on the processor can not see them.
+         */
+        const val OPTION_INCREMENTAL: String = "objectbox.incremental"
 
         /**
          * Typically selects the top most and lexicographically first package. If entities are in different packages and
@@ -106,6 +114,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
     private var flatbuffersSchemaPath: String? = null
     private var debug: Boolean = false
     private var allowNumberedConstructorArgs: Boolean = false
+    private var incremental = true
 
     @Synchronized override fun init(env: ProcessingEnvironment) {
         super.init(env)
@@ -123,9 +132,10 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         flatbuffersSchemaPath = options[OPTION_FLATBUFFERS_SCHEMA_FOLDER]
         transformationEnabled = "false" != options[OPTION_TRANSFORMATION_ENABLED] // default true
         allowNumberedConstructorArgs = "false" != options[OPTION_ALLOW_NUMBERED_CONSTRUCTOR_ARGS] // default true
+        incremental = "false" != options[OPTION_INCREMENTAL] // default true
 
         messages = Messages(env.messager, debug)
-        messages.info("Starting ObjectBox processor (debug: $debug)")
+        messages.info("Starting ObjectBox processor (debug: $debug, incremental: $incremental)")
     }
 
     override fun getSupportedAnnotationTypes(): Set<String> {
@@ -145,6 +155,10 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         options.add(OPTION_TRANSFORMATION_ENABLED)
         options.add(OPTION_DEBUG)
         options.add(OPTION_ALLOW_NUMBERED_CONSTRUCTOR_ARGS)
+        options.add(OPTION_INCREMENTAL)
+        if (incremental) {
+            options.add(IncrementalAnnotationProcessorType.AGGREGATING.processorOption)
+        }
         return options
     }
 

@@ -143,8 +143,81 @@ class IncrementalCompilationTest {
         }
     }
 
-    private fun projectSetup() {
+    /**
+     * Tests that with incremental support turned off an indirect super BaseEntity class can be seen.
+     */
+    @Test
+    fun incrementalAnnotationProcessor_baseEntityIndirect() {
+        // Turn off incremental support.
+        projectSetup(listOf("-Aobjectbox.incremental=false"))
+
+        testProjectDir.newFile("src/main/java/example/BaseExample.java").writeText(
+            """
+            package example;
+            
+            import io.objectbox.annotation.BaseEntity;
+            import io.objectbox.annotation.Id;
+            
+            @BaseEntity
+            public class BaseExample {
+                @Id public long id;
+            } 
+            """.trimIndent()
+        )
+        testProjectDir.newFile("src/main/java/example/IntermediateExample.java").writeText(
+            """
+            package example;
+
+            import io.objectbox.annotation.Entity;
+            
+            public class IntermediateExample extends BaseExample {
+            } 
+            """.trimIndent()
+        )
+        val sourceFile = testProjectDir.newFile("src/main/java/example/Example.java").apply {
+            writeText(
+                """
+                package example;
+
+                import io.objectbox.annotation.Entity;
+                
+                @Entity
+                public class Example extends IntermediateExample {
+                } 
+                """.trimIndent()
+            )
+        }
+        // Compile 1st time.
+        with(compileJava()) {
+            assertThat(output).contains("Full recompilation is required because no incremental change information is available.")
+        }
+
+        // Add new property to class.
+        sourceFile.writeText(
+            """
+            package example;
+
+            import io.objectbox.annotation.Entity;
+            
+            @Entity
+            public class Example extends IntermediateExample {
+                public String newProperty;
+            } 
+            """.trimIndent()
+        )
+        // Compile 2nd time.
+        with(compileJava()) {
+            assertThat(output).contains("Full recompilation is required because io.objectbox.processor.ObjectBoxProcessorShim is not incremental.")
+            assertThat(output).contains("[ObjectBox] Parsing super type of Example: IntermediateExample")
+        }
+    }
+
+    private fun projectSetup(javaCompilerArgs: List<String> = emptyList()) {
         testProjectDir.newFile("settings.gradle").writeText("rootProject.name = 'incap-project'")
+
+        val compilerArgs = javaCompilerArgs
+            .plus("-Aobjectbox.debug=true")
+            .joinToString(separator = "\",\"", prefix = "\"", postfix = "\"")
 
         // Note: instead of getting artifacts of the modules in this project from internal repo,
         // publish them to a directory in the build folder, then add that as repo below.
@@ -177,7 +250,7 @@ class IncrementalCompilationTest {
                 debug true
             }
             tasks.withType(JavaCompile) {
-                options.compilerArgs += [ "-Aobjectbox.debug=true" ]
+                options.compilerArgs += [ $compilerArgs ]
             }
             """.trimIndent()
         )

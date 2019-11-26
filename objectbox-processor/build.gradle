@@ -21,7 +21,7 @@ dependencies {
     annotationProcessor "com.google.auto.service:auto-service:$autoService"
     // incap generates the META-INF descriptor required to enable incremental annotation processing with Gradle.
     def incap = '0.2'
-    compileOnly "net.ltgt.gradle.incap:incap:$incap"
+    implementation "net.ltgt.gradle.incap:incap:$incap"
     annotationProcessor "net.ltgt.gradle.incap:incap-processor:$incap"
 
     // manually add tools.jar required by compile-testing
