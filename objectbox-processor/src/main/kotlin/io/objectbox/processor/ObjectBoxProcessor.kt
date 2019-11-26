@@ -131,6 +131,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
     override fun getSupportedAnnotationTypes(): Set<String> {
         val types = LinkedHashSet<String>()
         types.add(Entity::class.java.canonicalName)
+        types.add(BaseEntity::class.java.canonicalName)
         return types
     }
 

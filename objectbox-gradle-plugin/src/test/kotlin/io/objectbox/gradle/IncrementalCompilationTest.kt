@@ -84,6 +84,65 @@ class IncrementalCompilationTest {
         }
     }
 
+    /**
+     * Tests that during incremental compilation a direct super BaseEntity class can be seen.
+     */
+    @Test
+    fun incrementalAnnotationProcessor_baseEntity() {
+        projectSetup()
+        testProjectDir.newFile("src/main/java/example/BaseExample.java").writeText(
+            """
+            package example;
+            
+            import io.objectbox.annotation.BaseEntity;
+            import io.objectbox.annotation.Id;
+            
+            @BaseEntity
+            public class BaseExample {
+                @Id public long id;
+            } 
+            """.trimIndent()
+        )
+        val sourceFile = testProjectDir.newFile("src/main/java/example/Example.java").apply {
+            writeText(
+                """
+                package example;
+
+                import io.objectbox.annotation.Entity;
+                
+                @Entity
+                public class Example extends BaseExample {
+                } 
+                """.trimIndent()
+            )
+        }
+        // Compile 1st time.
+        with(compileJava()) {
+            assertThat(output).contains("Full recompilation is required because no incremental change information is available.")
+        }
+
+        // Add new property to class.
+        sourceFile.writeText(
+            """
+            package example;
+
+            import io.objectbox.annotation.Entity;
+            
+            @Entity
+            public class Example extends BaseExample {
+                public String newProperty;
+            } 
+            """.trimIndent()
+        )
+        // Compile 2nd time.
+        with(compileJava()) {
+            assertThat(output).doesNotContain("Full recompilation is required ")
+            // Why 4 classes? Example.java, Example_.java, ExampleCursor.java, MyObjectBox.java.
+            assertThat(output).contains("Incremental compilation of 4 classes completed")
+            assertThat(output).contains("[ObjectBox] Parsing super type of Example: BaseExample")
+        }
+    }
+
     private fun projectSetup() {
         testProjectDir.newFile("settings.gradle").writeText("rootProject.name = 'incap-project'")
 
