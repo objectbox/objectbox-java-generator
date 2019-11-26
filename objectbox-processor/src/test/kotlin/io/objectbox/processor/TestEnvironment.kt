@@ -16,10 +16,13 @@ import javax.tools.JavaFileObject
  *
  * If model file name ends in "-temp.json" it will be ignored by source control.
  */
-class TestEnvironment(modelFile: String,
-                      val myObjectBoxPackage: String? = null,
-                      val optionDisableTransform: Boolean = false,
-                      copyModelFile: Boolean = false) {
+class TestEnvironment(
+    modelFile: String,
+    private val myObjectBoxPackage: String? = null,
+    private val optionDisableTransform: Boolean = false,
+    private val optionDisableIncremental: Boolean = false,
+    copyModelFile: Boolean = false
+) {
 
     // tests run from IntelliJ are relative to module directory
     private val modelFilesPathModule = "src/test/resources/objectbox-models/"
@@ -32,8 +35,9 @@ class TestEnvironment(modelFile: String,
         get() {
             val options = mutableListOf("-A${ObjectBoxProcessor.OPTION_MODEL_PATH}=$modelFilePath")
             options += "-A${ObjectBoxProcessor.OPTION_DEBUG}=true"
-            if (optionDisableTransform) options += "-A${ObjectBoxProcessor.OPTION_TRANSFORMATION_ENABLED}=false"
             if (myObjectBoxPackage != null) options += "-A${ObjectBoxProcessor.OPTION_MYOBJECTBOX_PACKAGE}=$myObjectBoxPackage"
+            if (optionDisableTransform) options += "-A${ObjectBoxProcessor.OPTION_TRANSFORMATION_ENABLED}=false"
+            if (optionDisableIncremental) options += "-A${ObjectBoxProcessor.OPTION_INCREMENTAL}=false"
             return options
         }
 

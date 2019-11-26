@@ -13,6 +13,25 @@ import org.junit.Test
 class InheritanceTest : BaseProcessorTest() {
 
     /**
+     * Tests that processor errors to turn off incremental processing if
+     * indirect inheritance from an entity is detected.
+     */
+    @Test
+    fun testInheritanceIndirect_notSupportedWithIncremental() {
+        val nameBase = "InheritanceBase"
+        val nameNoBase = "InheritanceNoBase"
+        val nameSub = "InheritanceSub"
+        val nameInterface = "InheritanceInterface"
+
+        val environment = TestEnvironment("inheritance-temp.json")
+
+        val compilation = environment.compile(nameBase, nameNoBase, nameSub, nameInterface)
+        CompilationSubject.assertThat(compilation).hadErrorContaining(
+            "Incremental annotation processing is not supported"
+        )
+    }
+
+    /**
      * Tests if properties from @BaseEntity class are used in ObjectBox, other super class and interface are ignored.
      */
     @Test
@@ -23,7 +42,7 @@ class InheritanceTest : BaseProcessorTest() {
         val nameSubSub = "InheritanceSubSub"
         val nameInterface = "InheritanceInterface"
 
-        val environment = TestEnvironment("inheritance.json")
+        val environment = TestEnvironment("inheritance.json", optionDisableIncremental = true)
 
         val compilation = environment.compile(nameBase, nameNoBase, nameSub, nameSubSub, nameInterface)
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()

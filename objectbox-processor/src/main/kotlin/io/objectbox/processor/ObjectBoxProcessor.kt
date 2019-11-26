@@ -313,7 +313,13 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         entityModel.isConstructors = hasAllArgsConstructor(entity, entityModel)
     }
 
-    private fun parseProperties(rootElements: Set<Element>, relations: Relations, entityModel: io.objectbox.generator.model.Entity, entity: Element) {
+    private fun parseProperties(
+        rootElements: Set<Element>,
+        relations: Relations,
+        entityModel: io.objectbox.generator.model.Entity,
+        entity: Element,
+        isSubTypeAnnotated: Boolean = true
+    ) {
         // get properties starting with root supertype to ensure constructor param order is as expected
         // (from super class to subclass, then from first declared to last declared)
 
@@ -336,17 +342,27 @@ open class ObjectBoxProcessor : AbstractProcessor() {
                 }
             }
         }
+
+        val isAnnotated =
+            entity.getAnnotation(Entity::class.java) != null || entity.getAnnotation(BaseEntity::class.java) != null
+
         if (classSupertypes.isNotEmpty()) {
             // if any, classes are listed before interfaces: so just check first one
             val element = classSupertypes[0]
             if (element.kind == ElementKind.CLASS) {
                 if (debug) messages.debug("Parsing super type of ${entity.simpleName}: ${element.simpleName}")
-                parseProperties(rootElements, relations, entityModel, element)
+                parseProperties(rootElements, relations, entityModel, element, isAnnotated)
             }
         }
 
-        // only include properties for classes with @Entity or @BaseEntity
-        if (entity.getAnnotation(Entity::class.java) != null || entity.getAnnotation(BaseEntity::class.java) != null) {
+        // Only include properties for classes with @Entity or @BaseEntity.
+        if (isAnnotated) {
+            if (incremental && !isSubTypeAnnotated) {
+                messages.error("Incremental annotation processing is not supported " +
+                        "with an indirect @BaseEntity or @Entity super class, " +
+                        "set 'A$OPTION_INCREMENTAL=false' or directly inherit from the entity.")
+            }
+
             // parse properties
             val properties = Properties(elementUtils, typeUtils, messages, relations, entityModel, entity)
             properties.parseFields()
