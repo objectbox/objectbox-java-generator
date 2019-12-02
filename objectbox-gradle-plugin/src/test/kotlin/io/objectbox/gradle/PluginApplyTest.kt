@@ -1,6 +1,7 @@
 package io.objectbox.gradle
 
 import org.gradle.api.Project
+import org.gradle.api.artifacts.DependencySet
 import org.gradle.api.internal.plugins.PluginApplicationException
 import org.gradle.api.internal.project.ProjectInternal
 import org.gradle.api.plugins.InvalidPluginException
@@ -53,15 +54,12 @@ class PluginApplyTest {
         }
 
         with(project.configurations) {
-            val apDeps = getByName("annotationProcessor").dependencies
-            assertEquals(1, apDeps.count { it.group == "io.objectbox" && it.name == "objectbox-processor" })
+            assertProcessorDependency(getByName("annotationProcessor").dependencies)
 
-            val compileDeps = getByName("compile").dependencies
-            assertEquals(1, compileDeps.count { it.group == "io.objectbox" && it.name == "objectbox-java" })
-            assertEquals(1, compileDeps.count {
-                it.group == "io.objectbox" &&
-                        (it.name == "objectbox-linux" || it.name == "objectbox-windows" || it.name == "objectbox-macos")
-            })
+            getByName("compile").dependencies.let {
+                assertJavaDependency(it)
+                assertNativeDependency(it)
+            }
         }
         assertNotNull(project.tasks.findByPath("objectboxPrepareBuild"))
 
@@ -72,6 +70,21 @@ class PluginApplyTest {
         // Note: by default only main and test source sets exist.
         assertTransformTask(project, "", "classes")
         assertTransformTask(project, "Test", "testClasses")
+    }
+
+    private fun assertProcessorDependency(apDeps: DependencySet) {
+        assertEquals(1, apDeps.count { it.group == "io.objectbox" && it.name == "objectbox-processor" })
+    }
+
+    private fun assertJavaDependency(compileDeps: DependencySet) {
+        assertEquals(1, compileDeps.count { it.group == "io.objectbox" && it.name == "objectbox-java" })
+    }
+
+    private fun assertNativeDependency(compileDeps: DependencySet) {
+        assertEquals(1, compileDeps.count {
+            it.group == "io.objectbox" &&
+                    (it.name == "objectbox-linux" || it.name == "objectbox-windows" || it.name == "objectbox-macos")
+        })
     }
 
     private fun assertTransformTask(
@@ -91,5 +104,50 @@ class PluginApplyTest {
         val classesTask = project.tasks.getByName(classesTaskName)
         assertEquals(1, classesTask
             .taskDependencies.getDependencies(classesTask).count { it.name == transformTask.name })
+    }
+
+    @Test
+    fun apply_afterKotlinPlugin_addsDependenciesAndTasks() {
+        val project = ProjectBuilder.builder().build()
+        project.pluginManager.apply {
+            apply("kotlin")
+            apply("kotlin-kapt")
+            apply("io.objectbox")
+        }
+
+        assertKotlinSetup(project)
+    }
+
+    @Test
+    fun apply_afterKotlinPluginWithoutKapt_addsDependenciesAndTasks() {
+        val project = ProjectBuilder.builder().build()
+        project.pluginManager.apply {
+            apply("kotlin")
+            apply("io.objectbox")
+        }
+
+        assertKotlinSetup(project)
+    }
+
+    private fun assertKotlinSetup(project: Project) {
+        with(project.configurations) {
+            assertProcessorDependency(getByName("kapt").dependencies)
+
+            getByName("api").dependencies.let { deps ->
+                assertEquals(1, deps.count { it.group == "io.objectbox" && it.name == "objectbox-kotlin" })
+                assertJavaDependency(deps)
+                assertNativeDependency(deps)
+            }
+        }
+        assertNotNull(project.tasks.findByPath("objectboxPrepareBuild"))
+
+        // Note: using the internal evaluate is not nice, but beats writing a full-blown integration test.
+        (project as ProjectInternal).evaluate()
+
+        // AFTER EVALUATE.
+        // Note: by default only main and test source sets exist.
+        // Note: transform is not supported for Kotlin code/tasks, so these match plain Java plugin.
+        assertTransformTask(project, "", "classes")
+        assertTransformTask(project, "Test", "testClasses")
     }
 }

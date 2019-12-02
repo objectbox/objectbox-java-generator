@@ -192,25 +192,32 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
     }
 
     private fun addDependenciesAnnotationProcessor(env: ProjectEnv) {
-        // Does not seem to work with Android projects; project should do that themselves:
-        val processorDep = "io.objectbox:objectbox-processor:${ProjectEnv.Const.pluginVersion}"
         val project = env.project
-        if (project.hasConfig("kapt")) {
-            // Kotlin (Android + Desktop).
-            project.addDep("kapt", processorDep)
-        } else if (project.hasConfig("annotationProcessor")) {
-            // Android (Java), also Java Desktop with Gradle 5.0 (best as of 5.2) uses annotationProcessor.
-            project.addDep("annotationProcessor", processorDep)
-        } else if (project.hasConfig("apt")) {
-            // https://bitbucket.org/hvisser/android-apt or custom apt
-            // https://docs.gradle.org/current/userguide/java_plugin.html#sec:java_compile_avoidance
-            project.addDep("apt", processorDep)
-        } else if (env.hasKotlinPlugin) {
-            if (!project.plugins.hasPlugin("kotlin-kapt")) {
-                // Does not seem to work reliable; project should do that themselves:
-                project.plugins.apply("kotlin-kapt")
+        if ((env.hasKotlinPlugin || env.hasKotlinAndroidPlugin) && !project.hasConfig("kapt")) {
+            // Note: no-op if kapt plugin was already applied.
+            project.plugins.apply("kotlin-kapt")
+            if (DEBUG) println("### Applied 'kotlin-kapt'.")
+        }
+
+        val processorDep = "io.objectbox:objectbox-processor:${ProjectEnv.Const.pluginVersion}"
+        // Note: check for and use preferred/best config first, potentially ignoring others.
+        when {
+            project.hasConfig("kapt") -> {
+                // Kotlin (Android + Desktop).
                 project.addDep("kapt", processorDep)
-                if (DEBUG) println("### Kotlin KAPT plugin added")
+            }
+            project.hasConfig("annotationProcessor") -> {
+                // Android (Java), also Java Desktop with Gradle 5.0 (best as of 5.2) uses annotationProcessor.
+                project.addDep("annotationProcessor", processorDep)
+            }
+            project.hasConfig("apt") -> {
+                // https://bitbucket.org/hvisser/android-apt or custom apt
+                // https://docs.gradle.org/current/userguide/java_plugin.html#sec:java_compile_avoidance
+                project.addDep("apt", processorDep)
+            }
+            else -> {
+                project.logger.warn("ObjectBox: Could not add dependency on objectbox-processor, " +
+                        "no supported configuration (kapt, annotationProcessor, apt) found.")
             }
         }
     }
