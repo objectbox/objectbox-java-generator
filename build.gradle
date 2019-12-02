@@ -13,8 +13,8 @@ buildscript {
         objectbox_java_version = dependencies_version // Java version used by code and tests
         objectbox_runtime_version = dependencies_version // The plugin adds dependencies with this version to projects applying it
 
-        println "Version $objectbox_plugin_version with dependency on Java $objectbox_java_version. " +
-                "Adds dependencies with version $objectbox_runtime_version."
+        println "Version $objectbox_plugin_version using Java $objectbox_java_version, " +
+                "adds $objectbox_runtime_version dependencies to projects applying it."
 
         // Internal Maven repo: used in all projects, printing info/warning only once here.
         hasInternalObjectBoxRepo = project.hasProperty('internalObjectBoxRepo')
