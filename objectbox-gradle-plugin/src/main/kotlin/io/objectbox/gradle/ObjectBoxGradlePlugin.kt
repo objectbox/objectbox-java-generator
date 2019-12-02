@@ -20,11 +20,11 @@ package io.objectbox.gradle
 
 import com.squareup.moshi.JsonWriter
 import com.squareup.moshi.Moshi
-import io.objectbox.reporting.ObjectBoxBuildConfig
 import io.objectbox.gradle.transform.ObjectBoxAndroidTransform
 import io.objectbox.gradle.transform.ObjectBoxJavaTransform
 import io.objectbox.gradle.transform.TransformException
 import io.objectbox.gradle.util.GradleCompat
+import io.objectbox.reporting.ObjectBoxBuildConfig
 import okio.Buffer
 import okio.Okio
 import org.gradle.api.Action
@@ -34,6 +34,7 @@ import org.gradle.api.Task
 import org.gradle.api.UnknownDomainObjectException
 import org.gradle.api.UnknownTaskException
 import org.gradle.api.artifacts.Dependency
+import org.gradle.api.plugins.InvalidPluginException
 import org.gradle.api.plugins.JavaPluginConvention
 import org.gradle.api.tasks.compile.JavaCompile
 import java.io.File
@@ -49,8 +50,11 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
         try {
             val env = ProjectEnv(project)
             if (!(env.hasAndroidPlugin || env.hasJavaPlugin || env.hasKotlinPlugin)) {
-                project.logger.warn("${project.name}: No Android, Java or Kotlin plugin detected, " +
-                        "apply the ObjectBox plugin AFTER those plugins. ")
+                throw InvalidPluginException("'io.objectbox' expects one of the following plugins to be applied to the project:\n" +
+                        "\t* java\n" +
+                        "\t* kotlin\n" +
+                        "\t${env.androidPluginIds.joinToString("\n\t") { "* $it" }}"
+                )
             }
             addDependenciesAnnotationProcessor(env)
             addDependencies(env)
@@ -69,7 +73,7 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
             createPrepareTask(env)
         } catch (e: Throwable) {
             if (e is TransformException) buildTracker.trackError("Transform preparation failed", e)
-            else buildTracker.trackFatal("Applying plugin failed", e)
+            else if (e !is InvalidPluginException) buildTracker.trackFatal("Applying plugin failed", e)
             throw e
         }
     }

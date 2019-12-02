@@ -3,7 +3,9 @@ package io.objectbox.gradle
 import org.gradle.api.Project
 import org.gradle.api.internal.plugins.PluginApplicationException
 import org.gradle.api.internal.project.ProjectInternal
+import org.gradle.api.plugins.InvalidPluginException
 import org.gradle.testfixtures.ProjectBuilder
+import org.hamcrest.CoreMatchers.isA
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Rule
@@ -24,6 +26,7 @@ class PluginApplyTest {
     fun apply_noRequiredPlugins_fails() {
         exception.expect(PluginApplicationException::class.java)
         exception.expectMessage("Failed to apply plugin [id 'io.objectbox']")
+        exception.expectCause(isA(InvalidPluginException::class.java))
 
         val project = ProjectBuilder.builder().build()
         project.project.pluginManager.apply("io.objectbox")
