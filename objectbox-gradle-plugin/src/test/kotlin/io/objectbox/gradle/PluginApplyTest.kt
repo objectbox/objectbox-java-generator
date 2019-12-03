@@ -1,5 +1,7 @@
 package io.objectbox.gradle
 
+import com.android.build.gradle.AppExtension
+import io.objectbox.gradle.transform.ObjectBoxAndroidTransform
 import org.gradle.api.Project
 import org.gradle.api.artifacts.DependencySet
 import org.gradle.api.internal.plugins.PluginApplicationException
@@ -46,7 +48,7 @@ class PluginApplyTest {
     }
 
     @Test
-    fun apply_afterJavaPlugin_addsDependenciesAndTasks() {
+    fun apply_afterJavaPlugin() {
         val project = ProjectBuilder.builder().build()
         project.pluginManager.apply {
             apply("java")
@@ -72,21 +74,6 @@ class PluginApplyTest {
         assertTransformTask(project, "Test", "testClasses")
     }
 
-    private fun assertProcessorDependency(apDeps: DependencySet) {
-        assertEquals(1, apDeps.count { it.group == "io.objectbox" && it.name == "objectbox-processor" })
-    }
-
-    private fun assertJavaDependency(compileDeps: DependencySet) {
-        assertEquals(1, compileDeps.count { it.group == "io.objectbox" && it.name == "objectbox-java" })
-    }
-
-    private fun assertNativeDependency(compileDeps: DependencySet) {
-        assertEquals(1, compileDeps.count {
-            it.group == "io.objectbox" &&
-                    (it.name == "objectbox-linux" || it.name == "objectbox-windows" || it.name == "objectbox-macos")
-        })
-    }
-
     private fun assertTransformTask(
         project: Project,
         sourceSetSuffix: String,
@@ -107,7 +94,7 @@ class PluginApplyTest {
     }
 
     @Test
-    fun apply_afterKotlinPlugin_addsDependenciesAndTasks() {
+    fun apply_afterKotlinAndKaptPlugin() {
         val project = ProjectBuilder.builder().build()
         project.pluginManager.apply {
             apply("kotlin")
@@ -119,7 +106,7 @@ class PluginApplyTest {
     }
 
     @Test
-    fun apply_afterKotlinPluginWithoutKapt_addsDependenciesAndTasks() {
+    fun apply_afterKotlinPlugin_addsKapt() {
         val project = ProjectBuilder.builder().build()
         project.pluginManager.apply {
             apply("kotlin")
@@ -149,5 +136,88 @@ class PluginApplyTest {
         // Note: transform is not supported for Kotlin code/tasks, so these match plain Java plugin.
         assertTransformTask(project, "", "classes")
         assertTransformTask(project, "Test", "testClasses")
+    }
+
+    @Test
+    fun apply_afterAndroidPlugin() {
+        val project = ProjectBuilder.builder().build()
+        project.pluginManager.apply {
+            apply("com.android.application")
+            apply("io.objectbox")
+        }
+
+        with(project.configurations) {
+            assertProcessorDependency(getByName("annotationProcessor").dependencies)
+            assertAndroidDependency(getByName("api").dependencies)
+            assertNativeDependency(getByName("testImplementation").dependencies)
+        }
+        assertNotNull(project.tasks.findByPath("objectboxPrepareBuild"))
+
+        // Special for Android: has byte-code transform.
+        assertAndroidByteCodeTransform(project)
+
+        // Note: can not evaluate and assert transform task for unit tests as Android plugin requires actual project.
+    }
+
+    @Test
+    fun apply_afterKotlinAndroidAndKaptPlugin() {
+        val project = ProjectBuilder.builder().build()
+        project.pluginManager.apply {
+            apply("com.android.application")
+            apply("kotlin-android")
+            apply("kotlin-kapt")
+            apply("io.objectbox")
+        }
+
+        assertKotlinAndroidSetup(project)
+    }
+
+    @Test
+    fun apply_afterKotlinAndroidPlugin_addsKapt() {
+        val project = ProjectBuilder.builder().build()
+        project.pluginManager.apply {
+            apply("com.android.application")
+            apply("kotlin-android")
+            apply("io.objectbox")
+        }
+
+        assertKotlinAndroidSetup(project)
+    }
+
+    private fun assertKotlinAndroidSetup(project: Project) {
+        with(project.configurations) {
+            assertProcessorDependency(getByName("kapt").dependencies)
+            assertAndroidDependency(getByName("api").dependencies)
+            assertNativeDependency(getByName("testImplementation").dependencies)
+        }
+        assertNotNull(project.tasks.findByPath("objectboxPrepareBuild"))
+
+        // Special for Android: has byte-code transform.
+        assertAndroidByteCodeTransform(project)
+    }
+
+    private fun assertProcessorDependency(apDeps: DependencySet) {
+        assertEquals(1, apDeps.count { it.group == "io.objectbox" && it.name == "objectbox-processor" })
+    }
+
+    private fun assertJavaDependency(compileDeps: DependencySet) {
+        assertEquals(1, compileDeps.count { it.group == "io.objectbox" && it.name == "objectbox-java" })
+    }
+
+    private fun assertNativeDependency(compileDeps: DependencySet) {
+        assertEquals(1, compileDeps.count {
+            it.group == "io.objectbox" &&
+                    (it.name == "objectbox-linux" || it.name == "objectbox-windows" || it.name == "objectbox-macos")
+        })
+    }
+
+    private fun assertAndroidDependency(deps: DependencySet) {
+        assertEquals(1, deps.count { it.group == "io.objectbox" && it.name == "objectbox-android" })
+    }
+
+    private fun assertAndroidByteCodeTransform(project: Project) {
+        with(project.extensions.getByType(AppExtension::class.java)) {
+            assertEquals(1, transforms.count { it is ObjectBoxAndroidTransform })
+        }
     }
 }
