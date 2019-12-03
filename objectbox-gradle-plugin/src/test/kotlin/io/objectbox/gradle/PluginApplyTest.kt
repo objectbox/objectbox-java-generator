@@ -121,7 +121,10 @@ class PluginApplyTest {
             assertProcessorDependency(getByName("kapt").dependencies)
 
             getByName("api").dependencies.let { deps ->
-                assertEquals(1, deps.count { it.group == "io.objectbox" && it.name == "objectbox-kotlin" })
+                assertEquals(1, deps.count {
+                    it.group == "io.objectbox" && it.name == "objectbox-kotlin"
+                            && it.version == ProjectEnv.Const.runtimeVersion
+                })
                 assertJavaDependency(deps)
                 assertNativeDependency(deps)
             }
@@ -197,22 +200,32 @@ class PluginApplyTest {
     }
 
     private fun assertProcessorDependency(apDeps: DependencySet) {
-        assertEquals(1, apDeps.count { it.group == "io.objectbox" && it.name == "objectbox-processor" })
+        assertEquals(1, apDeps.count {
+            it.group == "io.objectbox" && it.name == "objectbox-processor"
+                    && it.version == ProjectEnv.Const.pluginVersion
+        })
     }
 
     private fun assertJavaDependency(compileDeps: DependencySet) {
-        assertEquals(1, compileDeps.count { it.group == "io.objectbox" && it.name == "objectbox-java" })
+        assertEquals(1, compileDeps.count {
+            it.group == "io.objectbox" && it.name == "objectbox-java"
+                    && it.version == ProjectEnv.Const.runtimeVersion
+        })
     }
 
     private fun assertNativeDependency(compileDeps: DependencySet) {
         assertEquals(1, compileDeps.count {
-            it.group == "io.objectbox" &&
-                    (it.name == "objectbox-linux" || it.name == "objectbox-windows" || it.name == "objectbox-macos")
+            it.group == "io.objectbox"
+                    && (it.name == "objectbox-linux" || it.name == "objectbox-windows" || it.name == "objectbox-macos")
+                    && it.version == ProjectEnv.Const.runtimeVersion
         })
     }
 
     private fun assertAndroidDependency(deps: DependencySet) {
-        assertEquals(1, deps.count { it.group == "io.objectbox" && it.name == "objectbox-android" })
+        assertEquals(1, deps.count {
+            it.group == "io.objectbox" && it.name == "objectbox-android"
+                    && it.version == ProjectEnv.Const.runtimeVersion
+        })
     }
 
     private fun assertAndroidByteCodeTransform(project: Project) {

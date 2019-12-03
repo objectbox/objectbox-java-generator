@@ -199,6 +199,7 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
             if (DEBUG) println("### Applied 'kotlin-kapt'.")
         }
 
+        // Note: use plugin version for processor dependency as processor is part of this project.
         val processorDep = "io.objectbox:objectbox-processor:${ProjectEnv.Const.pluginVersion}"
         // Note: check for and use preferred/best config first, potentially ignoring others.
         when {
