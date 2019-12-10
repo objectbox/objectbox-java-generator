@@ -20,11 +20,11 @@ package io.objectbox.gradle
 
 import com.squareup.moshi.JsonWriter
 import com.squareup.moshi.Moshi
-import io.objectbox.reporting.ObjectBoxBuildConfig
 import io.objectbox.gradle.transform.ObjectBoxAndroidTransform
 import io.objectbox.gradle.transform.ObjectBoxJavaTransform
 import io.objectbox.gradle.transform.TransformException
 import io.objectbox.gradle.util.GradleCompat
+import io.objectbox.reporting.ObjectBoxBuildConfig
 import okio.Buffer
 import okio.Okio
 import org.gradle.api.Action
@@ -34,6 +34,7 @@ import org.gradle.api.Task
 import org.gradle.api.UnknownDomainObjectException
 import org.gradle.api.UnknownTaskException
 import org.gradle.api.artifacts.Dependency
+import org.gradle.api.plugins.InvalidPluginException
 import org.gradle.api.plugins.JavaPluginConvention
 import org.gradle.api.tasks.compile.JavaCompile
 import java.io.File
@@ -49,8 +50,11 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
         try {
             val env = ProjectEnv(project)
             if (!(env.hasAndroidPlugin || env.hasJavaPlugin || env.hasKotlinPlugin)) {
-                project.logger.warn("${project.name}: No Android, Java or Kotlin plugin detected, " +
-                        "apply the ObjectBox plugin AFTER those plugins. ")
+                throw InvalidPluginException("'io.objectbox' expects one of the following plugins to be applied to the project:\n" +
+                        "\t* java\n" +
+                        "\t* kotlin\n" +
+                        "\t${env.androidPluginIds.joinToString("\n\t") { "* $it" }}"
+                )
             }
             addDependenciesAnnotationProcessor(env)
             addDependencies(env)
@@ -69,7 +73,7 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
             createPrepareTask(env)
         } catch (e: Throwable) {
             if (e is TransformException) buildTracker.trackError("Transform preparation failed", e)
-            else buildTracker.trackFatal("Applying plugin failed", e)
+            else if (e !is InvalidPluginException) buildTracker.trackFatal("Applying plugin failed", e)
             throw e
         }
     }
@@ -188,25 +192,33 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
     }
 
     private fun addDependenciesAnnotationProcessor(env: ProjectEnv) {
-        // Does not seem to work with Android projects; project should do that themselves:
-        val processorDep = "io.objectbox:objectbox-processor:${ProjectEnv.Const.pluginVersion}"
         val project = env.project
-        if (project.hasConfig("kapt")) {
-            // Kotlin (Android + Desktop).
-            project.addDep("kapt", processorDep)
-        } else if (project.hasConfig("annotationProcessor")) {
-            // Android (Java), also Java Desktop with Gradle 5.0 (best as of 5.2) uses annotationProcessor.
-            project.addDep("annotationProcessor", processorDep)
-        } else if (project.hasConfig("apt")) {
-            // https://bitbucket.org/hvisser/android-apt or custom apt
-            // https://docs.gradle.org/current/userguide/java_plugin.html#sec:java_compile_avoidance
-            project.addDep("apt", processorDep)
-        } else if (env.hasKotlinPlugin) {
-            if (!project.plugins.hasPlugin("kotlin-kapt")) {
-                // Does not seem to work reliable; project should do that themselves:
-                project.plugins.apply("kotlin-kapt")
+        if ((env.hasKotlinPlugin || env.hasKotlinAndroidPlugin) && !project.hasConfig("kapt")) {
+            // Note: no-op if kapt plugin was already applied.
+            project.plugins.apply("kotlin-kapt")
+            if (DEBUG) println("### Applied 'kotlin-kapt'.")
+        }
+
+        // Note: use plugin version for processor dependency as processor is part of this project.
+        val processorDep = "io.objectbox:objectbox-processor:${ProjectEnv.Const.pluginVersion}"
+        // Note: check for and use preferred/best config first, potentially ignoring others.
+        when {
+            project.hasConfig("kapt") -> {
+                // Kotlin (Android + Desktop).
                 project.addDep("kapt", processorDep)
-                if (DEBUG) println("### Kotlin KAPT plugin added")
+            }
+            project.hasConfig("annotationProcessor") -> {
+                // Android (Java), also Java Desktop with Gradle 5.0 (best as of 5.2) uses annotationProcessor.
+                project.addDep("annotationProcessor", processorDep)
+            }
+            project.hasConfig("apt") -> {
+                // https://bitbucket.org/hvisser/android-apt or custom apt
+                // https://docs.gradle.org/current/userguide/java_plugin.html#sec:java_compile_avoidance
+                project.addDep("apt", processorDep)
+            }
+            else -> {
+                project.logger.warn("ObjectBox: Could not add dependency on objectbox-processor, " +
+                        "no supported configuration (kapt, annotationProcessor, apt) found.")
             }
         }
     }

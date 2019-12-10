@@ -35,10 +35,10 @@ class ProjectEnv(val project: Project) {
     val debug: Boolean
         get() = options.debug
 
-    val hasAndroidPlugin = listOf("android", "android-library", /* Legacy Android Plugin */
-            "com.android.application", "com.android.library", /* Android Plugin */
-            "com.android.feature" /* Instant App Module */)
-            .any { project.plugins.hasPlugin(it) }
+    val androidPluginIds = listOf("android", "android-library", /* Legacy Android Plugin */
+        "com.android.application", "com.android.library", /* Android Plugin */
+        "com.android.feature" /* Instant App Module */)
+    val hasAndroidPlugin = androidPluginIds.any { project.plugins.hasPlugin(it) }
 
     val hasKotlinAndroidPlugin = project.plugins.hasPlugin("kotlin-android")
     val hasKotlinPlugin = project.plugins.hasPlugin("kotlin")
