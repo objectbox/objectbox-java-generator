@@ -4,12 +4,18 @@ buildscript {
         kotlin_version = '1.3.41'
         mockito_version = '2.25.1'
 
+        // Typically, only edit those two:
+        def objectboxVersionNumber = '2.5.0' // without "-SNAPSHOT", e.g. '2.5.0' or '2.4.0-RC'
+        def objectboxVersionRelease = true  // set to true for releasing to ignore versionPostFix to avoid e.g. "-dev" versions
+
         // version post fix: '-<value>' or '' if not defined
         def versionPostFixValue = project.findProperty('versionPostFix')
         def versionPostFix = versionPostFixValue ? "-$versionPostFixValue" : ''
-        
-        objectbox_plugin_version = "2.5.0$versionPostFix-SNAPSHOT" // plugin, processor, generator and code-modifier version
-        def dependencies_version = '2.5.0-dev-SNAPSHOT'
+
+        // plugin, processor, generator and code-modifier version
+        objectbox_plugin_version= objectboxVersionNumber + (objectboxVersionRelease? "" : "$versionPostFix-SNAPSHOT")
+
+        def dependencies_version = objectboxVersionNumber + (objectboxVersionRelease? "": "-dev-SNAPSHOT")
         objectbox_java_version = dependencies_version // Java version used by code and tests
         objectbox_runtime_version = dependencies_version // The plugin adds dependencies with this version to projects applying it
 
