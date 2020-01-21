@@ -35,7 +35,7 @@ class IdTest : BaseProcessorTest() {
     @Test
     fun testIdNotLong() {
         // test that instead of just failing compilation, processor warns if @Id is not Long
-        val source = """
+        val sourceFile = """
         package io.objectbox.processor.test;
         import io.objectbox.annotation.Entity; import io.objectbox.annotation.Id;
 
@@ -43,20 +43,22 @@ class IdTest : BaseProcessorTest() {
         public class NotLongEntity {
             @Id String id;
         }
-        """
-        val javaFileObject = JavaFileObjects.forSourceString("io.objectbox.processor.test.NotLongEntity", source)
+        """.trimIndent().let {
+            JavaFileObjects.forSourceString("io.objectbox.processor.test.NotLongEntity", it)
+        }
 
         val environment = TestEnvironment("not-generated.json")
 
-        val compilation = environment.compile(listOf(javaFileObject))
+        val compilation = environment.compile(listOf(sourceFile))
         CompilationSubject.assertThat(compilation).failed()
-
-        CompilationSubject.assertThat(compilation).hadErrorContaining("An @Id property has to be of type Long")
+        CompilationSubject.assertThat(compilation).hadErrorContaining(
+            "An @Id property has to be of type Long"
+        )
     }
 
     @Test
     fun id_noAccess_shouldWarn() {
-        val source = """
+        val sourceFile = """
         package com.example.objectbox;
         import io.objectbox.annotation.Entity; import io.objectbox.annotation.Id;
 
@@ -64,15 +66,17 @@ class IdTest : BaseProcessorTest() {
         public class PrivateEntity {
             @Id private long id; // private + no getter or setter
         }
-        """
-        val javaFileObject = JavaFileObjects.forSourceString("com.example.objectbox.PrivateEntity", source)
+        """.trimIndent().let {
+            JavaFileObjects.forSourceString("com.example.objectbox.PrivateEntity", it)
+        }
 
         val environment = TestEnvironment("not-generated.json")
 
-        val compilation = environment.compile(listOf(javaFileObject))
+        val compilation = environment.compile(listOf(sourceFile))
         CompilationSubject.assertThat(compilation).failed()
-
-        CompilationSubject.assertThat(compilation).hadErrorContaining("An @Id property must not be private or have a not-private getter and setter.")
+        CompilationSubject.assertThat(compilation).hadErrorContaining(
+            "An @Id property must not be private or have a not-private getter and setter."
+        )
     }
 
 }
