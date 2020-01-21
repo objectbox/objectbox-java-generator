@@ -11,7 +11,7 @@ import io.objectbox.generator.model.Schema
 import io.objectbox.generator.model.ToMany
 import io.objectbox.generator.model.ToManyStandalone
 import io.objectbox.generator.model.ToManyToMany
-import org.junit.Assert
+import org.junit.Assert.assertEquals
 import org.junit.Assert.fail
 import org.junit.Test
 
@@ -62,7 +62,7 @@ class RelationsTest : BaseProcessorTest() {
                     assertThat(child.toOneRelations).hasSize(1)
                     assertToOneIndexAndRelation(child, parent, prop, toOneName = "parent", toOneFieldName = "parent")
                 }
-                else -> Assert.fail("Found stray property '${prop.propertyName}' in schema.")
+                else -> fail("Found stray property '${prop.propertyName}' in schema.")
             }
         }
 
@@ -115,7 +115,7 @@ class RelationsTest : BaseProcessorTest() {
                     assertPrimitiveType(prop, PropertyType.RelationId)
                     assertToOneIndexAndRelation(child, parent, prop, toOneName = "parentWithIdProperty")
                 }
-                else -> Assert.fail("Found stray property '${prop.propertyName}' in schema.")
+                else -> fail("Found stray property '${prop.propertyName}' in schema.")
             }
         }
 
@@ -317,7 +317,7 @@ class RelationsTest : BaseProcessorTest() {
                     assertThat(backlinkToMany).isNotNull()
                     assertThat(backlinkToMany.name).isEqualTo("targets")
                 }
-                else -> Assert.fail("Found stray to-many relation '${toManyRelation.name}' in schema.")
+                else -> fail("Found stray to-many relation '${toManyRelation.name}' in schema.")
             }
         }
 
@@ -327,14 +327,14 @@ class RelationsTest : BaseProcessorTest() {
         for (prop in target.properties) {
             when (prop.propertyName) {
                 "id" -> assertType(prop, PropertyType.Long)
-                else -> Assert.fail("Found stray property '${prop.propertyName}' in schema.")
+                else -> fail("Found stray property '${prop.propertyName}' in schema.")
             }
         }
         assertThat(target.incomingToManyRelations).isNotEmpty()
         for (toManyRelation in target.incomingToManyRelations) {
             when (toManyRelation.name) {
                 "targets" -> assertThat(toManyRelation is ToManyStandalone)
-                else -> Assert.fail("Found stray incoming to-many relation '${toManyRelation.name}' in schema.")
+                else -> fail("Found stray incoming to-many relation '${toManyRelation.name}' in schema.")
             }
         }
         // ensure source schema is as expected
@@ -343,21 +343,21 @@ class RelationsTest : BaseProcessorTest() {
         for (prop in source.properties) {
             when (prop.propertyName) {
                 "id" -> assertType(prop, PropertyType.Long)
-                else -> Assert.fail("Found stray property '${prop.propertyName}' in schema.")
+                else -> fail("Found stray property '${prop.propertyName}' in schema.")
             }
         }
         assertThat(source.toManyRelations).isNotEmpty()
         for (toManyRelation in source.toManyRelations) {
             when (toManyRelation.name) {
                 "targets" -> assertThat(toManyRelation is ToManyStandalone)
-                else -> Assert.fail("Found stray to-many relation '${toManyRelation.name}' in schema.")
+                else -> fail("Found stray to-many relation '${toManyRelation.name}' in schema.")
             }
         }
         assertThat(source.incomingToManyRelations).isNotEmpty()
         for (toManyRelation in source.incomingToManyRelations) {
             when (toManyRelation.name) {
                 "sources" -> assertThat(toManyRelation is ToManyToMany)
-                else -> Assert.fail("Found stray incoming to-many relation '${toManyRelation.name}' in schema.")
+                else -> fail("Found stray incoming to-many relation '${toManyRelation.name}' in schema.")
             }
         }
     }
@@ -449,7 +449,7 @@ class RelationsTest : BaseProcessorTest() {
                     toOneTargetProperty = prop
                 }
                 "id", "targetOtherId" -> { /* just ensure they exist */ }
-                else -> Assert.fail("Found stray property '${prop.propertyName}' in schema.")
+                else -> fail("Found stray property '${prop.propertyName}' in schema.")
             }
         }
         assertThat(toOneTargetProperty).isNotNull()
@@ -478,7 +478,7 @@ class RelationsTest : BaseProcessorTest() {
                     assertThat(toManyRelation is ToManyToMany)
                     assertThat((toManyRelation as ToManyToMany).backlinkToMany.name).isEqualTo("targets")
                 }
-                else -> Assert.fail("Found stray to-many relation '${toManyRelation.name}' in schema.")
+                else -> fail("Found stray to-many relation '${toManyRelation.name}' in schema.")
             }
         }
     }
@@ -545,10 +545,10 @@ class RelationsTest : BaseProcessorTest() {
         myObjectBoxContent.contains("420000000L")
         myObjectBoxContent.contains("\"Hoolaloop\"")
         val entity = environment.schema.entities.single { it.className == "ToManyStandaloneUidName" }
-        Assert.assertEquals(1, entity.toManyRelations.size)
+        assertEquals(1, entity.toManyRelations.size)
         val toMany = entity.toManyRelations[0] as ToManyStandalone
-        Assert.assertEquals("Hoolaloop", toMany.dbName)
-        Assert.assertEquals(420000000L, toMany.modelId.uid)
+        assertEquals("Hoolaloop", toMany.dbName)
+        assertEquals(420000000L, toMany.modelId.uid)
 
         assertToManyStandaloneModel(environment, parentName, "Hoolaloop")
     }
@@ -607,7 +607,7 @@ class RelationsTest : BaseProcessorTest() {
                     assertThat(prop.dbName).isEqualTo("id")
                     assertType(prop, PropertyType.Long)
                 }
-                else -> Assert.fail("Found stray property '${prop.propertyName}' in schema.")
+                else -> fail("Found stray property '${prop.propertyName}' in schema.")
             }
         }
         // assert child properties
@@ -630,7 +630,7 @@ class RelationsTest : BaseProcessorTest() {
                     assertToOneIndexAndRelation(child, parent, prop, toOneName = targetPropertyName)
                     assertToManyRelation(parent, child, prop)
                 }
-                else -> Assert.fail("Found stray property '${prop.propertyName}' in schema.")
+                else -> fail("Found stray property '${prop.propertyName}' in schema.")
             }
         }
     }
@@ -650,7 +650,7 @@ class RelationsTest : BaseProcessorTest() {
                     assertThat(toManyRelation.sourceEntity).isEqualTo(parent)
                     assertThat(toManyRelation.targetEntity).isEqualTo(child)
                 }
-                else -> Assert.fail("Found stray toManyRelation '${toManyRelation.name}' in schema.")
+                else -> fail("Found stray toManyRelation '${toManyRelation.name}' in schema.")
             }
         }
     }
