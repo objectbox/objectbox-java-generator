@@ -1,7 +1,8 @@
 buildscript {
     ext {
         android_version = '3.4.0' // Minimal supported version is 3.0.0. http://google.github.io/android-gradle-dsl/javadoc/
-        kotlin_version = '1.3.41'
+        kotlin_version = '1.3.61'
+        junit_version = '4.13'
         mockito_version = '2.25.1'
 
         // Typically, only edit those two:
@@ -41,7 +42,7 @@ buildscript {
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "gradle.plugin.de.fuerstenau:BuildConfigPlugin:1.1.8" // for code-modifier, gradle-plugin
-        classpath "com.github.ben-manes:gradle-versions-plugin:0.21.0"
+        classpath "com.github.ben-manes:gradle-versions-plugin:0.27.0"
     }
 }
 
