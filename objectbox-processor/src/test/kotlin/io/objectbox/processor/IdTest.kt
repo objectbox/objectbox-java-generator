@@ -10,6 +10,29 @@ import org.junit.Test
 class IdTest : BaseProcessorTest() {
 
     @Test
+    fun id_missing() {
+        val sourceFile = """
+        package io.objectbox.processor.test;
+        import io.objectbox.annotation.Entity;
+        import io.objectbox.annotation.Id;
+
+        @Entity
+        public class NoIdEntity {
+            long id;
+        }
+        """.trimIndent().let {
+            JavaFileObjects.forSourceString("io.objectbox.processor.test.NoIdEntity", it)
+        }
+
+        val environment = TestEnvironment("not-generated.json")
+        val compilation = environment.compile(listOf(sourceFile))
+        CompilationSubject.assertThat(compilation).failed()
+        CompilationSubject.assertThat(compilation).hadErrorContaining(
+            "No ID property found for \"Entity NoIdEntity (package: io.objectbox.processor.test)\" (use @Id on a property of type long)"
+        )
+    }
+
+    @Test
     fun testIdNotLong() {
         // test that instead of just failing compilation, processor warns if @Id is not Long
         val source = """
