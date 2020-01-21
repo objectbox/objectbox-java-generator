@@ -18,42 +18,49 @@
 
 package io.objectbox.gradle.transform
 
-import org.junit.Assert
-import org.junit.Rule
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertThrows
 import org.junit.Test
-import org.junit.rules.ExpectedException
+import java.io.IOException
 
 
 class ClassTransformerInheritanceTest : AbstractTransformTest() {
 
-    @Rule
-    @JvmField
-    val thrown : ExpectedException = ExpectedException.none()
-
     @Test
     fun testTransformEntityInheritance() {
-        val classes = listOf(EntitySub::class, EntitySub_::class, EntityBase::class, EntitySubCursor::class,
-                EntityInterface::class)
+        val classes = listOf(
+            EntitySub::class, EntitySub_::class, EntityBase::class, EntitySubCursor::class, EntityInterface::class
+        )
         val (stats) = testTransformOrCopy(classes, 2, 3)
-        Assert.assertEquals(1, stats.toManyFound)
-        Assert.assertEquals(1, stats.toOnesFound)
-        Assert.assertEquals(1, stats.toOnesInitializerAdded)
+        assertEquals(1, stats.toManyFound)
+        assertEquals(1, stats.toOnesFound)
+        assertEquals(1, stats.toOnesInitializerAdded)
     }
 
     @Test
     fun testTransformEntityRelationsInBaseEntity() {
-        thrown.expectMessage("Relations in an entity super class are not supported")
         // relations in super classes are (currently) not supported
         val classes = listOf(EntityRelationsInSuperBase::class, EntityBaseWithRelations::class)
-        testTransformOrCopy(classes, 0, 0)
+        assertThrows(TransformException::class.java) {
+            testTransformOrCopy(classes, 0, 0)
+        }.also {
+            assertEquals("Relations in an entity super class are not supported," +
+                    " but 'io.objectbox.gradle.transform.EntityBaseWithRelations' is super of entity" +
+                    " 'io.objectbox.gradle.transform.EntityRelationsInSuperBase' and has relations", it.message)
+        }
     }
 
     @Test
     fun testTransformEntityRelationsInSuperEntity() {
-        thrown.expectMessage("Relations in an entity super class are not supported")
         // relations in super classes are (currently) not supported
         val classes = listOf(EntityRelationsInSuperEntity::class, EntitySub::class)
-        testTransformOrCopy(classes, 0, 0)
+        assertThrows(TransformException::class.java) {
+            testTransformOrCopy(classes, 0, 0)
+        }.also {
+            assertEquals("Relations in an entity super class are not supported," +
+                    " but 'io.objectbox.gradle.transform.EntitySub' is super of entity" +
+                    " 'io.objectbox.gradle.transform.EntityRelationsInSuperEntity' and has relations", it.message)
+        }
     }
 
 }

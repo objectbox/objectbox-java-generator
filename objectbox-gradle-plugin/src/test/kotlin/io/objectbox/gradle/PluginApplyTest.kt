@@ -8,12 +8,12 @@ import org.gradle.api.internal.plugins.PluginApplicationException
 import org.gradle.api.internal.project.ProjectInternal
 import org.gradle.api.plugins.InvalidPluginException
 import org.gradle.testfixtures.ProjectBuilder
-import org.hamcrest.CoreMatchers.isA
+import org.hamcrest.CoreMatchers.instanceOf
+import org.hamcrest.MatcherAssert.assertThat
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
-import org.junit.Rule
+import org.junit.Assert.assertThrows
 import org.junit.Test
-import org.junit.rules.ExpectedException
 
 
 /**
@@ -21,29 +21,27 @@ import org.junit.rules.ExpectedException
  */
 class PluginApplyTest {
 
-    @Rule
-    @JvmField
-    val exception: ExpectedException = ExpectedException.none()
-
     @Test
     fun apply_noRequiredPlugins_fails() {
-        exception.expect(PluginApplicationException::class.java)
-        exception.expectMessage("Failed to apply plugin [id 'io.objectbox']")
-        exception.expectCause(isA(InvalidPluginException::class.java))
-
         val project = ProjectBuilder.builder().build()
-        project.project.pluginManager.apply("io.objectbox")
+        assertThrows(PluginApplicationException::class.java) {
+            project.project.pluginManager.apply("io.objectbox")
+        }.also {
+            assertEquals("Failed to apply plugin [id 'io.objectbox']", it.message)
+            assertThat(it.cause, instanceOf(InvalidPluginException::class.java))
+        }
     }
 
     @Test
     fun apply_beforeJavaPlugin_fails() {
-        exception.expect(PluginApplicationException::class.java)
-        exception.expectMessage("Failed to apply plugin [id 'io.objectbox']")
-
         val project = ProjectBuilder.builder().build()
-        project.pluginManager.apply {
-            apply("io.objectbox")
-            apply("java")
+        assertThrows(PluginApplicationException::class.java) {
+            project.pluginManager.apply {
+                apply("io.objectbox")
+                apply("java")
+            }
+        }.also {
+            assertEquals("Failed to apply plugin [id 'io.objectbox']", it.message)
         }
     }
 

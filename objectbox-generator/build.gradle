@@ -16,7 +16,7 @@ dependencies {
     compile 'org.greenrobot:essentials:3.0.0-RC1'
     compile fileTree(dir: 'libs', include: ['*.jar'])
 
-    testCompile 'junit:junit:4.12'
+    testCompile "junit:junit:$junit_version"
 }
 
 test {
