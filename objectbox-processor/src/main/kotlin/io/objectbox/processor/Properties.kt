@@ -125,7 +125,7 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
         val hasIdAnnotation = idAnnotation != null
         if (hasIdAnnotation) {
             if (propertyBuilder.property.propertyType != PropertyType.Long) {
-                messages.error("An @Id property has to be of type Long.", field)
+                messages.error("An @Id property must be a not-null long.", field)
             }
             if (isPrivate && getterMethodName == null) {
                 messages.error("An @Id property must not be private or have a not-private getter and setter.")
