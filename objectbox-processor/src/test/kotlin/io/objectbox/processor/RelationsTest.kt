@@ -189,12 +189,13 @@ class RelationsTest : BaseProcessorTest() {
         }
 
         val environment = TestEnvironment("not-generated.json")
+        environment.cleanModelFile()
 
         val compilation = environment.compile(listOf(javaFileObjectSource, javaFileObjectToOneTarget))
         CompilationSubject.assertThat(compilation).failed()
-
         CompilationSubject.assertThat(compilation)
             .hadErrorContaining("The target ID property 'targetId' for ToOne relation 'target' in 'ToOneSource' must be long.")
+        assertThat(environment.isModelFileExists()).isFalse()
     }
 
     @Test
@@ -224,12 +225,13 @@ class RelationsTest : BaseProcessorTest() {
         }
 
         val environment = TestEnvironment("not-generated.json")
+        environment.cleanModelFile()
 
         val compilation = environment.compile(listOf(javaFileObjectSource, javaFileObjectToOneTarget))
         CompilationSubject.assertThat(compilation).failed()
-
         CompilationSubject.assertThat(compilation)
             .hadErrorContaining("The target ID property 'targetIdUnconventionalName' for ToOne relation 'target' in 'ToOneSource' must be long.")
+        assertThat(environment.isModelFileExists()).isFalse()
     }
 
     @Test
@@ -239,11 +241,13 @@ class RelationsTest : BaseProcessorTest() {
         val childName = "ToOneNoBoxStore"
 
         val environment = TestEnvironment("not-generated.json", optionDisableTransform = true)
+        environment.cleanModelFile()
+
         val compilation = environment.compile(parentName, childName)
         CompilationSubject.assertThat(compilation).failed()
-
         CompilationSubject.assertThat(compilation).hadErrorCount(1)
         CompilationSubject.assertThat(compilation).hadErrorContainingMatch("in '$childName' add a field '__boxStore'")
+        assertThat(environment.isModelFileExists()).isFalse()
     }
 
     @Test
@@ -384,11 +388,12 @@ class RelationsTest : BaseProcessorTest() {
      */
     private fun assertMultipleRelationsError(targetName: String, sourceName: String) {
         val environment = TestEnvironment("not-generated.json")
+        environment.cleanModelFile()
 
         val compilation = environment.compile(targetName, sourceName)
         CompilationSubject.assertThat(compilation).failed()
-
         CompilationSubject.assertThat(compilation).hadErrorContaining("Set name of one to-one or to-many relation of '$sourceName'")
+        assertThat(environment.isModelFileExists()).isFalse()
     }
 
     @Test
@@ -409,10 +414,12 @@ class RelationsTest : BaseProcessorTest() {
 
     private fun assertMultipleBacklinksError(backlinkEntity: String, relationEntity: String) {
         val environment = TestEnvironment("not-generated.json")
+        environment.cleanModelFile()
 
         val compilation = environment.compile(backlinkEntity, relationEntity)
         CompilationSubject.assertThat(compilation).failed()
         CompilationSubject.assertThat(compilation).hadErrorContaining("Only one @Backlink per relation allowed. Remove all but one @Backlink.")
+        assertThat(environment.isModelFileExists()).isFalse()
     }
 
     @Test
@@ -483,12 +490,13 @@ class RelationsTest : BaseProcessorTest() {
         val sourceName = "BacklinkWrongToSource"
 
         val environment = TestEnvironment("not-generated.json")
+        environment.cleanModelFile()
 
         val compilation = environment.compile(targetName, sourceName)
         CompilationSubject.assertThat(compilation).failed()
-
         CompilationSubject.assertThat(compilation)
                 .hadErrorContaining("Could not find target property 'wrongTarget' in '$sourceName'")
+        assertThat(environment.isModelFileExists()).isFalse()
     }
 
     @Test
@@ -496,12 +504,13 @@ class RelationsTest : BaseProcessorTest() {
         val sourceName = "BacklinkToOneError"
 
         val environment = TestEnvironment("not-generated.json")
+        environment.cleanModelFile()
 
         val compilation = environment.compile(sourceName)
         CompilationSubject.assertThat(compilation).failed()
-
         CompilationSubject.assertThat(compilation)
                 .hadErrorContaining("'nonsensicalToOne' @Backlink can only be used on a ToMany relation")
+        assertThat(environment.isModelFileExists()).isFalse()
     }
 
     @Test
@@ -560,11 +569,13 @@ class RelationsTest : BaseProcessorTest() {
         val className = "ToOneGenerics"
 
         val environment = TestEnvironment("not-generated.json")
+        environment.cleanModelFile()
+
         val compilation = environment.compile(className)
         CompilationSubject.assertThat(compilation).failed()
-
         CompilationSubject.assertThat(compilation).hadErrorCount(1)
         CompilationSubject.assertThat(compilation).hadErrorContainingMatch("Property 'toOne' can not have a relation to type T")
+        assertThat(environment.isModelFileExists()).isFalse()
     }
 
     @Test
@@ -572,11 +583,13 @@ class RelationsTest : BaseProcessorTest() {
         val className = "ToManyGenerics"
 
         val environment = TestEnvironment("not-generated.json")
+        environment.cleanModelFile()
+
         val compilation = environment.compile(className)
         CompilationSubject.assertThat(compilation).failed()
-
         CompilationSubject.assertThat(compilation).hadErrorCount(1)
         CompilationSubject.assertThat(compilation).hadErrorContainingMatch("Property 'toMany' can not have a relation to type T")
+        assertThat(environment.isModelFileExists()).isFalse()
     }
 
     private fun assertToManySchema(schema: Schema, parentName: String, childName: String) {
