@@ -1,0 +1,55 @@
+package io.objectbox.processor
+
+import com.google.testing.compile.CompilationSubject
+import com.google.testing.compile.JavaFileObjects
+import org.junit.Test
+
+/**
+ * Tests related to the @Id annotation.
+ */
+class IdTest : BaseProcessorTest() {
+
+    @Test
+    fun testIdNotLong() {
+        // test that instead of just failing compilation, processor warns if @Id is not Long
+        val source = """
+        package io.objectbox.processor.test;
+        import io.objectbox.annotation.Entity; import io.objectbox.annotation.Id;
+
+        @Entity
+        public class NotLongEntity {
+            @Id String id;
+        }
+        """
+        val javaFileObject = JavaFileObjects.forSourceString("io.objectbox.processor.test.NotLongEntity", source)
+
+        val environment = TestEnvironment("not-generated.json")
+
+        val compilation = environment.compile(listOf(javaFileObject))
+        CompilationSubject.assertThat(compilation).failed()
+
+        CompilationSubject.assertThat(compilation).hadErrorContaining("An @Id property has to be of type Long")
+    }
+
+    @Test
+    fun id_noAccess_shouldWarn() {
+        val source = """
+        package com.example.objectbox;
+        import io.objectbox.annotation.Entity; import io.objectbox.annotation.Id;
+
+        @Entity
+        public class PrivateEntity {
+            @Id private long id; // private + no getter or setter
+        }
+        """
+        val javaFileObject = JavaFileObjects.forSourceString("com.example.objectbox.PrivateEntity", source)
+
+        val environment = TestEnvironment("not-generated.json")
+
+        val compilation = environment.compile(listOf(javaFileObject))
+        CompilationSubject.assertThat(compilation).failed()
+
+        CompilationSubject.assertThat(compilation).hadErrorContaining("An @Id property must not be private or have a not-private getter and setter.")
+    }
+
+}
