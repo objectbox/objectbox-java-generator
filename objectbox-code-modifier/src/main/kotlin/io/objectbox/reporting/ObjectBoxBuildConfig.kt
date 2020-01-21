@@ -18,10 +18,35 @@
 
 package io.objectbox.reporting
 
-class ObjectBoxBuildConfig (val projectDir: String, val flavor: String? = null) {
+import com.squareup.moshi.JsonClass
+import com.squareup.moshi.JsonWriter
+import com.squareup.moshi.Moshi
+import okio.Buffer
+import okio.Okio
+import java.io.File
+
+@JsonClass(generateAdapter = true)
+class ObjectBoxBuildConfig(val projectDir: String, val flavor: String? = null) {
     companion object {
         const val FILE_NAME = "objectbox-build-config.json"
     }
 
     val timeStarted = System.currentTimeMillis()
+
+    /**
+     * Writes this class as JSON into a file inside the given directory.
+     * The file is named [FILE_NAME].
+     */
+    fun writeInto(folder: File) {
+        val adapter = ObjectBoxBuildConfigJsonAdapter(Moshi.Builder().build())
+        val buffer = Buffer()
+        val jsonWriter = JsonWriter.of(buffer)
+        jsonWriter.indent = "  "
+
+        adapter.toJson(jsonWriter, this)
+
+        Okio.sink(File(folder, FILE_NAME)).use {
+            buffer.readAll(it)
+        }
+    }
 }

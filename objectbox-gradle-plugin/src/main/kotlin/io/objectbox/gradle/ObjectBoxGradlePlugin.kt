@@ -18,15 +18,11 @@
 
 package io.objectbox.gradle
 
-import com.squareup.moshi.JsonWriter
-import com.squareup.moshi.Moshi
 import io.objectbox.gradle.transform.ObjectBoxAndroidTransform
 import io.objectbox.gradle.transform.ObjectBoxJavaTransform
 import io.objectbox.gradle.transform.TransformException
 import io.objectbox.gradle.util.GradleCompat
 import io.objectbox.reporting.ObjectBoxBuildConfig
-import okio.Buffer
-import okio.Okio
 import org.gradle.api.Action
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -37,7 +33,6 @@ import org.gradle.api.artifacts.Dependency
 import org.gradle.api.plugins.InvalidPluginException
 import org.gradle.api.plugins.JavaPluginConvention
 import org.gradle.api.tasks.compile.JavaCompile
-import java.io.File
 
 class ObjectBoxGradlePlugin : Plugin<Project> {
     companion object {
@@ -172,23 +167,13 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
     private fun writeBuildConfig(env: ProjectEnv) {
         val buildDir = env.project.buildDir
         if (!buildDir.exists()) buildDir.mkdirs()
-        val file = File(buildDir, ObjectBoxBuildConfig.FILE_NAME)
-        var flavor: String? = null
+//        var flavor: String? = null
 //        val extClass = ObjectBoxAndroidTransform.Registration.getAndroidExtensionClasses(env.project).singleOrNull()
 //        if (extClass != null) {
 //            val ext = env.project.extensions.getByType(extClass) as BaseExtension
 //            flavor = ext?.defaultConfig?.dimension
 //        }
-        val options = ObjectBoxBuildConfig(env.project.projectDir.absolutePath, flavor)
-        val adapter = Moshi.Builder().build().adapter<ObjectBoxBuildConfig>(ObjectBoxBuildConfig::class.java)
-        val buffer = Buffer()
-        val jsonWriter = JsonWriter.of(buffer)
-        jsonWriter.indent = "  "
-        adapter.toJson(jsonWriter, options)
-        val sink = Okio.sink(file)
-        sink.use {
-            buffer.readAll(it)
-        }
+        ObjectBoxBuildConfig(env.project.projectDir.absolutePath, null).writeInto(buildDir)
     }
 
     private fun addDependenciesAnnotationProcessor(env: ProjectEnv) {
