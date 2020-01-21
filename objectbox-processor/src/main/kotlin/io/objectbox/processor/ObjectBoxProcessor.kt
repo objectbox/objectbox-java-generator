@@ -346,7 +346,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         val idPropertyCount = properties.count { it.isPrimaryKey }
         if (idPropertyCount == 0) {
             messages.error(
-                "No ID property found for '${className}', add @Id on a not-null long property.",
+                "No @Id property found for '${className}', add @Id on a not-null long property.",
                 this
             )
         } else if (idPropertyCount > 1) {

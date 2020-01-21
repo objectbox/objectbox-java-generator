@@ -31,7 +31,7 @@ class IdTest : BaseProcessorTest() {
         val compilation = environment.compile(listOf(sourceFile))
         CompilationSubject.assertThat(compilation).failed()
         CompilationSubject.assertThat(compilation).hadErrorContaining(
-            "No ID property found for 'NoIdEntity', add @Id on a not-null long property."
+            "No @Id property found for 'NoIdEntity', add @Id on a not-null long property."
         )
         assertThat(environment.isModelFileExists()).isFalse()
     }
@@ -57,7 +57,7 @@ class IdTest : BaseProcessorTest() {
         val compilation = environment.compile(listOf(sourceFile))
         CompilationSubject.assertThat(compilation).failed()
         CompilationSubject.assertThat(compilation).hadErrorContaining(
-            "An @Id property has to be of type Long"
+            "An @Id property must be a not-null long."
         )
         assertThat(environment.isModelFileExists()).isFalse()
     }
