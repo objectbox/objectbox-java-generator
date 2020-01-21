@@ -86,4 +86,8 @@ class TestEnvironment(modelFile: String,
     fun readModel(): IdSync {
         return IdSync(File(modelFilePath))
     }
+
+    fun isModelFileExists(): Boolean {
+        return File(modelFilePath).exists()
+    }
 }
