@@ -2,6 +2,7 @@ package io.objectbox.gradle
 
 import com.squareup.moshi.Moshi
 import io.objectbox.reporting.ObjectBoxBuildConfig
+import io.objectbox.reporting.ObjectBoxBuildConfigJsonAdapter
 import okio.Okio
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
@@ -28,7 +29,7 @@ class BuildConfigTest {
         assertTrue(file.isFile)
 
         val buildConfig = Okio.buffer(Okio.source(file)).use {
-            Moshi.Builder().build().adapter<ObjectBoxBuildConfig>(ObjectBoxBuildConfig::class.java).fromJson(it)!!
+            ObjectBoxBuildConfigJsonAdapter(Moshi.Builder().build()).fromJson(it)!!
         }
         assertEquals("/example/dir", buildConfig.projectDir)
         assertEquals("flavor", buildConfig.flavor)

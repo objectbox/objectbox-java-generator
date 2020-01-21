@@ -18,12 +18,14 @@
 
 package io.objectbox.reporting
 
+import com.squareup.moshi.JsonClass
 import com.squareup.moshi.JsonWriter
 import com.squareup.moshi.Moshi
 import okio.Buffer
 import okio.Okio
 import java.io.File
 
+@JsonClass(generateAdapter = true)
 class ObjectBoxBuildConfig(val projectDir: String, val flavor: String? = null) {
     companion object {
         const val FILE_NAME = "objectbox-build-config.json"
@@ -36,10 +38,11 @@ class ObjectBoxBuildConfig(val projectDir: String, val flavor: String? = null) {
      * The file is named [FILE_NAME].
      */
     fun writeInto(folder: File) {
-        val adapter = Moshi.Builder().build().adapter<ObjectBoxBuildConfig>(ObjectBoxBuildConfig::class.java)
+        val adapter = ObjectBoxBuildConfigJsonAdapter(Moshi.Builder().build())
         val buffer = Buffer()
         val jsonWriter = JsonWriter.of(buffer)
         jsonWriter.indent = "  "
+
         adapter.toJson(jsonWriter, this)
 
         Okio.sink(File(folder, FILE_NAME)).use {
