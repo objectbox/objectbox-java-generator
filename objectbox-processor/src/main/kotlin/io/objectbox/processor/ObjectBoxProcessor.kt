@@ -22,7 +22,6 @@ import io.objectbox.annotation.BaseEntity
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.NameInDb
 import io.objectbox.annotation.Uid
-import io.objectbox.reporting.BasicBuildTracker
 import io.objectbox.generator.BoxGenerator
 import io.objectbox.generator.GeneratorJob
 import io.objectbox.generator.GeneratorOutput
@@ -30,6 +29,7 @@ import io.objectbox.generator.idsync.IdSync
 import io.objectbox.generator.idsync.IdSyncException
 import io.objectbox.generator.model.Property
 import io.objectbox.generator.model.Schema
+import io.objectbox.reporting.BasicBuildTracker
 import java.io.File
 import java.io.FileNotFoundException
 import javax.annotation.processing.AbstractProcessor
@@ -280,8 +280,10 @@ open class ObjectBoxProcessor : AbstractProcessor() {
             entityModel.modelUid = uid
         }
 
-        // properties
+        // Parse properties.
         parseProperties(rootElements, relations, entityModel, entity)
+        // Verify there is an @Id property.
+        entityModel.ensureIdProperty()
 
         // if not added automatically and relations are used, ensure there is a box store field
         if (!transformationEnabled && relations.hasRelations(entityModel) && !entityModel.hasBoxStoreField) {
@@ -336,6 +338,22 @@ open class ObjectBoxProcessor : AbstractProcessor() {
 
             val hasBoxStoreField = properties.hasBoxStoreField()
             entityModel.hasBoxStoreField = entityModel.hasBoxStoreField || hasBoxStoreField // keep true value
+        }
+    }
+
+    private fun io.objectbox.generator.model.Entity.ensureIdProperty() {
+        // Note: do not use pkProperty as it is only initialized during schema finalization (2nd pass).
+        val idPropertyCount = properties.count { it.isPrimaryKey }
+        if (idPropertyCount == 0) {
+            messages.error(
+                "No ID property found for '${className}', add @Id on a not-null long property.",
+                this
+            )
+        } else if (idPropertyCount > 1) {
+            messages.error(
+                "Only one @Id property is allowed for '${className}'.",
+                this
+            )
         }
     }
 

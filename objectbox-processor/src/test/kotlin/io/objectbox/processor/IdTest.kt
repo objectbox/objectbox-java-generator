@@ -31,7 +31,7 @@ class IdTest : BaseProcessorTest() {
         val compilation = environment.compile(listOf(sourceFile))
         CompilationSubject.assertThat(compilation).failed()
         CompilationSubject.assertThat(compilation).hadErrorContaining(
-            "No ID property found for \"Entity NoIdEntity (package: io.objectbox.processor.test)\" (use @Id on a property of type long)"
+            "No ID property found for 'NoIdEntity', add @Id on a not-null long property."
         )
         assertThat(environment.isModelFileExists()).isFalse()
     }
