@@ -60,10 +60,12 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         const val OPTION_TRANSFORMATION_ENABLED: String = "objectbox.transformationEnabled"
         const val OPTION_ALLOW_NUMBERED_CONSTRUCTOR_ARGS: String = "objectbox.allowNumberedConstructorArgs"
         /**
-         * Set to false to turn off incremental processing.
+         * Set to false to turn off support for incremental processing.
          *
-         * This is useful when using indirect (base) entity super classes,
-         * as when incremental processing is turned on the processor can not see them.
+         * Use to support having indirect super classes of entities that
+         * are `@BaseEntity` or `@Entity`. Otherwise the processor
+         * can not see the indirect relationship and ignores all
+         * properties of the super class during incremental processing.
          */
         const val OPTION_INCREMENTAL: String = "objectbox.incremental"
 
@@ -141,6 +143,9 @@ open class ObjectBoxProcessor : AbstractProcessor() {
     override fun getSupportedAnnotationTypes(): Set<String> {
         val types = LinkedHashSet<String>()
         types.add(Entity::class.java.canonicalName)
+        // Note: on an incremental run Gradle only gives class elements that have one
+        // of the supported annotations to the processor.
+        // So explicitly include the base entity annotation to get all base entity class elements.
         types.add(BaseEntity::class.java.canonicalName)
         return types
     }

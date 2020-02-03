@@ -13,8 +13,12 @@ import org.junit.Test
 class InheritanceTest : BaseProcessorTest() {
 
     /**
-     * Tests that processor errors to turn off incremental processing if
-     * indirect inheritance from an entity is detected.
+     * Tests that processor errors and requires to turn off incremental processing if
+     * indirect inheritance from an entity is detected. Otherwise the processor would
+     * not see the indirect relationship between entities.
+     *
+     * Note: see plugin IncrementalCompilationTest which verifies the processor continues to see
+     * the relationship if incremental processor support is turned off.
      */
     @Test
     fun testInheritanceIndirect_notSupportedWithIncremental() {

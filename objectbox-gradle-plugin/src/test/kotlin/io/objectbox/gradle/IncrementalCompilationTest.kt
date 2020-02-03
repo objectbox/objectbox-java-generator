@@ -145,6 +145,9 @@ class IncrementalCompilationTest {
 
     /**
      * Tests that with incremental support turned off an indirect super BaseEntity class can be seen.
+     *
+     * Note: if incremental support is not turned off the processor errors.
+     * See the processor InheritanceTest that tests this.
      */
     @Test
     fun incrementalAnnotationProcessor_baseEntityIndirect() {
