@@ -123,7 +123,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
     private var flatbuffersSchemaPath: String? = null
     private var debug: Boolean = false
     private var allowNumberedConstructorArgs: Boolean = false
-    private var incremental = true
+    private var incremental = false
 
     @Synchronized override fun init(env: ProcessingEnvironment) {
         super.init(env)
@@ -141,7 +141,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         flatbuffersSchemaPath = options[OPTION_FLATBUFFERS_SCHEMA_FOLDER]
         transformationEnabled = "false" != options[OPTION_TRANSFORMATION_ENABLED] // default true
         allowNumberedConstructorArgs = "false" != options[OPTION_ALLOW_NUMBERED_CONSTRUCTOR_ARGS] // default true
-        incremental = "false" != options[OPTION_INCREMENTAL] // default true
+        incremental = "true" == options[OPTION_INCREMENTAL] // Default false (opt-in).
 
         messages = Messages(env.messager, debug)
         messages.info("Starting ObjectBox processor (debug: $debug, incremental: $incremental)")

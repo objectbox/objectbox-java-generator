@@ -4,6 +4,7 @@ import com.google.common.truth.Truth.assertThat
 import com.google.testing.compile.CompilationSubject
 import io.objectbox.generator.model.PropertyType
 import org.junit.Assert
+import org.junit.Ignore
 import org.junit.Test
 
 
@@ -21,6 +22,7 @@ class InheritanceTest : BaseProcessorTest() {
      * the relationship if incremental processor support is turned off.
      */
     @Test
+    @Ignore("Incremental support is currently opt-in, will be opt-out.")
     fun testInheritanceIndirect_notSupportedWithIncremental() {
         val nameBase = "InheritanceBase"
         val nameNoBase = "InheritanceNoBase"
@@ -30,6 +32,7 @@ class InheritanceTest : BaseProcessorTest() {
         val environment = TestEnvironment("inheritance-temp.json")
 
         val compilation = environment.compile(nameBase, nameNoBase, nameSub, nameInterface)
+        CompilationSubject.assertThat(compilation).failed()
         CompilationSubject.assertThat(compilation).hadErrorContaining(
             "Incremental annotation processing is not supported"
         )
