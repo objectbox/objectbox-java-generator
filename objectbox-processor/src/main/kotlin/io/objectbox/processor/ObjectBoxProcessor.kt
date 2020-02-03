@@ -161,6 +161,9 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         options.add(OPTION_DEBUG)
         options.add(OPTION_ALLOW_NUMBERED_CONSTRUCTOR_ARGS)
         options.add(OPTION_INCREMENTAL)
+        // Dynamic incremental support (see ObjectBoxProcessorShim):
+        // do not advertise processor as incremental if turned off.
+        // See OPTION_INCREMENTAL for explanation.
         if (incremental) {
             options.add(IncrementalAnnotationProcessorType.AGGREGATING.processorOption)
         }
