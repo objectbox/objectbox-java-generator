@@ -53,7 +53,7 @@ class IncrementalCompilationTest {
         }
         // Compile 1st time.
         with(compileJava()) {
-            assertThat(output).contains("Full recompilation is required because no incremental change information is available.")
+            assertThat(output).contains(GRADLE_MSG_FULL_RECOMPILE_REQ_FIRST_BUILD)
         }
 
         // Add new property and all-properties constructor to class.
@@ -77,7 +77,7 @@ class IncrementalCompilationTest {
         )
         // Compile 2nd time.
         with(compileJava()) {
-            assertThat(output).doesNotContain("Full recompilation is required ")
+            assertThat(output).doesNotContain(GRADLE_MSG_FULL_RECOMPILE_REQ)
             // Why 4 classes? Example.java, Example_.java, ExampleCursor.java, MyObjectBox.java.
             assertThat(output).contains("Incremental compilation of 4 classes completed")
             assertThat(output).contains("[ObjectBox] Valid all-args constructor found")
@@ -118,7 +118,7 @@ class IncrementalCompilationTest {
         }
         // Compile 1st time.
         with(compileJava()) {
-            assertThat(output).contains("Full recompilation is required because no incremental change information is available.")
+            assertThat(output).contains(GRADLE_MSG_FULL_RECOMPILE_REQ_FIRST_BUILD)
         }
 
         // Add new property to class.
@@ -136,7 +136,7 @@ class IncrementalCompilationTest {
         )
         // Compile 2nd time.
         with(compileJava()) {
-            assertThat(output).doesNotContain("Full recompilation is required ")
+            assertThat(output).doesNotContain(GRADLE_MSG_FULL_RECOMPILE_REQ)
             // Why 4 classes? Example.java, Example_.java, ExampleCursor.java, MyObjectBox.java.
             assertThat(output).contains("Incremental compilation of 4 classes completed")
             assertThat(output).contains("[ObjectBox] Parsing super type of Example: BaseExample")
@@ -189,7 +189,7 @@ class IncrementalCompilationTest {
         }
         // Compile 1st time.
         with(compileJava()) {
-            assertThat(output).contains("Full recompilation is required because no incremental change information is available.")
+            assertThat(output).contains(GRADLE_MSG_FULL_RECOMPILE_REQ_FIRST_BUILD)
         }
 
         // Add new property to class.
@@ -269,6 +269,12 @@ class IncrementalCompilationTest {
             .withArguments("--info", "compileJava")
             .withPluginClasspath(pluginClasspath)
             .build()
+    }
+
+    companion object {
+        private const val GRADLE_MSG_FULL_RECOMPILE_REQ_FIRST_BUILD =
+            "Full recompilation is required because no incremental change information is available."
+        private const val GRADLE_MSG_FULL_RECOMPILE_REQ = "Full recompilation is required "
     }
 
 }
