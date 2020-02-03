@@ -47,6 +47,13 @@ import javax.lang.model.util.ElementFilter
 import javax.lang.model.util.Elements
 import javax.lang.model.util.Types
 
+/**
+ * ObjectBox annotation processor which parses [@Entity][Entity] and [@BaseEntity][BaseEntity]
+ * classes to generate helper classes and a model file from. Also helps the user with various
+ * errors to prevent misconfigurations or incorrect usage.
+ *
+ * See [ObjectBoxProcessorShim], which is the actual class registered as processor, for more docs.
+ */
 open class ObjectBoxProcessor : AbstractProcessor() {
 
     companion object {
