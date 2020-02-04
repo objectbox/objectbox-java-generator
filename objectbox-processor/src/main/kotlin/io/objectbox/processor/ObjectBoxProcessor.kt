@@ -42,7 +42,7 @@ import javax.lang.model.element.Element
 import javax.lang.model.element.ElementKind
 import javax.lang.model.element.TypeElement
 import javax.lang.model.element.VariableElement
-import javax.lang.model.type.TypeKind
+import javax.lang.model.type.TypeMirror
 import javax.lang.model.util.ElementFilter
 import javax.lang.model.util.Elements
 import javax.lang.model.util.Types
@@ -213,8 +213,14 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         }
         val schema = Schema(Schema.DEFAULT_NAME, 1, defaultJavaPackage)
 
+        // Parse entities.
+        val annotatedElements = mutableSetOf<Element>().run {
+            addAll(env.getElementsAnnotatedWith(Entity::class.java))
+            addAll(env.getElementsAnnotatedWith(BaseEntity::class.java))
+            toSet()
+        }
         for (entity in entities) {
-            parseEntity(env.rootElements, schema, relations, entity)
+            parseEntity(annotatedElements, schema, relations, entity)
         }
 
         if (messages.errorRaised) {
@@ -278,7 +284,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         )
     }
 
-    private fun parseEntity(rootElements: Set<Element>, schema: Schema, relations: Relations, entity: Element) {
+    private fun parseEntity(annotatedElements: Set<Element>, schema: Schema, relations: Relations, entity: Element) {
         val name = entity.simpleName.toString()
         if (debug) messages.debug("Parsing entity $name...")
 
@@ -311,7 +317,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         }
 
         // Parse properties.
-        parseProperties(rootElements, relations, entityModel, entity)
+        parseProperties(annotatedElements, relations, entityModel, entity)
         // Verify there is an @Id property.
         entityModel.ensureIdProperty()
 
@@ -328,62 +334,81 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         entityModel.isConstructors = hasAllArgsConstructor(entity, entityModel)
     }
 
-    private fun parseProperties(
-        rootElements: Set<Element>,
-        relations: Relations,
-        entityModel: io.objectbox.generator.model.Entity,
-        entity: Element,
-        isSubTypeAnnotated: Boolean = true
-    ) {
-        // get properties starting with root supertype to ensure constructor param order is as expected
-        // (from super class to subclass, then from first declared to last declared)
+    /**
+     * Starting from the given [type] walks up the inheritance chain and for each super type
+     * that has a match in [annotatedElements] adds that element to the [entityInheritanceChain].
+     */
+    private fun findAnnotatedSuperElements(
+        annotatedElements: Set<Element>,
+        entityInheritanceChain: MutableList<Element>,
+        type: TypeMirror
+    ): Boolean {
+        // Implementation note: it can NOT be assumed that for each of directSupertypes(type) there
+        // will be an element in RoundEnvironment.rootElements. E.g when processing is incremental rootElements
+        // only contains annotated elements (for this processor @BaseEntity and @Entity classes).
 
-        // walk up inheritance chain
-        val classSupertypes = typeUtils.directSupertypes(entity.asType()).mapNotNull { supertype ->
-            // note: directSupertypes() returns parameterized supertypes with a specific type (e.g. BaseEntity<String>)
-            // and not a generic one (e.g. BaseEntity<T>).
-            // But parameterized types in rootElements use a generic type (e.g. BaseEntity<T>).
-            // So erase any parameter types altogether (== ignore any type parameters on classes, e.g. BaseEntity)
-            val supertypeErasure = typeUtils.erasure(supertype)
-            rootElements.find {
-                val type = it.asType()
-                if (type.kind != TypeKind.DECLARED) {
-                    // skip packages or modules
-                    // note: can't do check on MODULE, requires Java 9 (Android is Java 8)
+        // Note: Why can there be multiple super types? Because interfaces are considered super types.
+        for (superType in typeUtils.directSupertypes(type)) {
+            // Skip if the top-most type (java.lang.Object, also for interfaces) is reached.
+            if (superType.toString() == java.lang.Object::class.java.name) {
+                if (debug) messages.debug("$type has super type java.lang.Object, skip.")
+                continue
+            }
+            if (debug) messages.debug("$type has super type $superType.")
+
+            // If there is an annotated element that matches this super type, find it.
+            val matchingElement = annotatedElements.find { annotatedElement ->
+                if (annotatedElement.kind != ElementKind.CLASS) {
+                    // The @BaseEntity and @Entity annotation should be restricted to classes by the compiler,
+                    // but to be sure ignore any annotated element that is not a class.
                     false
                 } else {
-                    val rootElementTypeErasure = typeUtils.erasure(type)
-                    typeUtils.isSameType(rootElementTypeErasure, supertypeErasure)
+                    // Note: if directSupertypes() returns parameterized types they are specific (e.g. BaseEntity<String>),
+                    // in contrast parameterized types of elements of the round environment are generic (e.g. BaseEntity<T>).
+                    // So before comparing, erase any parameter types (e.g. BaseEntity<T> -> BaseEntity).
+                    typeUtils.isSameType(typeUtils.erasure(annotatedElement.asType()), typeUtils.erasure(superType))
                 }
             }
-        }
-
-        val isAnnotated =
-            entity.getAnnotation(Entity::class.java) != null || entity.getAnnotation(BaseEntity::class.java) != null
-
-        if (classSupertypes.isNotEmpty()) {
-            // if any, classes are listed before interfaces: so just check first one
-            val element = classSupertypes[0]
-            if (element.kind == ElementKind.CLASS) {
-                if (debug) messages.debug("Parsing super type of ${entity.simpleName}: ${element.simpleName}")
-                parseProperties(rootElements, relations, entityModel, element, isAnnotated)
-            }
-        }
-
-        // Only include properties for classes with @Entity or @BaseEntity.
-        if (isAnnotated) {
-            if (incremental && !isSubTypeAnnotated) {
-                messages.error("Incremental annotation processing is not supported " +
-                        "with an indirect @BaseEntity or @Entity super class, " +
-                        "set 'A$OPTION_INCREMENTAL=false' or directly inherit from the entity.")
+            // If there is a match, add the element to the list.
+            matchingElement?.let {
+                entityInheritanceChain.add(it)
+                if (debug) messages.debug("$superType is annotated, add to inheritance chain.")
             }
 
-            // parse properties
-            val properties = Properties(elementUtils, typeUtils, messages, relations, entityModel, entity)
-            properties.parseFields()
+            // Continue with checking the super types of this super type.
+            val hasMatches = findAnnotatedSuperElements(annotatedElements, entityInheritanceChain, superType)
 
-            val hasBoxStoreField = properties.hasBoxStoreField()
-            entityModel.hasBoxStoreField = entityModel.hasBoxStoreField || hasBoxStoreField // keep true value
+            // Do not check sibling super types if this one or its parents are matches
+            // (this is fine as Java has no multi-inheritance).
+            if (matchingElement != null || hasMatches) return true
+        }
+        
+        return false // No matches.
+    }
+
+    private fun parseProperties(
+        annotatedElements: Set<Element>,
+        relations: Relations,
+        entityModel: io.objectbox.generator.model.Entity,
+        entityElement: Element
+    ) {
+        // The current entity...
+        val entityInheritanceChain = mutableListOf(entityElement)
+        // ...and its super classes that are annotated.
+        if (findAnnotatedSuperElements(annotatedElements, entityInheritanceChain, entityElement.asType())) {
+            if (debug) messages.debug("Detected entity inheritance chain: " +
+                    entityInheritanceChain.joinToString(separator = "->") { it.simpleName })
+        }
+
+        // Reverse inheritance chain to parse properties starting with the super-most element in the chain
+        // to ensure constructor param order is as expected: from super class to sub class,
+        // then from first declared to last declared.
+        entityInheritanceChain.reversed().forEach { element ->
+            with(Properties(elementUtils, typeUtils, messages, relations, entityModel, element)) {
+                parseFields()
+                entityModel.hasBoxStoreField =
+                    entityModel.hasBoxStoreField || hasBoxStoreField() // Do not overwrite true.
+            }
         }
     }
 

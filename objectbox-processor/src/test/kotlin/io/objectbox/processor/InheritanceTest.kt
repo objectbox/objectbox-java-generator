@@ -4,7 +4,6 @@ import com.google.common.truth.Truth.assertThat
 import com.google.testing.compile.CompilationSubject
 import io.objectbox.generator.model.PropertyType
 import org.junit.Assert
-import org.junit.Ignore
 import org.junit.Test
 
 
@@ -12,31 +11,6 @@ import org.junit.Test
  * Tests related to entities in an inheritance chain (@BaseEntity, @Entity, regular classes).
  */
 class InheritanceTest : BaseProcessorTest() {
-
-    /**
-     * Tests that processor errors and requires to turn off incremental processing if
-     * indirect inheritance from an entity is detected. Otherwise the processor would
-     * not see the indirect relationship between entities.
-     *
-     * Note: see plugin IncrementalCompilationTest which verifies the processor continues to see
-     * the relationship if incremental processor support is turned off.
-     */
-    @Test
-    @Ignore("Incremental support is currently opt-in, will be opt-out.")
-    fun testInheritanceIndirect_notSupportedWithIncremental() {
-        val nameBase = "InheritanceBase"
-        val nameNoBase = "InheritanceNoBase"
-        val nameSub = "InheritanceSub"
-        val nameInterface = "InheritanceInterface"
-
-        val environment = TestEnvironment("inheritance-temp.json")
-
-        val compilation = environment.compile(nameBase, nameNoBase, nameSub, nameInterface)
-        CompilationSubject.assertThat(compilation).failed()
-        CompilationSubject.assertThat(compilation).hadErrorContaining(
-            "Incremental annotation processing is not supported"
-        )
-    }
 
     /**
      * Tests if properties from @BaseEntity class are used in ObjectBox, other super class and interface are ignored.
@@ -49,7 +23,7 @@ class InheritanceTest : BaseProcessorTest() {
         val nameSubSub = "InheritanceSubSub"
         val nameInterface = "InheritanceInterface"
 
-        val environment = TestEnvironment("inheritance.json", optionDisableIncremental = true)
+        val environment = TestEnvironment("inheritance.json")
 
         val compilation = environment.compile(nameBase, nameNoBase, nameSub, nameSubSub, nameInterface)
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()

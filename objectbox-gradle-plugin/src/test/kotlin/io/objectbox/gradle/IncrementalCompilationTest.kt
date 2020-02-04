@@ -139,19 +139,20 @@ class IncrementalCompilationTest {
             assertThat(output).doesNotContain(GRADLE_MSG_FULL_RECOMPILE_REQ)
             // Why 4 classes? Example.java, Example_.java, ExampleCursor.java, MyObjectBox.java.
             assertThat(output).contains("Incremental compilation of 4 classes completed")
-            assertThat(output).contains("[ObjectBox] Parsing super type of Example: BaseExample")
+            assertThat(output).contains("[ObjectBox] Detected entity inheritance chain: Example->BaseExample")
         }
     }
 
     /**
-     * Tests that with incremental support turned off an indirect super BaseEntity class can be seen.
+     * Tests that an indirect super BaseEntity class can be seen.
      *
-     * Note: if incremental support is not turned off the processor errors.
-     * See the processor InheritanceTest that tests this.
+     * Background: during an incremental processor run RoundEnvironment.rootElements
+     * only contains annotated elements (for this processor BaseEntity and Entity classes).
+     * The processor should then still be able to detect indirect super classes that are annotated.
      */
     @Test
     fun incrementalAnnotationProcessor_baseEntityIndirect() {
-        projectSetup()
+        projectSetup(listOf("-Aobjectbox.incremental=true"))
 
         testProjectDir.newFile("src/main/java/example/BaseExample.java").writeText(
             """
@@ -209,8 +210,10 @@ class IncrementalCompilationTest {
         )
         // Compile 2nd time.
         with(compileJava()) {
-            assertThat(output).contains("Full recompilation is required because io.objectbox.processor.ObjectBoxProcessorShim is not incremental.")
-            assertThat(output).contains("[ObjectBox] Parsing super type of Example: IntermediateExample")
+            assertThat(output).doesNotContain(GRADLE_MSG_FULL_RECOMPILE_REQ)
+            // Why 4 classes? Example.java, Example_.java, ExampleCursor.java, MyObjectBox.java.
+            assertThat(output).contains("Incremental compilation of 4 classes completed")
+            assertThat(output).contains("[ObjectBox] Detected entity inheritance chain: Example->BaseExample")
         }
     }
 

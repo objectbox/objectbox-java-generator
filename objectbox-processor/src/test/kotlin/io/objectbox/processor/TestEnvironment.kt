@@ -20,7 +20,6 @@ class TestEnvironment(
     modelFile: String,
     private val myObjectBoxPackage: String? = null,
     private val optionDisableTransform: Boolean = false,
-    private val optionDisableIncremental: Boolean = false,
     copyModelFile: Boolean = false
 ) {
 
@@ -35,9 +34,9 @@ class TestEnvironment(
         get() {
             val options = mutableListOf("-A${ObjectBoxProcessor.OPTION_MODEL_PATH}=$modelFilePath")
             options += "-A${ObjectBoxProcessor.OPTION_DEBUG}=true"
+            options += "-A${ObjectBoxProcessor.OPTION_INCREMENTAL}=true"
             if (myObjectBoxPackage != null) options += "-A${ObjectBoxProcessor.OPTION_MYOBJECTBOX_PACKAGE}=$myObjectBoxPackage"
             if (optionDisableTransform) options += "-A${ObjectBoxProcessor.OPTION_TRANSFORMATION_ENABLED}=false"
-            if (optionDisableIncremental) options += "-A${ObjectBoxProcessor.OPTION_INCREMENTAL}=false"
             return options
         }
 
