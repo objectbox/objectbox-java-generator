@@ -115,6 +115,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
     private lateinit var typeUtils: Types
     private lateinit var filer: Filer
     private lateinit var messages: Messages
+    private lateinit var javaLangObjectType: TypeMirror
     private var customModelPath: String? = null
     private var customDefaultPackage: String? = null
     private var daoCompat: Boolean = false
@@ -131,6 +132,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         elementUtils = env.elementUtils
         typeUtils = env.typeUtils
         filer = env.filer
+        javaLangObjectType = elementUtils.getTypeElement(java.lang.Object::class.java.canonicalName).asType()
 
         val options = env.options
         customModelPath = options[OPTION_MODEL_PATH]
@@ -350,8 +352,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         // Note: Why can there be multiple super types? Because interfaces are considered super types.
         for (superType in typeUtils.directSupertypes(type)) {
             // Skip if the top-most type (java.lang.Object, also for interfaces) is reached.
-            if (superType.toString() == java.lang.Object::class.java.name) {
-                if (debug) messages.debug("$type has super type java.lang.Object, skip.")
+            if (typeUtils.isSameType(superType, javaLangObjectType)) {
                 continue
             }
             if (debug) messages.debug("$type has super type $superType.")
