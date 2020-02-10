@@ -30,6 +30,7 @@ import io.objectbox.generator.idsync.IdSyncException
 import io.objectbox.generator.model.Property
 import io.objectbox.generator.model.Schema
 import io.objectbox.reporting.BasicBuildTracker
+import net.ltgt.gradle.incap.IncrementalAnnotationProcessorType
 import java.io.File
 import java.io.FileNotFoundException
 import javax.annotation.processing.AbstractProcessor
@@ -41,11 +42,18 @@ import javax.lang.model.element.Element
 import javax.lang.model.element.ElementKind
 import javax.lang.model.element.TypeElement
 import javax.lang.model.element.VariableElement
-import javax.lang.model.type.TypeKind
+import javax.lang.model.type.TypeMirror
 import javax.lang.model.util.ElementFilter
 import javax.lang.model.util.Elements
 import javax.lang.model.util.Types
 
+/**
+ * ObjectBox annotation processor which parses [@Entity][Entity] and [@BaseEntity][BaseEntity]
+ * classes to generate helper classes and a model file from. Also helps the user with various
+ * errors to prevent misconfigurations or incorrect usage.
+ *
+ * See [ObjectBoxProcessorShim], which is the actual class registered as processor, for more docs.
+ */
 open class ObjectBoxProcessor : AbstractProcessor() {
 
     companion object {
@@ -58,6 +66,15 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         /** Set by ObjectBox plugin */
         const val OPTION_TRANSFORMATION_ENABLED: String = "objectbox.transformationEnabled"
         const val OPTION_ALLOW_NUMBERED_CONSTRUCTOR_ARGS: String = "objectbox.allowNumberedConstructorArgs"
+        /**
+         * Set to false to turn off support for incremental processing.
+         *
+         * Use to support having indirect super classes of entities that
+         * are `@BaseEntity` or `@Entity`. Otherwise the processor
+         * can not see the indirect relationship and ignores all
+         * properties of the super class during incremental processing.
+         */
+        const val OPTION_INCREMENTAL: String = "objectbox.incremental"
 
         /**
          * Typically selects the top most and lexicographically first package. If entities are in different packages and
@@ -98,6 +115,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
     private lateinit var typeUtils: Types
     private lateinit var filer: Filer
     private lateinit var messages: Messages
+    private lateinit var javaLangObjectType: TypeMirror
     private var customModelPath: String? = null
     private var customDefaultPackage: String? = null
     private var daoCompat: Boolean = false
@@ -106,6 +124,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
     private var flatbuffersSchemaPath: String? = null
     private var debug: Boolean = false
     private var allowNumberedConstructorArgs: Boolean = false
+    private var incremental = false
 
     @Synchronized override fun init(env: ProcessingEnvironment) {
         super.init(env)
@@ -113,6 +132,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         elementUtils = env.elementUtils
         typeUtils = env.typeUtils
         filer = env.filer
+        javaLangObjectType = elementUtils.getTypeElement(java.lang.Object::class.java.canonicalName).asType()
 
         val options = env.options
         customModelPath = options[OPTION_MODEL_PATH]
@@ -123,14 +143,19 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         flatbuffersSchemaPath = options[OPTION_FLATBUFFERS_SCHEMA_FOLDER]
         transformationEnabled = "false" != options[OPTION_TRANSFORMATION_ENABLED] // default true
         allowNumberedConstructorArgs = "false" != options[OPTION_ALLOW_NUMBERED_CONSTRUCTOR_ARGS] // default true
+        incremental = "true" == options[OPTION_INCREMENTAL] // Default false (opt-in).
 
         messages = Messages(env.messager, debug)
-        messages.info("Starting ObjectBox processor (debug: $debug)")
+        messages.info("Starting ObjectBox processor (debug: $debug, incremental: $incremental)")
     }
 
     override fun getSupportedAnnotationTypes(): Set<String> {
         val types = LinkedHashSet<String>()
         types.add(Entity::class.java.canonicalName)
+        // Note: on an incremental run Gradle only gives class elements that have one
+        // of the supported annotations to the processor.
+        // So explicitly include the base entity annotation to get all base entity class elements.
+        types.add(BaseEntity::class.java.canonicalName)
         return types
     }
 
@@ -144,6 +169,13 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         options.add(OPTION_TRANSFORMATION_ENABLED)
         options.add(OPTION_DEBUG)
         options.add(OPTION_ALLOW_NUMBERED_CONSTRUCTOR_ARGS)
+        options.add(OPTION_INCREMENTAL)
+        // Dynamic incremental support (see ObjectBoxProcessorShim):
+        // do not advertise processor as incremental if turned off.
+        // See OPTION_INCREMENTAL for explanation.
+        if (incremental) {
+            options.add(IncrementalAnnotationProcessorType.AGGREGATING.processorOption)
+        }
         return options
     }
 
@@ -183,8 +215,14 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         }
         val schema = Schema(Schema.DEFAULT_NAME, 1, defaultJavaPackage)
 
+        // Parse entities.
+        val annotatedElements = mutableSetOf<Element>().run {
+            addAll(env.getElementsAnnotatedWith(Entity::class.java))
+            addAll(env.getElementsAnnotatedWith(BaseEntity::class.java))
+            toSet()
+        }
         for (entity in entities) {
-            parseEntity(env.rootElements, schema, relations, entity)
+            parseEntity(annotatedElements, schema, relations, entity)
         }
 
         if (messages.errorRaised) {
@@ -248,7 +286,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         )
     }
 
-    private fun parseEntity(rootElements: Set<Element>, schema: Schema, relations: Relations, entity: Element) {
+    private fun parseEntity(annotatedElements: Set<Element>, schema: Schema, relations: Relations, entity: Element) {
         val name = entity.simpleName.toString()
         if (debug) messages.debug("Parsing entity $name...")
 
@@ -281,7 +319,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         }
 
         // Parse properties.
-        parseProperties(rootElements, relations, entityModel, entity)
+        parseProperties(annotatedElements, relations, entityModel, entity)
         // Verify there is an @Id property.
         entityModel.ensureIdProperty()
 
@@ -298,46 +336,80 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         entityModel.isConstructors = hasAllArgsConstructor(entity, entityModel)
     }
 
-    private fun parseProperties(rootElements: Set<Element>, relations: Relations, entityModel: io.objectbox.generator.model.Entity, entity: Element) {
-        // get properties starting with root supertype to ensure constructor param order is as expected
-        // (from super class to subclass, then from first declared to last declared)
+    /**
+     * Starting from the given [type] walks up the inheritance chain and for each super type
+     * that has a match in [annotatedElements] adds that element to the [entityInheritanceChain].
+     */
+    private fun findAnnotatedSuperElements(
+        annotatedElements: Set<Element>,
+        entityInheritanceChain: MutableList<Element>,
+        type: TypeMirror
+    ): Boolean {
+        // Implementation note: it can NOT be assumed that for each of directSupertypes(type) there
+        // will be an element in RoundEnvironment.rootElements. E.g when processing is incremental rootElements
+        // only contains annotated elements (for this processor @BaseEntity and @Entity classes).
 
-        // walk up inheritance chain
-        val classSupertypes = typeUtils.directSupertypes(entity.asType()).mapNotNull { supertype ->
-            // note: directSupertypes() returns parameterized supertypes with a specific type (e.g. BaseEntity<String>)
-            // and not a generic one (e.g. BaseEntity<T>).
-            // But parameterized types in rootElements use a generic type (e.g. BaseEntity<T>).
-            // So erase any parameter types altogether (== ignore any type parameters on classes, e.g. BaseEntity)
-            val supertypeErasure = typeUtils.erasure(supertype)
-            rootElements.find {
-                val type = it.asType()
-                if (type.kind != TypeKind.DECLARED) {
-                    // skip packages or modules
-                    // note: can't do check on MODULE, requires Java 9 (Android is Java 8)
+        // Note: Why can there be multiple super types? Because interfaces are considered super types.
+        for (superType in typeUtils.directSupertypes(type)) {
+            // Skip if the top-most type (java.lang.Object, also for interfaces) is reached.
+            if (typeUtils.isSameType(superType, javaLangObjectType)) {
+                continue
+            }
+            if (debug) messages.debug("$type has super type $superType.")
+
+            // If there is an annotated element that matches this super type, find it.
+            val matchingElement = annotatedElements.find { annotatedElement ->
+                if (annotatedElement.kind != ElementKind.CLASS) {
+                    // The @BaseEntity and @Entity annotation should be restricted to classes by the compiler,
+                    // but to be sure ignore any annotated element that is not a class.
                     false
                 } else {
-                    val rootElementTypeErasure = typeUtils.erasure(type)
-                    typeUtils.isSameType(rootElementTypeErasure, supertypeErasure)
+                    // Note: if directSupertypes() returns parameterized types they are specific (e.g. BaseEntity<String>),
+                    // in contrast parameterized types of elements of the round environment are generic (e.g. BaseEntity<T>).
+                    // So before comparing, erase any parameter types (e.g. BaseEntity<T> -> BaseEntity).
+                    typeUtils.isSameType(typeUtils.erasure(annotatedElement.asType()), typeUtils.erasure(superType))
                 }
             }
-        }
-        if (classSupertypes.isNotEmpty()) {
-            // if any, classes are listed before interfaces: so just check first one
-            val element = classSupertypes[0]
-            if (element.kind == ElementKind.CLASS) {
-                if (debug) messages.debug("Parsing super type of ${entity.simpleName}: ${element.simpleName}")
-                parseProperties(rootElements, relations, entityModel, element)
+            // If there is a match, add the element to the list.
+            matchingElement?.let {
+                entityInheritanceChain.add(it)
+                if (debug) messages.debug("$superType is annotated, add to inheritance chain.")
             }
+
+            // Continue with checking the super types of this super type.
+            val hasMatches = findAnnotatedSuperElements(annotatedElements, entityInheritanceChain, superType)
+
+            // Do not check sibling super types if this one or its parents are matches
+            // (this is fine as Java has no multi-inheritance).
+            if (matchingElement != null || hasMatches) return true
+        }
+        
+        return false // No matches.
+    }
+
+    private fun parseProperties(
+        annotatedElements: Set<Element>,
+        relations: Relations,
+        entityModel: io.objectbox.generator.model.Entity,
+        entityElement: Element
+    ) {
+        // The current entity...
+        val entityInheritanceChain = mutableListOf(entityElement)
+        // ...and its super classes that are annotated.
+        if (findAnnotatedSuperElements(annotatedElements, entityInheritanceChain, entityElement.asType())) {
+            if (debug) messages.debug("Detected entity inheritance chain: " +
+                    entityInheritanceChain.joinToString(separator = "->") { it.simpleName })
         }
 
-        // only include properties for classes with @Entity or @BaseEntity
-        if (entity.getAnnotation(Entity::class.java) != null || entity.getAnnotation(BaseEntity::class.java) != null) {
-            // parse properties
-            val properties = Properties(elementUtils, typeUtils, messages, relations, entityModel, entity)
-            properties.parseFields()
-
-            val hasBoxStoreField = properties.hasBoxStoreField()
-            entityModel.hasBoxStoreField = entityModel.hasBoxStoreField || hasBoxStoreField // keep true value
+        // Reverse inheritance chain to parse properties starting with the super-most element in the chain
+        // to ensure constructor param order is as expected: from super class to sub class,
+        // then from first declared to last declared.
+        entityInheritanceChain.reversed().forEach { element ->
+            with(Properties(elementUtils, typeUtils, messages, relations, entityModel, element)) {
+                parseFields()
+                entityModel.hasBoxStoreField =
+                    entityModel.hasBoxStoreField || hasBoxStoreField() // Do not overwrite true.
+            }
         }
     }
 

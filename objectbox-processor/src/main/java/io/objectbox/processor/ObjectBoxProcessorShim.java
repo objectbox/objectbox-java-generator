@@ -20,9 +20,24 @@ package io.objectbox.processor;
 
 import com.google.auto.service.AutoService;
 
+import net.ltgt.gradle.incap.IncrementalAnnotationProcessor;
+
 import javax.annotation.processing.Processor;
 
-/** Use shim as AutoService does not pick up a processor written in Kotlin */
+
+import static net.ltgt.gradle.incap.IncrementalAnnotationProcessorType.DYNAMIC;
+
+/**
+ * Shim to use AutoService (it does not pick up a processor written in Kotlin).
+ * <p>
+ * Processor is aggregating as from each element annotated with @Entity info flows
+ * into MyObjectBox file and for each element into multiple helper files (Underscore and Cursor class).
+ * Info is also aggregated into the model file, but as it does not need to be compiled it doesn't matter to Gradle.
+ * <p>
+ * There is a flag to turn off incremental support to make indirect inheritance from entity classes work,
+ * hence the processor is declared as dynamic here.
+ */
 @AutoService(Processor.class)
+@IncrementalAnnotationProcessor(DYNAMIC)
 public final class ObjectBoxProcessorShim extends ObjectBoxProcessor {
 }
