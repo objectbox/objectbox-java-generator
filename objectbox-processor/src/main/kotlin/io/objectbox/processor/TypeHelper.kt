@@ -19,6 +19,8 @@
 package io.objectbox.processor
 
 import io.objectbox.generator.model.PropertyType
+import io.objectbox.relation.ToMany
+import io.objectbox.relation.ToOne
 import java.util.*
 import javax.lang.model.type.ArrayType
 import javax.lang.model.type.TypeKind
@@ -34,6 +36,7 @@ class TypeHelper(
     private val typeUtils: Types
 ) {
 
+    // The following Java platform types should always exist, hence always return an element (see getTypeMirror()).
     private val typeShort = java.lang.Short::class.java.getTypeMirror()
     private val typeInteger = java.lang.Integer::class.java.getTypeMirror()
     private val typeLong = java.lang.Long::class.java.getTypeMirror()
@@ -45,15 +48,29 @@ class TypeHelper(
     private val typeCharacter = java.lang.Character::class.java.getTypeMirror()
     private val typeString = java.lang.String::class.java.getTypeMirror()
 
+    // The ToOne and ToMany ObjectBox types should exist if there are @Entity classes (Java lib must be in classpath).
+    private val typeToOne = ToOne::class.java.getTypeMirror(eraseTypeParameters = true)
+    private val typeToMany = ToMany::class.java.getTypeMirror(eraseTypeParameters = true)
+    private val typeList = List::class.java.getTypeMirror(eraseTypeParameters = true)
+
     /**
-     * Checks if the type name is equal to the given type name.
+     * Checks if this [TypeMirror] is the same type as [otherType]. If [eraseTypeParameters] is set,
+     * erases type parameters before comparing (e.g. `ToOne<Example>` as `ToOne`).
      */
-    fun isTypeEqualTo(typeMirror: TypeMirror, otherType: String, eraseTypeParameters: Boolean = false): Boolean {
-        return if (eraseTypeParameters) {
-            otherType == typeUtils.erasure(typeMirror).toString()
-        } else {
-            otherType == typeMirror.toString()
-        }
+    private fun TypeMirror.isSameTypeAs(otherType: TypeMirror, eraseTypeParameters: Boolean = false): Boolean {
+        return typeUtils.isSameType(if (eraseTypeParameters) typeUtils.erasure(this) else this, otherType)
+    }
+
+    fun isToOne(typeMirror: TypeMirror): Boolean {
+        return typeMirror.isSameTypeAs(typeToOne, eraseTypeParameters = true)
+    }
+
+    fun isToMany(typeMirror: TypeMirror): Boolean {
+        return typeMirror.isSameTypeAs(typeToMany, eraseTypeParameters = true)
+    }
+
+    fun isList(typeMirror: TypeMirror): Boolean {
+        return typeMirror.isSameTypeAs(typeList, eraseTypeParameters = true)
     }
 
     /**
@@ -67,36 +84,36 @@ class TypeHelper(
         val kind = typeMirror.kind
 
         // also handles Kotlin types as they are mapped to Java primitive (wrapper) types at compile time
-        if (typeUtils.isSameType(typeMirror, typeShort) || kind == TypeKind.SHORT) {
+        if (typeMirror.isSameTypeAs(typeShort) || kind == TypeKind.SHORT) {
             return PropertyType.Short
         }
-        if (typeUtils.isSameType(typeMirror, typeInteger) || kind == TypeKind.INT) {
+        if (typeMirror.isSameTypeAs(typeInteger) || kind == TypeKind.INT) {
             return PropertyType.Int
         }
-        if (typeUtils.isSameType(typeMirror, typeLong) || kind == TypeKind.LONG) {
+        if (typeMirror.isSameTypeAs(typeLong) || kind == TypeKind.LONG) {
             return PropertyType.Long
         }
 
-        if (typeUtils.isSameType(typeMirror, typeFloat) || kind == TypeKind.FLOAT) {
+        if (typeMirror.isSameTypeAs(typeFloat) || kind == TypeKind.FLOAT) {
             return PropertyType.Float
         }
-        if (typeUtils.isSameType(typeMirror, typeDouble) || kind == TypeKind.DOUBLE) {
+        if (typeMirror.isSameTypeAs(typeDouble) || kind == TypeKind.DOUBLE) {
             return PropertyType.Double
         }
 
-        if (typeUtils.isSameType(typeMirror, typeBoolean) || kind == TypeKind.BOOLEAN) {
+        if (typeMirror.isSameTypeAs(typeBoolean) || kind == TypeKind.BOOLEAN) {
             return PropertyType.Boolean
         }
-        if (typeUtils.isSameType(typeMirror, typeByte) || kind == TypeKind.BYTE) {
+        if (typeMirror.isSameTypeAs(typeByte) || kind == TypeKind.BYTE) {
             return PropertyType.Byte
         }
-        if (typeUtils.isSameType(typeMirror, typeDate)) {
+        if (typeMirror.isSameTypeAs(typeDate)) {
             return PropertyType.Date
         }
-        if (typeUtils.isSameType(typeMirror, typeCharacter) || kind == TypeKind.CHAR) {
+        if (typeMirror.isSameTypeAs(typeCharacter) || kind == TypeKind.CHAR) {
             return PropertyType.Char
         }
-        if (typeUtils.isSameType(typeMirror, typeString)) {
+        if (typeMirror.isSameTypeAs(typeString)) {
             return PropertyType.String
         }
 
@@ -110,7 +127,18 @@ class TypeHelper(
         return null
     }
 
-    private fun <T> Class<T>.getTypeMirror(): TypeMirror {
-        return elementUtils.getTypeElement(canonicalName).asType()
+    /**
+     * Returns the [TypeMirror] of this class by finding its
+     * type element in the current processor environment.
+     *
+     * Note: do not use for classes that might not exist in the processor environment.
+     */
+    private fun <T> Class<T>.getTypeMirror(eraseTypeParameters: Boolean = false): TypeMirror {
+        val type = elementUtils.getTypeElement(canonicalName)!!.asType()
+        return if (eraseTypeParameters) {
+            typeUtils.erasure(type)
+        } else {
+            type
+        }
     }
 }

@@ -31,8 +31,6 @@ import io.objectbox.generator.model.Entity
 import io.objectbox.generator.model.Property
 import io.objectbox.generator.model.PropertyType
 import io.objectbox.model.PropertyFlags
-import io.objectbox.relation.ToMany
-import io.objectbox.relation.ToOne
 import javax.lang.model.element.AnnotationMirror
 import javax.lang.model.element.Element
 import javax.lang.model.element.ExecutableElement
@@ -72,16 +70,15 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
             return
         }
 
-        if (typeHelper.isTypeEqualTo(field.asType(), ToOne::class.java.name, eraseTypeParameters = true)) {
+        if (typeHelper.isToOne(field.asType())) {
             // ToOne<TARGET> property
             errorIfIndexOrUniqueAnnotation(field, "ToOne")
             relations.parseToOne(entityModel, field)
-        } else if (!field.hasAnnotation(Convert::class.java)
-                && typeHelper.isTypeEqualTo(field.asType(), List::class.java.name, eraseTypeParameters = true)) {
+        } else if (!field.hasAnnotation(Convert::class.java) && typeHelper.isList(field.asType())) {
             // List<TARGET> property
             errorIfIndexOrUniqueAnnotation(field, "List")
             relations.parseToMany(entityModel, field)
-        } else if (typeHelper.isTypeEqualTo(field.asType(), ToMany::class.java.name, eraseTypeParameters = true)) {
+        } else if (typeHelper.isToMany(field.asType())) {
             // ToMany<TARGET> property
             errorIfIndexOrUniqueAnnotation(field, "ToMany")
             relations.parseToMany(entityModel, field)
