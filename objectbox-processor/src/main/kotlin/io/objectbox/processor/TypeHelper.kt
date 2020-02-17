@@ -23,12 +23,27 @@ import java.util.*
 import javax.lang.model.type.ArrayType
 import javax.lang.model.type.TypeKind
 import javax.lang.model.type.TypeMirror
+import javax.lang.model.util.Elements
 import javax.lang.model.util.Types
 
 /**
  * Helps translate processor types to objectbox types.
  */
-class TypeHelper(private val typeUtils: Types) {
+class TypeHelper(
+    private val elementUtils: Elements,
+    private val typeUtils: Types
+) {
+
+    private val typeShort = java.lang.Short::class.java.getTypeMirror()
+    private val typeInteger = java.lang.Integer::class.java.getTypeMirror()
+    private val typeLong = java.lang.Long::class.java.getTypeMirror()
+    private val typeFloat = java.lang.Float::class.java.getTypeMirror()
+    private val typeDouble = java.lang.Double::class.java.getTypeMirror()
+    private val typeBoolean = java.lang.Boolean::class.java.getTypeMirror()
+    private val typeByte = java.lang.Byte::class.java.getTypeMirror()
+    private val typeDate = Date::class.java.getTypeMirror()
+    private val typeCharacter = java.lang.Character::class.java.getTypeMirror()
+    private val typeString = java.lang.String::class.java.getTypeMirror()
 
     /**
      * Checks if the type name is equal to the given type name.
@@ -52,36 +67,36 @@ class TypeHelper(private val typeUtils: Types) {
         val kind = typeMirror.kind
 
         // also handles Kotlin types as they are mapped to Java primitive (wrapper) types at compile time
-        if (isTypeEqualTo(typeMirror, java.lang.Short::class.java.name) || kind == TypeKind.SHORT) {
+        if (typeUtils.isSameType(typeMirror, typeShort) || kind == TypeKind.SHORT) {
             return PropertyType.Short
         }
-        if (isTypeEqualTo(typeMirror, java.lang.Integer::class.java.name) || kind == TypeKind.INT) {
+        if (typeUtils.isSameType(typeMirror, typeInteger) || kind == TypeKind.INT) {
             return PropertyType.Int
         }
-        if (isTypeEqualTo(typeMirror, java.lang.Long::class.java.name) || kind == TypeKind.LONG) {
+        if (typeUtils.isSameType(typeMirror, typeLong) || kind == TypeKind.LONG) {
             return PropertyType.Long
         }
 
-        if (isTypeEqualTo(typeMirror, java.lang.Float::class.java.name) || kind == TypeKind.FLOAT) {
+        if (typeUtils.isSameType(typeMirror, typeFloat) || kind == TypeKind.FLOAT) {
             return PropertyType.Float
         }
-        if (isTypeEqualTo(typeMirror, java.lang.Double::class.java.name) || kind == TypeKind.DOUBLE) {
+        if (typeUtils.isSameType(typeMirror, typeDouble) || kind == TypeKind.DOUBLE) {
             return PropertyType.Double
         }
 
-        if (isTypeEqualTo(typeMirror, java.lang.Boolean::class.java.name) || kind == TypeKind.BOOLEAN) {
+        if (typeUtils.isSameType(typeMirror, typeBoolean) || kind == TypeKind.BOOLEAN) {
             return PropertyType.Boolean
         }
-        if (isTypeEqualTo(typeMirror, java.lang.Byte::class.java.name) || kind == TypeKind.BYTE) {
+        if (typeUtils.isSameType(typeMirror, typeByte) || kind == TypeKind.BYTE) {
             return PropertyType.Byte
         }
-        if (isTypeEqualTo(typeMirror, Date::class.java.name)) {
+        if (typeUtils.isSameType(typeMirror, typeDate)) {
             return PropertyType.Date
         }
-        if (isTypeEqualTo(typeMirror, java.lang.Character::class.java.name) || kind == TypeKind.CHAR) {
+        if (typeUtils.isSameType(typeMirror, typeCharacter) || kind == TypeKind.CHAR) {
             return PropertyType.Char
         }
-        if (isTypeEqualTo(typeMirror, java.lang.String::class.java.name)) {
+        if (typeUtils.isSameType(typeMirror, typeString)) {
             return PropertyType.String
         }
 
@@ -93,5 +108,9 @@ class TypeHelper(private val typeUtils: Types) {
         }
 
         return null
+    }
+
+    private fun <T> Class<T>.getTypeMirror(): TypeMirror {
+        return elementUtils.getTypeElement(canonicalName).asType()
     }
 }

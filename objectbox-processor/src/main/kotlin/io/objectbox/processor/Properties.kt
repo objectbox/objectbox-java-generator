@@ -49,7 +49,7 @@ import javax.lang.model.util.Types
 class Properties(val elementUtils: Elements, val typeUtils: Types, val messages: Messages,
                  val relations: Relations, val entityModel: Entity, entityElement: Element) {
 
-    val typeHelper = TypeHelper(typeUtils)
+    private val typeHelper = TypeHelper(elementUtils, typeUtils)
 
     val fields: List<VariableElement> = ElementFilter.fieldsIn(entityElement.enclosedElements)
     val methods: List<ExecutableElement> = ElementFilter.methodsIn(entityElement.enclosedElements)
