@@ -451,7 +451,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
 
     private fun parametersMatchProperties(parameters: MutableList<out VariableElement>,
                                           properties: MutableList<Property>): Boolean {
-        val typeHelper = TypeHelper(typeUtils)
+        val typeHelper = TypeHelper(elementUtils, typeUtils)
         for ((idx, param) in parameters.withIndex()) {
             val property = properties[idx]
             val altName = if (allowNumberedConstructorArgs) "arg$idx" else null
