@@ -6,22 +6,29 @@ buildscript {
         mockito_version = '2.25.1'
 
         // Typically, only edit those two:
-        def objectboxVersionNumber = '2.5.2' // without "-SNAPSHOT", e.g. '2.5.0' or '2.4.0-RC'
-        def objectboxVersionRelease = false  // set to true for releasing to ignore versionPostFix to avoid e.g. "-dev" versions
+        def versionNumber = '2.5.2' // Without "-SNAPSHOT", e.g. '2.5.0' or '2.4.0-RC'.
+        def isRelease = false  // Set to true for releasing to ignore versionPostFix to avoid e.g. "-dev" versions.
 
-        // version post fix: '-<value>' or '' if not defined
-        def versionPostFixValue = project.findProperty('versionPostFix')
-        def versionPostFix = versionPostFixValue ? "-$versionPostFixValue" : ''
+        // Calculate version codes.
+        def versionPostFix
+        if (isRelease) {
+            versionPostFix = ""
+        } else if (project.hasProperty('versionPostFix')) {
+            versionPostFix = "-${project.versionPostFix}-SNAPSHOT"
+        } else {
+            versionPostFix = "-dev-SNAPSHOT"
+        }
+        def libsVersion = versionNumber + (isRelease ? "" : "-dev-SNAPSHOT")
 
-        // plugin, processor, generator and code-modifier version
-        objectbox_plugin_version= objectboxVersionNumber + (objectboxVersionRelease? "" : "$versionPostFix-SNAPSHOT")
+        objectbox_plugin_version = versionNumber + versionPostFix // Artifact versions of this project.
+        objectbox_java_version = libsVersion // Java library used by sub-projects.
+        applies_ob_java_version = libsVersion // Java library added to projects applying the plugin.
+        applies_ob_native_version = libsVersion // Native libraries added to projects applying the plugin.
 
-        def dependencies_version = objectboxVersionNumber + (objectboxVersionRelease? "": "-dev-SNAPSHOT")
-        objectbox_java_version = dependencies_version // Java version used by code and tests
-        objectbox_runtime_version = dependencies_version // The plugin adds dependencies with this version to projects applying it
-
-        println "Version $objectbox_plugin_version using Java $objectbox_java_version, " +
-                "adds $objectbox_runtime_version dependencies to projects applying it."
+        println "version=$objectbox_plugin_version\n" +
+                "objectbox_java_version=$objectbox_java_version\n" +
+                "applies_ob_java_version=$applies_ob_java_version\n" +
+                "applies_ob_native_version=$applies_ob_native_version\n"
 
         // Internal Maven repo: used in all projects, printing info/warning only once here.
         hasInternalObjectBoxRepo = project.hasProperty('internalObjectBoxRepo')

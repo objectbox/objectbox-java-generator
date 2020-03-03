@@ -217,7 +217,6 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
     }
 
     private fun addDependencies(env: ProjectEnv) {
-        val runtimeVersion = ProjectEnv.Const.runtimeVersion
         val compileConfig = env.configApiOrCompile
         val project = env.project
 
@@ -226,7 +225,7 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
             if (project.hasObjectBoxDep("objectbox-kotlin")) {
                 if (DEBUG) println("### Detected objectbox-kotlin dependency, not auto-adding.")
             } else {
-                project.addDep(compileConfig, "io.objectbox:objectbox-kotlin:$runtimeVersion")
+                project.addDep(compileConfig, "io.objectbox:objectbox-kotlin:${ProjectEnv.Const.javaVersionToApply}")
             }
         }
 
@@ -234,7 +233,7 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
             // for this detection to work apply the plugin after the dependencies block
             if (!project.hasObjectBoxDep("objectbox-android") &&
                     !project.hasObjectBoxDep("objectbox-android-objectbrowser")) {
-                project.addDep(compileConfig, "io.objectbox:objectbox-android:$runtimeVersion")
+                project.addDep(compileConfig, "io.objectbox:objectbox-android:${ProjectEnv.Const.nativeVersionToApply}")
             }
 
             // for instrumented unit tests
@@ -246,14 +245,14 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
             addNativeDependency(env, env.configTestImplOrCompile, true)
         } else {
             if (!project.hasObjectBoxDep("objectbox-java")) {
-                project.addDep(compileConfig, "io.objectbox:objectbox-java:$runtimeVersion")
+                project.addDep(compileConfig, "io.objectbox:objectbox-java:${ProjectEnv.Const.javaVersionToApply}")
             }
             addNativeDependency(env, compileConfig, false)
         }
     }
 
     private fun addNativeDependency(env: ProjectEnv, config: String, searchTestConfigs: Boolean) {
-        val runtimeVersion = ProjectEnv.Const.runtimeVersion
+        val nativeVersion = ProjectEnv.Const.nativeVersionToApply
         val project = env.project
 
         if (DEBUG) println("### Detected OS: ${env.osName} is64=${env.is64Bit} " +
@@ -266,9 +265,9 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
             if (DEBUG) println("### Detected native dependency, not auto-adding one.")
         } else {
             when {
-                env.isLinux64 -> project.addDep(config, "io.objectbox:objectbox-linux:$runtimeVersion")
-                env.isWindows64 -> project.addDep(config, "io.objectbox:objectbox-windows:$runtimeVersion")
-                env.isMac64 -> project.addDep(config, "io.objectbox:objectbox-macos:$runtimeVersion")
+                env.isLinux64 -> project.addDep(config, "io.objectbox:objectbox-linux:$nativeVersion")
+                env.isWindows64 -> project.addDep(config, "io.objectbox:objectbox-windows:$nativeVersion")
+                env.isMac64 -> project.addDep(config, "io.objectbox:objectbox-macos:$nativeVersion")
                 else -> env.logInfo("Could not set up native dependency for ${env.osName}")
             }
         }

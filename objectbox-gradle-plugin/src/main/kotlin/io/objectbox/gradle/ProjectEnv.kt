@@ -26,7 +26,8 @@ class ProjectEnv(val project: Project) {
     object Const {
         const val name: String = "objectbox"
         const val pluginVersion = GradlePluginBuildConfig.VERSION
-        const val runtimeVersion = GradlePluginBuildConfig.VERSION_RUNTIME
+        const val javaVersionToApply = GradlePluginBuildConfig.APPLIES_JAVA_VERSION
+        const val nativeVersionToApply = GradlePluginBuildConfig.APPLIES_NATIVE_VERSION
     }
 
     /** Note: Plugin extension, values only available after evaluation phase. */

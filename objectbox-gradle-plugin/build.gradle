@@ -51,8 +51,9 @@ dependencies {
 buildConfig {
     // rename to avoid conflict with other build config files (modules use same root package)
     clsName = 'GradlePluginBuildConfig'
-    // also add runtime version to BuildConfig
-    buildConfigField 'String', 'VERSION_RUNTIME', {"$objectbox_runtime_version"}
+    // Versions of libraries to add to projects applying the plugin.
+    buildConfigField 'String', 'APPLIES_JAVA_VERSION', {"$applies_ob_java_version"}
+    buildConfigField 'String', 'APPLIES_NATIVE_VERSION', {"$applies_ob_native_version"}
 }
 
 // For integration tests (TestKit): publish other modules to repository in build folder.

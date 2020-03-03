@@ -121,7 +121,7 @@ class PluginApplyTest {
             getByName("api").dependencies.let { deps ->
                 assertEquals(1, deps.count {
                     it.group == "io.objectbox" && it.name == "objectbox-kotlin"
-                            && it.version == ProjectEnv.Const.runtimeVersion
+                            && it.version == ProjectEnv.Const.javaVersionToApply
                 })
                 assertJavaDependency(deps)
                 assertNativeDependency(deps)
@@ -207,7 +207,7 @@ class PluginApplyTest {
     private fun assertJavaDependency(compileDeps: DependencySet) {
         assertEquals(1, compileDeps.count {
             it.group == "io.objectbox" && it.name == "objectbox-java"
-                    && it.version == ProjectEnv.Const.runtimeVersion
+                    && it.version == ProjectEnv.Const.javaVersionToApply
         })
     }
 
@@ -215,14 +215,14 @@ class PluginApplyTest {
         assertEquals(1, compileDeps.count {
             it.group == "io.objectbox"
                     && (it.name == "objectbox-linux" || it.name == "objectbox-windows" || it.name == "objectbox-macos")
-                    && it.version == ProjectEnv.Const.runtimeVersion
+                    && it.version == ProjectEnv.Const.nativeVersionToApply
         })
     }
 
     private fun assertAndroidDependency(deps: DependencySet) {
         assertEquals(1, deps.count {
             it.group == "io.objectbox" && it.name == "objectbox-android"
-                    && it.version == ProjectEnv.Const.runtimeVersion
+                    && it.version == ProjectEnv.Const.nativeVersionToApply
         })
     }
 
