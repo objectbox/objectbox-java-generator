@@ -35,7 +35,7 @@ class IncrementalCompilationTest {
      */
     @Test
     fun incrementalAnnotationProcessor() {
-        projectSetup(listOf("-Aobjectbox.incremental=true"))
+        projectSetup()
         val sourceFile = testProjectDir.newFile("src/main/java/example/Example.java").apply {
             writeText(
                 """
@@ -89,7 +89,7 @@ class IncrementalCompilationTest {
      */
     @Test
     fun incrementalAnnotationProcessor_baseEntity() {
-        projectSetup(listOf("-Aobjectbox.incremental=true"))
+        projectSetup()
         testProjectDir.newFile("src/main/java/example/BaseExample.java").writeText(
             """
             package example;
@@ -152,7 +152,7 @@ class IncrementalCompilationTest {
      */
     @Test
     fun incrementalAnnotationProcessor_baseEntityIndirect() {
-        projectSetup(listOf("-Aobjectbox.incremental=true"))
+        projectSetup()
 
         testProjectDir.newFile("src/main/java/example/BaseExample.java").writeText(
             """

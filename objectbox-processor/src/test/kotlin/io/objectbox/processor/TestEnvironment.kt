@@ -34,7 +34,6 @@ class TestEnvironment(
         get() {
             val options = mutableListOf("-A${ObjectBoxProcessor.OPTION_MODEL_PATH}=$modelFilePath")
             options += "-A${ObjectBoxProcessor.OPTION_DEBUG}=true"
-            options += "-A${ObjectBoxProcessor.OPTION_INCREMENTAL}=true"
             if (myObjectBoxPackage != null) options += "-A${ObjectBoxProcessor.OPTION_MYOBJECTBOX_PACKAGE}=$myObjectBoxPackage"
             if (optionDisableTransform) options += "-A${ObjectBoxProcessor.OPTION_TRANSFORMATION_ENABLED}=false"
             return options
