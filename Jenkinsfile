@@ -1,6 +1,8 @@
 def COLOR_MAP = ['SUCCESS': 'good', 'FAILURE': 'danger', 'UNSTABLE': 'danger', 'ABORTED': 'danger']
 
-def gradleArgs = '-Dorg.gradle.daemon=false --stacktrace'
+// To reclaim memory immediately after build, do not use Gradle daemon.
+// To reduce memory usage, do not use Kotlin daemon, but compile in-process.
+def gradleArgs = "-Dorg.gradle.daemon=false -Dkotlin.compiler.execution.strategy=\"in-process\" --stacktrace"
 def isPublish = BRANCH_NAME == 'objectbox-publish'
 String versionPostfix = BRANCH_NAME == 'objectbox-dev' ? 'dev'
                       : isPublish ? '' // build script detects empty string as not set
@@ -36,6 +38,7 @@ pipeline {
                     agent { label 'linux' }
                     steps {
                         sh 'chmod +x gradlew'
+                        sh "./gradlew -version"
                         sh "./gradlew $gradleArgs $MVN_REPO_ARGS clean check"
                     }
                     post {
@@ -48,6 +51,7 @@ pipeline {
                 stage('build-windows') {
                     agent { label 'windows' }
                     steps {
+                        bat "gradlew -version"
                         bat "gradlew $gradleArgs $MVN_REPO_ARGS clean check"
                     }
                     post {

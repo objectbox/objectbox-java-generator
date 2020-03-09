@@ -11,7 +11,5 @@ gradle-app.setting
 .idea/
 *.iml
 
-gradle.properties
-
 # objectbox-models/
 *.json.bak
