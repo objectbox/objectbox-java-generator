@@ -1,6 +1,8 @@
 def COLOR_MAP = ['SUCCESS': 'good', 'FAILURE': 'danger', 'UNSTABLE': 'danger', 'ABORTED': 'danger']
 
-def gradleArgs = '-Dorg.gradle.daemon=false --stacktrace'
+// To reclaim memory immediately after build, do not use Gradle daemon.
+// To reduce memory usage, do not use Kotlin daemon, but compile in-process.
+def gradleArgs = "-Dorg.gradle.daemon=false -Dkotlin.compiler.execution.strategy=\"in-process\" --stacktrace"
 def isPublish = BRANCH_NAME == 'objectbox-publish'
 String versionPostfix = BRANCH_NAME == 'objectbox-dev' ? 'dev'
                       : isPublish ? '' // build script detects empty string as not set
