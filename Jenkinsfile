@@ -38,6 +38,7 @@ pipeline {
                     agent { label 'linux' }
                     steps {
                         sh 'chmod +x gradlew'
+                        sh "./gradlew -version"
                         sh "./gradlew $gradleArgs $MVN_REPO_ARGS clean check"
                     }
                     post {
@@ -50,6 +51,7 @@ pipeline {
                 stage('build-windows') {
                     agent { label 'windows' }
                     steps {
+                        bat "gradlew -version"
                         bat "gradlew $gradleArgs $MVN_REPO_ARGS clean check"
                     }
                     post {
