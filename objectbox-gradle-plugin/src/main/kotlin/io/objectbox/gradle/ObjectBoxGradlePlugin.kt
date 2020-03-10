@@ -220,6 +220,12 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
         val compileConfig = env.configApiOrCompile
         val project = env.project
 
+        // Note: a preview release might apply different versions of the Java and native library,
+        // so explicitly apply the Java library to avoid the native library pulling in another version.
+        if (!project.hasObjectBoxDep("objectbox-java")) {
+            project.addDep(compileConfig, "io.objectbox:objectbox-java:${ProjectEnv.Const.javaVersionToApply}")
+        }
+
         if (env.hasKotlinPlugin || env.hasKotlinAndroidPlugin) {
             if (DEBUG) println("### Kotlin plugin detected")
             if (project.hasObjectBoxDep("objectbox-kotlin")) {
@@ -244,9 +250,6 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
             // for local unit tests
             addNativeDependency(env, env.configTestImplOrCompile, true)
         } else {
-            if (!project.hasObjectBoxDep("objectbox-java")) {
-                project.addDep(compileConfig, "io.objectbox:objectbox-java:${ProjectEnv.Const.javaVersionToApply}")
-            }
             addNativeDependency(env, compileConfig, false)
         }
     }
