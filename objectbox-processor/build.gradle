@@ -6,13 +6,13 @@ sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
 
 dependencies {
-    compile project (':objectbox-code-modifier')
-    compile project (':objectbox-generator')
-    
-    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-    compile "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
-    compile "io.objectbox:objectbox-java-api:$objectbox_java_version"
-    compile "io.objectbox:objectbox-java:$objectbox_java_version"
+    implementation project (':objectbox-code-modifier')
+    implementation project (':objectbox-generator')
+
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
+    implementation "io.objectbox:objectbox-java-api:$objectbox_java_version"
+    implementation "io.objectbox:objectbox-java:$objectbox_java_version"
     // auto-service generates service configuration for annotation processor.
     def autoService = '1.0-rc6'
     compileOnly "com.google.auto.service:auto-service-annotations:$autoService"
@@ -30,12 +30,12 @@ dependencies {
     if(toolsJar != null) {
         testCompile files(toolsJar)
     }
-    testCompile "junit:junit:$junit_version"
+    testImplementation "junit:junit:$junit_version"
     // Note: compile-testing 0.18 does not support truth 0.46 or newer.
-    testCompile 'com.google.truth:truth:0.45'
-    testCompile 'com.google.testing.compile:compile-testing:0.18'
+    testImplementation 'com.google.truth:truth:0.45'
+    testImplementation 'com.google.testing.compile:compile-testing:0.18'
     // generated files during test need objectbox dependencies to compile
-    testCompile "io.objectbox:objectbox-java:$objectbox_java_version"
+    testImplementation "io.objectbox:objectbox-java:$objectbox_java_version"
 }
 
 apply from: rootProject.file("gradle/objectbox-publish.gradle")
