@@ -211,17 +211,20 @@ class ObjectBoxAndroidTransform(val options: PluginOptions) : Transform() {
 
                     // TODO incremental: directoryInput.changedFiles
 
+                    var classes = 0
+                    var copied = 0
                     directoryInput.file.walk().filter { it.isFile }.forEach { file ->
                         if (file.name.endsWith(".class")) {
-                            if (options.debug) println("To transform: $file")
                             probedClasses += classProber.probeClass(file, outDir)
+                            classes += 1
                         } else {
                             val relativePath = file.toRelativeString(directoryInput.file)
                             val destFile = File(outDir, relativePath)
                             file.copyTo(destFile, overwrite = true)
-                            if (options.debug) println("Copied $file to $destFile")
+                            copied += 1
                         }
                     }
+                    if (options.debug) println("Copied $copied files, will check $classes classes if transform required.")
                 }
 
                 // Not looking at class files in JARs, just copy them.
