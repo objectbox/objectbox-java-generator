@@ -32,7 +32,7 @@ dependencies {
     implementation project(':objectbox-code-modifier')
     compileOnly "com.android.tools.build:gradle:$android_version"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-    implementation 'org.javassist:javassist:3.24.1-GA'
+    implementation 'org.javassist:javassist:3.27.0-GA'
 
     // For Transformer to resolve class dependencies to (real) ObjectBox classes
     implementation "io.objectbox:objectbox-java:$objectbox_java_version"
