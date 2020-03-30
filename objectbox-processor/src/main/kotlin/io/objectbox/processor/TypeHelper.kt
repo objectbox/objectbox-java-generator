@@ -49,7 +49,7 @@ class TypeHelper(
     private val typeCharacter = java.lang.Character::class.java.getTypeMirror()
     private val typeString = java.lang.String::class.java.getTypeMirror()
 
-    private val typeMapString = java.util.Map::class.java.getTypeMirror(eraseTypeParameters = true)
+    private val typeMap = java.util.Map::class.java.getTypeMirror(eraseTypeParameters = true)
 
     // The ToOne and ToMany ObjectBox types should exist if there are @Entity classes (Java lib must be in classpath).
     private val typeToOne = ToOne::class.java.getTypeMirror(eraseTypeParameters = true)
@@ -76,17 +76,37 @@ class TypeHelper(
         return typeMirror.isSameTypeAs(typeList, eraseTypeParameters = true)
     }
 
-    fun isJavaStringMap(typeMirror: TypeMirror): Boolean {
-        // Is it a Map?
-        if (!typeMirror.isSameTypeAs(typeMapString, eraseTypeParameters = true)) {
-            return false
+    private fun TypeMirror.isMapOf(
+        expectedKeyType: TypeMirror,
+        expectedValueType: TypeMirror? = null
+    ): Boolean {
+        if (!isSameTypeAs(typeMap, eraseTypeParameters = true)) return false
+
+        val typeArguments = (this as DeclaredType).typeArguments
+        // Map must have 2, verify anyhow.
+        if (typeArguments.size != 2) return false
+
+        val keyTypeMatches = typeArguments[0].isSameTypeAs(expectedKeyType)
+        if (!keyTypeMatches || expectedValueType == null) {
+            return keyTypeMatches
         }
-        val typeArguments = (typeMirror as DeclaredType).typeArguments
-        if (typeArguments.size != 2) {
-            return false // Map must have 2, verify anyhow.
-        }
-        // Are both type parameters String?
-        return typeArguments[0].isSameTypeAs(typeString) && typeArguments[1].isSameTypeAs(typeString)
+        return typeArguments[1].isSameTypeAs(expectedValueType)
+    }
+
+    fun isStringMap(typeMirror: TypeMirror): Boolean {
+        return typeMirror.isMapOf(typeString)
+    }
+
+    fun isStringStringMap(typeMirror: TypeMirror): Boolean {
+        return typeMirror.isMapOf(typeString, typeString)
+    }
+
+    fun isIntegerMap(typeMirror: TypeMirror): Boolean {
+        return typeMirror.isMapOf(typeInteger)
+    }
+
+    fun isLongMap(typeMirror: TypeMirror): Boolean {
+        return typeMirror.isMapOf(typeLong)
     }
 
     /**

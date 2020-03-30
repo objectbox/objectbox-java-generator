@@ -32,7 +32,10 @@ import io.objectbox.annotation.Type
 import io.objectbox.annotation.Uid
 import io.objectbox.annotation.Unique
 import io.objectbox.annotation.Unsigned
+import io.objectbox.converter.IntegerFlexMapConverter
+import io.objectbox.converter.LongFlexMapConverter
 import io.objectbox.converter.NullToEmptyStringConverter
+import io.objectbox.converter.StringFlexMapConverter
 import io.objectbox.converter.StringMapConverter
 import io.objectbox.generator.IdUid
 import io.objectbox.generator.model.Entity
@@ -394,22 +397,41 @@ class Properties(
     private fun autoConvertedPropertyBuilderOrNull(field: VariableElement): Property.PropertyBuilder? {
         val fieldType = field.asType()
 
-        if (typeHelper.isJavaStringMap(fieldType)) {
-            val builder = entityModel.tryToAddProperty(PropertyType.ByteArray, field) ?: return null
+        if (typeHelper.isStringStringMap(fieldType)) {
+            return addAutoConvertedMapProperty(field, StringMapConverter::class.java.canonicalName)
+        }
 
-            // Is Map<String, String>, so erase type params (-> Map) as generator model does not support them.
-            val plainMapType = typeUtils.erasure(fieldType).toString()
+        if (typeHelper.isStringMap(fieldType)) {
+            return addAutoConvertedMapProperty(field, StringFlexMapConverter::class.java.canonicalName)
+        }
 
-            builder.customType(plainMapType, StringMapConverter::class.java.canonicalName)
-            messages.info("Using io.objectbox.converter.StringMapConverter to convert Map<String, String> property, " +
-                    "to change this use @Convert.")
+        if (typeHelper.isIntegerMap(fieldType)) {
+            return addAutoConvertedMapProperty(field, IntegerFlexMapConverter::class.java.canonicalName)
+        }
 
-            return builder
+        if (typeHelper.isLongMap(fieldType)) {
+            return addAutoConvertedMapProperty(field, LongFlexMapConverter::class.java.canonicalName)
         }
 
         messages.error("Field type \"$fieldType\" is not supported. Consider making the target an @Entity, " +
                 "or using @Convert or @Transient on the field (see docs).", field)
         return null
+    }
+
+    private fun addAutoConvertedMapProperty(
+        field: VariableElement,
+        converterCanonicalName: String
+    ): Property.PropertyBuilder? {
+        val builder = entityModel.tryToAddProperty(PropertyType.ByteArray, field)
+            ?: return null
+
+        // Is Map<K, V>, so erase type params (-> Map) as generator model does not support them.
+        val plainMapType = typeUtils.erasure(field.asType()).toString()
+
+        builder.customType(plainMapType, converterCanonicalName)
+        messages.info("Using $converterCanonicalName to convert map property, to change this use @Convert.")
+
+        return builder
     }
 
     private fun Entity.tryToAddProperty(propertyType: PropertyType, field: VariableElement): Property.PropertyBuilder? {
