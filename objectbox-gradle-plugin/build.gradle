@@ -28,24 +28,25 @@ task createClasspathManifest {
 }
 
 dependencies {
-    compile gradleApi()
-    compile project(':objectbox-code-modifier')
+    implementation gradleApi()
+    implementation project(':objectbox-code-modifier')
     compileOnly "com.android.tools.build:gradle:$android_version"
-    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-    compile 'org.javassist:javassist:3.24.1-GA'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    implementation 'org.javassist:javassist:3.24.1-GA'
 
     // For Transformer to resolve class dependencies to (real) ObjectBox classes
-    compile "io.objectbox:objectbox-java:$objectbox_java_version"
-    compile "io.objectbox:objectbox-java-api:$objectbox_java_version"
+    implementation "io.objectbox:objectbox-java:$objectbox_java_version"
+    implementation "io.objectbox:objectbox-java-api:$objectbox_java_version"
 
-    testCompile gradleTestKit()
+    testImplementation gradleTestKit()
     testRuntimeOnly files(createClasspathManifest)
-    testCompile "junit:junit:$junit_version"
-    testCompile "org.mockito:mockito-core:$mockito_version"
-    testCompile 'com.google.truth:truth:1.0'
+    testImplementation "junit:junit:$junit_version"
+    testImplementation "org.mockito:mockito-core:$mockito_version"
+    testImplementation 'com.google.truth:truth:1.0'
+    testImplementation "com.squareup.moshi:moshi:$moshi_version"
     // For plugin apply tests and outdated TestKit tests (dir "test-gradle-projects").
-    testCompile "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-    testCompile "com.android.tools.build:gradle:$android_version"
+    testImplementation "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    testImplementation "com.android.tools.build:gradle:$android_version"
 }
 
 buildConfig {

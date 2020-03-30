@@ -8,15 +8,14 @@ sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
 
 dependencies {
-    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-    compile "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
 
-    compile "io.objectbox:objectbox-java:$objectbox_java_version"
-    compile 'org.freemarker:freemarker:2.3.28'
-    compile 'org.greenrobot:essentials:3.0.0-RC1'
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+    implementation "io.objectbox:objectbox-java:$objectbox_java_version"
+    implementation 'org.freemarker:freemarker:2.3.28'
+    implementation 'org.greenrobot:essentials:3.0.0-RC1'
 
-    testCompile "junit:junit:$junit_version"
+    testImplementation "junit:junit:$junit_version"
 }
 
 test {
