@@ -19,6 +19,7 @@
 package io.objectbox.processor
 
 import io.objectbox.annotation.Convert
+import io.objectbox.annotation.DefaultValue
 import io.objectbox.annotation.Id
 import io.objectbox.annotation.Index
 import io.objectbox.annotation.IndexType
@@ -100,10 +101,10 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
         // Why nullable? A property might not be parsed due to an error. We do not throw here.
         val propertyBuilder: Property.PropertyBuilder = (if (field.hasAnnotation(Convert::class.java)) {
             // verify @Convert custom type
-            parseCustomProperty(field)
+            customPropertyBuilderOrNull(field)
         } else {
             // verify that supported type is used
-            parseSupportedProperty(field)
+            supportedPropertyBuilderOrNull(field)
         }) ?: return
 
         propertyBuilder.property.parsedElement = field
@@ -203,10 +204,11 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
         propertyBuilder.indexAsc(null, indexFlags, 0, uniqueAnnotation != null)
     }
 
-    private fun parseCustomProperty(field: VariableElement): Property.PropertyBuilder? {
+    private fun customPropertyBuilderOrNull(field: VariableElement): Property.PropertyBuilder? {
         // extract @Convert annotation member values
         // as they are types, need to access them via annotation mirrors
-        val annotationMirror = getAnnotationMirror(field, Convert::class.java) ?: return null // did not find @Convert mirror
+        val annotationMirror = getAnnotationMirror(field, Convert::class.java)
+            ?: return null // did not find @Convert mirror
 
         // converter and dbType value existence guaranteed by compiler
         val converter = getAnnotationValueType(annotationMirror, "converter")
@@ -233,7 +235,11 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
         return propertyBuilder
     }
 
-    private fun parseSupportedProperty(field: VariableElement): Property.PropertyBuilder? {
+    /**
+     * Parses the [field] and setting its database type to [propertyType], returns the started builder.
+     * If adding the property to the model fails, prints an error and returns null.
+     */
+    private fun supportedPropertyBuilderOrNull(field: VariableElement): Property.PropertyBuilder? {
         val typeMirror = field.asType()
         val propertyType = typeHelper.getPropertyType(typeMirror)
         if (propertyType == null) {
