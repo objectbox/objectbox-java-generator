@@ -27,6 +27,7 @@ import io.objectbox.annotation.NameInDb
 import io.objectbox.annotation.Transient
 import io.objectbox.annotation.Uid
 import io.objectbox.annotation.Unique
+import io.objectbox.converter.NullToEmptyStringConverter
 import io.objectbox.generator.IdUid
 import io.objectbox.generator.model.Entity
 import io.objectbox.generator.model.Property
@@ -99,7 +100,9 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
 
     private fun parseProperty(field: VariableElement) {
         // Why nullable? A property might not be parsed due to an error. We do not throw here.
-        val propertyBuilder: Property.PropertyBuilder = (if (field.hasAnnotation(Convert::class.java)) {
+        val propertyBuilder: Property.PropertyBuilder = (if (field.hasAnnotation(DefaultValue::class.java)) {
+            defaultValuePropertyBuilderOrNull(field)
+        } else if (field.hasAnnotation(Convert::class.java)) {
             // verify @Convert custom type
             customPropertyBuilderOrNull(field)
         } else {
@@ -202,6 +205,37 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
         }
 
         propertyBuilder.indexAsc(null, indexFlags, 0, uniqueAnnotation != null)
+    }
+
+    private fun defaultValuePropertyBuilderOrNull(field: VariableElement): Property.PropertyBuilder? {
+        if (field.hasAnnotation(Convert::class.java)) {
+            messages.error("Can not use both @Convert and @DefaultValue.", field)
+            return null
+        }
+
+        when (field.getAnnotation(DefaultValue::class.java).value) {
+            "" -> {
+                val propertyType = typeHelper.getPropertyType(field.asType())
+                if (propertyType != PropertyType.String) {
+                    messages.error("For @DefaultValue(\"\") property must be String.", field)
+                    return null
+                }
+
+                val builder = try {
+                    entityModel.addProperty(propertyType, field.simpleName.toString())
+                } catch (e: RuntimeException) {
+                    messages.error("Could not add field: ${e.message}")
+                    return null
+                }
+                builder.customType(field.asType().toString(), NullToEmptyStringConverter::class.java.canonicalName)
+
+                return builder
+            }
+            else -> {
+                messages.error("Only @DefaultValue(\"\") is supported.", field)
+                return null
+            }
+        }
     }
 
     private fun customPropertyBuilderOrNull(field: VariableElement): Property.PropertyBuilder? {
