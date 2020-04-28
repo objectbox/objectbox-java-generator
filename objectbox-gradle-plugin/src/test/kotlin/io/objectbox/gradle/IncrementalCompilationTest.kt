@@ -250,6 +250,13 @@ class IncrementalCompilationTest {
                 }
             }
             
+            configurations.all {
+                // Projects are using snapshot dependencies that may update more often than 24 hours.
+                resolutionStrategy {
+                    cacheChangingModulesFor 0, 'seconds'
+                }
+            }
+            
             // Enable ObjectBox plugin and processor debug output.
             objectbox {
                 debug true
