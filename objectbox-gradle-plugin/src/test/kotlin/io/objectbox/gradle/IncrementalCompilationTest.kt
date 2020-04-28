@@ -17,7 +17,7 @@ class IncrementalCompilationTest {
 
     @JvmField
     @Rule
-    val testProjectDir = TemporaryFolder()
+    val testProjectDir: TemporaryFolder = TemporaryFolder.builder().assureDeletion().build()
 
     private val internalObjectBoxRepo = System.getProperty("internalObjectBoxRepo")
     private val internalObjectBoxRepoUser = System.getProperty("internalObjectBoxRepoUser")
