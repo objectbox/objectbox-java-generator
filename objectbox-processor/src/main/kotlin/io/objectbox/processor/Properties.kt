@@ -19,6 +19,7 @@
 package io.objectbox.processor
 
 import io.objectbox.annotation.Convert
+import io.objectbox.annotation.DefaultValue
 import io.objectbox.annotation.Id
 import io.objectbox.annotation.Index
 import io.objectbox.annotation.IndexType
@@ -26,6 +27,7 @@ import io.objectbox.annotation.NameInDb
 import io.objectbox.annotation.Transient
 import io.objectbox.annotation.Uid
 import io.objectbox.annotation.Unique
+import io.objectbox.converter.NullToEmptyStringConverter
 import io.objectbox.generator.IdUid
 import io.objectbox.generator.model.Entity
 import io.objectbox.generator.model.Property
@@ -98,12 +100,14 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
 
     private fun parseProperty(field: VariableElement) {
         // Why nullable? A property might not be parsed due to an error. We do not throw here.
-        val propertyBuilder: Property.PropertyBuilder = (if (field.hasAnnotation(Convert::class.java)) {
+        val propertyBuilder: Property.PropertyBuilder = (if (field.hasAnnotation(DefaultValue::class.java)) {
+            defaultValuePropertyBuilderOrNull(field)
+        } else if (field.hasAnnotation(Convert::class.java)) {
             // verify @Convert custom type
-            parseCustomProperty(field)
+            customPropertyBuilderOrNull(field)
         } else {
             // verify that supported type is used
-            parseSupportedProperty(field)
+            supportedPropertyBuilderOrNull(field)
         }) ?: return
 
         propertyBuilder.property.parsedElement = field
@@ -203,10 +207,42 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
         propertyBuilder.indexAsc(null, indexFlags, 0, uniqueAnnotation != null)
     }
 
-    private fun parseCustomProperty(field: VariableElement): Property.PropertyBuilder? {
+    private fun defaultValuePropertyBuilderOrNull(field: VariableElement): Property.PropertyBuilder? {
+        if (field.hasAnnotation(Convert::class.java)) {
+            messages.error("Can not use both @Convert and @DefaultValue.", field)
+            return null
+        }
+
+        when (field.getAnnotation(DefaultValue::class.java).value) {
+            "" -> {
+                val propertyType = typeHelper.getPropertyType(field.asType())
+                if (propertyType != PropertyType.String) {
+                    messages.error("For @DefaultValue(\"\") property must be String.", field)
+                    return null
+                }
+
+                val builder = try {
+                    entityModel.addProperty(propertyType, field.simpleName.toString())
+                } catch (e: RuntimeException) {
+                    messages.error("Could not add property: ${e.message}", field)
+                    return null
+                }
+                builder.customType(field.asType().toString(), NullToEmptyStringConverter::class.java.canonicalName)
+
+                return builder
+            }
+            else -> {
+                messages.error("Only @DefaultValue(\"\") is supported.", field)
+                return null
+            }
+        }
+    }
+
+    private fun customPropertyBuilderOrNull(field: VariableElement): Property.PropertyBuilder? {
         // extract @Convert annotation member values
         // as they are types, need to access them via annotation mirrors
-        val annotationMirror = getAnnotationMirror(field, Convert::class.java) ?: return null // did not find @Convert mirror
+        val annotationMirror = getAnnotationMirror(field, Convert::class.java)
+            ?: return null // did not find @Convert mirror
 
         // converter and dbType value existence guaranteed by compiler
         val converter = getAnnotationValueType(annotationMirror, "converter")
@@ -225,7 +261,7 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
         try {
             propertyBuilder = entityModel.addProperty(propertyType, field.simpleName.toString())
         } catch (e: RuntimeException) {
-            messages.error("Could not add field: ${e.message}")
+            messages.error("Could not add property: ${e.message}", field)
             return null
         }
         propertyBuilder.customType(customType.toString(), converter.toString())
@@ -233,7 +269,11 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
         return propertyBuilder
     }
 
-    private fun parseSupportedProperty(field: VariableElement): Property.PropertyBuilder? {
+    /**
+     * Parses the [field] and setting its database type to [propertyType], returns the started builder.
+     * If adding the property to the model fails, prints an error and returns null.
+     */
+    private fun supportedPropertyBuilderOrNull(field: VariableElement): Property.PropertyBuilder? {
         val typeMirror = field.asType()
         val propertyType = typeHelper.getPropertyType(typeMirror)
         if (propertyType == null) {
@@ -246,7 +286,7 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
         try {
             propertyBuilder = entityModel.addProperty(propertyType, field.simpleName.toString())
         } catch (e: RuntimeException) {
-            messages.error("Could not add field: ${e.message}")
+            messages.error("Could not add property: ${e.message}", field)
             return null
         }
 
