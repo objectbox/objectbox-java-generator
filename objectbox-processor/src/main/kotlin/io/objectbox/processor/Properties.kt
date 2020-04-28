@@ -224,7 +224,7 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
                 val builder = try {
                     entityModel.addProperty(propertyType, field.simpleName.toString())
                 } catch (e: RuntimeException) {
-                    messages.error("Could not add field: ${e.message}")
+                    messages.error("Could not add property: ${e.message}", field)
                     return null
                 }
                 builder.customType(field.asType().toString(), NullToEmptyStringConverter::class.java.canonicalName)
@@ -261,7 +261,7 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
         try {
             propertyBuilder = entityModel.addProperty(propertyType, field.simpleName.toString())
         } catch (e: RuntimeException) {
-            messages.error("Could not add field: ${e.message}")
+            messages.error("Could not add property: ${e.message}", field)
             return null
         }
         propertyBuilder.customType(customType.toString(), converter.toString())
@@ -286,7 +286,7 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
         try {
             propertyBuilder = entityModel.addProperty(propertyType, field.simpleName.toString())
         } catch (e: RuntimeException) {
-            messages.error("Could not add field: ${e.message}")
+            messages.error("Could not add property: ${e.message}", field)
             return null
         }
 
