@@ -25,6 +25,9 @@ pipeline {
                         "-PpreferredUsername=$MVN_REPO_LOGIN_USR " +
                         "-PpreferredPassword=$MVN_REPO_LOGIN_PSW " +
                         "-PversionPostFix=$versionPostfix"
+        // Note: can't set key file here as it points to path, which must be agent-specific.
+        ORG_GRADLE_PROJECT_signingKeyId = credentials('objectbox_signing_key_id')
+        ORG_GRADLE_PROJECT_signingPassword = credentials('objectbox_signing_key_password')
     }
 
     options {
@@ -66,6 +69,10 @@ pipeline {
 
         stage('upload-to-internal') {
             agent { label 'linux' }
+            environment {
+                // Note: for key use Jenkins secret file with PGP key as text in ASCII-armored format.
+                ORG_GRADLE_PROJECT_signingKeyFile = credentials('objectbox_signing_key')
+            }
             steps {
                 sh "./gradlew $gradleArgs $MVN_REPO_ARGS $MVN_REPO_UPLOAD_ARGS uploadArchives"
             }
@@ -76,6 +83,8 @@ pipeline {
             agent { label 'linux' }
 
             environment {
+                // Note: for key use Jenkins secret file with PGP key as text in ASCII-armored format.
+                ORG_GRADLE_PROJECT_signingKeyFile = credentials('objectbox_signing_key')
                 BINTRAY_URL = credentials('bintray_url')
                 BINTRAY_LOGIN = credentials('bintray_login')
             }
