@@ -96,13 +96,13 @@ public final class BacklinkToManyTarget_ implements EntityInfo<BacklinkToManyTar
 
     /** To-many relation "sources" to target entity "BacklinkToManySource". */
     public static final RelationInfo<BacklinkToManyTarget, BacklinkToManySource> sources = new RelationInfo<>(BacklinkToManyTarget_.__INSTANCE, BacklinkToManySource_.__INSTANCE,
-            new ToManyGetter<BacklinkToManyTarget>() {
+            new ToManyGetter<BacklinkToManyTarget, BacklinkToManySource>() {
                 @Override
                 public List<BacklinkToManySource> getToMany(BacklinkToManyTarget entity) {
                     return entity.sources;
                 }
             },
-            new ToManyGetter<BacklinkToManySource>() {
+            new ToManyGetter<BacklinkToManySource, BacklinkToManyTarget>() {
                 @Override
                 public List<BacklinkToManyTarget> getToMany(BacklinkToManySource entity) {
                     return entity.targets;

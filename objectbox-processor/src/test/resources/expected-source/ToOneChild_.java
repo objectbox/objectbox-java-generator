@@ -102,7 +102,7 @@ public final class ToOneChild_ implements EntityInfo<ToOneChild> {
 
     /** To-one relation "parent" to target entity "ToOneParent". */
     public static final RelationInfo<ToOneChild, ToOneParent> parent =
-            new RelationInfo<>(ToOneChild_.__INSTANCE, ToOneParent_.__INSTANCE, parentId, new ToOneGetter<ToOneChild>() {
+            new RelationInfo<>(ToOneChild_.__INSTANCE, ToOneParent_.__INSTANCE, parentId, new ToOneGetter<ToOneChild, ToOneParent>() {
                 @Override
                 public ToOne<ToOneParent> getToOne(ToOneChild entity) {
                     return entity.parent;
@@ -111,7 +111,7 @@ public final class ToOneChild_ implements EntityInfo<ToOneChild> {
 
     /** To-one relation "parentWithIdProperty" to target entity "ToOneParent". */
     public static final RelationInfo<ToOneChild, ToOneParent> parentWithIdProperty =
-            new RelationInfo<>(ToOneChild_.__INSTANCE, ToOneParent_.__INSTANCE, aParentId, new ToOneGetter<ToOneChild>() {
+            new RelationInfo<>(ToOneChild_.__INSTANCE, ToOneParent_.__INSTANCE, aParentId, new ToOneGetter<ToOneChild, ToOneParent>() {
                 @Override
                 public ToOne<ToOneParent> getToOne(ToOneChild entity) {
                     return entity.parentWithIdProperty;

@@ -97,14 +97,14 @@ public final class BacklinkToOneListTarget_ implements EntityInfo<BacklinkToOneL
 
     /** To-many relation "sources" to target entity "BacklinkToOneListSource". */
     public static final RelationInfo<BacklinkToOneListTarget, BacklinkToOneListSource> sources = new RelationInfo<>(BacklinkToOneListTarget_.__INSTANCE, BacklinkToOneListSource_.__INSTANCE,
-            new ToManyGetter<BacklinkToOneListTarget>() {
+            new ToManyGetter<BacklinkToOneListTarget, BacklinkToOneListSource>() {
                 @Override
                 public List<BacklinkToOneListSource> getToMany(BacklinkToOneListTarget entity) {
                     return entity.sources;
                 }
             },
             BacklinkToOneListSource_.targetId,
-            new ToOneGetter<BacklinkToOneListSource>() {
+            new ToOneGetter<BacklinkToOneListSource, BacklinkToOneListTarget>() {
                 @Override
                 public ToOne<BacklinkToOneListTarget> getToOne(BacklinkToOneListSource entity) {
                     return entity.target;
