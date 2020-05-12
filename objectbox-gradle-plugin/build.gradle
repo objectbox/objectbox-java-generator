@@ -40,6 +40,7 @@ dependencies {
 
     testImplementation gradleTestKit()
     testRuntimeOnly files(createClasspathManifest)
+    testImplementation "org.greenrobot:essentials:$essentials_version"
     testImplementation "junit:junit:$junit_version"
     testImplementation "org.mockito:mockito-core:$mockito_version"
     testImplementation 'com.google.truth:truth:1.0'

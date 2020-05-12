@@ -13,7 +13,7 @@ dependencies {
 
     implementation "io.objectbox:objectbox-java:$objectbox_java_version"
     implementation 'org.freemarker:freemarker:2.3.28'
-    implementation 'org.greenrobot:essentials:3.0.0-RC1'
+    implementation "org.greenrobot:essentials:$essentials_version"
 
     testImplementation "junit:junit:$junit_version"
 }
