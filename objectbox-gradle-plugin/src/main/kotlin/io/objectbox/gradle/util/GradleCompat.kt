@@ -21,6 +21,8 @@ abstract class GradleCompat {
 
     abstract fun registerTask(project: Project, name: String): Any
 
+    abstract fun <T : Task> registerTask(project: Project, name: String, type: Class<T>, vararg args: Any): Any
+
     abstract fun configureTask(project: Project, name: String, configure: Action<in Task>)
 
     abstract fun getTask(project: Project, name: String): Any
