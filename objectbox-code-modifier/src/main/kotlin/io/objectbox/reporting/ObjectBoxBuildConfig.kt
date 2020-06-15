@@ -29,6 +29,10 @@ import java.io.File
 class ObjectBoxBuildConfig(val projectDir: String, val flavor: String? = null) {
     companion object {
         const val FILE_NAME = "objectbox-build-config.json"
+
+        fun buildFile(outputDir: File): File {
+            return File(outputDir, FILE_NAME)
+        }
     }
 
     val timeStarted = System.currentTimeMillis()
@@ -45,7 +49,7 @@ class ObjectBoxBuildConfig(val projectDir: String, val flavor: String? = null) {
 
         adapter.toJson(jsonWriter, this)
 
-        Okio.sink(File(folder, FILE_NAME)).use {
+        Okio.sink(buildFile(folder)).use {
             buffer.readAll(it)
         }
     }

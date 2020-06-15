@@ -4,13 +4,22 @@ import io.objectbox.reporting.ObjectBoxBuildConfig
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
+import java.io.File
 import javax.inject.Inject
 
 
+/**
+ * Writes build config file required for processor, checks for annotation processor configuration, plus build tracking.
+ */
 open class PrepareTask @Inject constructor(
     private val env: ProjectEnv,
     private val buildTracker: GradleBuildTracker
 ) : DefaultTask() {
+
+    private val buildDir = env.project.buildDir
+
+    @OutputFile
+    val buildConfigFile: File = ObjectBoxBuildConfig.buildFile(buildDir)
 
     init {
         group = "objectbox"
@@ -35,11 +44,10 @@ open class PrepareTask @Inject constructor(
             throw RuntimeException(msg)
         }
 
-        writeBuildConfig(env)
+        writeBuildConfig()
     }
 
-    private fun writeBuildConfig(env: ProjectEnv) {
-        val buildDir = env.project.buildDir
+    private fun writeBuildConfig() {
         if (!buildDir.exists()) buildDir.mkdirs()
 //        var flavor: String? = null
 //        val extClass = ObjectBoxAndroidTransform.Registration.getAndroidExtensionClasses(env.project).singleOrNull()
