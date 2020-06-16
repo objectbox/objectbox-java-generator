@@ -17,6 +17,10 @@ class Gradle49 : GradleCompat() {
         return project.tasks.register(name)
     }
 
+    override fun <T : Task> registerTask(project: Project, name: String, type: Class<T>, vararg args: Any): Any {
+        return project.tasks.register(name, type, *args)
+    }
+
     override fun configureTask(project: Project, name: String, configure: Action<in Task>) {
         project.tasks.named(name).configure(configure)
     }

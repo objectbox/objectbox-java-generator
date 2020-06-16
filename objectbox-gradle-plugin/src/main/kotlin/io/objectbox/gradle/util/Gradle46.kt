@@ -13,6 +13,10 @@ class Gradle46 : GradleCompat() {
         return project.tasks.create(name)
     }
 
+    override fun <T : Task> registerTask(project: Project, name: String, type: Class<T>, vararg args: Any): Any {
+        return project.tasks.create(name, type, *args)
+    }
+
     override fun configureTask(project: Project, name: String, configure: Action<in Task>) {
         project.tasks.getByName(name, configure)
     }

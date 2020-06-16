@@ -24,7 +24,7 @@ class BuildConfigTest {
         val folder = temporaryFolder.newFolder("build")
         ObjectBoxBuildConfig("/example/dir", "flavor").writeInto(folder)
 
-        val file = File(folder, ObjectBoxBuildConfig.FILE_NAME)
+        val file = ObjectBoxBuildConfig.buildFile(folder)
         assertTrue(file.exists())
         assertTrue(file.isFile)
 
