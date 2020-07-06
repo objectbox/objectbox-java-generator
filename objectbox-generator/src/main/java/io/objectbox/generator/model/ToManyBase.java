@@ -72,7 +72,7 @@ public abstract class ToManyBase implements HasParsedElement {
     }
 
     /** Property of target entity used for ascending order. */
-    public void orderAsc(Property... properties) {
+    public void orderAsc(Property... properties) throws ModelException {
         for (Property property : properties) {
             targetEntity.validatePropertyExists(property);
             propertyOrderList.addPropertyAsc(property);
@@ -80,7 +80,7 @@ public abstract class ToManyBase implements HasParsedElement {
     }
 
     /** Property of target entity used for descending order. */
-    public void orderDesc(Property... properties) {
+    public void orderDesc(Property... properties) throws ModelException {
         for (Property property : properties) {
             targetEntity.validatePropertyExists(property);
             propertyOrderList.addPropertyDesc(property);
@@ -115,7 +115,7 @@ public abstract class ToManyBase implements HasParsedElement {
         this.parsedElement = parsedElement;
     }
 
-    void init2ndPass() {
+    void init2ndPass() throws ModelException {
         if (name == null) {
             char[] nameCharArray = targetEntity.getClassName().toCharArray();
             nameCharArray[0] = Character.toLowerCase(nameCharArray[0]);
@@ -123,7 +123,7 @@ public abstract class ToManyBase implements HasParsedElement {
         }
     }
 
-    void init3rdPass() {
+    void init3rdPass() throws ModelException {
     }
 
     @Override

@@ -30,6 +30,7 @@ import io.objectbox.annotation.Unique
 import io.objectbox.converter.NullToEmptyStringConverter
 import io.objectbox.generator.IdUid
 import io.objectbox.generator.model.Entity
+import io.objectbox.generator.model.ModelException
 import io.objectbox.generator.model.Property
 import io.objectbox.generator.model.PropertyType
 import io.objectbox.model.PropertyFlags
@@ -223,7 +224,7 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
 
                 val builder = try {
                     entityModel.addProperty(propertyType, field.simpleName.toString())
-                } catch (e: RuntimeException) {
+                } catch (e: ModelException) {
                     messages.error("Could not add property: ${e.message}", field)
                     return null
                 }
@@ -260,7 +261,7 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
         val propertyBuilder: Property.PropertyBuilder
         try {
             propertyBuilder = entityModel.addProperty(propertyType, field.simpleName.toString())
-        } catch (e: RuntimeException) {
+        } catch (e: ModelException) {
             messages.error("Could not add property: ${e.message}", field)
             return null
         }
@@ -285,7 +286,7 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
         val propertyBuilder: Property.PropertyBuilder
         try {
             propertyBuilder = entityModel.addProperty(propertyType, field.simpleName.toString())
-        } catch (e: RuntimeException) {
+        } catch (e: ModelException) {
             messages.error("Could not add property: ${e.message}", field)
             return null
         }

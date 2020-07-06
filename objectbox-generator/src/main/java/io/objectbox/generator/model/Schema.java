@@ -130,26 +130,26 @@ public class Schema {
         return entity;
     }
 
-    public String mapToDbType(PropertyType propertyType) {
+    public String mapToDbType(PropertyType propertyType) throws ModelException {
         return mapType(propertyTypeMapping, propertyType).dbType;
     }
 
-    public short mapToDbTypeId(PropertyType propertyType) {
+    public short mapToDbTypeId(PropertyType propertyType) throws ModelException {
         return mapType(propertyTypeMapping, propertyType).dbTypeId;
     }
 
-    public String mapToJavaTypeNullable(PropertyType propertyType) {
+    public String mapToJavaTypeNullable(PropertyType propertyType) throws ModelException {
         return mapType(propertyTypeMapping, propertyType).javaTypeNullable;
     }
 
-    public String mapToJavaTypeNotNull(PropertyType propertyType) {
+    public String mapToJavaTypeNotNull(PropertyType propertyType) throws ModelException {
         return mapType(propertyTypeMapping, propertyType).javaTypeNotNull;
     }
 
-    private <T> T mapType(Map<PropertyType, T> map, PropertyType propertyType) {
+    private <T> T mapType(Map<PropertyType, T> map, PropertyType propertyType) throws ModelException {
         T dbType = map.get(propertyType);
         if (dbType == null) {
-            throw new IllegalStateException("No mapping for " + propertyType);
+            throw new ModelException("No mapping for " + propertyType);
         }
         return dbType;
     }
@@ -229,7 +229,7 @@ public class Schema {
     /**
      * Sets DAO names for ObjectBox (Cursor), runs 2nd and 3rd pass on schema. Afterwards {@link #isFinished()}.
      */
-    public void finish() {
+    public void finish() throws ModelException {
         List<Entity> entities = getEntities();
         for (Entity entity : entities) {
             if (entity.getClassNameDao() == null) {
@@ -243,7 +243,7 @@ public class Schema {
         isFinished = true;
     }
 
-    void init2ndPass() {
+    void init2ndPass() throws ModelException {
         if (defaultJavaPackageDao == null) {
             defaultJavaPackageDao = defaultJavaPackage;
         }
@@ -255,7 +255,7 @@ public class Schema {
         }
     }
 
-    void init3rdPass() {
+    void init3rdPass() throws ModelException {
         for (Entity entity : entities) {
             entity.init3rdPass();
         }

@@ -25,6 +25,7 @@ import org.junit.Test;
 import java.io.File;
 
 import io.objectbox.generator.model.Entity;
+import io.objectbox.generator.model.ModelException;
 import io.objectbox.generator.model.Property;
 import io.objectbox.generator.model.Schema;
 
@@ -178,8 +179,8 @@ public class SimpleBoxGeneratorTest {
         assertEquals("CamelCaseXXXX", TextUtil.dbName("CamelCaseXXXX"));
     }
 
-    @Test(expected = RuntimeException.class)
-    public void testInterfacesError() {
+    @Test(expected = ModelException.class)
+    public void testInterfacesError() throws ModelException {
         Schema schema = new Schema(1, "io.objectbox.test");
         Entity addressTable = schema.addEntity("FooBar");
         addressTable.implementsInterface("Dummy");

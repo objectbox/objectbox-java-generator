@@ -49,14 +49,14 @@ public class ToManyStandalone extends ToManyBase {
         this.dbName = dbName;
     }
 
-    void init2ndPass() {
+    void init2ndPass() throws ModelException {
         super.init2ndPass();
         if (dbName == null) {
             dbName = TextUtil.dbName(name);
         }
     }
 
-    void init3rdPass() {
+    void init3rdPass() throws ModelException {
         super.init3rdPass();
     }
 

@@ -74,9 +74,9 @@ public class Property implements HasParsedElement {
             return this;
         }
 
-        public PropertyBuilder autoincrement() {
+        public PropertyBuilder autoincrement() throws ModelException {
             if (!property.primaryKey || property.propertyType != PropertyType.Long) {
-                throw new RuntimeException(
+                throw new ModelException(
                         "AUTOINCREMENT is only available to primary key properties of type long/Long");
             }
             property.pkAutoincrement = true;
@@ -103,9 +103,9 @@ public class Property implements HasParsedElement {
             return this;
         }
 
-        public PropertyBuilder nonPrimitiveType() {
+        public PropertyBuilder nonPrimitiveType() throws ModelException {
             if (!property.propertyType.isScalar()) {
-                throw new RuntimeException("Type is already non-primitive");
+                throw new ModelException("Type is already non-primitive");
             }
             property.nonPrimitiveType = true;
             return this;
@@ -458,9 +458,9 @@ public class Property implements HasParsedElement {
      * Makes this property an relation ID - this is done after initial parsing once all entities and relations are
      * present;
      */
-    public void convertToRelationId(Entity target) {
+    public void convertToRelationId(Entity target) throws ModelException {
         if (propertyType != PropertyType.Long && propertyType != PropertyType.RelationId) {
-            throw new RuntimeException("Relation ID property must be of type long: " + this);
+            throw new ModelException("Relation ID property must be of type long: " + this);
         }
         setPropertyType(PropertyType.RelationId);
         targetEntity = target;
@@ -558,9 +558,9 @@ public class Property implements HasParsedElement {
         this.index = index;
     }
 
-    void init2ndPass() {
+    void init2ndPass() throws ModelException {
         if (idAssignable && !primaryKey) {
-            throw new RuntimeException("idSelfAssignable set for non-ID property");
+            throw new ModelException("idSelfAssignable set for non-ID property");
         }
         if (dbType == null) {
             dbType = schema.mapToDbType(propertyType);
