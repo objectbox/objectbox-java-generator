@@ -61,7 +61,6 @@ public class Entity implements HasParsedElement {
     private final List<ToManyBase> toManyRelations;
     private final List<ToManyBase> incomingToManyRelations;
     private final Collection<String> additionalImportsDao;
-    private final List<ContentProvider> contentProviders;
 
     private String dbName;
     private String classNameDao;
@@ -97,7 +96,6 @@ public class Entity implements HasParsedElement {
         toManyRelations = new ArrayList<>();
         incomingToManyRelations = new ArrayList<>();
         additionalImportsDao = new TreeSet<>();
-        contentProviders = new ArrayList<>();
         hasAllArgsConstructor = false;
     }
 
@@ -238,14 +236,6 @@ public class Entity implements HasParsedElement {
 
     protected void addIncomingToMany(ToMany toMany) {
         incomingToManyRelations.add(toMany);
-    }
-
-    public ContentProvider addContentProvider() {
-        List<Entity> entities = new ArrayList<>();
-        entities.add(this);
-        ContentProvider contentProvider = new ContentProvider(schema, entities);
-        contentProviders.add(contentProvider);
-        return contentProvider;
     }
 
     /** Adds a new index to the entity. */
@@ -406,10 +396,6 @@ public class Entity implements HasParsedElement {
         return additionalImportsDao;
     }
 
-    public List<ContentProvider> getContentProviders() {
-        return contentProviders;
-    }
-
     public boolean getHasBoxStoreField() {
         return hasBoxStoreField;
     }
@@ -470,10 +456,6 @@ public class Entity implements HasParsedElement {
         }
 
         init2ndPassIndexNamesWithDefaults();
-
-        for (ContentProvider contentProvider : contentProviders) {
-            contentProvider.init2ndPass();
-        }
     }
 
     protected void init2ndPassNamesWithDefaults() {
