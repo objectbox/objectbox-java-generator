@@ -479,12 +479,6 @@ public class Entity implements HasParsedElement {
         }
     }
 
-    public void validatePropertyExists(Property property) {
-        if (!properties.contains(property)) {
-            throw new ModelRuntimeException("Property " + property + " does not exist in " + this);
-        }
-    }
-
     public List<Index> getMultiIndexes() {
         return multiIndexes;
     }

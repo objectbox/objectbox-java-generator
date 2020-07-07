@@ -88,8 +88,7 @@ public class Property implements HasParsedElement {
         }
 
         public PropertyBuilder index(int type, int maxValueLength, boolean unique) {
-            Index index = new Index();
-            index.addPropertyAsc(property);
+            Index index = new Index(property);
             index.setType(type);
             index.setMaxValueLength(maxValueLength);
             if (unique) index.makeUnique();
@@ -298,8 +297,7 @@ public class Property implements HasParsedElement {
         propertyType = PropertyType.RelationId;
         targetEntity = target;
         if (index == null) {
-            index = new Index();
-            index.addProperty(this);
+            index = new Index(this);
             entity.addIndex(index);
         }
     }

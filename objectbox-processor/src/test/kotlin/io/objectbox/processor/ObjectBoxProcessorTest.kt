@@ -311,15 +311,9 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
         val entity = environment.schema.entities.single { it.className == className }
 
         // assert index
-        assertThat(entity.indexes.size).isAtLeast(1)
-        for (index in entity.indexes) {
-            when (index.orderSpec) {
-                "someString ASC" -> {
-                    // just ensure it exists
-                }
-                else -> fail("Found stray index '${index.orderSpec}' in schema.")
-            }
-        }
+        assertThat(entity.indexes).hasSize(1)
+        assertThat(entity.indexes[0].properties).hasSize(1)
+        assertThat(entity.indexes[0].properties[0].propertyName).isEqualTo("someString")
 
         // assert property
         for (property in entity.properties) {

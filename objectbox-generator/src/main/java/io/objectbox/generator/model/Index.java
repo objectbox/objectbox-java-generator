@@ -18,16 +18,32 @@
 
 package io.objectbox.generator.model;
 
-public class Index extends PropertyOrderList {
+import java.util.ArrayList;
+import java.util.List;
+
+public class Index {
+    private final List<Property> properties;
     private boolean unique;
     /** Value mapped to a PropertyFlags constant in Java API. */
     private int type;
     /** Used to restrict index value length for String and byte[] if using value based index. */
     private int maxValueLength;
 
-    public Index makeUnique() {
+    public Index(Property property) {
+        properties = new ArrayList<>();
+        addProperty(property);
+    }
+
+    public void addProperty(Property property) {
+        properties.add(property);
+    }
+
+    public List<Property> getProperties() {
+        return properties;
+    }
+
+    public void makeUnique() {
         unique = true;
-        return this;
     }
 
     public boolean isUnique() {
