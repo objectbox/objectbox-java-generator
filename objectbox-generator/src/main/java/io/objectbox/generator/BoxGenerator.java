@@ -57,7 +57,6 @@ public class BoxGenerator {
     private final Template templateCursor;
     private final Template templateDao;
     private final Template templateDaoSession;
-    private final Template templateEntity;
     private final Template templateEntityInfo;
     private final Template templateFlatbuffersSchema;
     private final Template templateBoxUnitTest;
@@ -76,7 +75,6 @@ public class BoxGenerator {
         templateCursor = config.getTemplate("cursor.ftl");
         templateDao = config.getTemplate("dao.ftl");
         templateDaoSession = config.getTemplate("dao-session.ftl");
-        templateEntity = config.getTemplate("entity.ftl");
         templateEntityInfo = config.getTemplate("entity-info.ftl");
         templateFlatbuffersSchema = config.getTemplate("flatbuffers-schema.ftl");
         templateBoxUnitTest = config.getTemplate("box-unit-test.ftl");
@@ -128,9 +126,6 @@ public class BoxGenerator {
         for (Entity entity : entities) {
             Map<String, Object> extras = createExtrasForCursor(entity);
             generate(templateCursor, job, entity.getJavaPackageDao(), entity.getClassNameDao(), entity, extras);
-            if (!entity.isProtobuf() && !entity.isSkipGeneration()) {
-                generate(templateEntity, job, entity.getJavaPackage(), entity.getClassName(), entity);
-            }
             generate(templateEntityInfo, job, entity.getJavaPackageDao(), entity.getClassName() + "_",
                     entity, createExtrasForEntityInfo(entity));
             GeneratorOutput outputTest = job.getOutputTest();
