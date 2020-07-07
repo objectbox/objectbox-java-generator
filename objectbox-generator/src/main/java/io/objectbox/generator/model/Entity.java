@@ -135,68 +135,47 @@ public class Entity implements HasParsedElement {
         return addProperty(PropertyType.Long, "id").primaryKey();
     }
 
-    /** Adds a to-many relationship; the target entity is joined to the PK property of this entity (typically the ID). */
-    public ToMany addToMany(Entity target, Property targetProperty) {
-        Property[] targetProperties = {targetProperty};
-        return addToMany(null, target, targetProperties);
-    }
-
     /**
-     * Convenience method for {@link Entity#addToMany(Entity, Property)} with a subsequent call to {@link
-     * ToMany#setName(String)}.
+     * Adds a to-many relation based on a to-one relation ({@link #addToOne}) from another entity to this entity.
+     * The to-one relation is specified by its target ID property in the other entity.
      *
      * @throws ModelException if this entity already has a property or relation with {@code name}.
      */
-    public ToMany addToMany(Entity target, Property targetProperty, String name) throws ModelException {
-        ToMany toMany = addToMany(target, targetProperty);
-        toMany.setName(name);
-        trackUniqueName(names, name, toMany);
+    public ToMany addToManyByToOneBacklink(Entity entityWithToOne, Property targetIdProperty, String name)
+            throws ModelException {
+        Property[] targetProperties = {targetIdProperty};
+        ToMany toMany = new ToMany(schema, this, null, entityWithToOne, targetProperties);
+        setNameAndAddToMany(toMany, name);
         return toMany;
     }
 
     /**
-     * Adds a to-many relation linking back from a stand-alone to-many relation ({@link ToManyStandalone}).
+     * Adds a to-many relation based on a (stand-alone) to-many relation ({@link #addToMany}) from another entity
+     * to this entity. The to-many relation is specified using its name in the other entity.
      *
      * @throws ModelException if this entity already has a property or relation with {@code name}.
      */
-    public ToManyToMany addToMany(Entity target, String linkedToManyName, String name) throws ModelException {
-        ToManyToMany toMany = new ToManyToMany(schema, this, target, linkedToManyName);
-        toMany.setName(name);
-        trackUniqueName(names, name, toMany);
-        addToMany(toMany);
+    public ToManyToMany addToManyByToManyBacklink(Entity entityWithToMany, String linkedToManyName, String name)
+            throws ModelException {
+        ToManyToMany toMany = new ToManyToMany(schema, this, entityWithToMany, linkedToManyName);
+        setNameAndAddToMany(toMany, name);
         return toMany;
     }
 
     /**
-     * Adds a stand-alone to-many relation ({@link ToManyStandalone}).
+     * Adds a (stand-alone) to-many relation ({@link ToManyStandalone}) to another entity.
      *
      * @throws ModelException if this entity already has a property or relation with {@code name}.
      */
-    public ToManyStandalone addToManyStandalone(Entity target, String name) throws ModelException {
+    public ToManyStandalone addToMany(Entity target, String name) throws ModelException {
         ToManyStandalone toMany = new ToManyStandalone(schema, this, target);
+        setNameAndAddToMany(toMany, name);
+        return toMany;
+    }
+
+    private void setNameAndAddToMany(ToManyBase toMany, String name) throws ModelException {
         toMany.setName(name);
         trackUniqueName(names, name, toMany);
-        addToMany(toMany);
-        return toMany;
-    }
-
-    /**
-     * Add a to-many relationship; the target entity is joined using the given target property (of the target entity)
-     * and given source property (of this entity).
-     */
-    public ToMany addToMany(Property sourceProperty, Entity target, Property targetProperty) {
-        Property[] sourceProperties = {sourceProperty};
-        Property[] targetProperties = {targetProperty};
-        return addToMany(sourceProperties, target, targetProperties);
-    }
-
-    public ToMany addToMany(Property[] sourceProperties, Entity target, Property[] targetProperties) {
-        ToMany toMany = new ToMany(schema, this, sourceProperties, target, targetProperties);
-        addToMany(toMany);
-        return toMany;
-    }
-
-    public void addToMany(ToManyBase toMany) {
         toManyRelations.add(toMany);
         toMany.targetEntity.incomingToManyRelations.add(toMany);
     }
@@ -220,10 +199,6 @@ public class Entity implements HasParsedElement {
             trackUniqueName(names, nameToOne, toOne);
         }
         return toOne;
-    }
-
-    protected void addIncomingToMany(ToMany toMany) {
-        incomingToManyRelations.add(toMany);
     }
 
     /** Adds a new index to the entity. */

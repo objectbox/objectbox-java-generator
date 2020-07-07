@@ -330,7 +330,7 @@ class Relations(private val messages: Messages) {
             return null // there is already a backlink to this to-one
         }
 
-        return addToMany(targetEntity, targetIdProperty, backlinkToMany.propertyName)
+        return addToManyByToOneBacklink(targetEntity, targetIdProperty, backlinkToMany.propertyName)
     }
 
     private fun Entity.addBacklinkToToManyIfNoneExists(backlinkToMany: ToManyRelation, targetEntity: Entity,
@@ -344,7 +344,7 @@ class Relations(private val messages: Messages) {
             return null // there is already a backlink to this to-many
         }
 
-        return addToMany(targetEntity, targetToManyName, backlinkToMany.propertyName)
+        return addToManyByToManyBacklink(targetEntity, targetToManyName, backlinkToMany.propertyName)
     }
 
     private fun errorOnlyOneBacklinkAllowed(backlinkEntity: Entity, backlinkToMany: ToManyRelation) {
@@ -361,7 +361,7 @@ class Relations(private val messages: Messages) {
                 // TODO ut why not directly add the linked to ToManyStandalone?
                 toManyModel = addBacklinkToManyOrRaiseError(entity, targetEntity, toMany) ?: return false
             } else {
-                val standalone = entity.addToManyStandalone(targetEntity, toMany.propertyName)
+                val standalone = entity.addToMany(targetEntity, toMany.propertyName)
                 if (toMany.uid != null) standalone.modelId = IdUid(0, toMany.uid)
                 standalone.dbName = toMany.nameInDb
                 toManyModel = standalone

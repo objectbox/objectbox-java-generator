@@ -21,7 +21,6 @@ package io.objectbox.generator.model;
 import java.util.List;
 
 /** To-many relationship from many source entities to many target entities. */
-@SuppressWarnings("unused")
 public class ToManyToMany extends ToManyBase {
     private Property[] sourceProperties; // together uniquely identify source entity
     private String linkedToManyName; // the name of the ToMany this ToMany is supposed to link to
