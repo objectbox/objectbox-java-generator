@@ -48,7 +48,6 @@ public class Entity implements HasParsedElement {
     private final List<Property> properties;
     private List<Property> propertiesColumns;
     private final List<Property> propertiesPk;
-    private final List<Property> propertiesNonPk;
 
     /**
      * For fail fast checks which can show the stacktrace of the add operation
@@ -84,7 +83,6 @@ public class Entity implements HasParsedElement {
         this.className = className;
         properties = new ArrayList<>();
         propertiesPk = new ArrayList<>();
-        propertiesNonPk = new ArrayList<>();
         names = new HashMap<>();
         indexes = new ArrayList<>();
         multiIndexes = new ArrayList<>();
@@ -236,14 +234,6 @@ public class Entity implements HasParsedElement {
         return null;
     }
 
-    public Property findPropertyByNameOrThrow(String name) {
-        Property property = findPropertyByName(name);
-        if (property == null) {
-            throw new ModelRuntimeException(("Could not find property " + name + " in " + name));
-        }
-        return property;
-    }
-
     public List<Property> getPropertiesColumns() {
         return propertiesColumns;
     }
@@ -275,11 +265,6 @@ public class Entity implements HasParsedElement {
     /** Internal property used by templates, don't use during entity definition. */
     public List<Property> getPropertiesPk() {
         return propertiesPk;
-    }
-
-    /** Internal property used by templates, don't use during entity definition. */
-    public List<Property> getPropertiesNonPk() {
-        return propertiesNonPk;
     }
 
     /** Internal property used by templates, don't use during entity definition. */
@@ -342,8 +327,6 @@ public class Entity implements HasParsedElement {
             property.init2ndPass();
             if (property.isPrimaryKey()) {
                 propertiesPk.add(property);
-            } else {
-                propertiesNonPk.add(property);
             }
         }
 
