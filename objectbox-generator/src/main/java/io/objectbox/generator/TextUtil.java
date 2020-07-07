@@ -61,11 +61,4 @@ public class TextUtil {
         }
     }
 
-    public static String checkConvertToJavaDoc(String javaDoc, String indent) {
-        if (javaDoc != null && !javaDoc.trim().startsWith("/**")) {
-            javaDoc = javaDoc.replace("\n", "\n" + indent + " * ");
-            javaDoc = indent + "/**\n" + indent + " * " + javaDoc + "\n" + indent + " */";
-        }
-        return javaDoc;
-    }
 }

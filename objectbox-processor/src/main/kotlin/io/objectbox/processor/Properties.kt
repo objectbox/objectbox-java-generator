@@ -206,7 +206,7 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
             messages.error("@$annotationName is not supported for $propertyType, remove @$annotationName.", field)
         }
 
-        propertyBuilder.indexAsc(indexFlags, 0, uniqueAnnotation != null)
+        propertyBuilder.index(indexFlags, 0, uniqueAnnotation != null)
     }
 
     private fun defaultValuePropertyBuilderOrNull(field: VariableElement): Property.PropertyBuilder? {

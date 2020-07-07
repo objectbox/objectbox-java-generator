@@ -124,13 +124,7 @@ public class ToOne implements HasParsedElement {
     void init3ndPass() {
         if (targetIdProperty != null) {
             PropertyType propertyType = targetIdProperty.getPropertyType();
-            if (propertyType == null) {
-                // TODO does this happen??
-                targetIdProperty.setPropertyType(PropertyType.RelationId);
-                // Property is not a regular property with primitive getters/setters, so let it catch up
-                targetIdProperty.init2ndPass();
-                targetIdProperty.init3ndPass();
-            } else if (propertyType != PropertyType.RelationId) {
+            if (propertyType != PropertyType.RelationId) {
                 throw new ModelRuntimeException("To-one target ID property type is incompatible with a to-one relation: "
                         + propertyType);
             }
