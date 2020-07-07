@@ -143,10 +143,6 @@ public class Schema {
         return defaultJavaPackageDao;
     }
 
-    public void setDefaultJavaPackageDao(String defaultJavaPackageDao) {
-        this.defaultJavaPackageDao = defaultJavaPackageDao;
-    }
-
     public List<Entity> getEntities() {
         return entities;
     }
@@ -204,7 +200,7 @@ public class Schema {
         isFinished = true;
     }
 
-    void init2ndPass() {
+    private void init2ndPass() {
         if (defaultJavaPackageDao == null) {
             defaultJavaPackageDao = defaultJavaPackage;
         }
@@ -213,7 +209,7 @@ public class Schema {
         }
     }
 
-    void init3rdPass() throws ModelException {
+    private void init3rdPass() throws ModelException {
         for (Entity entity : entities) {
             entity.init3rdPass();
         }

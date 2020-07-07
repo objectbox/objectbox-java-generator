@@ -21,7 +21,6 @@ package io.objectbox.generator.model;
 import io.objectbox.generator.TextUtil;
 
 /** To-one relationship from a source entity to one (or zero) target entity. */
-@SuppressWarnings("unused")
 public class ToOne implements HasParsedElement {
     private final Schema schema;
     private final Entity sourceEntity;

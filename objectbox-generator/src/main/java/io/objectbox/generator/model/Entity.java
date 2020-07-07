@@ -142,7 +142,7 @@ public class Entity implements HasParsedElement {
     public ToMany addToManyByToOneBacklink(Entity entityWithToOne, Property targetIdProperty, String name)
             throws ModelException {
         Property[] targetProperties = {targetIdProperty};
-        ToMany toMany = new ToMany(schema, this, null, entityWithToOne, targetProperties);
+        ToMany toMany = new ToMany(this, null, entityWithToOne, targetProperties);
         setNameAndAddToMany(toMany, name);
         return toMany;
     }
@@ -155,7 +155,7 @@ public class Entity implements HasParsedElement {
      */
     public ToManyToMany addToManyByToManyBacklink(Entity entityWithToMany, String linkedToManyName, String name)
             throws ModelException {
-        ToManyToMany toMany = new ToManyToMany(schema, this, entityWithToMany, linkedToManyName);
+        ToManyToMany toMany = new ToManyToMany(this, entityWithToMany, linkedToManyName);
         setNameAndAddToMany(toMany, name);
         return toMany;
     }
@@ -166,7 +166,7 @@ public class Entity implements HasParsedElement {
      * @throws ModelException if this entity already has a property or relation with {@code name}.
      */
     public ToManyStandalone addToMany(Entity target, String name) throws ModelException {
-        ToManyStandalone toMany = new ToManyStandalone(schema, this, target);
+        ToManyStandalone toMany = new ToManyStandalone(this, target);
         setNameAndAddToMany(toMany, name);
         return toMany;
     }
@@ -330,8 +330,7 @@ public class Entity implements HasParsedElement {
             }
         }
 
-        for (int i = 0; i < indexes.size(); i++) {
-            final Index index = indexes.get(i);
+        for (final Index index : indexes) {
             final int propertiesSize = index.getProperties().size();
             if (propertiesSize == 1) {
                 final Property property = index.getProperties().get(0);
@@ -408,7 +407,7 @@ public class Entity implements HasParsedElement {
         }
         for (ToOne toOne : toOneRelations) {
             trackUniqueName(names, toOne.getName(), toOne);
-            if (toOne.getNameToOne() != null && toOne.getNameToOne() != toOne.getName()) {
+            if (toOne.getNameToOne() != null && !toOne.getNameToOne().equals(toOne.getName())) {
                 trackUniqueName(names, toOne.getNameToOne(), toOne);
             }
         }

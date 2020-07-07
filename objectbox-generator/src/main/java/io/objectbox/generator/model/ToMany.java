@@ -26,9 +26,9 @@ public class ToMany extends ToManyBase {
     private final Property[] targetProperties;
     private ToOne backlinkToOne;
 
-    public ToMany(Schema schema, Entity sourceEntity, Property[] sourceProperties, Entity targetEntity,
-                  Property[] targetProperties) {
-        super(schema, sourceEntity, targetEntity);
+    public ToMany(Entity sourceEntity, Property[] sourceProperties, Entity targetEntity,
+            Property[] targetProperties) {
+        super(sourceEntity, targetEntity);
         this.sourceProperties = sourceProperties;
         this.targetProperties = targetProperties;
     }

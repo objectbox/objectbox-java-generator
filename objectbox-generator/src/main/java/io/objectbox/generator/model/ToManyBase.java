@@ -22,15 +22,13 @@ import io.objectbox.generator.TextUtil;
 
 /** Base class for to-many relationship from source entities to target entities. */
 public abstract class ToManyBase implements HasParsedElement {
-    private final Schema schema;
     protected String name;
     protected final Entity sourceEntity;
     protected final Entity targetEntity;
     private boolean fieldAccessible;
     private Object parsedElement;
 
-    public ToManyBase(Schema schema, Entity sourceEntity, Entity targetEntity) {
-        this.schema = schema;
+    public ToManyBase(Entity sourceEntity, Entity targetEntity) {
         this.sourceEntity = sourceEntity;
         this.targetEntity = targetEntity;
     }
