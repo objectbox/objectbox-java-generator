@@ -64,15 +64,12 @@ public class Entity implements HasParsedElement {
 
     private String dbName;
     private String classNameDao;
-    private String classNameTest;
     private String javaPackage;
     private String javaPackageDao;
-    private String javaPackageTest;
     private Property pkProperty;
     private String pkType;
 
     private boolean hasAllArgsConstructor;
-    private boolean skipGenerationTest;
     private boolean hasBoxStoreField;
     private Object parsedElement;
     private boolean syncEnabled;
@@ -300,22 +297,6 @@ public class Entity implements HasParsedElement {
         this.classNameDao = classNameDao;
     }
 
-    public String getClassNameTest() {
-        return classNameTest;
-    }
-
-    public void setClassNameTest(String classNameTest) {
-        this.classNameTest = classNameTest;
-    }
-
-    public String getJavaPackageTest() {
-        return javaPackageTest;
-    }
-
-    public void setJavaPackageTest(String javaPackageTest) {
-        this.javaPackageTest = javaPackageTest;
-    }
-
     /** Internal property used by templates, don't use during entity definition. */
     public List<Property> getPropertiesPk() {
         return propertiesPk;
@@ -347,14 +328,6 @@ public class Entity implements HasParsedElement {
     /** Set to indicate the associated class has a constructor with an argument for every property available. */
     public void setHasAllArgsConstructor(boolean hasAllArgsConstructor) {
         this.hasAllArgsConstructor = hasAllArgsConstructor;
-    }
-
-    public boolean isSkipGenerationTest() {
-        return skipGenerationTest;
-    }
-
-    public void setSkipGenerationTest(boolean skipGenerationTest) {
-        this.skipGenerationTest = skipGenerationTest;
     }
 
     public boolean hasRelations() {
@@ -447,9 +420,6 @@ public class Entity implements HasParsedElement {
         if (classNameDao == null) {
             classNameDao = className + "Dao";
         }
-        if (classNameTest == null) {
-            classNameTest = className + "Test";
-        }
 
         if (javaPackage == null) {
             javaPackage = schema.getDefaultJavaPackage();
@@ -459,12 +429,6 @@ public class Entity implements HasParsedElement {
             javaPackageDao = schema.getDefaultJavaPackageDao();
             if (javaPackageDao == null) {
                 javaPackageDao = javaPackage;
-            }
-        }
-        if (javaPackageTest == null) {
-            javaPackageTest = schema.getDefaultJavaPackageTest();
-            if (javaPackageTest == null) {
-                javaPackageTest = javaPackage;
             }
         }
     }

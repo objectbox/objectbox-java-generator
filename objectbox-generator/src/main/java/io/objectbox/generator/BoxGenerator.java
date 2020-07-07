@@ -45,11 +45,11 @@ public class BoxGenerator {
 
     private final Template templateMyObjectBox;
     private final Template templateCursor;
-    private final Template templateDao;
-    private final Template templateDaoSession;
     private final Template templateEntityInfo;
     private final Template templateFlatbuffersSchema;
-    private final Template templateBoxUnitTest;
+    // For DAOcompat
+    private final Template templateDao;
+    private final Template templateDaoSession;
 
     public BoxGenerator() throws IOException {
         log("ObjectBox Generator");
@@ -59,11 +59,11 @@ public class BoxGenerator {
         Configuration config = getConfiguration(MYOBJECTBOX_FTL);
         templateMyObjectBox = config.getTemplate(MYOBJECTBOX_FTL);
         templateCursor = config.getTemplate("cursor.ftl");
-        templateDao = config.getTemplate("dao.ftl");
-        templateDaoSession = config.getTemplate("dao-session.ftl");
         templateEntityInfo = config.getTemplate("entity-info.ftl");
         templateFlatbuffersSchema = config.getTemplate("flatbuffers-schema.ftl");
-        templateBoxUnitTest = config.getTemplate("box-unit-test.ftl");
+        // For DAOcompat
+        templateDao = config.getTemplate("dao.ftl");
+        templateDaoSession = config.getTemplate("dao-session.ftl");
     }
 
     private Configuration getConfiguration(String probingTemplate) throws IOException {
@@ -108,18 +108,6 @@ public class BoxGenerator {
             generate(templateCursor, job, entity.getJavaPackageDao(), entity.getClassNameDao(), entity, extras);
             generate(templateEntityInfo, job, entity.getJavaPackageDao(), entity.getClassName() + "_",
                     entity, createExtrasForEntityInfo(entity));
-            GeneratorOutput outputTest = job.getOutputTest();
-            if (outputTest != null && !entity.isSkipGenerationTest()) {
-                String javaPackageTest = entity.getJavaPackageTest();
-                String classNameTest = entity.getClassNameTest();
-                File testFile = outputTest.getFileOrNull(javaPackageTest, classNameTest, ".java");
-                if (testFile != null && !testFile.exists()) {
-                    generate(templateBoxUnitTest, outputTest, javaPackageTest, classNameTest, ".java",
-                            schema, entity, null);
-                } else {
-                    log("Skipped " + (testFile != null ? testFile.getCanonicalPath() : classNameTest));
-                }
-            }
         }
         if (job.getOutputFlatbuffersSchema() != null) {
             generate(templateFlatbuffersSchema, job.getOutputFlatbuffersSchema(), "", "flatbuffers", ".fbs",

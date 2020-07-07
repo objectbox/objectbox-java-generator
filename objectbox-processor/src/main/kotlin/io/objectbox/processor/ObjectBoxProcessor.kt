@@ -306,7 +306,6 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         val entityModel = schema.addEntity(name)
         entityModel.javaPackage = elementUtils.getPackageOf(entity).qualifiedName.toString()
         entityModel.javaPackageDao = daoCompatPackage ?: entityModel.javaPackage
-        entityModel.javaPackageTest = entityModel.javaPackageDao // has no effect as tests can not be generated
 
         // @NameInDb
         val nameInDbAnnotation = entity.getAnnotation(NameInDb::class.java)

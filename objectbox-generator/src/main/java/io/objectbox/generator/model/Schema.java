@@ -35,7 +35,6 @@ public class Schema {
     private final int version;
     private final String defaultJavaPackage;
     private String defaultJavaPackageDao;
-    private String defaultJavaPackageTest;
     private final List<Entity> entities;
     private Map<PropertyType, Mapping> propertyTypeMapping;
     private final String name;
@@ -148,14 +147,6 @@ public class Schema {
         this.defaultJavaPackageDao = defaultJavaPackageDao;
     }
 
-    public String getDefaultJavaPackageTest() {
-        return defaultJavaPackageTest;
-    }
-
-    public void setDefaultJavaPackageTest(String defaultJavaPackageTest) {
-        this.defaultJavaPackageTest = defaultJavaPackageTest;
-    }
-
     public List<Entity> getEntities() {
         return entities;
     }
@@ -216,9 +207,6 @@ public class Schema {
     void init2ndPass() {
         if (defaultJavaPackageDao == null) {
             defaultJavaPackageDao = defaultJavaPackage;
-        }
-        if (defaultJavaPackageTest == null) {
-            defaultJavaPackageTest = defaultJavaPackageDao;
         }
         for (Entity entity : entities) {
             entity.init2ndPass();

@@ -25,7 +25,6 @@ public class GeneratorJob {
     private final Schema schema;
     private final GeneratorOutput output;
 
-    private GeneratorOutput outputTest;
     private GeneratorOutput outputFlatbuffersSchema;
     private boolean daoCompat;
 
@@ -40,14 +39,6 @@ public class GeneratorJob {
 
     public GeneratorOutput getOutput() {
         return output;
-    }
-
-    public GeneratorOutput getOutputTest() {
-        return outputTest;
-    }
-
-    public void setOutputTest(GeneratorOutput outputTest) {
-        this.outputTest = outputTest;
     }
 
     public GeneratorOutput getOutputFlatbuffersSchema() {
