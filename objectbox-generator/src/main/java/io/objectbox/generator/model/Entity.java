@@ -366,8 +366,6 @@ public class Entity implements HasParsedElement {
             // }
             // }
         }
-
-        init2ndPassIndexNamesWithDefaults();
     }
 
     protected void init2ndPassNamesWithDefaults() {
@@ -387,25 +385,6 @@ public class Entity implements HasParsedElement {
             javaPackageDao = schema.getDefaultJavaPackageDao();
             if (javaPackageDao == null) {
                 javaPackageDao = javaPackage;
-            }
-        }
-    }
-
-    protected void init2ndPassIndexNamesWithDefaults() {
-        for (int i = 0; i < indexes.size(); i++) {
-            Index index = indexes.get(i);
-            if (index.getName() == null) {
-                String indexName = "IDX_" + getDbName();
-                List<Property> properties = index.getProperties();
-                for (int j = 0; j < properties.size(); j++) {
-                    Property property = properties.get(j);
-                    indexName += "_" + property.getDbName();
-                    if ("DESC".equalsIgnoreCase(index.getPropertiesOrder().get(j))) {
-                        indexName += "_DESC";
-                    }
-                }
-                // TODO can this get too long? how to shorten reliably without depending on the order (i)
-                index.setDefaultName(indexName);
             }
         }
     }

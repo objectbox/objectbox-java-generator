@@ -118,21 +118,19 @@ public class Property implements HasParsedElement {
             return this;
         }
 
-        public PropertyBuilder indexAsc(String indexNameOrNull, boolean isUnique) {
+        public PropertyBuilder indexAsc(boolean isUnique) {
             Index index = new Index();
             index.addPropertyAsc(property);
             if (isUnique) {
                 index.makeUnique();
             }
-            index.setName(indexNameOrNull);
             property.entity.addIndex(index);
             return this;
         }
 
-        public PropertyBuilder indexAsc(String indexNameOrNull, int type, int maxValueLength, boolean unique) {
+        public PropertyBuilder indexAsc(int type, int maxValueLength, boolean unique) {
             Index index = new Index();
             index.addPropertyAsc(property);
-            index.setName(indexNameOrNull);
             index.setType(type);
             index.setMaxValueLength(maxValueLength);
             if(unique) index.makeUnique();
@@ -140,13 +138,12 @@ public class Property implements HasParsedElement {
             return this;
         }
 
-        public PropertyBuilder indexDesc(String indexNameOrNull, boolean isUnique) {
+        public PropertyBuilder indexDesc(boolean isUnique) {
             Index index = new Index();
             index.addPropertyDesc(property);
             if (isUnique) {
                 index.makeUnique();
             }
-            index.setName(indexNameOrNull);
             property.entity.addIndex(index);
             return this;
         }

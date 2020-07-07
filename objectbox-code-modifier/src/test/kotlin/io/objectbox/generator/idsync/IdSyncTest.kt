@@ -467,7 +467,7 @@ class IdSyncTest {
             builder.modelId(IdUid(0, uid))
         }
         if (indexed) {
-            builder.indexAsc(null, false)
+            builder.indexAsc(false)
         }
     }
 
