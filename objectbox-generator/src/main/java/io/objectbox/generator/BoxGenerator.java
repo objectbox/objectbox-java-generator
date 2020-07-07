@@ -206,9 +206,6 @@ public class BoxGenerator {
         if (isNotEmpty(javaPackage) && !javaPackage.equals(entity.getJavaPackageDao())) {
             imports.add(String.format("%s.%s", javaPackage, entity.getClassName()));
         }
-        if (entity.isProtobuf() && isNotEmpty(javaPackage)) {
-            imports.add(String.format("%s.%s.Builder", javaPackage, entity.getClassName()));
-        }
 
         imports.addAll(entity.getAdditionalImportsDao());
 

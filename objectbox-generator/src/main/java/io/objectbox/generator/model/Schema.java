@@ -29,7 +29,6 @@ import io.objectbox.generator.TextUtil;
 /**
  * The "root" model class to which you can add entities to.
  */
-@SuppressWarnings("unused")
 public class Schema {
     public static final String DEFAULT_NAME = "default";
 
@@ -101,22 +100,11 @@ public class Schema {
     }
 
     /**
-     * Adds a new entity to the schema. There can be multiple entities per table, but only one may be the primary entity
-     * per table to create table scripts, etc.
+     * Adds a new entity to the schema.
      */
     public Entity addEntity(String className) {
         Entity entity = new Entity(this, className);
         entities.add(entity);
-        return entity;
-    }
-
-    /**
-     * Adds a new protocol buffers entity to the schema. There can be multiple entities per table, but only one may be
-     * the primary entity per table to create table scripts, etc.
-     */
-    public Entity addProtobufEntity(String className) {
-        Entity entity = addEntity(className);
-        entity.useProtobuf();
         return entity;
     }
 

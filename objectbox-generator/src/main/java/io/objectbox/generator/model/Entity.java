@@ -71,7 +71,6 @@ public class Entity implements HasParsedElement {
     private Property pkProperty;
     private String pkType;
 
-    private boolean protobuf;
     private boolean hasAllArgsConstructor;
     private boolean skipGenerationTest;
     private boolean hasBoxStoreField;
@@ -201,10 +200,6 @@ public class Entity implements HasParsedElement {
     }
 
     public void addToMany(ToManyBase toMany) {
-        if (protobuf) {
-            throw new ModelRuntimeException("Protobuf entities do not support relations, currently");
-        }
-
         toManyRelations.add(toMany);
         toMany.targetEntity.incomingToManyRelations.add(toMany);
     }
@@ -217,10 +212,6 @@ public class Entity implements HasParsedElement {
      */
     public ToOne addToOne(Entity target, Property targetIdProperty, String name, String nameToOne,
                           boolean toOneFieldAccessible) throws ModelException {
-        if (protobuf) {
-            throw new ModelRuntimeException("Protobuf entities do not support relations, currently");
-        }
-
         targetIdProperty.convertToRelationId(target);
         ToOne toOne = new ToOne(schema, this, target, targetIdProperty, true);
         toOne.setName(name);
@@ -242,16 +233,6 @@ public class Entity implements HasParsedElement {
     public Entity addIndex(Index index) {
         indexes.add(index);
         return this;
-    }
-
-    /** The entity is represented by a protocol buffers object. Requires some special actions like using builders. */
-    Entity useProtobuf() {
-        protobuf = true;
-        return this;
-    }
-
-    public boolean isProtobuf() {
-        return protobuf;
     }
 
     public Schema getSchema() {

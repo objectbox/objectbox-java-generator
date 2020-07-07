@@ -69,10 +69,6 @@ public final class ${entity.classNameDao} extends Cursor<${entity.className}> {
 
     /**
      * Puts an object into its box.
-<#if entity.protobuf>
-     *
-     * Note: Protocol buffer objects are immutable, so the ID cannot be updated (ID == 0, "insert").
-</#if>
      *
      * @return The ID of the object within its box.
      */
@@ -94,7 +90,7 @@ Do ToOnes before because we need the target's ID before the put.
 Do ToMany after because the targets entities need our ID.
 -->
 ${propertyCollector}
-<#if entity.hasRelations() && !entity.protobuf>
+<#if entity.hasRelations()>
     <#if entity.hasBoxStoreField>
         entity.__boxStore = boxStoreForEntities;
     <#else>
