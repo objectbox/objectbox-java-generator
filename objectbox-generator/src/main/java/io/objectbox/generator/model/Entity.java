@@ -34,16 +34,11 @@ import io.objectbox.generator.TextUtil;
 import io.objectbox.model.EntityFlags;
 
 /**
- * Model class for an entity: a Java data object mapped to a data base representation. A new entity is added to a {@link
- * Schema}
- * by the method {@link Schema#addEntity(String)} (there is no public constructor for {@link Entity} itself). <br>
- * <br> Use the various addXXX methods to add entity properties, indexes, and relations to other entities (addToOne,
- * addToMany).<br> <br> There are further configuration possibilities: <ul> <li>{@link
- * Entity#implementsInterface(String...)} and {@link #implementsSerializable()} to specify interfaces the entity will
- * implement</li> <li>{@link #setSuperclass(String)} to specify a class of which the entity will extend from</li>
- * <li>Various setXXX methods</li> </ul>
+ * Model class for an entity: a Java data object mapped to a data base representation.
+ * A new entity is added to a {@link Schema} by {@link Schema#addEntity(String)}.
+ * <p> Use the various add methods to add entity properties, indexes, and relations
+ * to other entities (addToOne, addToMany).
  */
-@SuppressWarnings("unused")
 public class Entity implements HasParsedElement {
     private final Schema schema;
     private final String className;
@@ -65,13 +60,10 @@ public class Entity implements HasParsedElement {
     private final List<ToOne> toOneRelations;
     private final List<ToManyBase> toManyRelations;
     private final List<ToManyBase> incomingToManyRelations;
-    private final Collection<String> additionalImportsEntity;
     private final Collection<String> additionalImportsDao;
-    private final List<String> interfacesToImplement;
     private final List<ContentProvider> contentProviders;
 
     private String dbName;
-    private boolean nonDefaultDbName;
     private String classNameDao;
     private String classNameTest;
     private String javaPackage;
@@ -79,17 +71,10 @@ public class Entity implements HasParsedElement {
     private String javaPackageTest;
     private Property pkProperty;
     private String pkType;
-    private String superclass;
-    private String javaDoc;
-    private String codeBeforeClass;
 
     private boolean protobuf;
-    private boolean constructors;
-    private boolean skipGeneration;
+    private boolean hasAllArgsConstructor;
     private boolean skipGenerationTest;
-    private boolean skipCreationInDb;
-    private Boolean active;
-    private Boolean hasKeepSections;
     private boolean hasBoxStoreField;
     private Object parsedElement;
     private boolean syncEnabled;
@@ -111,11 +96,9 @@ public class Entity implements HasParsedElement {
         toOneRelations = new ArrayList<>();
         toManyRelations = new ArrayList<>();
         incomingToManyRelations = new ArrayList<>();
-        additionalImportsEntity = new TreeSet<>();
         additionalImportsDao = new TreeSet<>();
-        interfacesToImplement = new ArrayList<>();
         contentProviders = new ArrayList<>();
-        constructors = true;
+        hasAllArgsConstructor = false;
     }
 
     public Entity setModelId(Integer modelId) {
@@ -271,11 +254,6 @@ public class Entity implements HasParsedElement {
         return this;
     }
 
-    public Entity addImport(String additionalImport) {
-        additionalImportsEntity.add(additionalImport);
-        return this;
-    }
-
     /** The entity is represented by a protocol buffers object. Requires some special actions like using builders. */
     Entity useProtobuf() {
         protobuf = true;
@@ -296,7 +274,6 @@ public class Entity implements HasParsedElement {
 
     public void setDbName(String dbName) {
         this.dbName = dbName;
-        this.nonDefaultDbName = dbName != null;
     }
 
     public String getClassName() {
@@ -392,34 +369,13 @@ public class Entity implements HasParsedElement {
         return pkType;
     }
 
-    public boolean isConstructors() {
-        return constructors;
+    public boolean hasAllArgsConstructor() {
+        return hasAllArgsConstructor;
     }
 
-    /** Flag to define if constructors should be generated. */
-    public void setConstructors(boolean constructors) {
-        this.constructors = constructors;
-    }
-
-    public boolean isSkipGeneration() {
-        return skipGeneration;
-    }
-
-    /**
-     * Flag if the entity's code generation should be skipped. E.g. if you need to change the class after initial
-     * generation.
-     */
-    public void setSkipGeneration(boolean skipGeneration) {
-        this.skipGeneration = skipGeneration;
-    }
-
-    /** For secondary entities that depend on the schema of a primary entity. */
-    public void setSkipCreationInDb(boolean skipCreationInDb) {
-        this.skipCreationInDb = skipCreationInDb;
-    }
-
-    public boolean isSkipCreationInDb() {
-        return skipCreationInDb;
+    /** Set to indicate the associated class has a constructor with an argument for every property available. */
+    public void setHasAllArgsConstructor(boolean hasAllArgsConstructor) {
+        this.hasAllArgsConstructor = hasAllArgsConstructor;
     }
 
     public boolean isSkipGenerationTest() {
@@ -446,77 +402,12 @@ public class Entity implements HasParsedElement {
         return incomingToManyRelations;
     }
 
-    /**
-     * Entities with relations are active, but this method allows to make the entities active even if it does not have
-     * relations.
-     */
-    public void setActive(Boolean active) {
-        this.active = active;
-    }
-
-    public Boolean getActive() {
-        return active;
-    }
-
-    public Boolean getHasKeepSections() {
-        return hasKeepSections;
-    }
-
-    public Collection<String> getAdditionalImportsEntity() {
-        return additionalImportsEntity;
-    }
-
     public Collection<String> getAdditionalImportsDao() {
         return additionalImportsDao;
     }
 
-    public void setHasKeepSections(Boolean hasKeepSections) {
-        this.hasKeepSections = hasKeepSections;
-    }
-
-    public List<String> getInterfacesToImplement() {
-        return interfacesToImplement;
-    }
-
     public List<ContentProvider> getContentProviders() {
         return contentProviders;
-    }
-
-    public void implementsInterface(String... interfaces) {
-        for (String interfaceToImplement : interfaces) {
-            if (interfacesToImplement.contains(interfaceToImplement)) {
-                throw new ModelRuntimeException("Interface defined more than once: " + interfaceToImplement);
-            }
-            interfacesToImplement.add(interfaceToImplement);
-        }
-    }
-
-    public void implementsSerializable() {
-        interfacesToImplement.add("java.io.Serializable");
-    }
-
-    public String getSuperclass() {
-        return superclass;
-    }
-
-    public void setSuperclass(String classToExtend) {
-        this.superclass = classToExtend;
-    }
-
-    public String getJavaDoc() {
-        return javaDoc;
-    }
-
-    public void setJavaDoc(String javaDoc) {
-        this.javaDoc = TextUtil.checkConvertToJavaDoc(javaDoc, "");
-    }
-
-    public String getCodeBeforeClass() {
-        return codeBeforeClass;
-    }
-
-    public void setCodeBeforeClass(String codeBeforeClass) {
-        this.codeBeforeClass = codeBeforeClass;
     }
 
     public boolean getHasBoxStoreField() {
@@ -578,15 +469,6 @@ public class Entity implements HasParsedElement {
             // }
         }
 
-        if (active == null) {
-            active = schema.isUseActiveEntitiesByDefault();
-        }
-        active |= !toOneRelations.isEmpty() || !toManyRelations.isEmpty();
-
-        if (hasKeepSections == null) {
-            hasKeepSections = schema.isHasKeepSectionsByDefault();
-        }
-
         init2ndPassIndexNamesWithDefaults();
 
         for (ContentProvider contentProvider : contentProviders) {
@@ -597,7 +479,6 @@ public class Entity implements HasParsedElement {
     protected void init2ndPassNamesWithDefaults() {
         if (dbName == null) {
             dbName = TextUtil.dbName(className);
-            nonDefaultDbName = false;
         }
 
         if (classNameDao == null) {
@@ -698,19 +579,13 @@ public class Entity implements HasParsedElement {
     }
 
     private void init3rdPassAdditionalImports() {
-        if (active && !javaPackage.equals(javaPackageDao)) {
-            additionalImportsEntity.add(javaPackageDao + "." + classNameDao);
-        }
-
         for (ToOne toOne : toOneRelations) {
             Entity targetEntity = toOne.getTargetEntity();
-            checkAdditionalImportsEntityTargetEntity(targetEntity);
             checkAdditionalImportsDaoTargetEntity(targetEntity);
         }
 
         for (ToManyBase toMany : toManyRelations) {
             Entity targetEntity = toMany.getTargetEntity();
-            checkAdditionalImportsEntityTargetEntity(targetEntity);
             checkAdditionalImportsDaoTargetEntity(targetEntity);
         }
 
@@ -718,9 +593,6 @@ public class Entity implements HasParsedElement {
             String customType = property.getCustomType();
             if (customType != null) {
                 String pack = TextUtil.getPackageFromFullyQualified(customType);
-                if (pack != null && !pack.equals(javaPackage)) {
-                    additionalImportsEntity.add(customType);
-                }
                 if (pack != null && !pack.equals(javaPackageDao)) {
                     additionalImportsDao.add(customType);
                 }
@@ -734,15 +606,6 @@ public class Entity implements HasParsedElement {
                 }
             }
 
-        }
-    }
-
-    private void checkAdditionalImportsEntityTargetEntity(Entity targetEntity) {
-        if (!targetEntity.getJavaPackage().equals(javaPackage)) {
-            additionalImportsEntity.add(targetEntity.getJavaPackage() + "." + targetEntity.getClassName());
-        }
-        if (!targetEntity.getJavaPackageDao().equals(javaPackage)) {
-            additionalImportsEntity.add(targetEntity.getJavaPackageDao() + "." + targetEntity.getClassNameDao());
         }
     }
 
@@ -760,10 +623,6 @@ public class Entity implements HasParsedElement {
 
     public List<Index> getMultiIndexes() {
         return multiIndexes;
-    }
-
-    public boolean isNonDefaultDbName() {
-        return nonDefaultDbName;
     }
 
     public Object getParsedElement() {
@@ -801,7 +660,7 @@ public class Entity implements HasParsedElement {
         int flagsModelFile = 0;
         Set<String> flagsNames = new LinkedHashSet<>(); // keep in insert-order
 
-        if (!isConstructors()) {
+        if (!hasAllArgsConstructor()) {
             flags |= EntityFlags.USE_NO_ARG_CONSTRUCTOR;
             flagsNames.add("io.objectbox.model.EntityFlags.USE_NO_ARG_CONSTRUCTOR");
         }

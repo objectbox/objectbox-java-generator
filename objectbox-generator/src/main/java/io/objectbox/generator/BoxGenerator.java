@@ -18,8 +18,6 @@
 
 package io.objectbox.generator;
 
-import org.greenrobot.essentials.io.FileUtils;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
@@ -28,10 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.annotation.processing.Filer;
 
 import freemarker.template.Configuration;
 import freemarker.template.Template;
@@ -49,10 +43,6 @@ public class BoxGenerator {
     public static final String MYOBJECTBOX_FTL = "myobjectbox.ftl";
     public static final String BASE_PACKAGE_PATH = "/io/objectbox/generator/";
 
-    private final Pattern patternKeepIncludes;
-    private final Pattern patternKeepFields;
-    private final Pattern patternKeepMethods;
-
     private final Template templateMyObjectBox;
     private final Template templateCursor;
     private final Template templateDao;
@@ -65,10 +55,6 @@ public class BoxGenerator {
         log("ObjectBox Generator");
         log("Copyright 2017-2018 ObjectBox Ltd, objectbox.io. Licensed under GPL V3.");
         log("This program comes with ABSOLUTELY NO WARRANTY");
-
-        patternKeepIncludes = compilePattern("INCLUDES");
-        patternKeepFields = compilePattern("FIELDS");
-        patternKeepMethods = compilePattern("METHODS");
 
         Configuration config = getConfiguration(MYOBJECTBOX_FTL);
         templateMyObjectBox = config.getTemplate(MYOBJECTBOX_FTL);
@@ -103,12 +89,6 @@ public class BoxGenerator {
             }
         }
         return config;
-    }
-
-    private Pattern compilePattern(String sectionName) {
-        int flags = Pattern.DOTALL | Pattern.MULTILINE;
-        return Pattern.compile(".*^\\s*?//\\s*?KEEP " + sectionName + ".*?\n(.*?)^\\s*// KEEP " + sectionName
-                + " END.*?\n", flags);
     }
 
     /** Generates all classes and other artifacts for the given job. Assumes the given schema is finished. */
@@ -320,14 +300,6 @@ public class BoxGenerator {
         }
         String filePath = javaPackage + "." + fileName + fileExtension;
         try {
-            File file = output.getFileOrNull(javaPackage, fileName, fileExtension);
-            if (file != null) {
-                filePath = file.getCanonicalPath();
-                if (entity != null && entity.getHasKeepSections()) {
-                    checkKeepSections(file, root);
-                }
-            }
-
             try (Writer writer = output.createWriter(javaPackage, fileName, fileExtension)) {
                 template.process(root, writer);
                 writer.flush();
@@ -337,32 +309,6 @@ public class BoxGenerator {
             System.err.println("Data map for template: " + root);
             System.err.println("Error while generating " + filePath);
             throw ex;
-        }
-    }
-
-    /** Not really useful at the moment, future version may drop this completely. */
-    private void checkKeepSections(File file, Map<String, Object> root) {
-        if (file.exists()) {
-            try {
-                String contents = FileUtils.readUtf8(file);
-                Matcher matcher;
-                matcher = patternKeepIncludes.matcher(contents);
-                if (matcher.matches()) {
-                    root.put("keepIncludes", matcher.group(1));
-                }
-
-                matcher = patternKeepFields.matcher(contents);
-                if (matcher.matches()) {
-                    root.put("keepFields", matcher.group(1));
-                }
-
-                matcher = patternKeepMethods.matcher(contents);
-                if (matcher.matches()) {
-                    root.put("keepMethods", matcher.group(1));
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }
     }
 

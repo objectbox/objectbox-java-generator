@@ -94,7 +94,7 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
         assertThat(schemaEntity.className).isEqualTo(className)
         val dbName = "A"
         assertThat(schemaEntity.dbName).isEqualTo(dbName)
-        assertThat(schemaEntity.isConstructors).isFalse()
+        assertThat(schemaEntity.hasAllArgsConstructor()).isFalse()
 
         // assert index
         assertThat(schemaEntity.indexes).hasSize(2) /* @Index and ToOne */
@@ -375,7 +375,7 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
 
         val schema = environment.schema
         val child = schema.entities.single { it.className == childName }
-        assertThat(child.isConstructors).isTrue()
+        assertThat(child.hasAllArgsConstructor()).isTrue()
     }
 
     @Test
@@ -398,7 +398,7 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
         // assert entity
         val entity = schema.entities[0]
         assertThat(entity.className).isEqualTo(entityName)
-        assertThat(entity.isConstructors).isTrue()
+        assertThat(entity.hasAllArgsConstructor()).isTrue()
 
         // assert properties
         for (prop in entity.properties) {

@@ -94,7 +94,7 @@ Do ToOnes before because we need the target's ID before the put.
 Do ToMany after because the targets entities need our ID.
 -->
 ${propertyCollector}
-<#if entity.active && !entity.protobuf>
+<#if entity.hasRelations() && !entity.protobuf>
     <#if entity.hasBoxStoreField>
         entity.__boxStore = boxStoreForEntities;
     <#else>
@@ -107,7 +107,7 @@ ${propertyCollector}
         return __assignedId;
     }
 
-<#if entity.active && !entity.hasBoxStoreField>
+<#if entity.hasRelations() && !entity.hasBoxStoreField>
     private void attachEntity(${entity.className} entity) {
         // Transformer will create __boxStore field in entity and init it here:
         // entity.__boxStore = boxStoreForEntities;

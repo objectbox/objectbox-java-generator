@@ -39,8 +39,6 @@ public class Schema {
     private String defaultJavaPackageTest;
     private final List<Entity> entities;
     private Map<PropertyType, Mapping> propertyTypeMapping;
-    private boolean hasKeepSectionsByDefault;
-    private boolean useActiveEntitiesByDefault;
     private final String name;
     private final String prefix;
     private IdUid lastEntityId;
@@ -59,14 +57,6 @@ public class Schema {
 
     public Schema(int version, String defaultJavaPackage) {
         this(DEFAULT_NAME, version, defaultJavaPackage);
-    }
-
-    public void enableKeepSectionsByDefault() {
-        hasKeepSectionsByDefault = true;
-    }
-
-    public void enableActiveEntitiesByDefault() {
-        useActiveEntitiesByDefault = true;
     }
 
     private static class Mapping {
@@ -180,14 +170,6 @@ public class Schema {
 
     public List<Entity> getEntities() {
         return entities;
-    }
-
-    public boolean isHasKeepSectionsByDefault() {
-        return hasKeepSectionsByDefault;
-    }
-
-    public boolean isUseActiveEntitiesByDefault() {
-        return useActiveEntitiesByDefault;
     }
 
     public String getName() {
