@@ -26,6 +26,7 @@ import java.io.File;
 
 import io.objectbox.generator.model.Entity;
 import io.objectbox.generator.model.Property;
+import io.objectbox.generator.model.PropertyType;
 import io.objectbox.generator.model.Schema;
 
 import static org.junit.Assert.*;
@@ -38,8 +39,8 @@ public class SimpleBoxGeneratorTest {
         Schema schema = new Schema(1, "io.objectbox.test.minimalbox");
         Entity miniEntity = schema.addEntity("MiniBox");
         miniEntity.addIdProperty();
-        miniEntity.addIntProperty("count").index();
-        miniEntity.addIntProperty("dummy").notNull();
+        miniEntity.addProperty(PropertyType.Int, "count").index();
+        miniEntity.addProperty(PropertyType.Int, "dummy").notNull();
         assertEquals(1, schema.getEntities().size());
         assertEquals(3, miniEntity.getProperties().size());
 
@@ -98,11 +99,11 @@ public class SimpleBoxGeneratorTest {
         Schema schema = new Schema(1, "io.objectbox.test.multicollect");
         Entity multiCollectEntity = schema.addEntity("MultiCollectBox");
         multiCollectEntity.addIdProperty();
-        multiCollectEntity.addFloatProperty("foo").index();
-        multiCollectEntity.addFloatProperty("bar").notNull();
-        multiCollectEntity.addFloatProperty("box");
-        multiCollectEntity.addFloatProperty("in2ndCall");
-        multiCollectEntity.addFloatProperty("in2ndCall2");
+        multiCollectEntity.addProperty(PropertyType.Float, "foo").index();
+        multiCollectEntity.addProperty(PropertyType.Float, "bar").notNull();
+        multiCollectEntity.addProperty(PropertyType.Float, "box");
+        multiCollectEntity.addProperty(PropertyType.Float, "in2ndCall");
+        multiCollectEntity.addProperty(PropertyType.Float, "in2ndCall2");
 
         File outputDir = new File("build/test-out");
         outputDir.mkdirs();
@@ -125,11 +126,11 @@ public class SimpleBoxGeneratorTest {
         Schema schema = new Schema(1, "io.objectbox.test.multicollect");
         Entity multiCollectEntity = schema.addEntity("MultiCollectBox_StringsBeforePrimitives");
         multiCollectEntity.addIdProperty();
-        multiCollectEntity.addStringProperty("string1");
-        multiCollectEntity.addStringProperty("string2");
-        multiCollectEntity.addStringProperty("string3");
-        multiCollectEntity.addStringProperty("string4");
-        multiCollectEntity.addIntProperty("primitive");
+        multiCollectEntity.addProperty(PropertyType.String, "string1");
+        multiCollectEntity.addProperty(PropertyType.String, "string2");
+        multiCollectEntity.addProperty(PropertyType.String, "string3");
+        multiCollectEntity.addProperty(PropertyType.String, "string4");
+        multiCollectEntity.addProperty(PropertyType.Int, "primitive");
 
         File outputDir = new File("build/test-out");
         outputDir.mkdirs();
@@ -197,7 +198,7 @@ public class SimpleBoxGeneratorTest {
         Entity order = schema.addEntity("Order");
         order.setModelId(2).setModelUid(1003L).setLastPropertyId(new IdUid(2, 502));
         order.addIdProperty().modelId(new IdUid(1, 1004)).getProperty();
-        Property customerId = order.addLongProperty("customerId").modelId(new IdUid(2, 1005))
+        Property customerId = order.addProperty(PropertyType.Long, "customerId").modelId(new IdUid(2, 1005))
                 .modelIndexId(new IdUid(1, 1100)).getProperty();
         order.addToOne(customer, customerId, "customer", null, false);
 
@@ -234,10 +235,10 @@ public class SimpleBoxGeneratorTest {
         Schema schema = new Schema(1, "io.objectbox.test");
         Entity entity = schema.addEntity("Flaty");
         entity.addIdProperty();
-        entity.addIntProperty("inty");
-        entity.addStringProperty("stringy");
-        entity.addByteArrayProperty("bytearrayly");
-        entity.addDateProperty("datey");
+        entity.addProperty(PropertyType.Int, "inty");
+        entity.addProperty(PropertyType.String, "stringy");
+        entity.addProperty(PropertyType.ByteArray, "bytearrayly");
+        entity.addProperty(PropertyType.Date, "datey");
 
         File outputDir = new File("build/test-out");
         outputDir.mkdirs();

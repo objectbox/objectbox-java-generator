@@ -140,53 +140,6 @@ public class Entity implements HasParsedElement {
         return this;
     }
 
-    public Property.PropertyBuilder addBooleanProperty(String propertyName) throws ModelException {
-        return addProperty(PropertyType.Boolean, propertyName);
-    }
-
-    public Property.PropertyBuilder addByteProperty(String propertyName) throws ModelException {
-        return addProperty(PropertyType.Byte, propertyName);
-    }
-
-    public Property.PropertyBuilder addShortProperty(String propertyName) throws ModelException {
-        return addProperty(PropertyType.Short, propertyName);
-    }
-
-    public Property.PropertyBuilder addCharProperty(String propertyName) throws ModelException {
-        return addProperty(PropertyType.Char, propertyName);
-    }
-
-    public Property.PropertyBuilder addIntProperty(String propertyName) throws ModelException {
-        return addProperty(PropertyType.Int, propertyName);
-    }
-
-    public Property.PropertyBuilder addLongProperty(String propertyName) throws ModelException {
-        return addProperty(PropertyType.Long, propertyName);
-    }
-
-    public Property.PropertyBuilder addFloatProperty(String propertyName) throws ModelException {
-        return addProperty(PropertyType.Float, propertyName);
-    }
-
-    public Property.PropertyBuilder addDoubleProperty(String propertyName) throws ModelException {
-        return addProperty(PropertyType.Double, propertyName);
-    }
-
-    public Property.PropertyBuilder addByteArrayProperty(String propertyName) throws ModelException {
-        return addProperty(PropertyType.ByteArray, propertyName);
-    }
-
-    public Property.PropertyBuilder addStringProperty(String propertyName) throws ModelException {
-        return addProperty(PropertyType.String, propertyName);
-    }
-
-    public Property.PropertyBuilder addDateProperty(String propertyName) throws ModelException {
-        return addProperty(PropertyType.Date, propertyName);
-    }
-
-    /**
-     * @throws ModelException if this entity already has a property or relation with {@code propertyName}.
-     */
     public Property.PropertyBuilder addProperty(PropertyType propertyType, String propertyName) throws ModelException {
         Property.PropertyBuilder builder = new Property.PropertyBuilder(schema, this, propertyType, propertyName);
         Property property = builder.getProperty();
