@@ -27,8 +27,8 @@ public class ToMany extends ToManyBase {
     private ToOne backlinkToOne;
 
     public ToMany(Entity sourceEntity, Property[] sourceProperties, Entity targetEntity,
-            Property[] targetProperties) {
-        super(sourceEntity, targetEntity);
+            Property[] targetProperties, String name) {
+        super(sourceEntity, targetEntity, name);
         this.sourceProperties = sourceProperties;
         this.targetProperties = targetProperties;
     }

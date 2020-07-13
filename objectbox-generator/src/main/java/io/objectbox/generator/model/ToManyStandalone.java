@@ -27,8 +27,8 @@ public class ToManyStandalone extends ToManyBase {
     private IdUid modelId;
     private String dbName;
 
-    public ToManyStandalone(Entity sourceEntity, Entity targetEntity) {
-        super(sourceEntity, targetEntity);
+    public ToManyStandalone(Entity sourceEntity, Entity targetEntity, String name) {
+        super(sourceEntity, targetEntity, name);
     }
 
     public IdUid getModelId() {
@@ -49,8 +49,8 @@ public class ToManyStandalone extends ToManyBase {
 
     void init2ndPass() {
         super.init2ndPass();
-        if (dbName == null) {
-            dbName = TextUtil.dbName(name);
+        if (getDbName() == null) {
+            setDbName(getName());
         }
     }
 

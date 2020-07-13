@@ -142,8 +142,8 @@ public class Entity implements HasParsedElement {
     public ToMany addToManyByToOneBacklink(Entity entityWithToOne, Property targetIdProperty, String name)
             throws ModelException {
         Property[] targetProperties = {targetIdProperty};
-        ToMany toMany = new ToMany(this, null, entityWithToOne, targetProperties);
-        setNameAndAddToMany(toMany, name);
+        ToMany toMany = new ToMany(this, null, entityWithToOne, targetProperties, name);
+        trackNameAndaddToMany(toMany);
         return toMany;
     }
 
@@ -155,8 +155,8 @@ public class Entity implements HasParsedElement {
      */
     public ToManyToMany addToManyByToManyBacklink(Entity entityWithToMany, String linkedToManyName, String name)
             throws ModelException {
-        ToManyToMany toMany = new ToManyToMany(this, entityWithToMany, linkedToManyName);
-        setNameAndAddToMany(toMany, name);
+        ToManyToMany toMany = new ToManyToMany(this, entityWithToMany, linkedToManyName, name);
+        trackNameAndaddToMany(toMany);
         return toMany;
     }
 
@@ -166,14 +166,13 @@ public class Entity implements HasParsedElement {
      * @throws ModelException if this entity already has a property or relation with {@code name}.
      */
     public ToManyStandalone addToMany(Entity target, String name) throws ModelException {
-        ToManyStandalone toMany = new ToManyStandalone(this, target);
-        setNameAndAddToMany(toMany, name);
+        ToManyStandalone toMany = new ToManyStandalone(this, target, name);
+        trackNameAndaddToMany(toMany);
         return toMany;
     }
 
-    private void setNameAndAddToMany(ToManyBase toMany, String name) throws ModelException {
-        toMany.setName(name);
-        trackUniqueName(names, name, toMany);
+    private void trackNameAndaddToMany(ToManyBase toMany) throws ModelException {
+        trackUniqueName(names, toMany.getName(), toMany);
         toManyRelations.add(toMany);
         toMany.targetEntity.incomingToManyRelations.add(toMany);
     }

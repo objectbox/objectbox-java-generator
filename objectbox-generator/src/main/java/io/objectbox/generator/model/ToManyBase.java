@@ -22,15 +22,23 @@ import io.objectbox.generator.TextUtil;
 
 /** Base class for to-many relationship from source entities to target entities. */
 public abstract class ToManyBase implements HasParsedElement {
-    protected String name;
+    private final String name;
     protected final Entity sourceEntity;
     protected final Entity targetEntity;
     private boolean fieldAccessible;
     private Object parsedElement;
 
-    public ToManyBase(Entity sourceEntity, Entity targetEntity) {
+    /**
+     * @param name The name of the relation, which is used as the property name in the entity
+     *             (the source entity owning the to-many relationship).
+     */
+    ToManyBase(Entity sourceEntity, Entity targetEntity, String name) {
+        if (name == null) {
+            throw new IllegalArgumentException("name must not be null");
+        }
         this.sourceEntity = sourceEntity;
         this.targetEntity = targetEntity;
+        this.name = name;
     }
 
     public Entity getSourceEntity() {
@@ -43,14 +51,6 @@ public abstract class ToManyBase implements HasParsedElement {
 
     public String getName() {
         return name;
-    }
-
-    /**
-     * Sets the name of the relation, which is used as the property name in the entity (the source entity owning the
-     * to-many relationship).
-     */
-    public void setName(String name) {
-        this.name = name;
     }
 
     public boolean isFieldAccessible() {
@@ -76,11 +76,6 @@ public abstract class ToManyBase implements HasParsedElement {
     }
 
     void init2ndPass() {
-        if (name == null) {
-            char[] nameCharArray = targetEntity.getClassName().toCharArray();
-            nameCharArray[0] = Character.toLowerCase(nameCharArray[0]);
-            name = new String(nameCharArray) + "List";
-        }
     }
 
     void init3rdPass() {

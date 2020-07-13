@@ -26,8 +26,8 @@ public class ToManyToMany extends ToManyBase {
     private final String linkedToManyName; // the name of the ToMany this ToMany is supposed to link to
     private ToManyStandalone backlinkToMany; // the ToMany this ToMany is linked to
 
-    public ToManyToMany(Entity sourceEntity, Entity targetEntity, String linkedToManyName) {
-        super(sourceEntity, targetEntity);
+    public ToManyToMany(Entity sourceEntity, Entity targetEntity, String linkedToManyName, String name) {
+        super(sourceEntity, targetEntity, name);
         this.linkedToManyName = linkedToManyName;
     }
 
