@@ -408,7 +408,7 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
 
     private fun syncRelation(existingEntity: Entity?, schemaEntity: io.objectbox.generator.model.Entity,
                              schemaRelation: ToManyStandalone): Relation {
-        val name = schemaRelation.dbName ?: schemaRelation.name
+        val name = schemaRelation.dbName
         val relationUid = schemaRelation.modelId?.uid
         val printUid = relationUid == -1L
         var existingRelation: Relation? = null

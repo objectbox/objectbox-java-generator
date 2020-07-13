@@ -165,8 +165,8 @@ public class Entity implements HasParsedElement {
      *
      * @throws ModelException if this entity already has a property or relation with {@code name}.
      */
-    public ToManyStandalone addToMany(Entity target, String name) throws ModelException {
-        ToManyStandalone toMany = new ToManyStandalone(this, target, name);
+    public ToManyStandalone addToMany(ToManyStandalone toMany, Entity target) throws ModelException {
+        toMany.setSourceAndTargetEntity(this, target);
         trackNameAndaddToMany(toMany);
         return toMany;
     }

@@ -32,9 +32,9 @@ import io.objectbox.generator.model.PropertyType
 import io.objectbox.generator.model.Schema
 import io.objectbox.generator.model.ToMany
 import io.objectbox.generator.model.ToManyBase
+import io.objectbox.generator.model.ToManyByBacklink
 import io.objectbox.generator.model.ToManyStandalone
 import io.objectbox.generator.model.ToManyToMany
-import io.objectbox.model.Model
 import javax.lang.model.element.Modifier
 import javax.lang.model.element.VariableElement
 import javax.lang.model.type.DeclaredType
@@ -49,23 +49,13 @@ data class ToOneRelation(
         val variableFieldAccessible: Boolean
 )
 
-data class ToManyRelation(
-        val propertyName: String,
-        val targetEntityName: String,
-        val isBacklink: Boolean,
-        var backlinkTo: String? = null,
-        val fieldAccessible: Boolean,
-        val nameInDb: String?,
-        val uid: Long? = null
-)
-
 /**
  * Parses and keeps records of to-one and to-many relations of all parsed entities.
  */
 class Relations(private val messages: Messages) {
 
     private val toOnesByEntity: MutableMap<Entity, MutableList<ToOneRelation>> = mutableMapOf()
-    private val toManysByEntity: MutableMap<Entity, MutableList<ToManyRelation>> = mutableMapOf()
+    private val toManysByEntity: MutableMap<Entity, MutableList<ToManyBase>> = mutableMapOf()
 
     fun hasRelations(entity: Entity) =
             (toOnesByEntity[entity]?.isNotEmpty() ?: false) || (toManysByEntity[entity]?.isNotEmpty() ?: false)
@@ -89,20 +79,28 @@ class Relations(private val messages: Messages) {
 
         val backlinkAnnotation = field.getAnnotation(Backlink::class.java)
         val isBacklink = backlinkAnnotation != null
+        val isFieldAccessible = !field.modifiers.contains(Modifier.PRIVATE)
         val nameInDb = field.getAnnotation(NameInDb::class.java)?.value
         val uid = field.getAnnotation(Uid::class.java)?.value
         if (isBacklink && nameInDb != null) messages.error("Backlinks are not allowed to have @NameInDb")
         if (isBacklink && uid != null) messages.error("Backlinks are not allowed to have @Uid")
 
-        val toMany = ToManyRelation(
-                propertyName = field.simpleName.toString(),
+        val toMany = if (isBacklink) {
+            ToManyByBacklink(
+                name = field.simpleName.toString(),
                 targetEntityName = targetEntityName,
-                isBacklink = isBacklink,
-                backlinkTo = backlinkAnnotation?.to?.nullIfBlank(),
-                fieldAccessible = !field.modifiers.contains(Modifier.PRIVATE),
-                nameInDb = nameInDb,
+                targetPropertyName = backlinkAnnotation?.to?.nullIfBlank(),
+                isFieldAccessible = isFieldAccessible
+            )
+        } else {
+            ToManyStandalone(
+                name = field.simpleName.toString(),
+                dbName = nameInDb,
+                targetEntityName = targetEntityName,
+                isFieldAccessible = isFieldAccessible,
                 uid = uid.let { if (it == 0L) -1L else it }
-        )
+            )
+        }
 
         collectToMany(entityModel, toMany)
     }
@@ -138,7 +136,7 @@ class Relations(private val messages: Messages) {
         toOnes.add(toOne)
     }
 
-    private fun collectToMany(entity: Entity, toMany: ToManyRelation) {
+    private fun collectToMany(entity: Entity, toMany: ToManyBase) {
         var toManys = toManysByEntity[entity]
         if (toManys == null) {
             toManys = mutableListOf()
@@ -207,7 +205,7 @@ class Relations(private val messages: Messages) {
 
         // then resolve standalone to-many relations
         for ((entity, toManys) in toManysByEntity) {
-            toManys.filter { !it.isBacklink }.forEach { toMany ->
+            toManys.filterIsInstance<ToManyStandalone>().forEach { toMany ->
                 if (!resolveToMany(schema, entity, toMany)) {
                     return false // resolving standalone to-many failed
                 }
@@ -216,7 +214,7 @@ class Relations(private val messages: Messages) {
 
         // then resolve backlink to-many relations which depends on to-one and standalone to-many relations being resolved
         for ((entity, toManys) in toManysByEntity) {
-            toManys.filter { it.isBacklink }.forEach { toMany ->
+            toManys.filterIsInstance<ToManyByBacklink>().forEach { toMany ->
                 if (!resolveToMany(schema, entity, toMany)) {
                     return false // resolving backlink to-many failed
                 }
@@ -257,8 +255,8 @@ class Relations(private val messages: Messages) {
         }
     }
 
-    private fun addBacklinkToManyOrRaiseError(entityWithBacklink: Entity, targetEntity: Entity, backlinkToMany: ToManyRelation): ToManyBase? {
-        val backlinkTo = backlinkToMany.backlinkTo
+    private fun addToManyByBacklinkOrRaiseError(entityWithBacklink: Entity, targetEntity: Entity, backlinkToMany: ToManyByBacklink): ToManyBase? {
+        val backlinkTo = backlinkToMany.targetPropertyName
         if (backlinkTo.isNullOrEmpty()) {
             // no explicit target name: just ensure a single to-one or to-many relation, then use that
             val targetToOne = targetEntity.toOneRelations.filter {
@@ -277,12 +275,12 @@ class Relations(private val messages: Messages) {
                 entityWithBacklink.addBacklinkToToManyIfNoneExists(backlinkToMany, targetEntity, targetToManyName)
             } else if (targetToOne.isEmpty() && targetToMany.isEmpty()) {
                 messages.error("Illegal @Backlink: no (to-one or to-many) relation found in '${targetEntity.className}'. " +
-                        "Required by backlink to-many relation '${backlinkToMany.propertyName}' in '${entityWithBacklink.className}'.",
+                        "Required by backlink to-many relation '${backlinkToMany.name}' in '${entityWithBacklink.className}'.",
                         entityWithBacklink)
                 null
             } else {
                 messages.error("Set name of one to-one or to-many relation of '${targetEntity.className}' as @Backlink 'to' " +
-                        "value to create the to-many relation '${backlinkToMany.propertyName}' in '${entityWithBacklink.className}'.",
+                        "value to create the to-many relation '${backlinkToMany.name}' in '${entityWithBacklink.className}'.",
                         entityWithBacklink)
                 null
             }
@@ -317,7 +315,7 @@ class Relations(private val messages: Messages) {
         }
     }
 
-    private fun Entity.addBacklinkToToOneIfNoneExists(backlinkToMany: ToManyRelation, targetEntity: Entity,
+    private fun Entity.addBacklinkToToOneIfNoneExists(backlinkToMany: ToManyByBacklink, targetEntity: Entity,
                                                       targetIdProperty: Property): ToManyBase? {
         // check incoming to-many relations if they use the target property of the to-one
         val existingBacklink = targetEntity.incomingToManyRelations.find { toManyBase ->
@@ -330,10 +328,10 @@ class Relations(private val messages: Messages) {
             return null // there is already a backlink to this to-one
         }
 
-        return addToManyByToOneBacklink(targetEntity, targetIdProperty, backlinkToMany.propertyName)
+        return addToManyByToOneBacklink(targetEntity, targetIdProperty, backlinkToMany.name)
     }
 
-    private fun Entity.addBacklinkToToManyIfNoneExists(backlinkToMany: ToManyRelation, targetEntity: Entity,
+    private fun Entity.addBacklinkToToManyIfNoneExists(backlinkToMany: ToManyByBacklink, targetEntity: Entity,
                                                        targetToManyName: String): ToManyBase? {
         // check incoming to-many relations if they use the target property of the to-one
         val existingBacklink = targetEntity.incomingToManyRelations.find {
@@ -344,35 +342,34 @@ class Relations(private val messages: Messages) {
             return null // there is already a backlink to this to-many
         }
 
-        return addToManyByToManyBacklink(targetEntity, targetToManyName, backlinkToMany.propertyName)
+        return addToManyByToManyBacklink(targetEntity, targetToManyName, backlinkToMany.name)
     }
 
-    private fun errorOnlyOneBacklinkAllowed(backlinkEntity: Entity, backlinkToMany: ToManyRelation) {
-        messages.error("'${backlinkEntity.className}.${backlinkToMany.propertyName}' " +
+    private fun errorOnlyOneBacklinkAllowed(backlinkEntity: Entity, backlinkToMany: ToManyByBacklink) {
+        messages.error("'${backlinkEntity.className}.${backlinkToMany.name}' " +
                 "Only one @Backlink per relation allowed. Remove all but one @Backlink.")
     }
 
-    private fun resolveToMany(schema: Schema, entity: Entity, toMany: ToManyRelation): Boolean {
+    private fun resolveToMany(schema: Schema, entity: Entity, toMany: ToManyBase): Boolean {
         val targetEntity = findTargetEntityOrRaiseError(schema, toMany.targetEntityName, entity) ?: return false
 
-        val toManyModel: ToManyBase
         try {
-            if (toMany.isBacklink) {
-                // TODO ut why not directly add the linked to ToManyStandalone?
-                toManyModel = addBacklinkToManyOrRaiseError(entity, targetEntity, toMany) ?: return false
-            } else {
-                val standalone = entity.addToMany(targetEntity, toMany.propertyName)
-                if (toMany.uid != null) standalone.modelId = IdUid(0, toMany.uid)
-                standalone.dbName = toMany.nameInDb
-                toManyModel = standalone
+            return when (toMany) {
+                is ToManyByBacklink -> {
+                    // TODO ut why not directly add the linked to ToManyStandalone?
+                    val addedToMany = addToManyByBacklinkOrRaiseError(entity, targetEntity, toMany)
+                    addedToMany != null
+                }
+                is ToManyStandalone -> {
+                    entity.addToMany(toMany, targetEntity)
+                    true
+                }
+                else -> false
             }
         } catch (e: Exception) {
             messages.error("Could not add ToMany relation: ${e.message}")
             if (e is ModelException) return false else throw e
         }
-
-        toManyModel.isFieldAccessible = toMany.fieldAccessible
-        return true
     }
 
 }

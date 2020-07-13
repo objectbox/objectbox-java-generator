@@ -550,7 +550,7 @@ class RelationsTest : BaseProcessorTest() {
         assertEquals(1, entity.toManyRelations.size)
         val toMany = entity.toManyRelations[0] as ToManyStandalone
         assertEquals("Hoolaloop", toMany.dbName)
-        assertEquals(420000000L, toMany.modelId.uid)
+        assertEquals(420000000L, toMany.modelId!!.uid)
 
         assertToManyStandaloneModel(environment, parentName, "Hoolaloop")
     }

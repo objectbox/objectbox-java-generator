@@ -23,6 +23,7 @@ import io.objectbox.generator.IdUid
 import io.objectbox.generator.model.Entity
 import io.objectbox.generator.model.PropertyType
 import io.objectbox.generator.model.Schema
+import io.objectbox.generator.model.ToManyStandalone
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
@@ -486,7 +487,15 @@ class IdSyncTest {
      * Adds to-many relation to itself.
      */
     private fun Entity.addTestToMany(name: String): Entity {
-        addToMany(this, name)
+        addToMany(
+            ToManyStandalone(
+                name = name,
+                dbName = null,
+                targetEntityName = this.className,
+                isFieldAccessible = true,
+                uid = null
+            ), this
+        )
         return this
     }
 
