@@ -23,26 +23,17 @@ import io.objectbox.generator.TextUtil;
 /** Base class for to-many relationship from source entities to target entities. */
 public abstract class ToManyBase implements HasParsedElement {
     private final String name;
-    private String targetEntityName;
+    private final String targetEntityName;
+    private final boolean fieldAccessible;
 
-    protected Entity sourceEntity;
-    protected Entity targetEntity;
-    private boolean fieldAccessible;
+    private Entity sourceEntity;
+    private Entity targetEntity;
     private Object parsedElement;
 
     /**
      * @param name The name of the relation, which is used as the property name in the entity
      *             (the source entity owning the to-many relationship).
      */
-    ToManyBase(Entity sourceEntity, Entity targetEntity, String name) {
-        if (name == null) {
-            throw new IllegalArgumentException("name must not be null");
-        }
-        this.sourceEntity = sourceEntity;
-        this.targetEntity = targetEntity;
-        this.name = name;
-    }
-
     ToManyBase(String name, String targetEntityName, boolean isFieldAccessible) {
         if (name == null) {
             throw new IllegalArgumentException("name must not be null");
@@ -90,10 +81,10 @@ public abstract class ToManyBase implements HasParsedElement {
         this.parsedElement = parsedElement;
     }
 
-    void init2ndPass() {
-    }
-
     void init3rdPass() {
+        if (sourceEntity == null || targetEntity == null) {
+            throw new IllegalStateException("Source and target entity are not set for " + this + ".");
+        }
     }
 
     @Override

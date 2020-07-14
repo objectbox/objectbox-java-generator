@@ -8,9 +8,8 @@ import io.objectbox.generator.model.Entity
 import io.objectbox.generator.model.Property
 import io.objectbox.generator.model.PropertyType
 import io.objectbox.generator.model.Schema
-import io.objectbox.generator.model.ToMany
+import io.objectbox.generator.model.ToManyByBacklink
 import io.objectbox.generator.model.ToManyStandalone
-import io.objectbox.generator.model.ToManyToMany
 import org.junit.Assert.assertEquals
 import org.junit.Assert.fail
 import org.junit.Test
@@ -312,10 +311,11 @@ class RelationsTest : BaseProcessorTest() {
                 "sources" -> {
                     assertThat(toManyRelation.sourceEntity).isEqualTo(target)
                     assertThat(toManyRelation.targetEntity).isEqualTo(source)
-                    assertThat(toManyRelation is ToManyToMany)
-                    val backlinkToMany = (toManyRelation as ToManyToMany).backlinkToMany
-                    assertThat(backlinkToMany).isNotNull()
-                    assertThat(backlinkToMany.name).isEqualTo("targets")
+                    assertThat(toManyRelation is ToManyByBacklink)
+                    val toManyByBacklink = toManyRelation as ToManyByBacklink
+                    assertThat(toManyByBacklink.targetToOne).isNull()
+                    assertThat(toManyByBacklink.targetToMany).isNotNull()
+                    assertThat(toManyByBacklink.targetToMany!!.name).isEqualTo("targets")
                 }
                 else -> fail("Found stray to-many relation '${toManyRelation.name}' in schema.")
             }
@@ -356,7 +356,11 @@ class RelationsTest : BaseProcessorTest() {
         assertThat(source.incomingToManyRelations).isNotEmpty()
         for (toManyRelation in source.incomingToManyRelations) {
             when (toManyRelation.name) {
-                "sources" -> assertThat(toManyRelation is ToManyToMany)
+                "sources" -> {
+                    assertThat(toManyRelation is ToManyByBacklink)
+                    assertThat((toManyRelation as ToManyByBacklink).targetToOne).isNull()
+                    assertThat(toManyRelation.targetToMany).isNotNull()
+                }
                 else -> fail("Found stray incoming to-many relation '${toManyRelation.name}' in schema.")
             }
         }
@@ -459,24 +463,30 @@ class RelationsTest : BaseProcessorTest() {
                 "sources" -> {
                     assertThat(toManyRelation.sourceEntity).isEqualTo(target)
                     assertThat(toManyRelation.targetEntity).isEqualTo(source)
-                    assertThat(toManyRelation is ToMany)
-                    val toMany = toManyRelation as ToMany
-                    assertThat(toMany.backlinkToOne.name).isEqualTo("target")
-                    assertThat(toMany.targetProperties).hasLength(1)
-                    assertThat(toMany.targetProperties[0]).isEqualTo(toOneTargetProperty)
+                    assertThat(toManyRelation is ToManyByBacklink)
+                    val toManyByBacklink = toManyRelation as ToManyByBacklink
+                    assertThat(toManyByBacklink.targetToMany).isNull()
+                    assertThat(toManyByBacklink.targetToOne).isNotNull()
+                    assertThat(toManyByBacklink.targetToOne!!.name).isEqualTo("target")
+                    assertThat(toManyByBacklink.targetToOne!!.targetIdProperty).isEqualTo(toOneTargetProperty)
                     // generator takes care of populating sourceProperties if we do not set them, so do not assert here
                 }
                 "sourcesOther" -> {
                     assertThat(toManyRelation.sourceEntity).isEqualTo(target)
                     assertThat(toManyRelation.targetEntity).isEqualTo(source)
-                    assertThat(toManyRelation is ToMany)
-                    assertThat((toManyRelation as ToMany).backlinkToOne.name).isEqualTo("targetOther")
+                    assertThat(toManyRelation is ToManyByBacklink)
+                    assertThat((toManyRelation as ToManyByBacklink).targetToMany).isNull()
+                    assertThat(toManyRelation.targetToOne).isNotNull()
+                    assertThat(toManyRelation.targetToOne!!.name).isEqualTo("targetOther")
                 }
                 "sourcesMany" -> {
                     assertThat(toManyRelation.sourceEntity).isEqualTo(target)
                     assertThat(toManyRelation.targetEntity).isEqualTo(source)
-                    assertThat(toManyRelation is ToManyToMany)
-                    assertThat((toManyRelation as ToManyToMany).backlinkToMany.name).isEqualTo("targets")
+                    assertThat(toManyRelation is ToManyByBacklink)
+                    val toManyByBacklink = toManyRelation as ToManyByBacklink
+                    assertThat(toManyByBacklink.targetToOne).isNull()
+                    assertThat(toManyByBacklink.targetToMany).isNotNull()
+                    assertThat(toManyByBacklink.targetToMany!!.name).isEqualTo("targets")
                 }
                 else -> fail("Found stray to-many relation '${toManyRelation.name}' in schema.")
             }
@@ -643,9 +653,9 @@ class RelationsTest : BaseProcessorTest() {
                 "sources" -> {
                     assertThat(toManyRelation.sourceEntity).isEqualTo(parent)
                     assertThat(toManyRelation.targetEntity).isEqualTo(child)
-                    val toMany = toManyRelation as ToMany
-                    assertThat(toMany.targetProperties).hasLength(1)
-                    assertThat(toMany.targetProperties[0]).isEqualTo(prop)
+                    val toMany = toManyRelation as ToManyByBacklink
+                    assertThat(toMany.targetToMany).isNull()
+                    assertThat(toMany.targetToOne!!.targetIdProperty).isEqualTo(prop)
                     // generator takes care of populating sourceProperties if we do not set them, so do not assert here
                 }
                 "sourcesOther" -> {

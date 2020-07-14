@@ -135,27 +135,27 @@ public class Entity implements HasParsedElement {
 
     /**
      * Adds a to-many relation based on a to-one relation ({@link #addToOne}) from another entity to this entity.
-     * The to-one relation is specified by its target ID property in the other entity.
      *
      * @throws ModelException if this entity already has a property or relation with {@code name}.
      */
-    public ToMany addToManyByToOneBacklink(Entity entityWithToOne, Property targetIdProperty, String name)
+    public ToManyByBacklink addToManyByToOneBacklink(ToManyByBacklink toMany, Entity targetEntity, ToOne targetToOne)
             throws ModelException {
-        Property[] targetProperties = {targetIdProperty};
-        ToMany toMany = new ToMany(this, null, entityWithToOne, targetProperties, name);
+        toMany.setSourceAndTargetEntity(this, targetEntity);
+        toMany.setTargetToOne(targetToOne);
         trackNameAndaddToMany(toMany);
         return toMany;
     }
 
     /**
      * Adds a to-many relation based on a (stand-alone) to-many relation ({@link #addToMany}) from another entity
-     * to this entity. The to-many relation is specified using its name in the other entity.
+     * to this entity.
      *
      * @throws ModelException if this entity already has a property or relation with {@code name}.
      */
-    public ToManyToMany addToManyByToManyBacklink(Entity entityWithToMany, String linkedToManyName, String name)
-            throws ModelException {
-        ToManyToMany toMany = new ToManyToMany(this, entityWithToMany, linkedToManyName, name);
+    public ToManyByBacklink addToManyByToManyBacklink(ToManyByBacklink toMany, Entity targetEntity,
+            ToManyStandalone targetToMany) throws ModelException {
+        toMany.setSourceAndTargetEntity(this, targetEntity);
+        toMany.setTargetToMany(targetToMany);
         trackNameAndaddToMany(toMany);
         return toMany;
     }
@@ -174,7 +174,7 @@ public class Entity implements HasParsedElement {
     private void trackNameAndaddToMany(ToManyBase toMany) throws ModelException {
         trackUniqueName(names, toMany.getName(), toMany);
         toManyRelations.add(toMany);
-        toMany.targetEntity.incomingToManyRelations.add(toMany);
+        toMany.getTargetEntity().getIncomingToManyRelations().add(toMany);
     }
 
     /**
@@ -354,16 +354,6 @@ public class Entity implements HasParsedElement {
                 propertiesColumns.add(targetIdProperty);
             }
         }
-
-        for (ToManyBase toMany : toManyRelations) {
-            toMany.init2ndPass();
-            // Source Properties may not be virtual, so we do not need the following code:
-            // for (Property sourceProperty : toMany.getSourceProperties()) {
-            // if (!propertiesColumns.contains(sourceProperty)) {
-            // propertiesColumns.add(sourceProperty);
-            // }
-            // }
-        }
     }
 
     protected void init2ndPassNamesWithDefaults() {
@@ -429,14 +419,6 @@ public class Entity implements HasParsedElement {
         }
         for (ToManyBase toMany : toManyRelations) {
             toMany.init3rdPass();
-            if (toMany instanceof ToMany) {
-                Entity targetEntity = toMany.getTargetEntity();
-                for (Property targetProperty : ((ToMany) toMany).getTargetProperties()) {
-                    if (!targetEntity.propertiesColumns.contains(targetProperty)) {
-                        targetEntity.propertiesColumns.add(targetProperty);
-                    }
-                }
-            }
         }
     }
 
