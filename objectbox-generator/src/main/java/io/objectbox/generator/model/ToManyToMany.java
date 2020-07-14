@@ -49,22 +49,22 @@ public class ToManyToMany extends ToManyBase {
         return backlinkToMany;
     }
 
-    void init2ndPass() throws ModelException {
+    void init2ndPass() {
         super.init2ndPass();
 
         List<Property> pks = sourceEntity.getPropertiesPk();
         if (pks.isEmpty()) {
-            throw new ModelException("Source entity has no primary key, but we need it for " + this);
+            throw new RuntimeException("Source entity has no primary key, but we need it for " + this);
         }
         sourceProperties = new Property[pks.size()];
         sourceProperties = pks.toArray(sourceProperties);
 
         if (linkedToManyName == null || linkedToManyName.length() == 0) {
-            throw new ModelException("Linked ToMany name not specified");
+            throw new RuntimeException("Linked ToMany name not specified");
         }
     }
 
-    void init3rdPass() throws ModelException {
+    void init3rdPass() {
         super.init3rdPass();
         // check if there actually is a ToMany in source entity that can be linked to
         for (ToManyBase toMany : getTargetEntity().getToManyRelations()) {
@@ -72,13 +72,13 @@ public class ToManyToMany extends ToManyBase {
                     && linkedToManyName.equalsIgnoreCase(toMany.getName())
                     && toMany instanceof ToManyStandalone) {
                 if (backlinkToMany != null) {
-                    throw new ModelException("More than one matching backlink: " + backlinkToMany + " vs. " + toMany);
+                    throw new IllegalStateException("More than one matching backlink: " + backlinkToMany + " vs. " + toMany);
                 }
                 backlinkToMany = (ToManyStandalone) toMany;
             }
         }
         if (backlinkToMany == null) {
-            throw new ModelException("No matching backlink found for " + this);
+            throw new IllegalStateException("No matching backlink found for " + this);
         }
     }
 

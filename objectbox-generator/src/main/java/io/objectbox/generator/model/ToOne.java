@@ -121,7 +121,7 @@ public class ToOne implements HasParsedElement {
     }
 
     /** Constructs fkColumns. Depends on 2nd pass of target key properties. */
-    void init3ndPass() throws ModelException {
+    void init3ndPass() {
         if (targetIdProperty != null) {
             PropertyType propertyType = targetIdProperty.getPropertyType();
             if (propertyType == null) {
@@ -131,7 +131,7 @@ public class ToOne implements HasParsedElement {
                 targetIdProperty.init2ndPass();
                 targetIdProperty.init3ndPass();
             } else if (propertyType != PropertyType.RelationId) {
-                throw new ModelException("To-one target ID property type is incompatible with a to-one relation: "
+                throw new RuntimeException("To-one target ID property type is incompatible with a to-one relation: "
                         + propertyType);
             }
             resolvedKeyJavaType = schema.mapToJavaTypeNullable(propertyType);

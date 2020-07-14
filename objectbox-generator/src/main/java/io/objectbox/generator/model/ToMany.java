@@ -50,19 +50,19 @@ public class ToMany extends ToManyBase {
         return backlinkToOne;
     }
 
-    void init2ndPass() throws ModelException {
+    void init2ndPass() {
         super.init2ndPass();
         if (sourceProperties == null) {
             List<Property> pks = sourceEntity.getPropertiesPk();
             if (pks.isEmpty()) {
-                throw new ModelException("Source entity has no primary key, but we need it for " + this);
+                throw new RuntimeException("Source entity has no primary key, but we need it for " + this);
             }
             sourceProperties = new Property[pks.size()];
             sourceProperties = pks.toArray(sourceProperties);
         }
         int count = sourceProperties.length;
         if (count != targetProperties.length) {
-            throw new ModelException("Source properties do not match target properties: " + this);
+            throw new RuntimeException("Source properties do not match target properties: " + this);
         }
 
         for (int i = 0; i < count; i++) {
@@ -72,16 +72,16 @@ public class ToMany extends ToManyBase {
             PropertyType sourceType = sourceProperty.getPropertyType();
             PropertyType targetType = targetProperty.getPropertyType();
             if (sourceType == null || targetType == null) {
-                throw new ModelException("Property type uninitialized");
+                throw new RuntimeException("Property type uninitialized");
             }
             if (!sourceType.supportsRelationToTarget(targetType)) {
-                throw new ModelException("To-many property types incompatible: " + this + " (" + sourceType +
+                throw new RuntimeException("To-many property types incompatible: " + this + " (" + sourceType +
                         " vs. " + targetType + ")");
             }
         }
     }
 
-    void init3rdPass() throws ModelException {
+    void init3rdPass() {
         super.init3rdPass();
         if (targetProperties.length == 1) {
             String propertyName = targetProperties[0].getPropertyName();
@@ -89,13 +89,13 @@ public class ToMany extends ToManyBase {
                 if (toOne.getTargetEntity() == sourceEntity && (propertyName.equalsIgnoreCase(toOne.getNameToOne()) ||
                         propertyName.equalsIgnoreCase(toOne.getTargetIdProperty().getPropertyName()))) {
                     if (backlinkToOne != null) {
-                        throw new ModelException("More than one matching backlink: " + backlinkToOne + " vs. " + toOne);
+                        throw new IllegalStateException("More than one matching backlink: " + backlinkToOne + " vs. " + toOne);
                     }
                     backlinkToOne = toOne;
                 }
             }
             if (backlinkToOne == null) {
-                throw new ModelException("No matching backlink found for " + this);
+                throw new IllegalStateException("No matching backlink found for " + this);
             }
         }
     }

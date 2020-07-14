@@ -30,7 +30,6 @@ import java.util.TreeSet;
 import io.objectbox.generator.IdUid;
 import io.objectbox.generator.TextUtil;
 import io.objectbox.model.EntityFlags;
-import io.objectbox.model.Model;
 
 /**
  * Model class for an entity: a Java data object mapped to a data base representation. A new entity is added to a {@link
@@ -262,9 +261,9 @@ public class Entity implements HasParsedElement {
         return toMany;
     }
 
-    public void addToMany(ToManyBase toMany) throws ModelException {
+    public void addToMany(ToManyBase toMany) {
         if (protobuf) {
-            throw new ModelException("Protobuf entities do not support relations, currently");
+            throw new IllegalStateException("Protobuf entities do not support relations, currently");
         }
 
         toManyRelations.add(toMany);
@@ -280,7 +279,7 @@ public class Entity implements HasParsedElement {
     public ToOne addToOne(Entity target, Property targetIdProperty, String name, String nameToOne,
                           boolean toOneFieldAccessible) throws ModelException {
         if (protobuf) {
-            throw new ModelException("Protobuf entities do not support relations, currently");
+            throw new IllegalStateException("Protobuf entities do not support realtions, currently");
         }
 
         targetIdProperty.convertToRelationId(target);
@@ -359,10 +358,10 @@ public class Entity implements HasParsedElement {
         return null;
     }
 
-    public Property findPropertyByNameOrThrow(String name) throws ModelException {
+    public Property findPropertyByNameOrThrow(String name) {
         Property property = findPropertyByName(name);
         if (property == null) {
-            throw new ModelException("Could not find property " + name + " in " + name);
+            throw new RuntimeException(("Could not find property " + name + " in " + name));
         }
         return property;
     }
@@ -525,10 +524,10 @@ public class Entity implements HasParsedElement {
         return contentProviders;
     }
 
-    public void implementsInterface(String... interfaces) throws ModelException {
+    public void implementsInterface(String... interfaces) {
         for (String interfaceToImplement : interfaces) {
             if (interfacesToImplement.contains(interfaceToImplement)) {
-                throw new ModelException("Interface defined more than once: " + interfaceToImplement);
+                throw new RuntimeException("Interface defined more than once: " + interfaceToImplement);
             }
             interfacesToImplement.add(interfaceToImplement);
         }
@@ -570,7 +569,7 @@ public class Entity implements HasParsedElement {
         this.hasBoxStoreField = hasBoxStoreField;
     }
 
-    void init2ndPass() throws ModelException {
+    void init2ndPass() {
         init2ndPassNamesWithDefaults();
 
         for (int i = 0; i < properties.size(); i++) {
@@ -723,7 +722,7 @@ public class Entity implements HasParsedElement {
         }
     }
 
-    private void init3rdPassRelations() throws ModelException {
+    private void init3rdPassRelations() {
         for (ToOne toOne : toOneRelations) {
             toOne.init3ndPass();
         }
@@ -795,9 +794,9 @@ public class Entity implements HasParsedElement {
         }
     }
 
-    public void validatePropertyExists(Property property) throws ModelException {
+    public void validatePropertyExists(Property property) {
         if (!properties.contains(property)) {
-            throw new ModelException("Property " + property + " does not exist in " + this);
+            throw new RuntimeException("Property " + property + " does not exist in " + this);
         }
     }
 

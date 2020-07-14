@@ -130,26 +130,26 @@ public class Schema {
         return entity;
     }
 
-    public String mapToDbType(PropertyType propertyType) throws ModelException {
+    public String mapToDbType(PropertyType propertyType) {
         return mapType(propertyTypeMapping, propertyType).dbType;
     }
 
-    public short mapToDbTypeId(PropertyType propertyType) throws ModelException {
+    public short mapToDbTypeId(PropertyType propertyType) {
         return mapType(propertyTypeMapping, propertyType).dbTypeId;
     }
 
-    public String mapToJavaTypeNullable(PropertyType propertyType) throws ModelException {
+    public String mapToJavaTypeNullable(PropertyType propertyType) {
         return mapType(propertyTypeMapping, propertyType).javaTypeNullable;
     }
 
-    public String mapToJavaTypeNotNull(PropertyType propertyType) throws ModelException {
+    public String mapToJavaTypeNotNull(PropertyType propertyType) {
         return mapType(propertyTypeMapping, propertyType).javaTypeNotNull;
     }
 
-    private <T> T mapType(Map<PropertyType, T> map, PropertyType propertyType) throws ModelException {
+    private <T> T mapType(Map<PropertyType, T> map, PropertyType propertyType) {
         T dbType = map.get(propertyType);
         if (dbType == null) {
-            throw new ModelException("No mapping for " + propertyType);
+            throw new IllegalStateException("No mapping for " + propertyType);
         }
         return dbType;
     }
@@ -243,7 +243,7 @@ public class Schema {
         isFinished = true;
     }
 
-    void init2ndPass() throws ModelException {
+    void init2ndPass() {
         if (defaultJavaPackageDao == null) {
             defaultJavaPackageDao = defaultJavaPackage;
         }
