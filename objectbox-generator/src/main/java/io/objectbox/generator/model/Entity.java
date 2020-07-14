@@ -178,23 +178,14 @@ public class Entity implements HasParsedElement {
     }
 
     /**
-     * Adds a to-one relationship to the given target entity using the given given foreign key property (which belongs
-     * to this entity).
+     * Adds a to-one relationship to the given target entity.
      *
      * @throws ModelException if this entity already has a property or relation with {@code name}.
      */
-    public ToOne addToOne(Entity target, Property targetIdProperty, String name, String nameToOne,
-                          boolean toOneFieldAccessible) throws ModelException {
-        targetIdProperty.convertToRelationId(target);
-        ToOne toOne = new ToOne(schema, this, target, targetIdProperty, true);
-        toOne.setName(name);
-        toOne.setNameToOne(nameToOne);
-        toOne.setToOneFieldAccessible(toOneFieldAccessible);
+    public ToOne addToOne(ToOne toOne, Entity target) throws ModelException {
+        toOne.setSourceAndTargetEntity(this, target);
         toOneRelations.add(toOne);
-        trackUniqueName(names, name, toOne);
-        if (nameToOne != null && !nameToOne.equals(name)) {
-            trackUniqueName(names, nameToOne, toOne);
-        }
+        trackUniqueName(names, toOne.getName(), toOne);
         return toOne;
     }
 
@@ -348,8 +339,7 @@ public class Entity implements HasParsedElement {
 
         propertiesColumns = new ArrayList<>(properties);
         for (ToOne toOne : toOneRelations) {
-            toOne.init2ndPass();
-            Property targetIdProperty = toOne.getTargetIdProperty();
+            Property targetIdProperty = toOne.getIdRefProperty();
             if (!propertiesColumns.contains(targetIdProperty)) {
                 propertiesColumns.add(targetIdProperty);
             }
@@ -396,9 +386,6 @@ public class Entity implements HasParsedElement {
         }
         for (ToOne toOne : toOneRelations) {
             trackUniqueName(names, toOne.getName(), toOne);
-            if (toOne.getNameToOne() != null && !toOne.getNameToOne().equals(toOne.getName())) {
-                trackUniqueName(names, toOne.getNameToOne(), toOne);
-            }
         }
         for (ToManyBase toMany : toManyRelations) {
             trackUniqueName(names, toMany.getName(), toMany);

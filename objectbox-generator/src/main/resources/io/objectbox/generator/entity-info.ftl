@@ -136,7 +136,7 @@ property.converter??>, ${property.converterClassName}.class, ${property.customTy
     public static final RelationInfo<${toOne.sourceEntity.className}, ${toOne.targetEntity.className}> ${toOne.name} =
             new RelationInfo<>(${toOne.sourceEntity.className}_.__INSTANCE,<#--
     --> ${toOne.targetEntity.className}_.__INSTANCE,<#--
-    --> ${toOne.targetIdProperty.propertyName},<#--
+    --> ${toOne.idRefPropertyName},<#--
     --> new ToOneGetter<${toOne.sourceEntity.className}>() {
                 @Override
                 public ToOne<${toOne.targetEntity.className}> getToOne(${toOne.sourceEntity.className} entity) {
@@ -157,7 +157,7 @@ property.converter??>, ${property.converterClassName}.class, ${property.customTy
                 }
             },
             <#-- Instead of checking if instance is ToManyByBacklink, use Freemarker to check for properties that only it has. -->
-            <#if toMany.targetToOne??>${toMany.targetEntity.className}_.${toMany.targetToOne.targetIdProperty.propertyName},
+            <#if toMany.targetToOne??>${toMany.targetEntity.className}_.${toMany.targetToOne.idRefPropertyName},
             new ToOneGetter<${toMany.targetEntity.className}>() {
                 @Override
                 public ToOne<${toMany.sourceEntity.className}> getToOne(${toMany.targetEntity.className} entity) {

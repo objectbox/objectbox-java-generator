@@ -290,7 +290,7 @@ public class Property implements HasParsedElement {
      * Makes this property an relation ID - this is done after initial parsing once all entities and relations are
      * present;
      */
-    public void convertToRelationId(Entity target) {
+    void convertToRelationId(Entity target) {
         if (propertyType != PropertyType.Long && propertyType != PropertyType.RelationId) {
             throw new ModelRuntimeException("Relation ID property must be of type long: " + this);
         }

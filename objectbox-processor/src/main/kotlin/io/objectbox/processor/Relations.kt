@@ -24,7 +24,6 @@ import io.objectbox.annotation.TargetIdProperty
 import io.objectbox.annotation.Uid
 import io.objectbox.codemodifier.nullIfBlank
 import io.objectbox.generator.IdUid
-import io.objectbox.generator.TextUtil
 import io.objectbox.generator.model.Entity
 import io.objectbox.generator.model.ModelException
 import io.objectbox.generator.model.PropertyType
@@ -37,22 +36,12 @@ import javax.lang.model.element.Modifier
 import javax.lang.model.element.VariableElement
 import javax.lang.model.type.DeclaredType
 
-data class ToOneRelation(
-        val propertyName: String,
-        val targetEntityName: String,
-        var targetIdName: String? = null,
-        val targetIdDbName: String? = null,
-        val targetIdUid: Long? = null,
-        val variableIsToOne: Boolean = false,
-        val variableFieldAccessible: Boolean
-)
-
 /**
  * Parses and keeps records of to-one and to-many relations of all parsed entities.
  */
 class Relations(private val messages: Messages) {
 
-    private val toOnesByEntity: MutableMap<Entity, MutableList<ToOneRelation>> = mutableMapOf()
+    private val toOnesByEntity: MutableMap<Entity, MutableList<ToOne>> = mutableMapOf()
     private val toManysByEntity: MutableMap<Entity, MutableList<ToManyBase>> = mutableMapOf()
 
     fun hasRelations(entity: Entity) =
@@ -111,21 +100,21 @@ class Relations(private val messages: Messages) {
         }
 
         val relationAnnotation = field.getAnnotation(TargetIdProperty::class.java)
-        val targetIdName = relationAnnotation?.value?.nullIfBlank()
-        val toOne = ToOneRelation(
-                propertyName = field.simpleName.toString(),
-                targetEntityName = targetEntityName,
-                targetIdName = targetIdName,
-                targetIdDbName = field.getAnnotation(NameInDb::class.java)?.value?.nullIfBlank(),
-                targetIdUid = field.getAnnotation(Uid::class.java)?.value?.let { if (it == 0L) -1L else it },
-                variableIsToOne = true,
-                variableFieldAccessible = !field.modifiers.contains(Modifier.PRIVATE)
+        val idRefPropertyName = relationAnnotation?.value?.nullIfBlank()
+
+        val toOne = ToOne(
+            name = field.simpleName.toString(),
+            isFieldAccessible = !field.modifiers.contains(Modifier.PRIVATE),
+            idRefPropertyName = idRefPropertyName,
+            idRefPropertyNameInDb = field.getAnnotation(NameInDb::class.java)?.value?.nullIfBlank(),
+            idRefPropertyUid = field.getAnnotation(Uid::class.java)?.value?.let { if (it == 0L) -1L else it },
+            targetEntityName = targetEntityName
         )
 
         collectToOne(entityModel, toOne)
     }
 
-    private fun collectToOne(entity: Entity, toOne: ToOneRelation) {
+    private fun collectToOne(entity: Entity, toOne: ToOne) {
         var toOnes = toOnesByEntity[entity]
         if (toOnes == null) {
             toOnes = mutableListOf()
@@ -143,50 +132,41 @@ class Relations(private val messages: Messages) {
         toManys.add(toMany)
     }
 
-    fun ensureTargetIdProperties(entity: Entity) {
+    fun ensureToOneIdRefProperties(entity: Entity) {
         val toOnes = toOnesByEntity[entity]
         // only if entity has to-one relations
         if (toOnes != null) {
             for (toOne in toOnes) {
-                ensureTargetIdProperty(entity, toOne)
+                ensureToOneIdRefProperty(entity, toOne)
             }
         }
     }
 
-    private fun ensureTargetIdProperty(entityModel: Entity, toOne: ToOneRelation) {
-        if (toOne.targetIdName == null) {
-            toOne.targetIdName = "${toOne.propertyName}Id"
-        }
+    private fun ensureToOneIdRefProperty(entityModel: Entity, toOne: ToOne) {
+        val idRefProperty = entityModel.findPropertyByName(toOne.idRefPropertyName)
+        if (idRefProperty == null) {
+            // Target ID reference property not explicitly defined in entity, create a virtual one.
 
-        val targetIdProperty = entityModel.findPropertyByName(toOne.targetIdName)
-        if (targetIdProperty == null) {
-            // Target ID property not explicitly defined in entity, create a virtual one.
-
-            val propertyBuilder = entityModel.addProperty(PropertyType.Long, toOne.targetIdName)
+            val propertyBuilder = entityModel.addProperty(PropertyType.Long, toOne.idRefPropertyName)
             propertyBuilder.notNull()
             propertyBuilder.fieldAccessible()
-            propertyBuilder.dbName(toOne.targetIdDbName)
+            propertyBuilder.dbName(toOne.idRefPropertyNameInDb)
             // just storing uid, id model sync will replace with correct id+uid
-            if (toOne.targetIdUid != null) {
-                propertyBuilder.modelId(IdUid(0, toOne.targetIdUid))
+            val uid = toOne.idRefPropertyUid
+            if (uid != null) {
+                propertyBuilder.modelId(IdUid(0, uid))
             }
-            // TODO mj: ensure generator's ToOne uses the same targetName (ToOne.nameToOne)
-            if (toOne.variableIsToOne) {
-                val targetName = toOne.propertyName
-                val targetValue =
-                        if (toOne.variableFieldAccessible) targetName
-                        else "get" + TextUtil.capFirst(targetName) + "()"
-                propertyBuilder.virtualTargetValueExpression(targetValue).virtualTargetName(targetName)
-            } else {
-                val targetName = "${toOne.propertyName}ToOne"
-                propertyBuilder.virtualTargetName(targetName)
-            }
+            propertyBuilder.virtualTargetName(toOne.name)
+            propertyBuilder.virtualTargetValueExpression(toOne.toOneValueExpression)
+
+            toOne.idRefProperty = propertyBuilder.property
         } else {
-            // Target ID property explicitly defined (it's name matches the naming convention
+            // Target ID reference property explicitly defined (it's name matches the naming convention
             // or was given using the @TargetIdProperty annotation), check type is valid.
-            if (targetIdProperty.propertyType != PropertyType.Long) {
-                messages.error("The target ID property '${toOne.targetIdName}' for ToOne relation '${toOne.propertyName}' in '${entityModel.className}' must be long.", targetIdProperty)
+            if (idRefProperty.propertyType != PropertyType.Long) {
+                messages.error("The target ID property '${toOne.idRefPropertyName}' for ToOne relation '${toOne.name}' in '${entityModel.className}' must be long.", idRefProperty)
             }
+            toOne.idRefProperty = idRefProperty
         }
     }
 
@@ -232,20 +212,11 @@ class Relations(private val messages: Messages) {
         return targetEntity
     }
 
-    private fun resolveToOne(schema: Schema, entity: Entity, toOne: ToOneRelation): Boolean {
+    private fun resolveToOne(schema: Schema, entity: Entity, toOne: ToOne): Boolean {
         val targetEntity = findTargetEntityOrRaiseError(schema, toOne.targetEntityName, entity) ?: return false
 
-        val targetIdProperty = entity.findPropertyByName(toOne.targetIdName)
-        if (targetIdProperty == null) {
-            messages.error("Could not find property '${toOne.targetIdName}' in '${entity.className}'.", entity)
-            return false
-        }
-
-        val name = toOne.propertyName
-        val nameToOne = if (toOne.variableIsToOne) name else null
-
         return try {
-            entity.addToOne(targetEntity, targetIdProperty, name, nameToOne, toOne.variableFieldAccessible)
+            entity.addToOne(toOne, targetEntity)
             true
         } catch (e: Exception) {
             messages.error("Could not add ToOne relation: ${e.message}")
@@ -284,7 +255,7 @@ class Relations(private val messages: Messages) {
             // explicit target name: find the related to-one or to-many relation
             val targetToOne = targetEntity.toOneRelations.singleOrNull {
                 it.targetEntity == entityWithBacklink
-                        && (it.name == backlinkTo || it.targetIdProperty.propertyName == backlinkTo)
+                        && (it.name == backlinkTo || it.idRefProperty?.propertyName == backlinkTo)
             }
             val targetToMany = targetEntity.toManyRelations
                 .filterIsInstance<ToManyStandalone>()

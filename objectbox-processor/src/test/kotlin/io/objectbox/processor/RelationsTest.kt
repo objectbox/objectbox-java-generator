@@ -468,7 +468,7 @@ class RelationsTest : BaseProcessorTest() {
                     assertThat(toManyByBacklink.targetToMany).isNull()
                     assertThat(toManyByBacklink.targetToOne).isNotNull()
                     assertThat(toManyByBacklink.targetToOne!!.name).isEqualTo("target")
-                    assertThat(toManyByBacklink.targetToOne!!.targetIdProperty).isEqualTo(toOneTargetProperty)
+                    assertThat(toManyByBacklink.targetToOne!!.idRefProperty).isEqualTo(toOneTargetProperty)
                     // generator takes care of populating sourceProperties if we do not set them, so do not assert here
                 }
                 "sourcesOther" -> {
@@ -655,7 +655,7 @@ class RelationsTest : BaseProcessorTest() {
                     assertThat(toManyRelation.targetEntity).isEqualTo(child)
                     val toMany = toManyRelation as ToManyByBacklink
                     assertThat(toMany.targetToMany).isNull()
-                    assertThat(toMany.targetToOne!!.targetIdProperty).isEqualTo(prop)
+                    assertThat(toMany.targetToOne!!.idRefProperty).isEqualTo(prop)
                     // generator takes care of populating sourceProperties if we do not set them, so do not assert here
                 }
                 "sourcesOther" -> {
@@ -676,8 +676,8 @@ class RelationsTest : BaseProcessorTest() {
         // assert to one relation
         val toOneRelation = child.toOneRelations.single { it.name == toOneName }
         assertThat(toOneRelation.targetEntity).isEqualTo(parent)
-        assertThat(toOneRelation.targetIdProperty).isEqualTo(prop)
-        assertThat(toOneRelation.nameToOne).isEqualTo(toOneFieldName)
+        assertThat(toOneRelation.idRefProperty).isEqualTo(prop)
+        assertThat(toOneRelation.name).isEqualTo(toOneFieldName)
     }
 
     private fun assertToManyStandaloneModel(environment: TestEnvironment, parentName: String, relationName: String) {
