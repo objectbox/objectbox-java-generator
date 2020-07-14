@@ -1,7 +1,7 @@
 package io.objectbox.generator.model;
 
 /**
- * Thrown if there was an issue configuring the model.
+ * Thrown when there is a configuration issue with the model that can be resolved by the user.
  */
 public class ModelException extends Exception {
 

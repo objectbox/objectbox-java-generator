@@ -185,6 +185,9 @@ public class Entity implements HasParsedElement {
         return addProperty(PropertyType.Date, propertyName);
     }
 
+    /**
+     * @throws ModelException if this entity already has a property or relation with {@code propertyName}.
+     */
     public Property.PropertyBuilder addProperty(PropertyType propertyType, String propertyName) throws ModelException {
         Property.PropertyBuilder builder = new Property.PropertyBuilder(schema, this, propertyType, propertyName);
         Property property = builder.getProperty();
@@ -207,6 +210,8 @@ public class Entity implements HasParsedElement {
     /**
      * Convenience method for {@link Entity#addToMany(Entity, Property)} with a subsequent call to {@link
      * ToMany#setName(String)}.
+     *
+     * @throws ModelException if this entity already has a property or relation with {@code name}.
      */
     public ToMany addToMany(Entity target, Property targetProperty, String name) throws ModelException {
         ToMany toMany = addToMany(target, targetProperty);
@@ -217,6 +222,8 @@ public class Entity implements HasParsedElement {
 
     /**
      * Adds a to-many relation linking back from a stand-alone to-many relation ({@link ToManyStandalone}).
+     *
+     * @throws ModelException if this entity already has a property or relation with {@code name}.
      */
     public ToManyToMany addToMany(Entity target, String linkedToManyName, String name) throws ModelException {
         ToManyToMany toMany = new ToManyToMany(schema, this, target, linkedToManyName);
@@ -228,6 +235,8 @@ public class Entity implements HasParsedElement {
 
     /**
      * Adds a stand-alone to-many relation ({@link ToManyStandalone}).
+     *
+     * @throws ModelException if this entity already has a property or relation with {@code name}.
      */
     public ToManyStandalone addToManyStandalone(Entity target, String name) throws ModelException {
         ToManyStandalone toMany = new ToManyStandalone(schema, this, target);
@@ -265,6 +274,8 @@ public class Entity implements HasParsedElement {
     /**
      * Adds a to-one relationship to the given target entity using the given given foreign key property (which belongs
      * to this entity).
+     *
+     * @throws ModelException if this entity already has a property or relation with {@code name}.
      */
     public ToOne addToOne(Entity target, Property targetIdProperty, String name, String nameToOne,
                           boolean toOneFieldAccessible) throws ModelException {
