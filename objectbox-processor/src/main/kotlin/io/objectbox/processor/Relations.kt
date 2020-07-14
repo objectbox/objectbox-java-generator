@@ -26,6 +26,7 @@ import io.objectbox.codemodifier.nullIfBlank
 import io.objectbox.generator.IdUid
 import io.objectbox.generator.TextUtil
 import io.objectbox.generator.model.Entity
+import io.objectbox.generator.model.ModelException
 import io.objectbox.generator.model.Property
 import io.objectbox.generator.model.PropertyType
 import io.objectbox.generator.model.Schema
@@ -33,6 +34,7 @@ import io.objectbox.generator.model.ToMany
 import io.objectbox.generator.model.ToManyBase
 import io.objectbox.generator.model.ToManyStandalone
 import io.objectbox.generator.model.ToManyToMany
+import io.objectbox.model.Model
 import javax.lang.model.element.Modifier
 import javax.lang.model.element.VariableElement
 import javax.lang.model.type.DeclaredType
@@ -246,8 +248,13 @@ class Relations(private val messages: Messages) {
         val name = toOne.propertyName
         val nameToOne = if (toOne.variableIsToOne) name else null
 
-        entity.addToOne(targetEntity, targetIdProperty, name, nameToOne, toOne.variableFieldAccessible)
-        return true
+        return try {
+            entity.addToOne(targetEntity, targetIdProperty, name, nameToOne, toOne.variableFieldAccessible)
+            true
+        } catch (e: ModelException) {
+            messages.error("Could not add ToOne relation: ${e.message}")
+            false
+        }
     }
 
     private fun addBacklinkToManyOrRaiseError(entityWithBacklink: Entity, targetEntity: Entity, backlinkToMany: ToManyRelation): ToManyBase? {
@@ -349,14 +356,19 @@ class Relations(private val messages: Messages) {
         val targetEntity = findTargetEntityOrRaiseError(schema, toMany.targetEntityName, entity) ?: return false
 
         val toManyModel: ToManyBase
-        if (toMany.isBacklink) {
-            // TODO ut why not directly add the linked to ToManyStandalone?
-            toManyModel = addBacklinkToManyOrRaiseError(entity, targetEntity, toMany) ?: return false
-        } else {
-            val standalone = entity.addToManyStandalone(targetEntity, toMany.propertyName)
-            if (toMany.uid != null) standalone.modelId = IdUid(0, toMany.uid)
-            standalone.dbName = toMany.nameInDb
-            toManyModel = standalone
+        try {
+            if (toMany.isBacklink) {
+                // TODO ut why not directly add the linked to ToManyStandalone?
+                toManyModel = addBacklinkToManyOrRaiseError(entity, targetEntity, toMany) ?: return false
+            } else {
+                val standalone = entity.addToManyStandalone(targetEntity, toMany.propertyName)
+                if (toMany.uid != null) standalone.modelId = IdUid(0, toMany.uid)
+                standalone.dbName = toMany.nameInDb
+                toManyModel = standalone
+            }
+        } catch (e: ModelException) {
+            messages.error("Could not add ToMany relation: ${e.message}")
+            return false
         }
 
         toManyModel.isFieldAccessible = toMany.fieldAccessible
