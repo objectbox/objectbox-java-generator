@@ -54,13 +54,13 @@ public class ToManyToMany extends ToManyBase {
 
         List<Property> pks = sourceEntity.getPropertiesPk();
         if (pks.isEmpty()) {
-            throw new RuntimeException("Source entity has no primary key, but we need it for " + this);
+            throw new ModelRuntimeException("Source entity has no primary key, but we need it for " + this);
         }
         sourceProperties = new Property[pks.size()];
         sourceProperties = pks.toArray(sourceProperties);
 
         if (linkedToManyName == null || linkedToManyName.length() == 0) {
-            throw new RuntimeException("Linked ToMany name not specified");
+            throw new ModelRuntimeException("Linked ToMany name not specified");
         }
     }
 
@@ -72,13 +72,13 @@ public class ToManyToMany extends ToManyBase {
                     && linkedToManyName.equalsIgnoreCase(toMany.getName())
                     && toMany instanceof ToManyStandalone) {
                 if (backlinkToMany != null) {
-                    throw new IllegalStateException("More than one matching backlink: " + backlinkToMany + " vs. " + toMany);
+                    throw new ModelRuntimeException("More than one matching backlink: " + backlinkToMany + " vs. " + toMany);
                 }
                 backlinkToMany = (ToManyStandalone) toMany;
             }
         }
         if (backlinkToMany == null) {
-            throw new IllegalStateException("No matching backlink found for " + this);
+            throw new ModelRuntimeException("No matching backlink found for " + this);
         }
     }
 

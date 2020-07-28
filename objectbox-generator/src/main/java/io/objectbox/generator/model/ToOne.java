@@ -131,7 +131,7 @@ public class ToOne implements HasParsedElement {
                 targetIdProperty.init2ndPass();
                 targetIdProperty.init3ndPass();
             } else if (propertyType != PropertyType.RelationId) {
-                throw new RuntimeException("To-one target ID property type is incompatible with a to-one relation: "
+                throw new ModelRuntimeException("To-one target ID property type is incompatible with a to-one relation: "
                         + propertyType);
             }
             resolvedKeyJavaType = schema.mapToJavaTypeNullable(propertyType);

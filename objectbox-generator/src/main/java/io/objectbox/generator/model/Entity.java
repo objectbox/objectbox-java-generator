@@ -201,7 +201,7 @@ public class Entity implements HasParsedElement {
     }
 
     /** Adds a to-many relationship; the target entity is joined to the PK property of this entity (typically the ID). */
-    public ToMany addToMany(Entity target, Property targetProperty) throws ModelException {
+    public ToMany addToMany(Entity target, Property targetProperty) {
         Property[] targetProperties = {targetProperty};
         return addToMany(null, target, targetProperties);
     }
@@ -249,13 +249,13 @@ public class Entity implements HasParsedElement {
      * Add a to-many relationship; the target entity is joined using the given target property (of the target entity)
      * and given source property (of this entity).
      */
-    public ToMany addToMany(Property sourceProperty, Entity target, Property targetProperty) throws ModelException {
+    public ToMany addToMany(Property sourceProperty, Entity target, Property targetProperty) {
         Property[] sourceProperties = {sourceProperty};
         Property[] targetProperties = {targetProperty};
         return addToMany(sourceProperties, target, targetProperties);
     }
 
-    public ToMany addToMany(Property[] sourceProperties, Entity target, Property[] targetProperties) throws ModelException {
+    public ToMany addToMany(Property[] sourceProperties, Entity target, Property[] targetProperties) {
         ToMany toMany = new ToMany(schema, this, sourceProperties, target, targetProperties);
         addToMany(toMany);
         return toMany;
@@ -263,7 +263,7 @@ public class Entity implements HasParsedElement {
 
     public void addToMany(ToManyBase toMany) {
         if (protobuf) {
-            throw new IllegalStateException("Protobuf entities do not support relations, currently");
+            throw new ModelRuntimeException("Protobuf entities do not support relations, currently");
         }
 
         toManyRelations.add(toMany);
@@ -279,7 +279,7 @@ public class Entity implements HasParsedElement {
     public ToOne addToOne(Entity target, Property targetIdProperty, String name, String nameToOne,
                           boolean toOneFieldAccessible) throws ModelException {
         if (protobuf) {
-            throw new IllegalStateException("Protobuf entities do not support realtions, currently");
+            throw new ModelRuntimeException("Protobuf entities do not support relations, currently");
         }
 
         targetIdProperty.convertToRelationId(target);
@@ -361,7 +361,7 @@ public class Entity implements HasParsedElement {
     public Property findPropertyByNameOrThrow(String name) {
         Property property = findPropertyByName(name);
         if (property == null) {
-            throw new RuntimeException(("Could not find property " + name + " in " + name));
+            throw new ModelRuntimeException(("Could not find property " + name + " in " + name));
         }
         return property;
     }
@@ -527,7 +527,7 @@ public class Entity implements HasParsedElement {
     public void implementsInterface(String... interfaces) {
         for (String interfaceToImplement : interfaces) {
             if (interfacesToImplement.contains(interfaceToImplement)) {
-                throw new RuntimeException("Interface defined more than once: " + interfaceToImplement);
+                throw new ModelRuntimeException("Interface defined more than once: " + interfaceToImplement);
             }
             interfacesToImplement.add(interfaceToImplement);
         }
@@ -796,7 +796,7 @@ public class Entity implements HasParsedElement {
 
     public void validatePropertyExists(Property property) {
         if (!properties.contains(property)) {
-            throw new RuntimeException("Property " + property + " does not exist in " + this);
+            throw new ModelRuntimeException("Property " + property + " does not exist in " + this);
         }
     }
 

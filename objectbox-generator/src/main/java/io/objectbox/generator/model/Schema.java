@@ -149,7 +149,7 @@ public class Schema {
     private <T> T mapType(Map<PropertyType, T> map, PropertyType propertyType) {
         T dbType = map.get(propertyType);
         if (dbType == null) {
-            throw new IllegalStateException("No mapping for " + propertyType);
+            throw new ModelRuntimeException("No mapping for " + propertyType);
         }
         return dbType;
     }

@@ -55,14 +55,14 @@ public class ToMany extends ToManyBase {
         if (sourceProperties == null) {
             List<Property> pks = sourceEntity.getPropertiesPk();
             if (pks.isEmpty()) {
-                throw new RuntimeException("Source entity has no primary key, but we need it for " + this);
+                throw new ModelRuntimeException("Source entity has no primary key, but we need it for " + this);
             }
             sourceProperties = new Property[pks.size()];
             sourceProperties = pks.toArray(sourceProperties);
         }
         int count = sourceProperties.length;
         if (count != targetProperties.length) {
-            throw new RuntimeException("Source properties do not match target properties: " + this);
+            throw new ModelRuntimeException("Source properties do not match target properties: " + this);
         }
 
         for (int i = 0; i < count; i++) {
@@ -72,10 +72,10 @@ public class ToMany extends ToManyBase {
             PropertyType sourceType = sourceProperty.getPropertyType();
             PropertyType targetType = targetProperty.getPropertyType();
             if (sourceType == null || targetType == null) {
-                throw new RuntimeException("Property type uninitialized");
+                throw new ModelRuntimeException("Property type uninitialized");
             }
             if (!sourceType.supportsRelationToTarget(targetType)) {
-                throw new RuntimeException("To-many property types incompatible: " + this + " (" + sourceType +
+                throw new ModelRuntimeException("To-many property types incompatible: " + this + " (" + sourceType +
                         " vs. " + targetType + ")");
             }
         }
@@ -89,13 +89,13 @@ public class ToMany extends ToManyBase {
                 if (toOne.getTargetEntity() == sourceEntity && (propertyName.equalsIgnoreCase(toOne.getNameToOne()) ||
                         propertyName.equalsIgnoreCase(toOne.getTargetIdProperty().getPropertyName()))) {
                     if (backlinkToOne != null) {
-                        throw new IllegalStateException("More than one matching backlink: " + backlinkToOne + " vs. " + toOne);
+                        throw new ModelRuntimeException("More than one matching backlink: " + backlinkToOne + " vs. " + toOne);
                     }
                     backlinkToOne = toOne;
                 }
             }
             if (backlinkToOne == null) {
-                throw new IllegalStateException("No matching backlink found for " + this);
+                throw new ModelRuntimeException("No matching backlink found for " + this);
             }
         }
     }
