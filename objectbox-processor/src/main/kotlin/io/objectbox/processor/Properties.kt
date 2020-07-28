@@ -224,9 +224,9 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
 
                 val builder = try {
                     entityModel.addProperty(propertyType, field.simpleName.toString())
-                } catch (e: ModelException) {
+                } catch (e: Exception) {
                     messages.error("Could not add property: ${e.message}", field)
-                    return null
+                    if (e is ModelException) return null else throw e
                 }
                 builder.customType(field.asType().toString(), NullToEmptyStringConverter::class.java.canonicalName)
 
@@ -261,9 +261,9 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
         val propertyBuilder: Property.PropertyBuilder
         try {
             propertyBuilder = entityModel.addProperty(propertyType, field.simpleName.toString())
-        } catch (e: ModelException) {
+        } catch (e: Exception) {
             messages.error("Could not add property: ${e.message}", field)
-            return null
+            if (e is ModelException) return null else throw e
         }
         propertyBuilder.customType(customType.toString(), converter.toString())
         // note: custom types are already assumed non-primitive by Property#isNonPrimitiveType()
@@ -286,9 +286,9 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
         val propertyBuilder: Property.PropertyBuilder
         try {
             propertyBuilder = entityModel.addProperty(propertyType, field.simpleName.toString())
-        } catch (e: ModelException) {
+        } catch (e: Exception) {
             messages.error("Could not add property: ${e.message}", field)
-            return null
+            if (e is ModelException) return null else throw e
         }
 
         val isPrimitive = typeMirror.kind.isPrimitive

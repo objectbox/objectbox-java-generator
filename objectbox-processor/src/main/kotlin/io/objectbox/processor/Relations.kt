@@ -251,9 +251,9 @@ class Relations(private val messages: Messages) {
         return try {
             entity.addToOne(targetEntity, targetIdProperty, name, nameToOne, toOne.variableFieldAccessible)
             true
-        } catch (e: ModelException) {
+        } catch (e: Exception) {
             messages.error("Could not add ToOne relation: ${e.message}")
-            false
+            if (e is ModelException) false else throw e
         }
     }
 
@@ -366,9 +366,9 @@ class Relations(private val messages: Messages) {
                 standalone.dbName = toMany.nameInDb
                 toManyModel = standalone
             }
-        } catch (e: ModelException) {
+        } catch (e: Exception) {
             messages.error("Could not add ToMany relation: ${e.message}")
-            return false
+            if (e is ModelException) return false else throw e
         }
 
         toManyModel.isFieldAccessible = toMany.fieldAccessible
