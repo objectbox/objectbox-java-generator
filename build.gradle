@@ -1,14 +1,14 @@
 buildscript {
     ext {
         android_version = '3.6.3' // Minimal supported version is 3.0.0. http://google.github.io/android-gradle-dsl/javadoc/
-        kotlin_version = '1.3.71'
+        kotlin_version = '1.3.72'
         essentials_version = '3.0.0-RC1'
         junit_version = '4.13'
         mockito_version = '3.3.3'
         moshi_version = '1.9.2'
 
         // Typically, only edit those two:
-        def versionNumber = '2.6.1' // Without "-SNAPSHOT", e.g. '2.5.0' or '2.4.0-RC'.
+        def versionNumber = '2.7.0' // Without "-SNAPSHOT", e.g. '2.5.0' or '2.4.0-RC'.
         def isRelease = false  // Set to true for releasing to ignore versionPostFix to avoid e.g. "-dev" versions.
 
         // Calculate version codes.
@@ -21,6 +21,7 @@ buildscript {
             versionPostFix = "-dev-SNAPSHOT"
         }
         def libsVersion = versionNumber + (isRelease ? "" : "-dev-SNAPSHOT")
+        libsVersion=versionNumber  // FIXME enforce release version for ObjectBox libs (e.g. pre-release checks)
 
         objectbox_plugin_version = versionNumber + versionPostFix // Artifact versions of this project.
         objectbox_java_version = libsVersion // Java library used by sub-projects.
