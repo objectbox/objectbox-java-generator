@@ -140,51 +140,54 @@ public class Entity implements HasParsedElement {
         return this;
     }
 
-    public Property.PropertyBuilder addBooleanProperty(String propertyName) {
+    public Property.PropertyBuilder addBooleanProperty(String propertyName) throws ModelException {
         return addProperty(PropertyType.Boolean, propertyName);
     }
 
-    public Property.PropertyBuilder addByteProperty(String propertyName) {
+    public Property.PropertyBuilder addByteProperty(String propertyName) throws ModelException {
         return addProperty(PropertyType.Byte, propertyName);
     }
 
-    public Property.PropertyBuilder addShortProperty(String propertyName) {
+    public Property.PropertyBuilder addShortProperty(String propertyName) throws ModelException {
         return addProperty(PropertyType.Short, propertyName);
     }
 
-    public Property.PropertyBuilder addCharProperty(String propertyName) {
+    public Property.PropertyBuilder addCharProperty(String propertyName) throws ModelException {
         return addProperty(PropertyType.Char, propertyName);
     }
 
-    public Property.PropertyBuilder addIntProperty(String propertyName) {
+    public Property.PropertyBuilder addIntProperty(String propertyName) throws ModelException {
         return addProperty(PropertyType.Int, propertyName);
     }
 
-    public Property.PropertyBuilder addLongProperty(String propertyName) {
+    public Property.PropertyBuilder addLongProperty(String propertyName) throws ModelException {
         return addProperty(PropertyType.Long, propertyName);
     }
 
-    public Property.PropertyBuilder addFloatProperty(String propertyName) {
+    public Property.PropertyBuilder addFloatProperty(String propertyName) throws ModelException {
         return addProperty(PropertyType.Float, propertyName);
     }
 
-    public Property.PropertyBuilder addDoubleProperty(String propertyName) {
+    public Property.PropertyBuilder addDoubleProperty(String propertyName) throws ModelException {
         return addProperty(PropertyType.Double, propertyName);
     }
 
-    public Property.PropertyBuilder addByteArrayProperty(String propertyName) {
+    public Property.PropertyBuilder addByteArrayProperty(String propertyName) throws ModelException {
         return addProperty(PropertyType.ByteArray, propertyName);
     }
 
-    public Property.PropertyBuilder addStringProperty(String propertyName) {
+    public Property.PropertyBuilder addStringProperty(String propertyName) throws ModelException {
         return addProperty(PropertyType.String, propertyName);
     }
 
-    public Property.PropertyBuilder addDateProperty(String propertyName) {
+    public Property.PropertyBuilder addDateProperty(String propertyName) throws ModelException {
         return addProperty(PropertyType.Date, propertyName);
     }
 
-    public Property.PropertyBuilder addProperty(PropertyType propertyType, String propertyName) {
+    /**
+     * @throws ModelException if this entity already has a property or relation with {@code propertyName}.
+     */
+    public Property.PropertyBuilder addProperty(PropertyType propertyType, String propertyName) throws ModelException {
         Property.PropertyBuilder builder = new Property.PropertyBuilder(schema, this, propertyType, propertyName);
         Property property = builder.getProperty();
         trackUniqueName(names, propertyName, property);
@@ -193,9 +196,8 @@ public class Entity implements HasParsedElement {
     }
 
     /** Adds a standard id property. */
-    public Property.PropertyBuilder addIdProperty() {
-        Property.PropertyBuilder builder = addLongProperty("id").primaryKey();
-        return builder;
+    public Property.PropertyBuilder addIdProperty() throws ModelException {
+        return addProperty(PropertyType.Long, "id").primaryKey();
     }
 
     /** Adds a to-many relationship; the target entity is joined to the PK property of this entity (typically the ID). */
@@ -207,8 +209,10 @@ public class Entity implements HasParsedElement {
     /**
      * Convenience method for {@link Entity#addToMany(Entity, Property)} with a subsequent call to {@link
      * ToMany#setName(String)}.
+     *
+     * @throws ModelException if this entity already has a property or relation with {@code name}.
      */
-    public ToMany addToMany(Entity target, Property targetProperty, String name) {
+    public ToMany addToMany(Entity target, Property targetProperty, String name) throws ModelException {
         ToMany toMany = addToMany(target, targetProperty);
         toMany.setName(name);
         trackUniqueName(names, name, toMany);
@@ -217,8 +221,10 @@ public class Entity implements HasParsedElement {
 
     /**
      * Adds a to-many relation linking back from a stand-alone to-many relation ({@link ToManyStandalone}).
+     *
+     * @throws ModelException if this entity already has a property or relation with {@code name}.
      */
-    public ToManyToMany addToMany(Entity target, String linkedToManyName, String name) {
+    public ToManyToMany addToMany(Entity target, String linkedToManyName, String name) throws ModelException {
         ToManyToMany toMany = new ToManyToMany(schema, this, target, linkedToManyName);
         toMany.setName(name);
         trackUniqueName(names, name, toMany);
@@ -228,8 +234,10 @@ public class Entity implements HasParsedElement {
 
     /**
      * Adds a stand-alone to-many relation ({@link ToManyStandalone}).
+     *
+     * @throws ModelException if this entity already has a property or relation with {@code name}.
      */
-    public ToManyStandalone addToManyStandalone(Entity target, String name) {
+    public ToManyStandalone addToManyStandalone(Entity target, String name) throws ModelException {
         ToManyStandalone toMany = new ToManyStandalone(schema, this, target);
         toMany.setName(name);
         trackUniqueName(names, name, toMany);
@@ -255,7 +263,7 @@ public class Entity implements HasParsedElement {
 
     public void addToMany(ToManyBase toMany) {
         if (protobuf) {
-            throw new IllegalStateException("Protobuf entities do not support relations, currently");
+            throw new ModelRuntimeException("Protobuf entities do not support relations, currently");
         }
 
         toManyRelations.add(toMany);
@@ -265,11 +273,13 @@ public class Entity implements HasParsedElement {
     /**
      * Adds a to-one relationship to the given target entity using the given given foreign key property (which belongs
      * to this entity).
+     *
+     * @throws ModelException if this entity already has a property or relation with {@code name}.
      */
     public ToOne addToOne(Entity target, Property targetIdProperty, String name, String nameToOne,
-                          boolean toOneFieldAccessible) {
+                          boolean toOneFieldAccessible) throws ModelException {
         if (protobuf) {
-            throw new IllegalStateException("Protobuf entities do not support realtions, currently");
+            throw new ModelRuntimeException("Protobuf entities do not support relations, currently");
         }
 
         targetIdProperty.convertToRelationId(target);
@@ -351,7 +361,7 @@ public class Entity implements HasParsedElement {
     public Property findPropertyByNameOrThrow(String name) {
         Property property = findPropertyByName(name);
         if (property == null) {
-            throw new RuntimeException(("Could not find property " + name + " in " + name));
+            throw new ModelRuntimeException(("Could not find property " + name + " in " + name));
         }
         return property;
     }
@@ -517,7 +527,7 @@ public class Entity implements HasParsedElement {
     public void implementsInterface(String... interfaces) {
         for (String interfaceToImplement : interfaces) {
             if (interfacesToImplement.contains(interfaceToImplement)) {
-                throw new RuntimeException("Interface defined more than once: " + interfaceToImplement);
+                throw new ModelRuntimeException("Interface defined more than once: " + interfaceToImplement);
             }
             interfacesToImplement.add(interfaceToImplement);
         }
@@ -676,7 +686,7 @@ public class Entity implements HasParsedElement {
         }
     }
 
-    void init3rdPass() {
+    void init3rdPass() throws ModelException {
         for (Property property : properties) {
             property.init3ndPass();
         }
@@ -688,7 +698,7 @@ public class Entity implements HasParsedElement {
         verifyAllNamesUnique();
     }
 
-    private void verifyAllNamesUnique() {
+    private void verifyAllNamesUnique() throws ModelException {
         Map<String, Object> names = new HashMap<>();
         for (Property property : properties) {
             trackUniqueName(names, property.getPropertyName(), property);
@@ -704,10 +714,10 @@ public class Entity implements HasParsedElement {
         }
     }
 
-    private void trackUniqueName(Map<String, Object> names, String name, Object object) {
+    private void trackUniqueName(Map<String, Object> names, String name, Object object) throws ModelException {
         Object oldValue = names.put(name.toLowerCase(), object);
         if (oldValue != null) {
-            throw new RuntimeException("Duplicate name \"" + name + "\" in entity \"" + className +
+            throw new ModelException("Duplicate name \"" + name + "\" in entity \"" + className +
                     "\": [" + object + "] vs. [" + oldValue + "]");
         }
     }
@@ -786,7 +796,7 @@ public class Entity implements HasParsedElement {
 
     public void validatePropertyExists(Property property) {
         if (!properties.contains(property)) {
-            throw new RuntimeException("Property " + property + " does not exist in " + this);
+            throw new ModelRuntimeException("Property " + property + " does not exist in " + this);
         }
     }
 

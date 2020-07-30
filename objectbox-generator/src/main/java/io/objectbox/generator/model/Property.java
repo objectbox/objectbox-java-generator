@@ -76,7 +76,7 @@ public class Property implements HasParsedElement {
 
         public PropertyBuilder autoincrement() {
             if (!property.primaryKey || property.propertyType != PropertyType.Long) {
-                throw new RuntimeException(
+                throw new ModelRuntimeException(
                         "AUTOINCREMENT is only available to primary key properties of type long/Long");
             }
             property.pkAutoincrement = true;
@@ -105,7 +105,7 @@ public class Property implements HasParsedElement {
 
         public PropertyBuilder nonPrimitiveType() {
             if (!property.propertyType.isScalar()) {
-                throw new RuntimeException("Type is already non-primitive");
+                throw new ModelRuntimeException("Type is already non-primitive");
             }
             property.nonPrimitiveType = true;
             return this;
@@ -460,7 +460,7 @@ public class Property implements HasParsedElement {
      */
     public void convertToRelationId(Entity target) {
         if (propertyType != PropertyType.Long && propertyType != PropertyType.RelationId) {
-            throw new RuntimeException("Relation ID property must be of type long: " + this);
+            throw new ModelRuntimeException("Relation ID property must be of type long: " + this);
         }
         setPropertyType(PropertyType.RelationId);
         targetEntity = target;
@@ -560,7 +560,7 @@ public class Property implements HasParsedElement {
 
     void init2ndPass() {
         if (idAssignable && !primaryKey) {
-            throw new RuntimeException("idSelfAssignable set for non-ID property");
+            throw new ModelRuntimeException("idSelfAssignable set for non-ID property");
         }
         if (dbType == null) {
             dbType = schema.mapToDbType(propertyType);

@@ -30,6 +30,7 @@ import io.objectbox.annotation.Unique
 import io.objectbox.converter.NullToEmptyStringConverter
 import io.objectbox.generator.IdUid
 import io.objectbox.generator.model.Entity
+import io.objectbox.generator.model.ModelException
 import io.objectbox.generator.model.Property
 import io.objectbox.generator.model.PropertyType
 import io.objectbox.model.PropertyFlags
@@ -223,9 +224,9 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
 
                 val builder = try {
                     entityModel.addProperty(propertyType, field.simpleName.toString())
-                } catch (e: RuntimeException) {
+                } catch (e: Exception) {
                     messages.error("Could not add property: ${e.message}", field)
-                    return null
+                    if (e is ModelException) return null else throw e
                 }
                 builder.customType(field.asType().toString(), NullToEmptyStringConverter::class.java.canonicalName)
 
@@ -260,9 +261,9 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
         val propertyBuilder: Property.PropertyBuilder
         try {
             propertyBuilder = entityModel.addProperty(propertyType, field.simpleName.toString())
-        } catch (e: RuntimeException) {
+        } catch (e: Exception) {
             messages.error("Could not add property: ${e.message}", field)
-            return null
+            if (e is ModelException) return null else throw e
         }
         propertyBuilder.customType(customType.toString(), converter.toString())
         // note: custom types are already assumed non-primitive by Property#isNonPrimitiveType()
@@ -285,9 +286,9 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
         val propertyBuilder: Property.PropertyBuilder
         try {
             propertyBuilder = entityModel.addProperty(propertyType, field.simpleName.toString())
-        } catch (e: RuntimeException) {
+        } catch (e: Exception) {
             messages.error("Could not add property: ${e.message}", field)
-            return null
+            if (e is ModelException) return null else throw e
         }
 
         val isPrimitive = typeMirror.kind.isPrimitive
