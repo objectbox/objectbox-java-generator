@@ -89,10 +89,16 @@ pipeline {
                 BINTRAY_LOGIN = credentials('bintray_login')
             }
             steps {
+                googlechatnotification url: 'id:gchat_java',
+                    message: "*Publishing* ${currentBuild.fullDisplayName} to Bintray...\n${env.BUILD_URL}"
+
                 // Note: add quotes around URL parameter to avoid line breaks due to semicolon in URL.
                 sh "./gradlew $gradleArgs $MVN_REPO_ARGS " +
                    "\"-PpreferredRepo=${BINTRAY_URL}\" -PpreferredUsername=${BINTRAY_LOGIN_USR} -PpreferredPassword=${BINTRAY_LOGIN_PSW} " +
                    "uploadArchives"
+
+                googlechatnotification url: 'id:gchat_java',
+                    message: "Published ${currentBuild.fullDisplayName} successfully to Bintray - check https://bintray.com/objectbox/objectbox\n${env.BUILD_URL}"
             }
         }
     }
