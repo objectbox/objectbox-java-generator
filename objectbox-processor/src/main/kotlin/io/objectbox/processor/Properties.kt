@@ -33,9 +33,12 @@ import io.objectbox.annotation.Uid
 import io.objectbox.annotation.Unique
 import io.objectbox.annotation.Unsigned
 import io.objectbox.converter.IntegerFlexMapConverter
+import io.objectbox.converter.IntegerLongMapConverter
 import io.objectbox.converter.LongFlexMapConverter
+import io.objectbox.converter.LongLongMapConverter
 import io.objectbox.converter.NullToEmptyStringConverter
 import io.objectbox.converter.StringFlexMapConverter
+import io.objectbox.converter.StringLongMapConverter
 import io.objectbox.converter.StringMapConverter
 import io.objectbox.generator.IdUid
 import io.objectbox.generator.model.Entity
@@ -401,12 +404,24 @@ class Properties(
             return addAutoConvertedMapProperty(field, StringMapConverter::class.java.canonicalName)
         }
 
+        if (typeHelper.isStringLongMap(fieldType)) {
+            return addAutoConvertedMapProperty(field, StringLongMapConverter::class.java.canonicalName)
+        }
+
         if (typeHelper.isStringMap(fieldType)) {
             return addAutoConvertedMapProperty(field, StringFlexMapConverter::class.java.canonicalName)
         }
 
+        if (typeHelper.isIntegerLongMap(fieldType)) {
+            return addAutoConvertedMapProperty(field, IntegerLongMapConverter::class.java.canonicalName)
+        }
+
         if (typeHelper.isIntegerMap(fieldType)) {
             return addAutoConvertedMapProperty(field, IntegerFlexMapConverter::class.java.canonicalName)
+        }
+
+        if (typeHelper.isLongLongMap(fieldType)) {
+            return addAutoConvertedMapProperty(field, LongLongMapConverter::class.java.canonicalName)
         }
 
         if (typeHelper.isLongMap(fieldType)) {

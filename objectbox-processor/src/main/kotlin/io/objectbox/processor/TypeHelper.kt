@@ -97,6 +97,10 @@ class TypeHelper(
         return typeMirror.isMapOf(typeString)
     }
 
+    fun isStringLongMap(typeMirror: TypeMirror): Boolean {
+        return typeMirror.isMapOf(typeString, typeLong)
+    }
+
     fun isStringStringMap(typeMirror: TypeMirror): Boolean {
         return typeMirror.isMapOf(typeString, typeString)
     }
@@ -105,8 +109,16 @@ class TypeHelper(
         return typeMirror.isMapOf(typeInteger)
     }
 
+    fun isIntegerLongMap(typeMirror: TypeMirror): Boolean {
+        return typeMirror.isMapOf(typeInteger, typeLong)
+    }
+
     fun isLongMap(typeMirror: TypeMirror): Boolean {
         return typeMirror.isMapOf(typeLong)
+    }
+
+    fun isLongLongMap(typeMirror: TypeMirror): Boolean {
+        return typeMirror.isMapOf(typeLong, typeLong)
     }
 
     /**

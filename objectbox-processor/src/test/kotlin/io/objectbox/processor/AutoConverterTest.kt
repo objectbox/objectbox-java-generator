@@ -23,6 +23,7 @@ class AutoConverterTest : BaseProcessorTest() {
             
             Map<String, String> stringMap;
             Map<String, Object> stringFlexMap;
+            Map<String, Long> stringLongMap;
         }
         """.trimIndent()
             .let { JavaFileObjects.forSourceString("com.example.MapEntity", it) }
@@ -53,6 +54,16 @@ class AutoConverterTest : BaseProcessorTest() {
                 assertThat(customType).isEqualTo("java.util.Map")
                 assertThat(customTypeClassName).isEqualTo("Map")
             }
+        environment.schema.entities[0].properties.find { it.dbName == "stringLongMap" }!!
+            .run {
+                assertThat(propertyType).isEqualTo(PropertyType.ByteArray)
+
+                assertThat(converter).isEqualTo("io.objectbox.converter.StringLongMapConverter")
+                assertThat(converterClassName).isEqualTo("StringLongMapConverter")
+
+                assertThat(customType).isEqualTo("java.util.Map")
+                assertThat(customTypeClassName).isEqualTo("Map")
+            }
     }
 
     @Test
@@ -68,6 +79,7 @@ class AutoConverterTest : BaseProcessorTest() {
             @Id long id;
             
             Map<Integer, String> integerFlexMap;
+            Map<Integer, Long> integerLongMap;
         }
         """.trimIndent()
             .let { JavaFileObjects.forSourceString("com.example.MapEntity", it) }
@@ -87,6 +99,16 @@ class AutoConverterTest : BaseProcessorTest() {
                 assertThat(customType).isEqualTo("java.util.Map")
                 assertThat(customTypeClassName).isEqualTo("Map")
             }
+        environment.schema.entities[0].properties.find { it.dbName == "integerLongMap" }!!
+            .run {
+                assertThat(propertyType).isEqualTo(PropertyType.ByteArray)
+
+                assertThat(converter).isEqualTo("io.objectbox.converter.IntegerLongMapConverter")
+                assertThat(converterClassName).isEqualTo("IntegerLongMapConverter")
+
+                assertThat(customType).isEqualTo("java.util.Map")
+                assertThat(customTypeClassName).isEqualTo("Map")
+            }
     }
 
     @Test
@@ -102,6 +124,7 @@ class AutoConverterTest : BaseProcessorTest() {
             @Id long id;
             
             Map<Long, Object> longFlexMap;
+            Map<Long, Long> longLongMap;
         }
         """.trimIndent()
             .let { JavaFileObjects.forSourceString("com.example.MapEntity", it) }
@@ -117,6 +140,16 @@ class AutoConverterTest : BaseProcessorTest() {
 
                 assertThat(converter).isEqualTo("io.objectbox.converter.LongFlexMapConverter")
                 assertThat(converterClassName).isEqualTo("LongFlexMapConverter")
+
+                assertThat(customType).isEqualTo("java.util.Map")
+                assertThat(customTypeClassName).isEqualTo("Map")
+            }
+        environment.schema.entities[0].properties.find { it.dbName == "longLongMap" }!!
+            .run {
+                assertThat(propertyType).isEqualTo(PropertyType.ByteArray)
+
+                assertThat(converter).isEqualTo("io.objectbox.converter.LongLongMapConverter")
+                assertThat(converterClassName).isEqualTo("LongLongMapConverter")
 
                 assertThat(customType).isEqualTo("java.util.Map")
                 assertThat(customTypeClassName).isEqualTo("Map")
