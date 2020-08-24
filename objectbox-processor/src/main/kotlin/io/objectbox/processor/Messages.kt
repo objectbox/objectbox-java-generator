@@ -36,30 +36,48 @@ class Messages(val messager: Messager, val debug: Boolean) {
     val errorRaised: Boolean
         get() = errorCount > 0
 
+    /**
+     * If debug mode is enabled, prints `message` as note. Otherwise does nothing.
+     */
     fun debug(message: String) {
         if (debug) {
             printMessage(Diagnostic.Kind.NOTE, message)
         }
     }
 
+    /**
+     * Prints `message` as note.
+     */
     fun info(message: String) {
         printMessage(Diagnostic.Kind.NOTE, message)
     }
 
+    /**
+     * Prints `message` as error.
+     */
     fun error(message: String) {
         printAndTrackError(message, null)
     }
 
+    /**
+     * Prints `message` as error, links to `element`.
+     */
     fun error(message: String, element: Element) {
         printAndTrackError(message, element)
     }
 
+    /**
+     * Prints error like `message (<qualified name>)`, links to `field`.
+     */
     fun error(message: String, field: VariableElement) {
         val enclosingElement = field.enclosingElement as TypeElement
         val fieldName = field.simpleName
         printAndTrackError(message + " (${enclosingElement.qualifiedName}.$fieldName)", field)
     }
 
+    /**
+     * Prints `message` as error, links to `elementHolder.parsedElement` if not null.
+     */
     fun error(message: String, elementHolder: HasParsedElement? = null) {
         val element: Element? = if (elementHolder?.parsedElement is Element) {
             elementHolder.parsedElement as Element
