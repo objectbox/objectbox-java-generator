@@ -130,7 +130,7 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
                 messages.error("An @Id property must be a not-null long.", field)
             }
             if (isPrivate && getterMethodName == null) {
-                messages.error("An @Id property must not be private or have a not-private getter and setter.")
+                messages.error("An @Id property must not be private or have a not-private getter and setter.", field)
             }
             propertyBuilder.primaryKey()
             if (idAnnotation.assignable) {
