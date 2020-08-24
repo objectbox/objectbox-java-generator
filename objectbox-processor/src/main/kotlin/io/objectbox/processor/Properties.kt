@@ -95,7 +95,7 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
         val hasIndex = field.hasAnnotation(Index::class.java)
         if (hasIndex || field.hasAnnotation(Unique::class.java)) {
             val annotationName = if (hasIndex) "Index" else "Unique"
-            messages.error("'$field' @$annotationName can not be used with a $relationType relation, remove @$annotationName.")
+            messages.error("@$annotationName can not be used with a $relationType relation, remove @$annotationName.", field)
         }
     }
 
@@ -189,20 +189,21 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
 
         // error if HASH or HASH64 is not supported by property type
         if (!supportsHashIndex && (indexType == IndexType.HASH || indexType == IndexType.HASH64)) {
-            messages.error("'$field' IndexType.$indexType is not supported for $propertyType.")
+            messages.error("IndexType.$indexType is not supported for $propertyType.", field)
         }
 
         // error if used with @Id
         if (hasIdAnnotation) {
-            val annotationName =  if(indexAnnotation != null) "Index" else "Unique"
-            messages.error("'$field' @Id property is unique and indexed by default, remove @$annotationName.")
+            val annotationName = if (indexAnnotation != null) "Index" else "Unique"
+            messages.error("@Id property is unique and indexed by default, remove @$annotationName.", field)
         }
 
         // error if unsupported property type
         if (propertyType == PropertyType.ByteArray || propertyType == PropertyType.Float ||
-                propertyType == PropertyType.Double) {
-            val annotationName =  if(indexAnnotation != null) "Index" else "Unique"
-            messages.error("'$field' @$annotationName is not supported for $propertyType, remove @$annotationName.")
+            propertyType == PropertyType.Double
+        ) {
+            val annotationName = if (indexAnnotation != null) "Index" else "Unique"
+            messages.error("@$annotationName is not supported for $propertyType, remove @$annotationName.", field)
         }
 
         propertyBuilder.indexAsc(null, indexFlags, 0, uniqueAnnotation != null)
