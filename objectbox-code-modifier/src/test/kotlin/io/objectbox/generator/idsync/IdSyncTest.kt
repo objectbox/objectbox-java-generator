@@ -258,25 +258,72 @@ class IdSyncTest {
     }
 
     @Test
-    fun testRemoveEntity() {
-        val model1 = syncBasicModel()
+    fun removeLastEntity_keepsLastUids() {
+        // Create a model with 2 entities
+        val modelBefore = syncTestModel {
+            addTestEntity("Entity1")
+                .addTestProperty("foo")
+                .addTestProperty("bar", indexed = true)
+                .addTestToMany("oneToMany")
+            addTestEntity("Entity2")
+                .addTestProperty("foo", indexed = true)
+                .addTestProperty("bar")
+                .addTestToMany("twoToMany")
+        }
+
+        // Sync with model where last entity is removed
+        val modelAfter = syncTestModel {
+            addTestEntity("Entity1", uid = modelBefore.findEntity("Entity1").uid)
+                .addTestProperty("foo")
+                .addTestProperty("bar", indexed = true)
+                .addTestToMany("oneToMany")
+        }
+
+        // Even though entity was removed, its UIDs should be last as no new entity was added
+        assertEquals(modelBefore.lastEntityId, modelAfter.lastEntityId)
+        assertEquals(modelBefore.lastIndexId, modelAfter.lastIndexId)
+        assertEquals(modelBefore.lastRelationId, modelAfter.lastRelationId)
+    }
+
+    @Test
+    fun removeEntityAndAddEntity_uidsRetired() {
+        val model1 = syncTestModel {
+            addTestEntity("Entity1")
+                .addTestProperty("foo")
+                .addTestProperty("bar", indexed = true)
+                .addTestToMany("oneToMany")
+        }
         val entity1 = model1.entities.first()
 
-        val schema = basicSchema()
-        addBasicPropertiesTo(addEntityTo(schema, "Entity2"))
-        schema.finish()
+        val model2 = syncTestModel {
+            addTestEntity("Entity2")
+                .addTestProperty("foo", indexed = true)
+                .addTestProperty("bar")
+                .addTestToMany("twoToMany")
+        }
 
-        idSync = IdSync(file)
-        idSync!!.sync(schema)
-
-        val model2 = idSync!!.justRead()!!
-        assertEquals(1, model2.retiredEntityUids!!.size)
-        val entityRefIdDeleted = model2.retiredEntityUids!!.first()
-        assertEquals(entity1.uid, entityRefIdDeleted)
-
-        assertEquals(2, model2.retiredPropertyUids!!.size)
-        assertEquals(entity1.properties[0].uid, model2.retiredPropertyUids!![0])
-        assertEquals(entity1.properties[1].uid, model2.retiredPropertyUids!![1])
+        // Entity1 UID is retired
+        model2.retiredEntityUids!!.let {
+            assertEquals(1, it.size)
+            val entityRefIdDeleted = it.first()
+            assertEquals(entity1.uid, entityRefIdDeleted)
+        }
+        // Entity1 property UIDs retired
+        model2.retiredPropertyUids!!.let {
+            assertEquals(2, it.size)
+            assertEquals(entity1.properties[0].uid, it[0])
+            assertEquals(entity1.properties[1].uid, it[1])
+        }
+        // Entity1 index UIDs retired
+        model2.retiredIndexUids!!.let {
+            assertEquals(1, it.size)
+            assertEquals(entity1.properties[1].indexId!!.uid, it[0])
+        }
+        // Entity1 relation UIDs retired
+        model2.retiredRelationUids!!.let {
+            assertEquals(1, it.size)
+            assertEquals(entity1.relations!![0].uid, it[0])
+        }
     }
 
     @Test
@@ -302,6 +349,18 @@ class IdSyncTest {
     }
 
     private fun basicSchema() = Schema(Schema.DEFAULT_NAME, 1, "pac.me")
+
+    /**
+     * Creates basic schema, applies the given function, syncs schema with test model and returns it.
+     */
+    private fun syncTestModel(block: Schema.() -> Unit): IdSyncModel {
+        val schema = basicSchema()
+        block(schema)
+        schema.finish()
+        val idSync = IdSync(file)
+        idSync.sync(schema)
+        return idSync.justRead()!!
+    }
 
     private fun syncBasicModel(): IdSyncModel {
         val schema = basicSchema()
@@ -330,9 +389,39 @@ class IdSyncTest {
         }
     }
 
+    private fun Entity.addTestProperty(name: String, uid: Long? = null, indexed: Boolean = false): Entity {
+        val builder = addProperty(PropertyType.String, name)
+        if (uid != null) {
+            builder.modelId(IdUid(0, uid))
+        }
+        if (indexed) {
+            builder.indexAsc(null, false)
+        }
+        return this
+    }
+
+    /**
+     * Adds to-many relation to itself.
+     */
+    private fun Entity.addTestToMany(name: String): Entity {
+        addToManyStandalone(this, name)
+        return this
+    }
+
     private fun addEntityTo(schema: Schema, name: String, uid: Long? = null): Entity {
         val entity = schema.addEntity(name)
         entity.modelUid = uid
         return entity
+    }
+
+    private fun Schema.addTestEntity(name: String, uid: Long? = null, addTestProperties: Boolean = false): Entity {
+        val entity = addEntity(name)
+        entity.modelUid = uid
+        if (addTestProperties) addBasicPropertiesTo(entity)
+        return entity
+    }
+
+    private fun IdSyncModel.findEntity(name: String): io.objectbox.generator.idsync.Entity {
+        return entities.find { it.name == name }!!
     }
 }
