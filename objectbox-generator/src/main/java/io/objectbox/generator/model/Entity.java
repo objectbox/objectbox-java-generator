@@ -90,6 +90,7 @@ public class Entity implements HasParsedElement {
     private Boolean hasKeepSections;
     private boolean hasBoxStoreField;
     private Object parsedElement;
+    private boolean syncEnabled;
 
     private Integer entityFlags;
     private Set<String> entityFlagsNames;
@@ -769,6 +770,14 @@ public class Entity implements HasParsedElement {
         this.parsedElement = parsedElement;
     }
 
+    public boolean isSyncEnabled() {
+        return syncEnabled;
+    }
+
+    public void setSyncEnabled(boolean syncEnabled) {
+        this.syncEnabled = syncEnabled;
+    }
+
     /**
      * Based on this entities attributes computes required {@link EntityFlags}.
      * @see #getEntityFlags()
@@ -781,6 +790,10 @@ public class Entity implements HasParsedElement {
         if (!isConstructors()) {
             flags |= EntityFlags.USE_NO_ARG_CONSTRUCTOR;
             flagsNames.add("io.objectbox.model.EntityFlags.USE_NO_ARG_CONSTRUCTOR");
+        }
+        if (isSyncEnabled()) {
+            flags |= EntityFlags.SYNC_ENABLED;
+            flagsNames.add("io.objectbox.model.EntityFlags.SYNC_ENABLED");
         }
 
         this.entityFlags = flags;

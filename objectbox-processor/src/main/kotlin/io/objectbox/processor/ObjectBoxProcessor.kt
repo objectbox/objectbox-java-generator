@@ -21,6 +21,7 @@ package io.objectbox.processor
 import io.objectbox.annotation.BaseEntity
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.NameInDb
+import io.objectbox.annotation.Sync
 import io.objectbox.annotation.Uid
 import io.objectbox.generator.BoxGenerator
 import io.objectbox.generator.GeneratorJob
@@ -232,6 +233,10 @@ open class ObjectBoxProcessor : AbstractProcessor() {
             return // avoid changing files (model file, generated source)
         }
 
+        if (!validateSyncEnabledEntities(schema.entities)) {
+            return
+        }
+
         try {
             schema.finish()
         } catch (e: Exception) {
@@ -313,6 +318,11 @@ open class ObjectBoxProcessor : AbstractProcessor() {
             entityModel.modelUid = uid
         }
 
+        // @Sync
+        entity.getAnnotation(Sync::class.java)?.run {
+            entityModel.isSyncEnabled = true
+        }
+
         // Parse properties.
         parseProperties(annotatedElements, relations, entityModel, entity)
         // Verify there is an @Id property.
@@ -378,7 +388,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
             // (this is fine as Java has no multi-inheritance).
             if (matchingElement != null || hasMatches) return true
         }
-        
+
         return false // No matches.
     }
 
@@ -527,6 +537,38 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         }
 
         return true
+    }
+
+    /**
+     * Returns false if a synced entity has a relation to an entity that is not synced.
+     * Will also create an error message.
+     */
+    private fun validateSyncEnabledEntities(entities: List<io.objectbox.generator.model.Entity>): Boolean {
+        entities
+            .filter { it.isSyncEnabled }
+            .forEach { syncedEntity ->
+                syncedEntity.toOneRelations
+                    .forEach {
+                        if (!it.targetEntity!!.checkIsSynced(syncedEntity)) return false
+                    }
+                syncedEntity.toManyRelations
+                    .forEach {
+                        if (!it.targetEntity!!.checkIsSynced(syncedEntity)) return false
+                    }
+            }
+        return true
+    }
+
+    private fun io.objectbox.generator.model.Entity.checkIsSynced(syncedEntity: io.objectbox.generator.model.Entity): Boolean {
+        return if (isSyncEnabled) {
+            true
+        } else {
+            messages.error(
+                "Synced entity '${syncedEntity.className}' can't have a relation to not-synced entity '$className'.",
+                syncedEntity
+            )
+            false
+        }
     }
 
 }
