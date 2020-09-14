@@ -144,9 +144,9 @@ class IndexTest : BaseProcessorTest() {
         val compilation = environment.compile(entity)
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
 
-        val generatedFile = CompilationSubject.assertThat(compilation)
-                .generatedSourceFile("io.objectbox.processor.test.MyObjectBox")
-        generatedFile.isNotNull()
-        generatedFile.hasSourceEquivalentTo(JavaFileObjects.forResource("expected-source/MyObjectBox-index.java"))
+        compilation.assertGeneratedSourceMatches(
+            "io.objectbox.processor.test.MyObjectBox",
+            "MyObjectBox-index.java"
+        )
     }
 }

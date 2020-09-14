@@ -128,8 +128,8 @@ class RelationsTest : BaseProcessorTest() {
         val fixedCompilation = fixedEnvironment.compile(parentName, childName)
         CompilationSubject.assertThat(fixedCompilation).succeededWithoutWarnings()
 
-        assertGeneratedSourceMatches(fixedCompilation, "${childName}_")
-        assertGeneratedSourceMatches(fixedCompilation, "${childName}Cursor")
+        fixedCompilation.assertGeneratedSourceMatches("${childName}_")
+        fixedCompilation.assertGeneratedSourceMatches("${childName}Cursor")
     }
 
     private fun assertToOneModel(environment: TestEnvironment, childName: String) {
@@ -261,8 +261,8 @@ class RelationsTest : BaseProcessorTest() {
         val compilation = environment.compile(targetName, sourceName)
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
 
-        assertGeneratedSourceMatches(compilation, "${targetName}_")
-        assertGeneratedSourceMatches(compilation, "${targetName}Cursor")
+        compilation.assertGeneratedSourceMatches("${targetName}_")
+        compilation.assertGeneratedSourceMatches("${targetName}Cursor")
 
         assertToManySchema(environment.schema, targetName, sourceName)
     }
@@ -278,8 +278,8 @@ class RelationsTest : BaseProcessorTest() {
         val compilation = environment.compile(targetName, sourceName)
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
 
-        assertGeneratedSourceMatches(compilation, "${targetName}_")
-        assertGeneratedSourceMatches(compilation, "${targetName}Cursor")
+        compilation.assertGeneratedSourceMatches("${targetName}_")
+        compilation.assertGeneratedSourceMatches("${targetName}Cursor")
 
         assertToManySchema(environment.schema, targetName, sourceName)
     }
@@ -295,7 +295,7 @@ class RelationsTest : BaseProcessorTest() {
         val compilation = environment.compile(targetName, sourceName)
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
 
-        assertGeneratedSourceMatches(compilation, "${targetName}_")
+        compilation.assertGeneratedSourceMatches("${targetName}_")
 
         // assert schema
         val schema = environment.schema
@@ -523,8 +523,8 @@ class RelationsTest : BaseProcessorTest() {
         val compilation = environment.compile(parentName, childName)
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
 
-        assertGeneratedSourceMatches(compilation, "${parentName}_")
-        assertGeneratedSourceMatches(compilation, "${parentName}Cursor")
+        compilation.assertGeneratedSourceMatches("${parentName}_")
+        compilation.assertGeneratedSourceMatches("${parentName}Cursor")
 
         assertToManySchema(environment.schema, parentName, childName)
 
@@ -541,7 +541,9 @@ class RelationsTest : BaseProcessorTest() {
         val compilation = environment.compile(parentName, childName)
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
 
-        val myObjectBoxContent = getGeneratedJavaFile(compilation, "MyObjectBox").contentsAsUtf8String()
+        val myObjectBoxContent = compilation
+            .generatedSourceFileOrFail("io.objectbox.processor.test.MyObjectBox")
+            .contentsAsUtf8String()
         myObjectBoxContent.contains("420000000L")
         myObjectBoxContent.contains("\"Hoolaloop\"")
         val entity = environment.schema.entities.single { it.className == "ToManyStandaloneUidName" }

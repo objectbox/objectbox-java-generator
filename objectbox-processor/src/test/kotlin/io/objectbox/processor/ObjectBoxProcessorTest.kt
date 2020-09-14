@@ -69,9 +69,9 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
 
         // assert generated files source trees
-        assertGeneratedSourceMatches(compilation, "MyObjectBox")
-        assertGeneratedSourceMatches(compilation, "${className}_")
-        assertGeneratedSourceMatches(compilation, "${className}Cursor")
+        compilation.assertGeneratedSourceMatches("MyObjectBox")
+        compilation.assertGeneratedSourceMatches("${className}_")
+        compilation.assertGeneratedSourceMatches("${className}Cursor")
     }
 
     private fun testSchemaAndModel(className: String, relatedClassName: String) {
@@ -283,13 +283,10 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
 
         // assert generated files source trees
         // MyObjectBox package and imports should be different
-        val generatedFile = CompilationSubject.assertThat(compilation)
-                .generatedSourceFile("io.objectbox.processor.custom.MyObjectBox")
-        generatedFile.isNotNull()
-        generatedFile.hasSourceEquivalentTo(JavaFileObjects.forResource("expected-source/MyObjectBox-custom.java"))
+        compilation.assertGeneratedSourceMatches("io.objectbox.processor.custom.MyObjectBox", "MyObjectBox-custom.java")
         // all other files should stay the same
-        assertGeneratedSourceMatches(compilation, "${className}_")
-        assertGeneratedSourceMatches(compilation, "${className}Cursor")
+        compilation.assertGeneratedSourceMatches("${className}_")
+        compilation.assertGeneratedSourceMatches("${className}Cursor")
     }
 
     @Test

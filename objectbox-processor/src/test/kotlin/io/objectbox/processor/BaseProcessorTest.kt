@@ -23,17 +23,27 @@ abstract class BaseProcessorTest {
         assertThat(prop.isNonPrimitiveType).isTrue()
     }
 
-    protected fun assertGeneratedSourceMatches(compilation: Compilation, simpleName: String) {
-        val generatedFile = getGeneratedJavaFile(compilation, simpleName)
-        generatedFile.hasSourceEquivalentTo(JavaFileObjects.forResource("expected-source/$simpleName.java"))
-    }
-
-    /** non-null*/
-    protected fun getGeneratedJavaFile(compilation: Compilation, simpleName: String): JavaFileObjectSubject {
-        val generatedFile = CompilationSubject.assertThat(compilation)
-                .generatedSourceFile("io.objectbox.processor.test.$simpleName")
+    protected fun Compilation.generatedSourceFileOrFail(qualifiedName: String): JavaFileObjectSubject {
+        val generatedFile = CompilationSubject
+            .assertThat(this)
+            .generatedSourceFile(qualifiedName)
         generatedFile.isNotNull()
         return generatedFile
+    }
+
+    protected fun Compilation.assertGeneratedSourceMatches(qualifiedName: String, fileName: String) {
+        generatedSourceFileOrFail(qualifiedName)
+            .hasSourceEquivalentTo(JavaFileObjects.forResource("expected-source/$fileName"))
+    }
+
+    /**
+     * Assumes type is in "io.objectbox.processor.test" package and file is named "$simpleName.java".
+     */
+    protected fun Compilation.assertGeneratedSourceMatches(simpleName: String) {
+        assertGeneratedSourceMatches(
+            "io.objectbox.processor.test.$simpleName",
+            "$simpleName.java"
+        )
     }
 
 }
