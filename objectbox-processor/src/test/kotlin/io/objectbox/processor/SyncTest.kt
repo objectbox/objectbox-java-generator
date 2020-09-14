@@ -27,16 +27,30 @@ class SyncTest : BaseProcessorTest() {
             JavaFileObjects.forSourceString("com.example.Example", it)
         }
 
-        val environment = TestEnvironment("sync-works-temp.json")
-        environment.cleanModelFile()
+        // Need stable model file + ids to verify sources match.
+        TestEnvironment("sync-works.json").let {
+            val compilation = it.compile(listOf(sourceFile))
+            CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
 
-        val compilation = environment.compile(listOf(sourceFile))
-        CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
-
-        environment.schema.entities[0].let {
-            assertThat(it.isSyncEnabled).isTrue()
+            // Entity flag added to generated code
+            compilation.assertGeneratedSourceMatches("com.example.MyObjectBox", "MyObjectBox-sync.java")
         }
-        TODO("assert model")
+
+        // Use temp model file to assert model file.
+        TestEnvironment("sync-works-temp.json").let { environment ->
+            environment.cleanModelFile()
+
+            val compilation = environment.compile(listOf(sourceFile))
+            CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
+
+            // Schema matches
+            environment.schema.entities[0].let {
+                assertThat(it.isSyncEnabled).isTrue()
+            }
+
+            // Model file has sync enabled flag
+            TODO("assert model")
+        }
     }
 
     @Test
