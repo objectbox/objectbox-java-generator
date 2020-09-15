@@ -43,7 +43,7 @@ dependencies {
     testImplementation "org.greenrobot:essentials:$essentials_version"
     testImplementation "junit:junit:$junit_version"
     testImplementation "org.mockito:mockito-core:$mockito_version"
-    testImplementation 'com.google.truth:truth:1.0'
+    testImplementation "com.google.truth:truth:$truth_version"
     testImplementation "com.squareup.moshi:moshi:$moshi_version"
     // For plugin apply tests and outdated TestKit tests (dir "test-gradle-projects").
     testImplementation "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"

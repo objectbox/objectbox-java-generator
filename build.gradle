@@ -4,6 +4,7 @@ buildscript {
         kotlin_version = '1.4.0'
         essentials_version = '3.0.0-RC1'
         junit_version = '4.13'
+        truth_version = '1.0' // Note: objectbox-processor is using 0.45 for compat with compile-testing.
         mockito_version = '3.3.3'
         moshi_version = '1.9.2'
 
