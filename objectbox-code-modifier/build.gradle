@@ -16,7 +16,7 @@ dependencies {
     implementation "com.squareup.moshi:moshi:$moshi_version"
     kapt "com.squareup.moshi:moshi-kotlin-codegen:$moshi_version"
 
-    implementation "io.objectbox:objectbox-java-api:$objectbox_java_version"
+    implementation "io.objectbox:objectbox-java:$objectbox_java_version"
     implementation project (':objectbox-generator')
 
     testImplementation "junit:junit:$junit_version"

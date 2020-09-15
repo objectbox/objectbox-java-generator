@@ -3,6 +3,7 @@ package io.objectbox.processor
 import com.google.common.truth.Truth.assertThat
 import com.google.testing.compile.CompilationSubject
 import com.google.testing.compile.JavaFileObjects
+import io.objectbox.model.EntityFlags
 import org.junit.Test
 
 /**
@@ -49,7 +50,11 @@ class SyncTest : BaseProcessorTest() {
             }
 
             // Model file has sync enabled flag
-            TODO("assert model")
+            environment.readModel().findEntity("Example", null)!!.let {
+                assertThat(it.flags).isNotNull()
+                // Note: model file should not contain EntityFlags.USE_NO_ARG_CONSTRUCTOR.
+                assertThat(it.flags).isEqualTo(EntityFlags.SYNC_ENABLED)
+            }
         }
     }
 
@@ -135,14 +140,4 @@ class SyncTest : BaseProcessorTest() {
         assertThat(environment.isModelFileExists()).isFalse()
     }
 
-    // Note: below tests might be IdSync tests?
-    @Test
-    fun sync_addToExistingEntity_fails() {
-        TODO()
-    }
-
-    @Test
-    fun sync_removeFromExistingEntity_fails() {
-        TODO()
-    }
 }
