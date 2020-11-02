@@ -45,7 +45,7 @@ afterEvaluate { project ->
 
                 if (preferredRepo == 'local') {
                     repository url: repositories.mavenLocal().url
-                    println "Uploading archives to mavenLocal()."
+                    println "uploadArchives repo is mavenLocal()."
                 } else if (preferredRepo != null
                         && project.hasProperty('preferredUsername')
                         && project.hasProperty('preferredPassword')) {
@@ -62,7 +62,7 @@ afterEvaluate { project ->
                     repository(url: repositoryUrl) {
                         authentication(userName: preferredUsername, password: preferredPassword)
                     }
-                    println "Uploading archives to $repositoryUrl."
+                    println "uploadArchives repo is $repositoryUrl."
                 } else if (project.hasProperty('sonatypeUsername')
                         && project.hasProperty('sonatypePassword')) {
                     beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
@@ -73,9 +73,9 @@ afterEvaluate { project ->
                     repository(url: sonatypeRepositoryUrl) {
                         authentication(userName: sonatypeUsername, password: sonatypePassword)
                     }
-                    println "Uploading archives to $sonatypeRepositoryUrl."
+                    println "uploadArchives repo is $sonatypeRepositoryUrl."
                 } else {
-                    println "Deployment settings missing/incomplete for ${project.name}."
+                    println "uploadArchives settings missing/incomplete for ${project.name}."
                 }
 
                 // Common properties, projects still need to set name, description and license
