@@ -27,6 +27,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import javax.annotation.Nullable;
+
 import io.objectbox.generator.IdUid;
 import io.objectbox.generator.TextUtil;
 import io.objectbox.model.EntityFlags;
@@ -90,8 +92,10 @@ public class Entity implements HasParsedElement {
     private Boolean hasKeepSections;
     private boolean hasBoxStoreField;
     private Object parsedElement;
+    private boolean syncEnabled;
 
     private Integer entityFlags;
+    private Integer entityFlagsModelFile;
     private Set<String> entityFlagsNames;
 
     Entity(Schema schema, String className) {
@@ -769,21 +773,37 @@ public class Entity implements HasParsedElement {
         this.parsedElement = parsedElement;
     }
 
+    public boolean isSyncEnabled() {
+        return syncEnabled;
+    }
+
+    public void setSyncEnabled(boolean syncEnabled) {
+        this.syncEnabled = syncEnabled;
+    }
+
     /**
      * Based on this entities attributes computes required {@link EntityFlags}.
      * @see #getEntityFlags()
+     * @see #getEntityFlagsForModelFile()
      * @see #getEntityFlagsNames()
      */
     public void computeEntityFlags() {
         int flags = 0;
+        int flagsModelFile = 0;
         Set<String> flagsNames = new LinkedHashSet<>(); // keep in insert-order
 
         if (!isConstructors()) {
             flags |= EntityFlags.USE_NO_ARG_CONSTRUCTOR;
             flagsNames.add("io.objectbox.model.EntityFlags.USE_NO_ARG_CONSTRUCTOR");
         }
+        if (isSyncEnabled()) {
+            flags |= EntityFlags.SYNC_ENABLED;
+            flagsModelFile |= EntityFlags.SYNC_ENABLED;
+            flagsNames.add("io.objectbox.model.EntityFlags.SYNC_ENABLED");
+        }
 
         this.entityFlags = flags;
+        this.entityFlagsModelFile = flagsModelFile;
         this.entityFlagsNames = flagsNames;
     }
 
@@ -795,6 +815,18 @@ public class Entity implements HasParsedElement {
             computeEntityFlags();
         }
         return entityFlags;
+    }
+
+    /**
+     * Returns combined {@link io.objectbox.model.EntityFlags} value of only those flags
+     * that should be stored in the model file. Returns null if there would be no flags.
+     */
+    @Nullable
+    public Integer getEntityFlagsForModelFile() {
+        if (entityFlagsModelFile == null) {
+            computeEntityFlags();
+        }
+        return entityFlagsModelFile != 0 ? entityFlagsModelFile : null;
     }
 
     /**

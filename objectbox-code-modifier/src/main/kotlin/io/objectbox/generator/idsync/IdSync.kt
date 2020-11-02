@@ -26,6 +26,7 @@ import com.squareup.moshi.ToJson
 import io.objectbox.generator.IdUid
 import io.objectbox.generator.model.Schema
 import io.objectbox.generator.model.ToManyStandalone
+import io.objectbox.model.EntityFlags
 import okio.Buffer
 import okio.Okio
 import org.greenrobot.essentials.collections.LongHashSet
@@ -259,6 +260,21 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
     }
 
     private fun syncEntity(schemaEntity: io.objectbox.generator.model.Entity, existingEntity: Entity?): Entity {
+        // Validate flags changes.
+        if (existingEntity != null) {
+            val oldFlags = existingEntity.flags ?: 0
+            val newFlags = schemaEntity.entityFlagsForModelFile ?: 0
+            if (oldFlags != newFlags) {
+                // New or old flags contain SYNC_ENABLED?
+                val oldSyncEnabled = oldFlags.and(EntityFlags.SYNC_ENABLED) != 0
+                val newSyncEnabled = newFlags.and(EntityFlags.SYNC_ENABLED) != 0
+                if (oldSyncEnabled != newSyncEnabled) {
+                    val entityName = schemaEntity.dbName ?: schemaEntity.className
+                    throw IdSyncException("Can't change Sync annotation for existing entity '$entityName'.")
+                }
+            }
+        }
+
         val lastPropertyId = if (existingEntity?.lastPropertyId == null) {
             IdUid() // create empty id + uid
         } else {
@@ -270,6 +286,7 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
         val entity = Entity(
                 name = schemaEntity.dbName ?: schemaEntity.className,
                 id = IdUid(schemaEntity.modelId, schemaEntity.modelUid),
+                flags = schemaEntity.entityFlagsForModelFile,
                 properties = properties,
                 relations = relations,
                 lastPropertyId = lastPropertyId

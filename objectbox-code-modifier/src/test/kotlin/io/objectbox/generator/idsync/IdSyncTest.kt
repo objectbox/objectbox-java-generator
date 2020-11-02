@@ -18,6 +18,7 @@
 
 package io.objectbox.generator.idsync
 
+import com.google.common.truth.Truth.assertThat
 import io.objectbox.generator.IdUid
 import io.objectbox.generator.model.Entity
 import io.objectbox.generator.model.PropertyType
@@ -27,6 +28,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNotSame
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -346,6 +348,40 @@ class IdSyncTest {
         val property1 = idSync!!.get(schemaProperty1)
         val property2 = idSync!!.get(schemaProperty2)
         assertNotSame(property1, property2)
+    }
+
+    @Test
+    fun syncEnabled_addToExistingEntity_fails() {
+        val model1 = syncTestModel {
+            addTestEntity("Entity1")
+        }
+
+        val exception = assertThrows(
+            IdSyncException::class.java
+        ) {
+            syncTestModel {
+                addTestEntity("Entity1", uid = model1.findEntity("Entity1").uid)
+                    .apply { isSyncEnabled = true }
+            }
+        }
+        assertThat(exception.message).contains("Can't change Sync annotation for existing entity 'Entity1'.")
+    }
+
+    @Test
+    fun syncEnabled_removeFromExistingEntity_fails() {
+        val model1 = syncTestModel {
+            addTestEntity("Entity1")
+                .apply { isSyncEnabled = true }
+        }
+
+        val exception = assertThrows(
+            IdSyncException::class.java
+        ) {
+            syncTestModel {
+                addTestEntity("Entity1", uid = model1.findEntity("Entity1").uid)
+            }
+        }
+        assertThat(exception.message).contains("Can't change Sync annotation for existing entity 'Entity1'.")
     }
 
     private fun basicSchema() = Schema(Schema.DEFAULT_NAME, 1, "pac.me")

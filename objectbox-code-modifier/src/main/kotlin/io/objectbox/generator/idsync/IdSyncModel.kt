@@ -88,6 +88,7 @@ data class Entity(
         override val id: IdUid = IdUid(),
         val lastPropertyId: IdUid,
         val name: String,
+        val flags: Int?,
         val properties: List<Property>,
         val relations: List<Relation>?
 ) : HasIdUid
