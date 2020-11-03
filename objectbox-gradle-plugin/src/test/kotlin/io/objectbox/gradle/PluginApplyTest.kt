@@ -30,7 +30,7 @@ open class PluginApplyTest {
         assertThrows(PluginApplicationException::class.java) {
             project.project.pluginManager.apply(pluginId)
         }.also {
-            assertEquals("Failed to apply plugin [id '$pluginId']", it.message)
+            assertEquals("Failed to apply plugin '$pluginId'.", it.message)
             assertThat(it.cause, instanceOf(InvalidPluginException::class.java))
         }
     }
@@ -44,7 +44,7 @@ open class PluginApplyTest {
                 apply("java")
             }
         }.also {
-            assertEquals("Failed to apply plugin [id '$pluginId']", it.message)
+            assertEquals("Failed to apply plugin '$pluginId'.", it.message)
         }
     }
 
