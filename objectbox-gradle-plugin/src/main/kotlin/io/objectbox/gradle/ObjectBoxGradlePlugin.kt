@@ -34,7 +34,15 @@ import org.gradle.api.plugins.InvalidPluginException
 import org.gradle.api.plugins.JavaPluginConvention
 import org.gradle.api.tasks.compile.JavaCompile
 
-class ObjectBoxGradlePlugin : Plugin<Project> {
+/**
+ * A Gradle plugin that depending on the other plugins/dependencies of a project it is applied to
+ * - adds dependencies for the ObjectBox annotation processor,
+ * - adds dependencies for the ObjectBox Java, Kotlin and native (Android, Linux, Windows, Mac) libraries,
+ * - for Android projects, configures [ObjectBoxAndroidTransform],
+ * - for Java projects, adds a [ObjectBoxJavaTransform] task that runs after the compile task.
+ * - adds a [PrepareTask] that runs as part of the build task.
+ */
+open class ObjectBoxGradlePlugin : Plugin<Project> {
     companion object {
         const val DEBUG = false
     }
