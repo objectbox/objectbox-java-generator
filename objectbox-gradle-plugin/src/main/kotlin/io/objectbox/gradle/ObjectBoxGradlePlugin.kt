@@ -47,13 +47,18 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
         const val DEBUG = false
     }
 
+    /**
+     * The Gradle plugin id as registered in resources/META-INF/gradle-plugins.
+     */
+    internal open val pluginId = "io.objectbox"
+
     val buildTracker = GradleBuildTracker("GradlePlugin")
 
     override fun apply(project: Project) {
         try {
             val env = ProjectEnv(project)
             if (!(env.hasAndroidPlugin || env.hasJavaPlugin || env.hasKotlinPlugin)) {
-                throw InvalidPluginException("'io.objectbox' expects one of the following plugins to be applied to the project:\n" +
+                throw InvalidPluginException("'$pluginId' expects one of the following plugins to be applied to the project:\n" +
                         "\t* java\n" +
                         "\t* kotlin\n" +
                         "\t${env.androidPluginIds.joinToString("\n\t") { "* $it" }}"
@@ -189,6 +194,10 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
         dependencies.add(configurationName, dep)
     }
 
+    internal open fun getNativeLibraryVersionToApply(): String {
+        return ProjectEnv.Const.nativeVersionToApply
+    }
+
     private fun addDependencies(env: ProjectEnv) {
         val compileConfig = env.configApiOrCompile
         val project = env.project
@@ -212,7 +221,7 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
             // for this detection to work apply the plugin after the dependencies block
             if (!project.hasObjectBoxDep("objectbox-android") &&
                     !project.hasObjectBoxDep("objectbox-android-objectbrowser")) {
-                project.addDep(compileConfig, "io.objectbox:objectbox-android:${ProjectEnv.Const.nativeVersionToApply}")
+                project.addDep(compileConfig, "io.objectbox:objectbox-android:${getNativeLibraryVersionToApply()}")
             }
 
             // for instrumented unit tests
@@ -228,7 +237,7 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
     }
 
     private fun addNativeDependency(env: ProjectEnv, config: String, searchTestConfigs: Boolean) {
-        val nativeVersion = ProjectEnv.Const.nativeVersionToApply
+        val nativeVersion = getNativeLibraryVersionToApply()
         val project = env.project
 
         if (DEBUG) println("### Detected OS: ${env.osName} is64=${env.is64Bit} " +

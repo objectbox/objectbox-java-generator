@@ -27,7 +27,10 @@ class ProjectEnv(val project: Project) {
         const val name: String = "objectbox"
         const val pluginVersion = GradlePluginBuildConfig.VERSION
         const val javaVersionToApply = GradlePluginBuildConfig.APPLIES_JAVA_VERSION
+        /** Native libraries that do NOT contain Sync support. */
         const val nativeVersionToApply = GradlePluginBuildConfig.APPLIES_NATIVE_VERSION
+        /** Native libraries that DO contain Sync support. */
+        const val nativeSyncVersionToApply = GradlePluginBuildConfig.APPLIES_NATIVE_SYNC_VERSION
     }
 
     /** Note: Plugin extension, values only available after evaluation phase. */

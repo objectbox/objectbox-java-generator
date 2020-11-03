@@ -14,6 +14,7 @@ buildscript {
 
         def libsRelease = isRelease  // e.g. diverge if plugin is still SNAPSHOT, but libs are already final
         def libsVersion = versionNumber + (libsRelease ? "" : "-dev-SNAPSHOT")
+        def libsSyncVersion = versionNumber + (libsRelease ? "-sync" : "-sync-SNAPSHOT")
 
         // Calculate version codes.
         def versionPostFix
@@ -28,12 +29,16 @@ buildscript {
         objectbox_plugin_version = versionNumber + versionPostFix // Artifact versions of this project.
         objectbox_java_version = libsVersion // Java library used by sub-projects.
         applies_ob_java_version = libsVersion // Java library added to projects applying the plugin.
-        applies_ob_native_version = libsVersion // Native libraries added to projects applying the plugin.
+        applies_ob_native_version = libsVersion // Native library added to projects applying the ObjectBoxGradlePlugin.
+        applies_ob_native_sync_version = libsSyncVersion // Native library added to projects applying the ObjectBoxSyncGradlePlugin.
 
-        println "version=$objectbox_plugin_version\n" +
-                "objectbox_java_version=$objectbox_java_version\n" +
-                "applies_ob_java_version=$applies_ob_java_version\n" +
-                "applies_ob_native_version=$applies_ob_native_version\n"
+        println "version=$objectbox_plugin_version"
+        println "objectbox_java_version=$objectbox_java_version"
+        println "applies_ob_java_version=$applies_ob_java_version"
+        println "ObjectBoxGradlePlugin:"
+        println "  applies_ob_native_version=$applies_ob_native_version"
+        println "ObjectBoxSyncGradlePlugin:"
+        println "  applies_ob_native_sync_version=$applies_ob_native_sync_version\n"
 
         // Internal Maven repo: used in all projects, printing info/warning only once here.
         hasInternalObjectBoxRepo = project.hasProperty('internalObjectBoxRepo')
