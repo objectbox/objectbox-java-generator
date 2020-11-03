@@ -75,7 +75,7 @@ afterEvaluate { project ->
                     }
                     println "uploadArchives repo is $sonatypeRepositoryUrl."
                 } else {
-                    println "uploadArchives settings missing/incomplete for ${project.name}."
+                    println "WARNING: uploadArchives settings incomplete, can not upload archives.."
                 }
 
                 // Common properties, projects still need to set name, description and license
