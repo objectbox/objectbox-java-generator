@@ -22,7 +22,6 @@ import io.objectbox.gradle.transform.ObjectBoxAndroidTransform
 import io.objectbox.gradle.transform.ObjectBoxJavaTransform
 import io.objectbox.gradle.transform.TransformException
 import io.objectbox.gradle.util.GradleCompat
-import io.objectbox.reporting.ObjectBoxBuildConfig
 import org.gradle.api.Action
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -52,7 +51,7 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
      */
     internal open val pluginId = "io.objectbox"
 
-    val buildTracker = GradleBuildTracker("GradlePlugin")
+    private val buildTracker = GradleBuildTracker("GradlePlugin")
 
     override fun apply(project: Project) {
         try {
@@ -103,9 +102,9 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
                 // verify classes and compileJava task exist, attach to lifecycle
                 // assumes that classes task depends on compileJava depends on compileKotlin
                 try {
-                    GradleCompat.get().configureTask(project, sourceSet.classesTaskName, Action {
+                    GradleCompat.get().configureTask(project, sourceSet.classesTaskName) {
                         it.dependsOn(transformTask)
-                    })
+                    }
                 } catch (e: UnknownDomainObjectException) {
                     throw RuntimeException("Could not find classes task '${sourceSet.classesTaskName}'.", e)
                 }
@@ -115,7 +114,7 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
                     throw RuntimeException("Could not find compileJava task '${sourceSet.compileJavaTaskName}'.", e)
                 }
 
-                GradleCompat.get().configureTask(project, taskName, Action {
+                GradleCompat.get().configureTask(project, taskName) {
                     it.group = "objectbox"
                     it.description = "Transforms Java bytecode"
 
@@ -126,11 +125,11 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
 
                         // fine to get() compileJava task, no more need to defer its creation
                         val compileJavaTaskOutputDir = GradleCompat.get()
-                                .getTask(project, JavaCompile::class.java, sourceSet.compileJavaTaskName)
-                                .destinationDir
+                            .getTask(project, JavaCompile::class.java, sourceSet.compileJavaTaskName)
+                            .destinationDir
                         ObjectBoxJavaTransform(env.debug).transform(listOf(compileJavaTaskOutputDir))
                     }
-                })
+                }
             }
         }
     }
