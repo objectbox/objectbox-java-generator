@@ -17,17 +17,20 @@ import org.junit.Test
 
 
 /**
- * Tests applying plugin configures project as expected.
+ * Tests applying [ObjectBoxGradlePlugin] configures project as expected.
  */
-class PluginApplyTest {
+open class PluginApplyTest {
+
+    open val pluginId = "io.objectbox"
+    open val expectedNativeLibVersion = ProjectEnv.Const.nativeVersionToApply
 
     @Test
     fun apply_noRequiredPlugins_fails() {
         val project = ProjectBuilder.builder().build()
         assertThrows(PluginApplicationException::class.java) {
-            project.project.pluginManager.apply("io.objectbox")
+            project.project.pluginManager.apply(pluginId)
         }.also {
-            assertEquals("Failed to apply plugin [id 'io.objectbox']", it.message)
+            assertEquals("Failed to apply plugin [id '$pluginId']", it.message)
             assertThat(it.cause, instanceOf(InvalidPluginException::class.java))
         }
     }
@@ -37,11 +40,11 @@ class PluginApplyTest {
         val project = ProjectBuilder.builder().build()
         assertThrows(PluginApplicationException::class.java) {
             project.pluginManager.apply {
-                apply("io.objectbox")
+                apply(pluginId)
                 apply("java")
             }
         }.also {
-            assertEquals("Failed to apply plugin [id 'io.objectbox']", it.message)
+            assertEquals("Failed to apply plugin [id '$pluginId']", it.message)
         }
     }
 
@@ -50,7 +53,7 @@ class PluginApplyTest {
         val project = ProjectBuilder.builder().build()
         project.pluginManager.apply {
             apply("java")
-            apply("io.objectbox")
+            apply(pluginId)
         }
 
         with(project.configurations) {
@@ -97,7 +100,7 @@ class PluginApplyTest {
         project.pluginManager.apply {
             apply("kotlin")
             apply("kotlin-kapt")
-            apply("io.objectbox")
+            apply(pluginId)
         }
 
         assertKotlinSetup(project)
@@ -108,7 +111,7 @@ class PluginApplyTest {
         val project = ProjectBuilder.builder().build()
         project.pluginManager.apply {
             apply("kotlin")
-            apply("io.objectbox")
+            apply(pluginId)
         }
 
         assertKotlinSetup(project)
@@ -144,7 +147,7 @@ class PluginApplyTest {
         val project = ProjectBuilder.builder().build()
         project.pluginManager.apply {
             apply("com.android.application")
-            apply("io.objectbox")
+            apply(pluginId)
         }
 
         with(project.configurations) {
@@ -167,7 +170,7 @@ class PluginApplyTest {
             apply("com.android.application")
             apply("kotlin-android")
             apply("kotlin-kapt")
-            apply("io.objectbox")
+            apply(pluginId)
         }
 
         assertKotlinAndroidSetup(project)
@@ -179,7 +182,7 @@ class PluginApplyTest {
         project.pluginManager.apply {
             apply("com.android.application")
             apply("kotlin-android")
-            apply("io.objectbox")
+            apply(pluginId)
         }
 
         assertKotlinAndroidSetup(project)
@@ -215,14 +218,14 @@ class PluginApplyTest {
         assertEquals(1, compileDeps.count {
             it.group == "io.objectbox"
                     && (it.name == "objectbox-linux" || it.name == "objectbox-windows" || it.name == "objectbox-macos")
-                    && it.version == ProjectEnv.Const.nativeVersionToApply
+                    && it.version == expectedNativeLibVersion
         })
     }
 
     private fun assertAndroidDependency(deps: DependencySet) {
         assertEquals(1, deps.count {
             it.group == "io.objectbox" && it.name == "objectbox-android"
-                    && it.version == ProjectEnv.Const.nativeVersionToApply
+                    && it.version == expectedNativeLibVersion
         })
     }
 

@@ -34,10 +34,23 @@ import org.gradle.api.plugins.InvalidPluginException
 import org.gradle.api.plugins.JavaPluginConvention
 import org.gradle.api.tasks.compile.JavaCompile
 
-class ObjectBoxGradlePlugin : Plugin<Project> {
+/**
+ * A Gradle plugin that depending on the other plugins/dependencies of a project it is applied to
+ * - adds dependencies for the ObjectBox annotation processor,
+ * - adds dependencies for the ObjectBox Java, Kotlin and native (Android, Linux, Windows, Mac) libraries,
+ * - for Android projects, configures [ObjectBoxAndroidTransform],
+ * - for Java projects, adds a [ObjectBoxJavaTransform] task that runs after the compile task.
+ * - adds a [PrepareTask] that runs as part of the build task.
+ */
+open class ObjectBoxGradlePlugin : Plugin<Project> {
     companion object {
         const val DEBUG = false
     }
+
+    /**
+     * The Gradle plugin id as registered in resources/META-INF/gradle-plugins.
+     */
+    internal open val pluginId = "io.objectbox"
 
     val buildTracker = GradleBuildTracker("GradlePlugin")
 
@@ -45,7 +58,7 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
         try {
             val env = ProjectEnv(project)
             if (!(env.hasAndroidPlugin || env.hasJavaPlugin || env.hasKotlinPlugin)) {
-                throw InvalidPluginException("'io.objectbox' expects one of the following plugins to be applied to the project:\n" +
+                throw InvalidPluginException("'$pluginId' expects one of the following plugins to be applied to the project:\n" +
                         "\t* java\n" +
                         "\t* kotlin\n" +
                         "\t${env.androidPluginIds.joinToString("\n\t") { "* $it" }}"
@@ -181,6 +194,10 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
         dependencies.add(configurationName, dep)
     }
 
+    internal open fun getNativeLibraryVersionToApply(): String {
+        return ProjectEnv.Const.nativeVersionToApply
+    }
+
     private fun addDependencies(env: ProjectEnv) {
         val compileConfig = env.configApiOrCompile
         val project = env.project
@@ -204,7 +221,7 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
             // for this detection to work apply the plugin after the dependencies block
             if (!project.hasObjectBoxDep("objectbox-android") &&
                     !project.hasObjectBoxDep("objectbox-android-objectbrowser")) {
-                project.addDep(compileConfig, "io.objectbox:objectbox-android:${ProjectEnv.Const.nativeVersionToApply}")
+                project.addDep(compileConfig, "io.objectbox:objectbox-android:${getNativeLibraryVersionToApply()}")
             }
 
             // for instrumented unit tests
@@ -220,7 +237,7 @@ class ObjectBoxGradlePlugin : Plugin<Project> {
     }
 
     private fun addNativeDependency(env: ProjectEnv, config: String, searchTestConfigs: Boolean) {
-        val nativeVersion = ProjectEnv.Const.nativeVersionToApply
+        val nativeVersion = getNativeLibraryVersionToApply()
         val project = env.project
 
         if (DEBUG) println("### Detected OS: ${env.osName} is64=${env.is64Bit} " +
