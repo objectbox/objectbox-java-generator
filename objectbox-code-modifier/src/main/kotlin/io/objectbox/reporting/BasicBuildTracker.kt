@@ -21,7 +21,6 @@ package io.objectbox.reporting
 import com.squareup.moshi.JsonWriter
 import io.objectbox.CodeModifierBuildConfig
 import okio.Buffer
-import org.greenrobot.essentials.Base64
 import org.greenrobot.essentials.hash.Murmur3F
 import java.io.PrintWriter
 import java.io.StringWriter
@@ -147,7 +146,7 @@ open class BasicBuildTracker(private val toolName: String) {
         val event = eventData(eventName, eventProperties, sendUniqueId)
 
         // https://developer.mixpanel.com/docs/http#section-base64-for-mixpanel
-        val eventEncoded = Base64.encodeBytes(event.toByteArray())
+        val eventEncoded: String = Base64.getEncoder().encodeToString(event.toByteArray())
         try {
             val url = URL(BASE_URL + eventEncoded)
             val con = url.openConnection() as HttpURLConnection
@@ -269,6 +268,6 @@ open class BasicBuildTracker(private val toolName: String) {
     }
 
     private fun encodeBase64WithoutPadding(valueBytesBigEndian: ByteArray?) =
-        Base64.encodeBytes(valueBytesBigEndian).removeSuffix("=").removeSuffix("=")
+            Base64.getEncoder().encodeToString(valueBytesBigEndian).removeSuffix("=").removeSuffix("=")
 
 }
