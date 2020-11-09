@@ -41,11 +41,11 @@ open class BasicBuildTracker(private val toolName: String) {
 
         private const val HOUR_IN_MILLIS = 3600 * 1000
 
-        // https://developer.mixpanel.com/docs/http#section-event-request-parameters
+        // https://developer.mixpanel.com/reference/events#track-event
         // Note: adding query param `ip=1` only sets request IP as `distinct_id` if that has no value, yet.
         // For all but the NoBuildProperties event a unique ID is generated and set,
         // so no point in setting the ip param (is better for privacy anyhow).
-        const val BASE_URL = "https://api.mixpanel.com/track/?data="
+        const val BASE_URL = "https://api.mixpanel.com/track#live-event"
         const val TOKEN = "REPLACE_WITH_TOKEN"
         const val TIMEOUT_READ = 15000
         const val TIMEOUT_CONNECT = 20000
@@ -139,33 +139,48 @@ open class BasicBuildTracker(private val toolName: String) {
         if (sendUniqueId && buildPropertiesFile.hasNoFile) {
             return // can not save state (e.g. unique ID) so do not send events
         }
-        Thread(Runnable { sendEvent(eventName, eventProperties, sendUniqueId) }).start()
+        Thread {
+            sendEvent(eventName, eventProperties, sendUniqueId)
+        }.start()
     }
 
-    private fun sendEvent(eventName: String, eventProperties: String, sendUniqueId: Boolean) {
+    /**
+     * Public for testing purposes only.
+     *
+     * Returns 1 if all data objects provided are valid. This does not signify a valid project token or secret.
+     *
+     * Returns 0 if one or more data objects in the body are invalid.
+     */
+    fun sendEvent(eventName: String, eventProperties: String, sendUniqueId: Boolean): String? {
         val event = eventData(eventName, eventProperties, sendUniqueId)
 
-        // https://developer.mixpanel.com/docs/http#section-base64-for-mixpanel
-        val eventEncoded: String = Base64.getEncoder().encodeToString(event.toByteArray())
+        // https://developer.mixpanel.com/reference/events#track-event
         try {
-            val url = URL(BASE_URL + eventEncoded)
+            val url = URL(BASE_URL)
             val con = url.openConnection() as HttpURLConnection
             con.connectTimeout = TIMEOUT_CONNECT
             con.readTimeout = TIMEOUT_READ
-            con.requestMethod = "GET"
-            con.responseCode
+            con.setRequestProperty("Accept", "text/plain")
+            con.setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
+            con.doOutput = true // POST
+            con.outputStream.bufferedWriter().use {
+                it.write("data=$event")
+            }
+            val response = con.inputStream.bufferedReader().readLine()
             if (disconnect) con.disconnect()
+            return response
         } catch (ignored: Exception) {
         }
+        return null
     }
 
     // public for tests in another module
     fun eventData(eventName: String, properties: String, addUniqueId: Boolean): String {
-        // https://developer.mixpanel.com/docs/http#section-tracking-events
+        // https://developer.mixpanel.com/docs/data-model#anatomy-of-an-event
         val event = StringBuilder()
         event.append("{")
         event.key("event").value(eventName).comma()
-        event.key("properties").append(" {")
+        event.key("properties").append("{")
 
         event.key("token").value(TOKEN).comma()
         if (addUniqueId) {
