@@ -220,7 +220,9 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
             // for this detection to work apply the plugin after the dependencies block
             if (!project.hasObjectBoxDep("objectbox-android") &&
                     !project.hasObjectBoxDep("objectbox-android-objectbrowser")) {
-                project.addDep(compileConfig, "io.objectbox:objectbox-android:${getNativeLibraryVersionToApply()}")
+                // The @aar is necessary because the sync version of the library uses a classifier,
+                // which Gradle wrongly assumes a JAR by default. It's harmless to use on the regular version of the lib.
+                project.addDep(compileConfig, "io.objectbox:objectbox-android:${getNativeLibraryVersionToApply()}@aar")
             }
 
             // for instrumented unit tests
