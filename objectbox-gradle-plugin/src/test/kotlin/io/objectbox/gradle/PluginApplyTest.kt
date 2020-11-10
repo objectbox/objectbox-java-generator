@@ -4,6 +4,7 @@ import com.android.build.gradle.AppExtension
 import io.objectbox.gradle.transform.ObjectBoxAndroidTransform
 import org.gradle.api.Project
 import org.gradle.api.artifacts.DependencySet
+import org.gradle.api.artifacts.ModuleDependency
 import org.gradle.api.internal.plugins.PluginApplicationException
 import org.gradle.api.internal.project.ProjectInternal
 import org.gradle.api.plugins.InvalidPluginException
@@ -214,7 +215,7 @@ open class PluginApplyTest {
         })
     }
 
-    private fun assertNativeDependency(compileDeps: DependencySet) {
+    open fun assertNativeDependency(compileDeps: DependencySet) {
         assertEquals(1, compileDeps.count {
             it.group == "io.objectbox"
                     && (it.name == "objectbox-linux" || it.name == "objectbox-windows" || it.name == "objectbox-macos")
@@ -222,7 +223,7 @@ open class PluginApplyTest {
         })
     }
 
-    private fun assertAndroidDependency(deps: DependencySet) {
+    open fun assertAndroidDependency(deps: DependencySet) {
         assertEquals(1, deps.count {
             it.group == "io.objectbox" && it.name == "objectbox-android"
                     && it.version == expectedNativeLibVersion
