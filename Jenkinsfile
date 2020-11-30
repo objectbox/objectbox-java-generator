@@ -17,14 +17,15 @@ pipeline {
         GITLAB_URL = credentials('gitlab_url')
         MVN_REPO_LOGIN = credentials('objectbox_internal_mvn_user')
         MVN_REPO_URL = credentials('objectbox_internal_mvn_repo_http')
-        MVN_REPO_ARGS = "-PinternalObjectBoxRepo=$MVN_REPO_URL " +
-                        "-PinternalObjectBoxRepoUser=$MVN_REPO_LOGIN_USR " +
-                        "-PinternalObjectBoxRepoPassword=$MVN_REPO_LOGIN_PSW"
+        // Warning: use single quotes to avoid Groovy String interpolation leaking secrets.
+        MVN_REPO_ARGS = '-PinternalObjectBoxRepo=$MVN_REPO_URL ' +
+                        '-PinternalObjectBoxRepoUser=$MVN_REPO_LOGIN_USR ' +
+                        '-PinternalObjectBoxRepoPassword=$MVN_REPO_LOGIN_PSW'
         MVN_REPO_UPLOAD_URL = credentials('objectbox_internal_mvn_repo')
-        MVN_REPO_UPLOAD_ARGS = "-PpreferredRepo=$MVN_REPO_UPLOAD_URL " +
-                        "-PpreferredUsername=$MVN_REPO_LOGIN_USR " +
-                        "-PpreferredPassword=$MVN_REPO_LOGIN_PSW " +
-                        "-PversionPostFix=$versionPostfix"
+        MVN_REPO_UPLOAD_ARGS = '-PpreferredRepo=$MVN_REPO_UPLOAD_URL ' +
+                        '-PpreferredUsername=$MVN_REPO_LOGIN_USR ' +
+                        '-PpreferredPassword=$MVN_REPO_LOGIN_PSW ' +
+                        '-PversionPostFix=$versionPostfix'
         // Note: can't set key file here as it points to path, which must be agent-specific.
         ORG_GRADLE_PROJECT_signingKeyId = credentials('objectbox_signing_key_id')
         ORG_GRADLE_PROJECT_signingPassword = credentials('objectbox_signing_key_password')
@@ -93,9 +94,10 @@ pipeline {
                     message: "*Publishing* ${currentBuild.fullDisplayName} to Bintray...\n${env.BUILD_URL}"
 
                 // Note: add quotes around URL parameter to avoid line breaks due to semicolon in URL.
+                // Warning: use single quotes to avoid Groovy String interpolation leaking secrets.
                 sh "./gradlew $gradleArgs $MVN_REPO_ARGS " +
-                   "\"-PpreferredRepo=${BINTRAY_URL}\" -PpreferredUsername=${BINTRAY_LOGIN_USR} -PpreferredPassword=${BINTRAY_LOGIN_PSW} " +
-                   "uploadArchives"
+                   '\"-PpreferredRepo=$BINTRAY_URL\" -PpreferredUsername=$BINTRAY_LOGIN_USR -PpreferredPassword=$BINTRAY_LOGIN_PSW ' +
+                   'uploadArchives'
 
                 googlechatnotification url: 'id:gchat_java',
                     message: "Published ${currentBuild.fullDisplayName} successfully to Bintray - check https://bintray.com/objectbox/objectbox\n${env.BUILD_URL}"
