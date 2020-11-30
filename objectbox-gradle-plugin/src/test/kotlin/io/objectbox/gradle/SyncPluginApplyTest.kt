@@ -24,11 +24,10 @@ class SyncPluginApplyTest : PluginApplyTest() {
     }
 
     override fun assertAndroidDependency(deps: DependencySet) {
-        Assert.assertEquals(1, deps.count { dep ->
-            dep.group == "io.objectbox" && dep.name == "objectbox-android"
-                    && dep.version == expectedNativeLibVersion
-                    && dep is ModuleDependency
-                    && dep.artifacts.firstOrNull { it.extension == "aar" && it.classifier == expectedClassifier } != null
+        Assert.assertEquals(1, deps.count {
+            it.group == "io.objectbox" && it.name == "objectbox-android"
+                    && it.version == expectedNativeLibVersion
+                    && it is ModuleDependency && it.artifacts.first().classifier == expectedClassifier
         })
     }
 
