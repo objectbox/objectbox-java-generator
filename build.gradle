@@ -6,7 +6,7 @@ buildscript {
         junit_version = '4.13.1'
         truth_version = '1.0'
         mockito_version = '3.3.3'
-        moshi_version = '1.9.2'
+        moshi_version = '1.11.0'
 
         // Typically, only edit those two:
         def versionNumber = '2.8.2' // Without "-SNAPSHOT", e.g. '2.5.0' or '2.4.0-RC'.
