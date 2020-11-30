@@ -14,13 +14,11 @@ dependencies {
     implementation "io.objectbox:objectbox-java-api:$objectbox_java_version"
     implementation "io.objectbox:objectbox-java:$objectbox_java_version"
     // auto-service generates service configuration for annotation processor.
-    def autoService = '1.0-rc6'
+    def autoService = '1.0-rc7'
     compileOnly "com.google.auto.service:auto-service-annotations:$autoService"
-    // Since Gradle 5.0 annotation processors are no longer detected on the compile classpath, 
-    // so add to processor classpath instead.
     annotationProcessor "com.google.auto.service:auto-service:$autoService"
     // incap generates the META-INF descriptor required to enable incremental annotation processing with Gradle.
-    def incap = '0.2'
+    def incap = '0.3'
     implementation "net.ltgt.gradle.incap:incap:$incap"
     annotationProcessor "net.ltgt.gradle.incap:incap-processor:$incap"
 

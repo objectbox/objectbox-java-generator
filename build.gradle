@@ -3,10 +3,10 @@ buildscript {
         android_version = '3.6.3' // Minimal supported version is 3.0.0. http://google.github.io/android-gradle-dsl/javadoc/
         kotlin_version = '1.4.10'
         essentials_version = '3.1.0'
-        junit_version = '4.13'
-        truth_version = '1.0' // Note: objectbox-processor is using 0.45 for compat with compile-testing.
-        mockito_version = '3.3.3'
-        moshi_version = '1.9.2'
+        junit_version = '4.13.1'
+        truth_version = '1.0'
+        mockito_version = '3.6.28'
+        moshi_version = '1.11.0'
 
         // Typically, only edit those two:
         def versionNumber = '2.8.2' // Without "-SNAPSHOT", e.g. '2.5.0' or '2.4.0-RC'.
@@ -60,7 +60,7 @@ buildscript {
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "gradle.plugin.de.fuerstenau:BuildConfigPlugin:1.1.8" // for code-modifier, gradle-plugin
-        classpath "com.github.ben-manes:gradle-versions-plugin:0.28.0"
+        classpath "com.github.ben-manes:gradle-versions-plugin:0.36.0"
     }
 }
 
