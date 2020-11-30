@@ -3,8 +3,8 @@ buildscript {
         android_version = '3.6.3' // Minimal supported version is 3.0.0. http://google.github.io/android-gradle-dsl/javadoc/
         kotlin_version = '1.4.10'
         essentials_version = '3.1.0'
-        junit_version = '4.13'
-        truth_version = '1.0' // Note: objectbox-processor is using 0.45 for compat with compile-testing.
+        junit_version = '4.13.1'
+        truth_version = '1.0'
         mockito_version = '3.3.3'
         moshi_version = '1.9.2'
 
