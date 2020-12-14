@@ -384,6 +384,52 @@ class IdSyncTest {
         assertThat(exception.message).contains("Can't change Sync annotation for existing entity 'Entity1'.")
     }
 
+    @Test
+    fun syncSharedGlobalIds_enableExistingEntity_fails() {
+        val model1 = syncTestModel {
+            addTestEntity("Entity1")
+                .apply {
+                    isSyncEnabled = true
+                    isSyncSharedGlobalIds = false
+                }
+        }
+
+        assertThrows(
+            IdSyncException::class.java
+        ) {
+            syncTestModel {
+                addTestEntity("Entity1", uid = model1.findEntity("Entity1").uid)
+                    .apply {
+                        isSyncEnabled = true
+                        isSyncSharedGlobalIds = true
+                    }
+            }
+        }
+    }
+
+    @Test
+    fun syncSharedGlobalIds_disableExistingEntity_fails() {
+        val model1 = syncTestModel {
+            addTestEntity("Entity1")
+                .apply {
+                    isSyncEnabled = true
+                    isSyncSharedGlobalIds = true
+                }
+        }
+
+        assertThrows(
+            IdSyncException::class.java
+        ) {
+            syncTestModel {
+                addTestEntity("Entity1", uid = model1.findEntity("Entity1").uid)
+                    .apply {
+                        isSyncEnabled = true
+                        isSyncSharedGlobalIds = false
+                    }
+            }
+        }
+    }
+
     private fun basicSchema() = Schema(Schema.DEFAULT_NAME, 1, "pac.me")
 
     /**
