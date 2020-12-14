@@ -269,8 +269,14 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
                 val oldSyncEnabled = oldFlags.and(EntityFlags.SYNC_ENABLED) != 0
                 val newSyncEnabled = newFlags.and(EntityFlags.SYNC_ENABLED) != 0
                 if (oldSyncEnabled != newSyncEnabled) {
-                    val entityName = schemaEntity.dbName ?: schemaEntity.className
-                    throw IdSyncException("Can't change Sync annotation for existing entity '$entityName'.")
+                    throw IdSyncException("Can't change Sync annotation for existing entity '${schemaEntity.getName()}'.")
+                }
+
+                // New or old flags contain SHARED_GLOBAL_IDS?
+                val oldSyncSharedGlobalIds = oldFlags.and(EntityFlags.SHARED_GLOBAL_IDS) != 0
+                val newSyncSharedGlobalIds = newFlags.and(EntityFlags.SHARED_GLOBAL_IDS) != 0
+                if (oldSyncSharedGlobalIds != newSyncSharedGlobalIds) {
+                    throw IdSyncException("Can't change Sync.sharedGlobalIds setting for existing entity '${schemaEntity.getName()}'.")
                 }
             }
         }
@@ -284,7 +290,7 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
         val relations = syncRelations(schemaEntity, existingEntity)
 
         val entity = Entity(
-                name = schemaEntity.dbName ?: schemaEntity.className,
+                name = schemaEntity.getName(),
                 id = IdUid(schemaEntity.modelId, schemaEntity.modelUid),
                 flags = schemaEntity.entityFlagsForModelFile,
                 properties = properties,
@@ -296,6 +302,14 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
 
         entitiesBySchemaEntity[schemaEntity] = entity
         return entity
+    }
+
+    /**
+     * Returns [io.objectbox.generator.model.Entity.getDbName] or if null
+     * [io.objectbox.generator.model.Entity.getClassName].
+     */
+    private fun io.objectbox.generator.model.Entity.getName(): String {
+        return dbName ?: className
     }
 
     private fun syncProperties(schemaEntity: io.objectbox.generator.model.Entity, existingEntity: Entity?,
