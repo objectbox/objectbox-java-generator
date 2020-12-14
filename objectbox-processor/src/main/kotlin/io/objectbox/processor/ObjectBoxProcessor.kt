@@ -321,6 +321,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         // @Sync
         entity.getAnnotation(Sync::class.java)?.run {
             entityModel.isSyncEnabled = true
+            entityModel.isSyncSharedGlobalIds = this.sharedGlobalIds
         }
 
         // Parse properties.

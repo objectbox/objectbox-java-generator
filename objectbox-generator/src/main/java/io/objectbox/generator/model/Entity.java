@@ -93,6 +93,7 @@ public class Entity implements HasParsedElement {
     private boolean hasBoxStoreField;
     private Object parsedElement;
     private boolean syncEnabled;
+    private boolean syncSharedGlobalIds;
 
     private Integer entityFlags;
     private Integer entityFlagsModelFile;
@@ -781,6 +782,14 @@ public class Entity implements HasParsedElement {
         this.syncEnabled = syncEnabled;
     }
 
+    public boolean isSyncSharedGlobalIds() {
+        return this.syncSharedGlobalIds;
+    }
+
+    public void setSyncSharedGlobalIds(boolean enabled) {
+        this.syncSharedGlobalIds = enabled;
+    }
+
     /**
      * Based on this entities attributes computes required {@link EntityFlags}.
      * @see #getEntityFlags()
@@ -800,6 +809,11 @@ public class Entity implements HasParsedElement {
             flags |= EntityFlags.SYNC_ENABLED;
             flagsModelFile |= EntityFlags.SYNC_ENABLED;
             flagsNames.add("io.objectbox.model.EntityFlags.SYNC_ENABLED");
+        }
+        if (isSyncSharedGlobalIds()) {
+            flags |= EntityFlags.SHARED_GLOBAL_IDS;
+            flagsModelFile |= EntityFlags.SHARED_GLOBAL_IDS;
+            flagsNames.add("io.objectbox.model.EntityFlags.SHARED_GLOBAL_IDS");
         }
 
         this.entityFlags = flags;

@@ -140,4 +140,51 @@ class SyncTest : BaseProcessorTest() {
         assertThat(environment.isModelFileExists()).isFalse()
     }
 
+    @Test
+    fun sync_sharedGlobalIds_works() {
+        val sourceFile = """
+        package com.example;
+        import io.objectbox.annotation.Entity;
+        import io.objectbox.annotation.Id;
+        import io.objectbox.annotation.Sync;
+
+        @Entity
+        @Sync(sharedGlobalIds = true)
+        public class Example {
+            @Id long id;
+        }
+        """.trimIndent().let {
+            JavaFileObjects.forSourceString("com.example.Example", it)
+        }
+
+        // Need stable model file + ids to verify sources match.
+        TestEnvironment("sync-global-ids-works.json").let {
+            val compilation = it.compile(listOf(sourceFile))
+            CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
+
+            // Entity flag added to generated code
+            compilation.assertGeneratedSourceMatches("com.example.MyObjectBox", "MyObjectBox-sync-global-ids.java")
+        }
+
+        // Use temp model file to assert model file.
+        TestEnvironment("sync-global-ids-works-temp.json").let { environment ->
+            environment.cleanModelFile()
+
+            val compilation = environment.compile(listOf(sourceFile))
+            CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
+
+            // Schema matches
+            environment.schema.entities[0].let {
+                assertThat(it.isSyncSharedGlobalIds).isTrue()
+                assertThat(it.isSyncEnabled).isTrue()
+            }
+
+            // Model file has global IDs flag
+            environment.readModel().findEntity("Example", null)!!.let {
+                assertThat(it.flags).isNotNull()
+                // Note: model file should not contain EntityFlags.USE_NO_ARG_CONSTRUCTOR.
+                assertThat(it.flags).isEqualTo(EntityFlags.SHARED_GLOBAL_IDS or EntityFlags.SYNC_ENABLED)
+            }
+        }
+    }
 }
