@@ -97,17 +97,20 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
 
                 // use register to defer creation until use
                 val transformTask = GradleCompat.get().registerTask(project, taskName)
-                if (env.debug) println("### Registered $transformTask in $project")
 
                 // verify classes and compileJava task exist, attach to lifecycle
                 // assumes that classes task depends on compileJava depends on compileKotlin
+                val classesTaskName = sourceSet.classesTaskName
                 try {
-                    GradleCompat.get().configureTask(project, sourceSet.classesTaskName) {
+                    GradleCompat.get().configureTask(project, classesTaskName) {
                         it.dependsOn(transformTask)
                     }
                 } catch (e: UnknownDomainObjectException) {
-                    throw RuntimeException("Could not find classes task '${sourceSet.classesTaskName}'.", e)
+                    throw RuntimeException("Could not find classes task '$classesTaskName'.", e)
                 }
+
+                if (env.debug) println("[ObjectBox] Added $taskName, depends on $classesTaskName.")
+
                 val compileJavaTask = try {
                     GradleCompat.get().getTask(project, sourceSet.compileJavaTaskName)
                 } catch (e: UnknownTaskException) {
@@ -121,8 +124,6 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
                     it.mustRunAfter(compileJavaTask)
 
                     it.doLast {
-                        if (env.debug) println("### Executing $transformTask in $project")
-
                         // fine to get() compileJava task, no more need to defer its creation
                         val compileJavaTaskOutputDir = GradleCompat.get()
                             .getTask(project, JavaCompile::class.java, sourceSet.compileJavaTaskName)
