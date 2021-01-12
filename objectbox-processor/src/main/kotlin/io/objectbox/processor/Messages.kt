@@ -29,7 +29,7 @@ import javax.tools.Diagnostic
 /**
  * Helps raise and keep count of errors during processing.
  */
-class Messages(val messager: Messager, val debug: Boolean) {
+class Messages(private val messager: Messager, private val debug: Boolean) {
 
     var errorCount: Int = 0
 
@@ -43,13 +43,6 @@ class Messages(val messager: Messager, val debug: Boolean) {
         if (debug) {
             printMessage(Diagnostic.Kind.NOTE, message)
         }
-    }
-
-    /**
-     * Prints `message` as note.
-     */
-    fun info(message: String) {
-        printMessage(Diagnostic.Kind.NOTE, message)
     }
 
     /**

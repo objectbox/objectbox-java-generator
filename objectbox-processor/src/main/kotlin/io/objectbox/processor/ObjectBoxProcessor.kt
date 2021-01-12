@@ -142,7 +142,15 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         incremental = "false" != options[OPTION_INCREMENTAL] // Default true (opt-out).
 
         messages = Messages(env.messager, debug)
-        messages.info("Starting ObjectBox processor (debug: $debug, incremental: $incremental)")
+        messages.debug("""Starting processor
+            modelPath=$customModelPath
+            myObjectBoxPackage=$customDefaultPackage
+            daoCompat=$daoCompat
+            daoPackage=$daoCompatPackage
+            flatbuffersSchemaFolder=$flatbuffersSchemaPath
+            transformationEnabled=$transformationEnabled
+            allowNumberedConstructorArgs=$allowNumberedConstructorArgs
+            incremental=$incremental""")
     }
 
     override fun getSupportedAnnotationTypes(): Set<String> {
