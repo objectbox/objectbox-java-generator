@@ -19,6 +19,8 @@
 package io.objectbox.gradle.transform
 
 import io.objectbox.BoxStoreBuilder
+import io.objectbox.logging.log
+import io.objectbox.logging.logWarning
 import io.objectbox.reporting.BasicBuildTracker
 import javassist.ClassPool
 import javassist.CtClass
@@ -169,7 +171,7 @@ class ClassTransformer(val debug: Boolean = false) {
 
     private fun transformEntity(context: Context, ctClassEntity: CtClass, ctClass: CtClass, entityClass: ProbedClass): Boolean {
         val hasRelations = entityClass.hasRelation(context.entityTypes)
-        if (debug) println("Checking to transform \"${ctClass.name}\" (has relations: $hasRelations)")
+        if (debug) log("Checking to transform \"${ctClass.name}\" (has relations: $hasRelations)")
         var changed = checkBoxStoreField(ctClass, context, hasRelations)
         if (hasRelations) {
             val toOneFields = findRelationFields(context, ctClassEntity, ctClass, ClassConst.toOneDescriptor, ClassConst.toOne)
@@ -181,7 +183,7 @@ class ClassTransformer(val debug: Boolean = false) {
             if (transformConstructors(context, ctClassEntity, ctClass, toOneFields + toManyFields)) changed = true
         }
         if (changed) {
-            if (debug) println("Writing transformed entity \"${ctClass.name}\"")
+            if (debug) log("Writing transformed entity \"${ctClass.name}\"")
             ctClass.writeFile(entityClass.outDir.absolutePath)
         }
         return changed
@@ -269,7 +271,7 @@ class ClassTransformer(val debug: Boolean = false) {
             // Skip constructors that call another (this) constructor to avoid initializing fields multiple times.
             // This would also overwrite potential changes to relation fields made in the called constructor.
             if (!constructor.callsSuper()) { // "calls super()" == "does not call this()"
-                if (debug) println("Skipping constructor ${constructor.longName} calling another constructor")
+                if (debug) log("Skipping constructor ${constructor.longName} calling another constructor")
                 continue
             }
 
@@ -290,7 +292,7 @@ class ClassTransformer(val debug: Boolean = false) {
                     else if (field.relationType == ClassConst.toMany) context.stats.toManyInitializerAdded++
                     changed = true
                 } else {
-                    println("Warning: ${ctClass.name} constructor initializes relation field '$fieldName', this might break ObjectBox relations")
+                    logWarning("${ctClass.name} constructor initializes relation field '$fieldName', this might break ObjectBox relations")
                 }
             }
         }
@@ -399,7 +401,7 @@ class ClassTransformer(val debug: Boolean = false) {
 
             val existingCode = attachCtMethod.methodInfo.codeAttribute.code
             if (existingCode.size != 1 || existingCode[0] != Opcode.RETURN.toByte()) {
-                println("Warning: ${ctClass.name}.${ClassConst.cursorAttachEntityMethodName} body not empty")
+                logWarning("${ctClass.name}.${ClassConst.cursorAttachEntityMethodName} body not empty")
             }
 
             var assignsBoxStoreField = false
@@ -412,7 +414,7 @@ class ClassTransformer(val debug: Boolean = false) {
                 }
             })
             if (assignsBoxStoreField) {
-                println("Warning: ${ctClass.name}.${ClassConst.cursorAttachEntityMethodName} assigns " +
+                logWarning("${ctClass.name}.${ClassConst.cursorAttachEntityMethodName} assigns " +
                         "${ClassConst.boxStoreFieldName}, this might break ObjectBox relations")
                 return false // just copy, change nothing
             }
@@ -421,7 +423,7 @@ class ClassTransformer(val debug: Boolean = false) {
 
             val code = "\$1.${ClassConst.boxStoreFieldName} = \$0.boxStoreForEntities;"
             attachCtMethod.insertAfter(code)
-            if (debug) println("Writing transformed cursor '${ctClass.name}'")
+            if (debug) log("Writing transformed cursor '${ctClass.name}'")
             ctClass.writeFile(outDir.absolutePath)
             return true
         } else return false

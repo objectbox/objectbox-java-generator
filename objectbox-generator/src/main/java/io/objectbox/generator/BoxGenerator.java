@@ -63,9 +63,9 @@ public class BoxGenerator {
     private final Template templateBoxUnitTest;
 
     public BoxGenerator() throws IOException {
-        System.out.println("ObjectBox Generator");
-        System.out.println("Copyright 2017-2018 ObjectBox Ltd, objectbox.io. Licensed under GPL V3.");
-        System.out.println("This program comes with ABSOLUTELY NO WARRANTY");
+        log("ObjectBox Generator");
+        log("Copyright 2017-2018 ObjectBox Ltd, objectbox.io. Licensed under GPL V3.");
+        log("This program comes with ABSOLUTELY NO WARRANTY");
 
         patternKeepIncludes = compilePattern("INCLUDES");
         patternKeepFields = compilePattern("FIELDS");
@@ -122,7 +122,7 @@ public class BoxGenerator {
             throw new IllegalStateException("Must call schema.finish() first");
         }
 
-        System.out.println("Processing schema version " + schema.getVersion() + "...");
+        log("Processing schema version " + schema.getVersion() + "...");
 
         List<Entity> entities = schema.getEntities();
         for (Entity entity : entities) {
@@ -142,7 +142,7 @@ public class BoxGenerator {
                     generate(templateBoxUnitTest, outputTest, javaPackageTest, classNameTest, ".java",
                             schema, entity, null);
                 } else {
-                    System.out.println("Skipped " + (testFile != null ? testFile.getCanonicalPath() : classNameTest));
+                    log("Skipped " + (testFile != null ? testFile.getCanonicalPath() : classNameTest));
                 }
             }
         }
@@ -166,7 +166,7 @@ public class BoxGenerator {
         }
 
         long time = System.currentTimeMillis() - start;
-        System.out.println("Processed " + entities.size() + " entities in " + time + "ms");
+        log("Processed " + entities.size() + " entities in " + time + "ms");
     }
 
     /**
@@ -337,7 +337,7 @@ public class BoxGenerator {
                 template.process(root, writer);
                 writer.flush();
             }
-            System.out.println("Written " + filePath);
+            log("Written " + filePath);
         } catch (Exception ex) {
             System.err.println("Data map for template: " + root);
             System.err.println("Error while generating " + filePath);
@@ -379,4 +379,7 @@ public class BoxGenerator {
         return list != null && !list.isEmpty();
     }
 
+    private static void log(String message) {
+        System.out.println("[ObjectBox] " + message);
+    }
 }

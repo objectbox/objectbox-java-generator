@@ -33,6 +33,7 @@ import com.android.build.gradle.TestExtension
 import com.android.build.gradle.TestPlugin
 import com.android.build.gradle.api.BaseVariant
 import com.android.build.gradle.api.UnitTestVariant
+import io.objectbox.logging.log
 import io.objectbox.gradle.GradleBuildTracker
 import io.objectbox.gradle.PluginOptions
 import io.objectbox.gradle.util.GradleCompat
@@ -199,7 +200,7 @@ class ObjectBoxAndroidTransform(val options: PluginOptions) : Transform() {
             info.inputs.forEach { transformInput ->
                 // Look through directory inputs to transform or just copy.
                 transformInput.directoryInputs.forEach { directoryInput ->
-                    if (options.debug) println("Input directory: ${directoryInput.name} ${directoryInput.file}")
+                    if (options.debug) log("Input directory: ${directoryInput.name} ${directoryInput.file}")
                     // Output files to directory unique for this input directory.
                     val outDir = info.outputProvider.getContentLocation(
                         directoryInput.name,
@@ -207,7 +208,7 @@ class ObjectBoxAndroidTransform(val options: PluginOptions) : Transform() {
                         scopes,
                         Format.DIRECTORY
                     )
-                    if (options.debug) println("Output directory: $outDir")
+                    if (options.debug) log("Output directory: $outDir")
 
                     // TODO incremental: directoryInput.changedFiles
 
@@ -224,20 +225,20 @@ class ObjectBoxAndroidTransform(val options: PluginOptions) : Transform() {
                             copied += 1
                         }
                     }
-                    if (options.debug) println("Copied $copied files, will check $classes classes if transform required.")
+                    if (options.debug) log("Copied $copied files, will check $classes classes if transform required.")
                 }
 
                 // Not looking at class files in JARs, just copy them.
                 // It appears only Android Gradle Plugin 3.6.0 uses this to pass the R classes in a JAR.
                 // https://github.com/objectbox/objectbox-java/issues/817
                 transformInput.jarInputs.forEach { jarInput ->
-                    if (options.debug) println("Input JAR: ${jarInput.name} ${jarInput.file}")
+                    if (options.debug) log("Input JAR: ${jarInput.name} ${jarInput.file}")
                     // Note: TransformOutputProvider.getContentLocation(name, ...) returns the same file if all params
                     // match. Make sure name differs for each JAR to avoid overwriting an already copied JAR.
                     val outFileJar =
                         info.outputProvider.getContentLocation(jarInput.name, outputTypes, scopes, Format.JAR)
                     jarInput.file.copyTo(outFileJar, overwrite = true)
-                    if (options.debug) println("Output JAR: $outFileJar")
+                    if (options.debug) log("Output JAR: $outFileJar")
                 }
             }
 
