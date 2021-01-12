@@ -19,6 +19,7 @@
 package io.objectbox.gradle.transform
 
 import io.objectbox.gradle.GradleBuildTracker
+import io.objectbox.logging.log
 import java.io.File
 
 /**
@@ -35,7 +36,7 @@ class ObjectBoxJavaTransform(val debug: Boolean) {
 
             val classProber = ClassProber()
             byteCodeDirs.forEach { byteCodeDir ->
-                if (debug) println("Detected byte code dir ${byteCodeDir.path}")
+                if (debug) log("Detected byte code dir ${byteCodeDir.path}")
                 byteCodeDir.walk().filter { it.isFile }.forEach { file ->
                     if (file.name.endsWith(".class")) {
                         // overwrite original files with transformed files: so outDir == byteCodeDir

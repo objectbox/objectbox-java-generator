@@ -22,6 +22,7 @@ import io.objectbox.gradle.transform.ObjectBoxAndroidTransform
 import io.objectbox.gradle.transform.ObjectBoxJavaTransform
 import io.objectbox.gradle.transform.TransformException
 import io.objectbox.gradle.util.GradleCompat
+import io.objectbox.logging.log
 import org.gradle.api.Action
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -109,7 +110,7 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
                     throw RuntimeException("Could not find classes task '$classesTaskName'.", e)
                 }
 
-                if (env.debug) println("[ObjectBox] Added $taskName, depends on $classesTaskName.")
+                if (env.debug) log("Added $taskName task, depends on $classesTaskName task.")
 
                 val compileJavaTask = try {
                     GradleCompat.get().getTask(project, sourceSet.compileJavaTaskName)
@@ -143,7 +144,7 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
 
         val prepareTask = GradleCompat.get()
             .registerTask(project, prepareTaskName, PrepareTask::class.java, env, buildTracker)
-        if (DEBUG) println("### Registered $prepareTask in $project")
+        if (DEBUG) log("Registered $prepareTask in $project")
 
         // make build task depend on prepare task
         val configureDepends = Action<Task> { it.dependsOn(prepareTask) }
@@ -159,7 +160,7 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
         if ((env.hasKotlinPlugin || env.hasKotlinAndroidPlugin) && !project.hasConfig("kapt")) {
             // Note: no-op if kapt plugin was already applied.
             project.plugins.apply("kotlin-kapt")
-            if (DEBUG) println("### Applied 'kotlin-kapt'.")
+            if (DEBUG) log("Applied 'kotlin-kapt'.")
         }
 
         // Note: use plugin version for processor dependency as processor is part of this project.
@@ -209,9 +210,9 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
         }
 
         if (env.hasKotlinPlugin || env.hasKotlinAndroidPlugin) {
-            if (DEBUG) println("### Kotlin plugin detected")
+            if (DEBUG) log("Kotlin plugin detected")
             if (project.hasObjectBoxDep("objectbox-kotlin")) {
-                if (DEBUG) println("### Detected objectbox-kotlin dependency, not auto-adding.")
+                if (DEBUG) log("Detected objectbox-kotlin dependency, not auto-adding.")
             } else {
                 project.addDep(compileConfig, "io.objectbox:objectbox-kotlin:${ProjectEnv.Const.javaVersionToApply}")
             }
@@ -240,14 +241,14 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
         val nativeVersion = getNativeLibraryVersionToApply()
         val project = env.project
 
-        if (DEBUG) println("### Detected OS: ${env.osName} is64=${env.is64Bit} " +
+        if (DEBUG) log("Detected OS: ${env.osName} is64=${env.is64Bit} " +
                 "isLinux64=${env.isLinux64} isWindows64=${env.isWindows64} isMac64=${env.isMac64}")
 
         // note: for this detection to work apply the plugin after the dependencies block
         if (project.hasObjectBoxDep("objectbox-linux", searchTestConfigs)
                 || project.hasObjectBoxDep("objectbox-windows", searchTestConfigs)
                 || project.hasObjectBoxDep("objectbox-macos", searchTestConfigs)) {
-            if (DEBUG) println("### Detected native dependency, not auto-adding one.")
+            if (DEBUG) log("Detected native dependency, not auto-adding one.")
         } else {
             when {
                 env.isLinux64 -> project.addDep(config, "io.objectbox:objectbox-linux:$nativeVersion")
@@ -263,7 +264,7 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
      */
     private fun Project.hasObjectBoxDep(name: String, searchTestConfigs: Boolean = false): Boolean {
         val dependency = findObjectBoxDependency(this, name, searchTestConfigs)
-        if (DEBUG) println("### $name dependency: $dependency")
+        if (DEBUG) log("$name dependency: $dependency")
         return dependency != null
     }
 

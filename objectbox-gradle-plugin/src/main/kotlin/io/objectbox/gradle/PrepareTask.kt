@@ -27,7 +27,6 @@ open class PrepareTask @Inject constructor(
 
     @TaskAction
     fun run() {
-        if (env.debug) println("### Executing $name in $project")
         buildTracker.trackBuild(env)
 
 //            if (ObjectBoxAndroidTransform.Registration.getAndroidExtensionClasses(project).isEmpty()) {

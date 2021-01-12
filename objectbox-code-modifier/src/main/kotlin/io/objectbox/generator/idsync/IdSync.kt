@@ -26,6 +26,7 @@ import com.squareup.moshi.ToJson
 import io.objectbox.generator.IdUid
 import io.objectbox.generator.model.Schema
 import io.objectbox.generator.model.ToManyStandalone
+import io.objectbox.logging.log
 import io.objectbox.model.EntityFlags
 import okio.Buffer
 import okio.Okio
@@ -578,14 +579,14 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
             val existingContent = jsonFile.readBytes()
             val content = buffer.snapshot().toByteArray()
             if (Arrays.equals(existingContent, content)) {
-                println("ID model file unchanged: " + jsonFile.name)
+                log("ID model file unchanged: " + jsonFile.name)
                 return
             } else {
-                println("ID model file changed: " + jsonFile.name + ", creating backup (.bak)")
+                log("ID model file changed: " + jsonFile.name + ", creating backup (.bak)")
                 jsonFile.copyTo(backupFile, true)
             }
         } else {
-            println("ID model file created: " + jsonFile.name)
+            log("ID model file created: " + jsonFile.name)
         }
 
         Okio.sink(jsonFile).use {

@@ -18,6 +18,8 @@
 
 package io.objectbox.gradle.transform
 
+import io.objectbox.logging.log
+
 /**
  * Used by [ClassTransformer] to store and log some statistics about the transform process. Useful for testing.
  */
@@ -41,8 +43,7 @@ class ClassTransformerStats {
 
     fun done() {
         endTime = System.currentTimeMillis()
-        System.out.println("Transformed $countTransformed entities and copied $countCopied classes in $time ms")
-
+        log("Transformed $countTransformed entities and copied $countCopied classes in $time ms")
     }
 
 }
