@@ -103,9 +103,9 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
                 // assumes that classes task depends on compileJava depends on compileKotlin
                 val classesTaskName = sourceSet.classesTaskName
                 try {
-                    GradleCompat.get().configureTask(project, classesTaskName) {
+                    GradleCompat.get().configureTask(project, sourceSet.classesTaskName, Action {
                         it.dependsOn(transformTask)
-                    }
+                    })
                 } catch (e: UnknownDomainObjectException) {
                     throw RuntimeException("Could not find classes task '$classesTaskName'.", e)
                 }
@@ -118,7 +118,7 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
                     throw RuntimeException("Could not find compileJava task '${sourceSet.compileJavaTaskName}'.", e)
                 }
 
-                GradleCompat.get().configureTask(project, taskName) {
+                GradleCompat.get().configureTask(project, taskName, Action {
                     it.group = "objectbox"
                     it.description = "Transforms Java bytecode"
 
@@ -131,7 +131,7 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
                             .destinationDir
                         ObjectBoxJavaTransform(env.debug).transform(listOf(compileJavaTaskOutputDir))
                     }
-                }
+                })
             }
         }
     }
