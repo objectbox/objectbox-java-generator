@@ -136,7 +136,7 @@ property.converter??>, ${property.converterClassName}.class, ${property.customTy
     public static final RelationInfo<${toOne.sourceEntity.className}, ${toOne.targetEntity.className}> ${toOne.name} =
             new RelationInfo<>(${toOne.sourceEntity.className}_.__INSTANCE,<#--
     --> ${toOne.targetEntity.className}_.__INSTANCE,<#--
-    --> ${toOne.targetIdProperty.propertyName},<#--
+    --> ${toOne.idRefPropertyName},<#--
     --> new ToOneGetter<${toOne.sourceEntity.className}>() {
                 @Override
                 public ToOne<${toOne.targetEntity.className}> getToOne(${toOne.sourceEntity.className} entity) {
@@ -156,18 +156,19 @@ property.converter??>, ${property.converterClassName}.class, ${property.customTy
                     return entity.${toMany.valueExpression};
                 }
             },
-            <#if toMany.targetProperties??>${toMany.targetEntity.className}_.${toMany.targetProperties[0].propertyName},
+            <#-- Instead of checking if instance is ToManyByBacklink, use Freemarker to check for properties that only it has. -->
+            <#if toMany.targetToOne??>${toMany.targetEntity.className}_.${toMany.targetToOne.idRefPropertyName},
             new ToOneGetter<${toMany.targetEntity.className}>() {
                 @Override
                 public ToOne<${toMany.sourceEntity.className}> getToOne(${toMany.targetEntity.className} entity) {
-                    return entity.${toMany.backlinkToOne.toOneValueExpression};
+                    return entity.${toMany.targetToOne.toOneValueExpression};
                 }
-            }<#else><#if toMany.backlinkToMany??>new ToManyGetter<${toMany.targetEntity.className}>() {
+            }<#else><#if toMany.targetToMany??>new ToManyGetter<${toMany.targetEntity.className}>() {
                 @Override
                 public List<${toMany.sourceEntity.className}> getToMany(${toMany.targetEntity.className} entity) {
-                    return entity.${toMany.backlinkToMany.valueExpression};
+                    return entity.${toMany.targetToMany.valueExpression};
                 }
-            }, ${toMany.backlinkToMany.modelId.id}<#else> ${toMany.modelId.id}</#if></#if>);
+            }, ${toMany.targetToMany.modelId.id}<#else> ${toMany.modelId.id}</#if></#if>);
 
     </#list>
 </#if>

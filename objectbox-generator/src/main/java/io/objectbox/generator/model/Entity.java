@@ -135,28 +135,28 @@ public class Entity implements HasParsedElement {
 
     /**
      * Adds a to-many relation based on a to-one relation ({@link #addToOne}) from another entity to this entity.
-     * The to-one relation is specified by its target ID property in the other entity.
      *
      * @throws ModelException if this entity already has a property or relation with {@code name}.
      */
-    public ToMany addToManyByToOneBacklink(Entity entityWithToOne, Property targetIdProperty, String name)
+    public ToManyByBacklink addToManyByToOneBacklink(ToManyByBacklink toMany, Entity targetEntity, ToOne targetToOne)
             throws ModelException {
-        Property[] targetProperties = {targetIdProperty};
-        ToMany toMany = new ToMany(this, null, entityWithToOne, targetProperties);
-        setNameAndAddToMany(toMany, name);
+        toMany.setSourceAndTargetEntity(this, targetEntity);
+        toMany.setTargetToOne(targetToOne);
+        trackNameAndaddToMany(toMany);
         return toMany;
     }
 
     /**
      * Adds a to-many relation based on a (stand-alone) to-many relation ({@link #addToMany}) from another entity
-     * to this entity. The to-many relation is specified using its name in the other entity.
+     * to this entity.
      *
      * @throws ModelException if this entity already has a property or relation with {@code name}.
      */
-    public ToManyToMany addToManyByToManyBacklink(Entity entityWithToMany, String linkedToManyName, String name)
-            throws ModelException {
-        ToManyToMany toMany = new ToManyToMany(this, entityWithToMany, linkedToManyName);
-        setNameAndAddToMany(toMany, name);
+    public ToManyByBacklink addToManyByToManyBacklink(ToManyByBacklink toMany, Entity targetEntity,
+            ToManyStandalone targetToMany) throws ModelException {
+        toMany.setSourceAndTargetEntity(this, targetEntity);
+        toMany.setTargetToMany(targetToMany);
+        trackNameAndaddToMany(toMany);
         return toMany;
     }
 
@@ -165,37 +165,27 @@ public class Entity implements HasParsedElement {
      *
      * @throws ModelException if this entity already has a property or relation with {@code name}.
      */
-    public ToManyStandalone addToMany(Entity target, String name) throws ModelException {
-        ToManyStandalone toMany = new ToManyStandalone(this, target);
-        setNameAndAddToMany(toMany, name);
+    public ToManyStandalone addToMany(ToManyStandalone toMany, Entity target) throws ModelException {
+        toMany.setSourceAndTargetEntity(this, target);
+        trackNameAndaddToMany(toMany);
         return toMany;
     }
 
-    private void setNameAndAddToMany(ToManyBase toMany, String name) throws ModelException {
-        toMany.setName(name);
-        trackUniqueName(names, name, toMany);
+    private void trackNameAndaddToMany(ToManyBase toMany) throws ModelException {
+        trackUniqueName(names, toMany.getName(), toMany);
         toManyRelations.add(toMany);
-        toMany.targetEntity.incomingToManyRelations.add(toMany);
+        toMany.getTargetEntity().getIncomingToManyRelations().add(toMany);
     }
 
     /**
-     * Adds a to-one relationship to the given target entity using the given given foreign key property (which belongs
-     * to this entity).
+     * Adds a to-one relationship to the given target entity.
      *
      * @throws ModelException if this entity already has a property or relation with {@code name}.
      */
-    public ToOne addToOne(Entity target, Property targetIdProperty, String name, String nameToOne,
-                          boolean toOneFieldAccessible) throws ModelException {
-        targetIdProperty.convertToRelationId(target);
-        ToOne toOne = new ToOne(schema, this, target, targetIdProperty, true);
-        toOne.setName(name);
-        toOne.setNameToOne(nameToOne);
-        toOne.setToOneFieldAccessible(toOneFieldAccessible);
+    public ToOne addToOne(ToOne toOne, Entity target) throws ModelException {
+        toOne.setSourceAndTargetEntity(this, target);
         toOneRelations.add(toOne);
-        trackUniqueName(names, name, toOne);
-        if (nameToOne != null && !nameToOne.equals(name)) {
-            trackUniqueName(names, nameToOne, toOne);
-        }
+        trackUniqueName(names, toOne.getName(), toOne);
         return toOne;
     }
 
@@ -349,21 +339,10 @@ public class Entity implements HasParsedElement {
 
         propertiesColumns = new ArrayList<>(properties);
         for (ToOne toOne : toOneRelations) {
-            toOne.init2ndPass();
-            Property targetIdProperty = toOne.getTargetIdProperty();
+            Property targetIdProperty = toOne.getIdRefProperty();
             if (!propertiesColumns.contains(targetIdProperty)) {
                 propertiesColumns.add(targetIdProperty);
             }
-        }
-
-        for (ToManyBase toMany : toManyRelations) {
-            toMany.init2ndPass();
-            // Source Properties may not be virtual, so we do not need the following code:
-            // for (Property sourceProperty : toMany.getSourceProperties()) {
-            // if (!propertiesColumns.contains(sourceProperty)) {
-            // propertiesColumns.add(sourceProperty);
-            // }
-            // }
         }
     }
 
@@ -407,9 +386,6 @@ public class Entity implements HasParsedElement {
         }
         for (ToOne toOne : toOneRelations) {
             trackUniqueName(names, toOne.getName(), toOne);
-            if (toOne.getNameToOne() != null && !toOne.getNameToOne().equals(toOne.getName())) {
-                trackUniqueName(names, toOne.getNameToOne(), toOne);
-            }
         }
         for (ToManyBase toMany : toManyRelations) {
             trackUniqueName(names, toMany.getName(), toMany);
@@ -430,14 +406,6 @@ public class Entity implements HasParsedElement {
         }
         for (ToManyBase toMany : toManyRelations) {
             toMany.init3rdPass();
-            if (toMany instanceof ToMany) {
-                Entity targetEntity = toMany.getTargetEntity();
-                for (Property targetProperty : ((ToMany) toMany).getTargetProperties()) {
-                    if (!targetEntity.propertiesColumns.contains(targetProperty)) {
-                        targetEntity.propertiesColumns.add(targetProperty);
-                    }
-                }
-            }
         }
     }
 

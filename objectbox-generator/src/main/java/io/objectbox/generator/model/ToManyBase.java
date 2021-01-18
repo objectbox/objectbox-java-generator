@@ -22,15 +22,32 @@ import io.objectbox.generator.TextUtil;
 
 /** Base class for to-many relationship from source entities to target entities. */
 public abstract class ToManyBase implements HasParsedElement {
-    protected String name;
-    protected final Entity sourceEntity;
-    protected final Entity targetEntity;
-    private boolean fieldAccessible;
+    private final String name;
+    private final String targetEntityName;
+    private final boolean fieldAccessible;
+
+    private Entity sourceEntity;
+    private Entity targetEntity;
     private Object parsedElement;
 
-    public ToManyBase(Entity sourceEntity, Entity targetEntity) {
-        this.sourceEntity = sourceEntity;
-        this.targetEntity = targetEntity;
+    /**
+     * @param name The name of the relation, which is used as the property name in the entity
+     *             (the source entity owning the to-many relationship).
+     */
+    ToManyBase(String name, String targetEntityName, boolean isFieldAccessible) {
+        if (name == null) {
+            throw new IllegalArgumentException("name must not be null");
+        }
+        if (targetEntityName == null) {
+            throw new IllegalArgumentException("targetEntityName must not be null");
+        }
+        this.name = name;
+        this.targetEntityName = targetEntityName;
+        this.fieldAccessible = isFieldAccessible;
+    }
+
+    public String getTargetEntityName() {
+        return targetEntityName;
     }
 
     public Entity getSourceEntity() {
@@ -41,24 +58,13 @@ public abstract class ToManyBase implements HasParsedElement {
         return targetEntity;
     }
 
+    void setSourceAndTargetEntity(Entity sourceEntity, Entity targetEntity) {
+        this.sourceEntity = sourceEntity;
+        this.targetEntity = targetEntity;
+    }
+
     public String getName() {
         return name;
-    }
-
-    /**
-     * Sets the name of the relation, which is used as the property name in the entity (the source entity owning the
-     * to-many relationship).
-     */
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public boolean isFieldAccessible() {
-        return fieldAccessible;
-    }
-
-    public void setFieldAccessible(boolean fieldAccessible) {
-        this.fieldAccessible = fieldAccessible;
     }
 
     public String getValueExpression() {
@@ -75,15 +81,10 @@ public abstract class ToManyBase implements HasParsedElement {
         this.parsedElement = parsedElement;
     }
 
-    void init2ndPass() {
-        if (name == null) {
-            char[] nameCharArray = targetEntity.getClassName().toCharArray();
-            nameCharArray[0] = Character.toLowerCase(nameCharArray[0]);
-            name = new String(nameCharArray) + "List";
-        }
-    }
-
     void init3rdPass() {
+        if (sourceEntity == null || targetEntity == null) {
+            throw new IllegalStateException("Source and target entity are not set for " + this + ".");
+        }
     }
 
     @Override

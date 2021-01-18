@@ -29,6 +29,8 @@ import io.objectbox.generator.model.Index;
 import io.objectbox.generator.model.Property;
 import io.objectbox.generator.model.PropertyType;
 import io.objectbox.generator.model.Schema;
+import io.objectbox.generator.model.ToOne;
+
 
 import static org.junit.Assert.*;
 
@@ -212,7 +214,16 @@ public class SimpleBoxGeneratorTest {
         order.addIdProperty().modelId(new IdUid(1, 1004)).getProperty();
         Property customerId = order.addProperty(PropertyType.Long, "customerId").modelId(new IdUid(2, 1005))
                 .modelIndexId(new IdUid(1, 1100)).getProperty();
-        order.addToOne(customer, customerId, "customer", null, false);
+        ToOne toOne = new ToOne(
+                "customer",
+                false,
+                null,
+                null,
+                null,
+                "Customer"
+        );
+        toOne.setIdRefProperty(customerId);
+        order.addToOne(toOne, customer);
 
         File outputDir = new File("build/test-out");
         outputDir.mkdirs();

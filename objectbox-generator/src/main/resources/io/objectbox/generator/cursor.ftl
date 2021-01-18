@@ -75,11 +75,11 @@ public final class ${entity.classNameDao} extends Cursor<${entity.className}> {
     @Override
     public final long put(${entity.className} entity) {
 <#list entity.toOneRelations as toOne>
-        ToOne<${toOne.targetEntity.className}> ${toOne.nameToOne} = entity.${toOne.toOneValueExpression};
-        if(${toOne.nameToOne} != null && ${toOne.nameToOne}.internalRequiresPutTarget()) {
+        ToOne<${toOne.targetEntity.className}> ${toOne.name} = entity.${toOne.toOneValueExpression};
+        if(${toOne.name} != null && ${toOne.name}.internalRequiresPutTarget()) {
             Cursor<${toOne.targetEntity.className}> targetCursor = getRelationTargetCursor(${toOne.targetEntity.className}.class);
             try {
-                ${toOne.nameToOne}.internalPutTarget(targetCursor);
+                ${toOne.name}.internalPutTarget(targetCursor);
             } finally {
                 targetCursor.close();
             }

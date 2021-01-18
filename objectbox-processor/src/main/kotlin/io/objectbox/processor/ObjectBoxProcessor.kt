@@ -340,8 +340,8 @@ open class ObjectBoxProcessor : AbstractProcessor() {
                     "add a field '__boxStore' of type 'BoxStore'.", entity)
         }
 
-        // add missing target ID properties and indexes for to-one relations
-        relations.ensureTargetIdProperties(entityModel)
+        // Add or verify target ID reference properties for to-one relations.
+        relations.ensureToOneIdRefProperties(entityModel)
 
         // signal if a constructor will be available
         entityModel.setHasAllArgsConstructor(hasAllArgsConstructor(entity, entityModel))

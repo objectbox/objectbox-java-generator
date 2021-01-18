@@ -15,30 +15,28 @@
  * You should have received a copy of the GNU General Public License
  * along with ObjectBox Build Tools.  If not, see <http://www.gnu.org/licenses/>.
  */
+package io.objectbox.generator.model
 
-package io.objectbox.generator.model;
+import io.objectbox.generator.IdUid
 
 /**
- * Currently available types for properties.
- *
- * @author Markus
+ * To-many relationship from a source entity to many target entities.
  */
-public enum PropertyType {
+class ToManyStandalone(
+    name: String,
+    dbName: String?,
+    targetEntityName: String,
+    isFieldAccessible: Boolean,
+    uid: Long?
+) : ToManyBase(name, targetEntityName, isFieldAccessible) {
 
-    Boolean(true), Byte(true), Short(true), Char(true), Int(true), Long(true), Float(true), Double(true),
-    String(false), ByteArray(false), Date(false),
-    /** a long representing a ObjectBox to-one relation */
-    RelationId(true);
+    var modelId: IdUid? = null
+    val dbName: String = dbName ?: name
 
-    private final boolean scalar;
-
-    PropertyType(boolean scalar) {
-        this.scalar = scalar;
-    }
-
-    /** True if the type can be prepresented using a scalar (primitive type). */
-    public boolean isScalar() {
-        return scalar;
+    init {
+        if (uid != null) {
+            modelId = IdUid(0, uid)
+        }
     }
 
 }
