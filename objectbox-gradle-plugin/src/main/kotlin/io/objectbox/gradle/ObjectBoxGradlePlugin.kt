@@ -58,10 +58,11 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
         try {
             val env = ProjectEnv(project)
             if (!(env.hasAndroidPlugin || env.hasJavaPlugin || env.hasKotlinPlugin)) {
-                throw InvalidPluginException("'$pluginId' expects one of the following plugins to be applied to the project:\n" +
-                        "\t* java\n" +
-                        "\t* kotlin\n" +
-                        "\t${env.androidPluginIds.joinToString("\n\t") { "* $it" }}"
+                throw InvalidPluginException(
+                    "'$pluginId' expects one of the following plugins to be applied to the project:\n" +
+                            "\t* java\n" +
+                            "\t* kotlin\n" +
+                            "\t${env.androidPluginIds.joinToString("\n\t") { "* $it" }}"
                 )
             }
             addDependenciesAnnotationProcessor(env)
@@ -94,7 +95,8 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
             javaPlugin.sourceSets.forEach { sourceSet ->
                 // name task based on SourceSet
                 val sourceSetName = sourceSet.name
-                val taskName = "objectboxJavaTransform" + if (sourceSetName != "main") sourceSetName.capitalize() else ""
+                val taskName =
+                    "objectboxJavaTransform" + if (sourceSetName != "main") sourceSetName.capitalize() else ""
 
                 // use register to defer creation until use
                 val transformTask = GradleCompat.get().registerTask(project, taskName)
@@ -181,8 +183,10 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
                 project.addDep("apt", processorDep)
             }
             else -> {
-                project.logger.warn("ObjectBox: Could not add dependency on objectbox-processor, " +
-                        "no supported configuration (kapt, annotationProcessor, apt) found.")
+                project.logger.warn(
+                    "ObjectBox: Could not add dependency on objectbox-processor, " +
+                            "no supported configuration (kapt, annotationProcessor, apt) found."
+                )
             }
         }
     }
@@ -221,7 +225,8 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
         if (env.hasAndroidPlugin) {
             // for this detection to work apply the plugin after the dependencies block
             if (!project.hasObjectBoxDep("objectbox-android") &&
-                    !project.hasObjectBoxDep("objectbox-android-objectbrowser")) {
+                !project.hasObjectBoxDep("objectbox-android-objectbrowser")
+            ) {
                 project.addDep(compileConfig, "io.objectbox:objectbox-android:${getNativeLibraryVersionToApply()}")
             }
 
@@ -241,13 +246,16 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
         val nativeVersion = getNativeLibraryVersionToApply()
         val project = env.project
 
-        if (DEBUG) log("Detected OS: ${env.osName} is64=${env.is64Bit} " +
-                "isLinux64=${env.isLinux64} isWindows64=${env.isWindows64} isMac64=${env.isMac64}")
+        if (DEBUG) log(
+            "Detected OS: ${env.osName} is64=${env.is64Bit} " +
+                    "isLinux64=${env.isLinux64} isWindows64=${env.isWindows64} isMac64=${env.isMac64}"
+        )
 
         // note: for this detection to work apply the plugin after the dependencies block
         if (project.hasObjectBoxDep("objectbox-linux", searchTestConfigs)
-                || project.hasObjectBoxDep("objectbox-windows", searchTestConfigs)
-                || project.hasObjectBoxDep("objectbox-macos", searchTestConfigs)) {
+            || project.hasObjectBoxDep("objectbox-windows", searchTestConfigs)
+            || project.hasObjectBoxDep("objectbox-macos", searchTestConfigs)
+        ) {
             if (DEBUG) log("Detected native dependency, not auto-adding one.")
         } else {
             when {
