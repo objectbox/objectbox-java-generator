@@ -21,22 +21,16 @@ package io.objectbox.generator.model;
 import io.objectbox.generator.TextUtil;
 
 /** Base class for to-many relationship from source entities to target entities. */
-@SuppressWarnings("unused")
 public abstract class ToManyBase implements HasParsedElement {
-    @SuppressWarnings("unused")
-    private final Schema schema;
     protected String name;
     protected final Entity sourceEntity;
     protected final Entity targetEntity;
-    private final PropertyOrderList propertyOrderList;
     private boolean fieldAccessible;
     private Object parsedElement;
 
-    public ToManyBase(Schema schema, Entity sourceEntity, Entity targetEntity) {
-        this.schema = schema;
+    public ToManyBase(Entity sourceEntity, Entity targetEntity) {
         this.sourceEntity = sourceEntity;
         this.targetEntity = targetEntity;
-        propertyOrderList = new PropertyOrderList();
     }
 
     public Entity getSourceEntity() {
@@ -69,40 +63,6 @@ public abstract class ToManyBase implements HasParsedElement {
 
     public String getValueExpression() {
         return fieldAccessible ? name : "get" + TextUtil.capFirst(name) + "()";
-    }
-
-    /** Property of target entity used for ascending order. */
-    public void orderAsc(Property... properties) {
-        for (Property property : properties) {
-            targetEntity.validatePropertyExists(property);
-            propertyOrderList.addPropertyAsc(property);
-        }
-    }
-
-    /** Property of target entity used for descending order. */
-    public void orderDesc(Property... properties) {
-        for (Property property : properties) {
-            targetEntity.validatePropertyExists(property);
-            propertyOrderList.addPropertyDesc(property);
-        }
-    }
-
-    public String getOrder() {
-        if (propertyOrderList.isEmpty()) {
-            return null;
-        } else {
-            // Table prefix must match default of QueryBuilder in DaoCore
-            return propertyOrderList.getCommaSeparatedString("T");
-        }
-    }
-
-    /** order spec to be used in generated @OrderBy annotation */
-    public String getOrderSpec() {
-        if (propertyOrderList.isEmpty()) {
-            return null;
-        } else {
-            return propertyOrderList.getOrderSpec();
-        }
     }
 
     @Override

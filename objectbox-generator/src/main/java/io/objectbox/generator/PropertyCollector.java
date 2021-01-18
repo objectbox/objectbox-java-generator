@@ -197,15 +197,7 @@ class PropertyCollector {
             String name = property.getPropertyName();
             String propertyId = "__ID_" + name;
             String propertyIdLocal = "__id" + property.getOrdinal();
-            if (entity.isProtobuf()) {
-                // TODO Test
-                preCall.append(INDENT).append("int ").append(propertyIdLocal).append(" = entity.has")
-                        .append(TextUtil.capFirst(name)).append("() ? ").append(propertyId).append(" : 0;\n");
-                sb.append(propertyIdLocal).append(", ");
-                sb.append(propertyIdLocal).append(" != 0 ? ")
-                        .append("entity.").append(property.getDatabaseValueExpression())
-                        .append(isScalar ? " : 0" : " : null");
-            } else if (property.isNonPrimitiveType()) {
+            if (property.isNonPrimitiveType()) {
                 preCall.append(INDENT).append(property.getJavaTypeInEntity()).append(' ').append(name)
                         .append(" = ").append(getValue(property)).append(";\n");
                 preCall.append(INDENT).append("int ").append(propertyIdLocal).append(" = ").append(name)
@@ -239,7 +231,7 @@ class PropertyCollector {
                                    StringBuilder call, boolean first, boolean last) {
         // ID property before preCall for non-primitives
         // TODO check if we can use fields directly
-        if (last && idProperty.isNonPrimitiveType() && !entity.isProtobuf()) {
+        if (last && idProperty.isNonPrimitiveType()) {
             all.append(INDENT).append(idProperty.getJavaTypeInEntity()).append(' ')
                     .append(idProperty.getPropertyName()).append(" = ").append(getValue(idProperty)).append(";\n");
         }
@@ -252,10 +244,7 @@ class PropertyCollector {
         }
         all.append("collect").append(collectSignature).append("(cursor, ");
         if (last) {
-            if (entity.isProtobuf()) {
-                all.append("entity.has").append(nameCapFirst(idProperty)).append("()? ").append(getValue(idProperty))
-                        .append(": 0");
-            } else if (idProperty.isNonPrimitiveType()) {
+            if (idProperty.isNonPrimitiveType()) {
                 all.append(idProperty.getPropertyName()).append(" != null ? ").append(idProperty.getPropertyName())
                         .append(": 0");
             } else {
@@ -272,9 +261,7 @@ class PropertyCollector {
 
         all.append(call);
         if (last) {
-            if (!entity.isProtobuf()) {
-                all.append(INDENT).append(setValue(idProperty, "__assignedId")).append(";\n");
-            }
+            all.append(INDENT).append(setValue(idProperty, "__assignedId")).append(";\n");
         }
     }
 

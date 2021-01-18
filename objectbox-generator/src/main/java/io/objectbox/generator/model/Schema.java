@@ -29,18 +29,14 @@ import io.objectbox.generator.TextUtil;
 /**
  * The "root" model class to which you can add entities to.
  */
-@SuppressWarnings("unused")
 public class Schema {
     public static final String DEFAULT_NAME = "default";
 
     private final int version;
     private final String defaultJavaPackage;
     private String defaultJavaPackageDao;
-    private String defaultJavaPackageTest;
     private final List<Entity> entities;
     private Map<PropertyType, Mapping> propertyTypeMapping;
-    private boolean hasKeepSectionsByDefault;
-    private boolean useActiveEntitiesByDefault;
     private final String name;
     private final String prefix;
     private IdUid lastEntityId;
@@ -59,14 +55,6 @@ public class Schema {
 
     public Schema(int version, String defaultJavaPackage) {
         this(DEFAULT_NAME, version, defaultJavaPackage);
-    }
-
-    public void enableKeepSectionsByDefault() {
-        hasKeepSectionsByDefault = true;
-    }
-
-    public void enableActiveEntitiesByDefault() {
-        useActiveEntitiesByDefault = true;
     }
 
     private static class Mapping {
@@ -111,22 +99,11 @@ public class Schema {
     }
 
     /**
-     * Adds a new entity to the schema. There can be multiple entities per table, but only one may be the primary entity
-     * per table to create table scripts, etc.
+     * Adds a new entity to the schema.
      */
     public Entity addEntity(String className) {
         Entity entity = new Entity(this, className);
         entities.add(entity);
-        return entity;
-    }
-
-    /**
-     * Adds a new protocol buffers entity to the schema. There can be multiple entities per table, but only one may be
-     * the primary entity per table to create table scripts, etc.
-     */
-    public Entity addProtobufEntity(String className) {
-        Entity entity = addEntity(className);
-        entity.useProtobuf();
         return entity;
     }
 
@@ -166,28 +143,8 @@ public class Schema {
         return defaultJavaPackageDao;
     }
 
-    public void setDefaultJavaPackageDao(String defaultJavaPackageDao) {
-        this.defaultJavaPackageDao = defaultJavaPackageDao;
-    }
-
-    public String getDefaultJavaPackageTest() {
-        return defaultJavaPackageTest;
-    }
-
-    public void setDefaultJavaPackageTest(String defaultJavaPackageTest) {
-        this.defaultJavaPackageTest = defaultJavaPackageTest;
-    }
-
     public List<Entity> getEntities() {
         return entities;
-    }
-
-    public boolean isHasKeepSectionsByDefault() {
-        return hasKeepSectionsByDefault;
-    }
-
-    public boolean isUseActiveEntitiesByDefault() {
-        return useActiveEntitiesByDefault;
     }
 
     public String getName() {
@@ -243,19 +200,16 @@ public class Schema {
         isFinished = true;
     }
 
-    void init2ndPass() {
+    private void init2ndPass() {
         if (defaultJavaPackageDao == null) {
             defaultJavaPackageDao = defaultJavaPackage;
-        }
-        if (defaultJavaPackageTest == null) {
-            defaultJavaPackageTest = defaultJavaPackageDao;
         }
         for (Entity entity : entities) {
             entity.init2ndPass();
         }
     }
 
-    void init3rdPass() throws ModelException {
+    private void init3rdPass() throws ModelException {
         for (Entity entity : entities) {
             entity.init3rdPass();
         }

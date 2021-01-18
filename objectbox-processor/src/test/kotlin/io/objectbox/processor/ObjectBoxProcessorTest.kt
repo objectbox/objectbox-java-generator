@@ -94,12 +94,11 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
         assertThat(schemaEntity.className).isEqualTo(className)
         val dbName = "A"
         assertThat(schemaEntity.dbName).isEqualTo(dbName)
-        assertThat(schemaEntity.isConstructors).isFalse()
+        assertThat(schemaEntity.hasAllArgsConstructor()).isFalse()
 
         // assert index
         assertThat(schemaEntity.indexes).hasSize(2) /* @Index and ToOne */
         val index = schemaEntity.indexes[0]
-        assertThat(index.isNonDefaultName).isFalse()
         assertThat(index.isUnique).isFalse()
         assertThat(index.properties).hasSize(1)
         val indexProperty = index.properties[0]
@@ -312,15 +311,9 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
         val entity = environment.schema.entities.single { it.className == className }
 
         // assert index
-        assertThat(entity.indexes.size).isAtLeast(1)
-        for (index in entity.indexes) {
-            when (index.orderSpec) {
-                "someString ASC" -> {
-                    // just ensure it exists
-                }
-                else -> fail("Found stray index '${index.orderSpec}' in schema.")
-            }
-        }
+        assertThat(entity.indexes).hasSize(1)
+        assertThat(entity.indexes[0].properties).hasSize(1)
+        assertThat(entity.indexes[0].properties[0].propertyName).isEqualTo("someString")
 
         // assert property
         for (property in entity.properties) {
@@ -375,7 +368,7 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
 
         val schema = environment.schema
         val child = schema.entities.single { it.className == childName }
-        assertThat(child.isConstructors).isTrue()
+        assertThat(child.hasAllArgsConstructor()).isTrue()
     }
 
     @Test
@@ -398,7 +391,7 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
         // assert entity
         val entity = schema.entities[0]
         assertThat(entity.className).isEqualTo(entityName)
-        assertThat(entity.isConstructors).isTrue()
+        assertThat(entity.hasAllArgsConstructor()).isTrue()
 
         // assert properties
         for (prop in entity.properties) {

@@ -467,7 +467,7 @@ class IdSyncTest {
             builder.modelId(IdUid(0, uid))
         }
         if (indexed) {
-            builder.indexAsc(null, false)
+            builder.index()
         }
     }
 
@@ -477,7 +477,7 @@ class IdSyncTest {
             builder.modelId(IdUid(0, uid))
         }
         if (indexed) {
-            builder.indexAsc(null, false)
+            builder.index()
         }
         return this
     }
@@ -486,7 +486,7 @@ class IdSyncTest {
      * Adds to-many relation to itself.
      */
     private fun Entity.addTestToMany(name: String): Entity {
-        addToManyStandalone(this, name)
+        addToMany(this, name)
         return this
     }
 

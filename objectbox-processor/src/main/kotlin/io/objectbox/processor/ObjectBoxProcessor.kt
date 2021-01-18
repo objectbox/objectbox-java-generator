@@ -304,11 +304,8 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         }
 
         val entityModel = schema.addEntity(name)
-        entityModel.isSkipGeneration = true // processor may not generate duplicate entity source files
-        entityModel.isSkipCreationInDb = false
         entityModel.javaPackage = elementUtils.getPackageOf(entity).qualifiedName.toString()
         entityModel.javaPackageDao = daoCompatPackage ?: entityModel.javaPackage
-        entityModel.javaPackageTest = entityModel.javaPackageDao // has no effect as tests can not be generated
 
         // @NameInDb
         val nameInDbAnnotation = entity.getAnnotation(NameInDb::class.java)
@@ -347,7 +344,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         relations.ensureTargetIdProperties(entityModel)
 
         // signal if a constructor will be available
-        entityModel.isConstructors = hasAllArgsConstructor(entity, entityModel)
+        entityModel.setHasAllArgsConstructor(hasAllArgsConstructor(entity, entityModel))
     }
 
     /**

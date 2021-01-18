@@ -18,8 +18,6 @@
 
 package io.objectbox.generator;
 
-import org.greenrobot.essentials.io.FileUtils;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
@@ -28,10 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.annotation.processing.Filer;
 
 import freemarker.template.Configuration;
 import freemarker.template.Template;
@@ -49,37 +43,27 @@ public class BoxGenerator {
     public static final String MYOBJECTBOX_FTL = "myobjectbox.ftl";
     public static final String BASE_PACKAGE_PATH = "/io/objectbox/generator/";
 
-    private final Pattern patternKeepIncludes;
-    private final Pattern patternKeepFields;
-    private final Pattern patternKeepMethods;
-
     private final Template templateMyObjectBox;
     private final Template templateCursor;
-    private final Template templateDao;
-    private final Template templateDaoSession;
-    private final Template templateEntity;
     private final Template templateEntityInfo;
     private final Template templateFlatbuffersSchema;
-    private final Template templateBoxUnitTest;
+    // For DAOcompat
+    private final Template templateDao;
+    private final Template templateDaoSession;
 
     public BoxGenerator() throws IOException {
         log("ObjectBox Generator");
         log("Copyright 2017-2018 ObjectBox Ltd, objectbox.io. Licensed under GPL V3.");
         log("This program comes with ABSOLUTELY NO WARRANTY");
 
-        patternKeepIncludes = compilePattern("INCLUDES");
-        patternKeepFields = compilePattern("FIELDS");
-        patternKeepMethods = compilePattern("METHODS");
-
         Configuration config = getConfiguration(MYOBJECTBOX_FTL);
         templateMyObjectBox = config.getTemplate(MYOBJECTBOX_FTL);
         templateCursor = config.getTemplate("cursor.ftl");
-        templateDao = config.getTemplate("dao.ftl");
-        templateDaoSession = config.getTemplate("dao-session.ftl");
-        templateEntity = config.getTemplate("entity.ftl");
         templateEntityInfo = config.getTemplate("entity-info.ftl");
         templateFlatbuffersSchema = config.getTemplate("flatbuffers-schema.ftl");
-        templateBoxUnitTest = config.getTemplate("box-unit-test.ftl");
+        // For DAOcompat
+        templateDao = config.getTemplate("dao.ftl");
+        templateDaoSession = config.getTemplate("dao-session.ftl");
     }
 
     private Configuration getConfiguration(String probingTemplate) throws IOException {
@@ -107,12 +91,6 @@ public class BoxGenerator {
         return config;
     }
 
-    private Pattern compilePattern(String sectionName) {
-        int flags = Pattern.DOTALL | Pattern.MULTILINE;
-        return Pattern.compile(".*^\\s*?//\\s*?KEEP " + sectionName + ".*?\n(.*?)^\\s*// KEEP " + sectionName
-                + " END.*?\n", flags);
-    }
-
     /** Generates all classes and other artifacts for the given job. Assumes the given schema is finished. */
     public void generateAll(GeneratorJob job) throws Exception {
         long start = System.currentTimeMillis();
@@ -128,23 +106,8 @@ public class BoxGenerator {
         for (Entity entity : entities) {
             Map<String, Object> extras = createExtrasForCursor(entity);
             generate(templateCursor, job, entity.getJavaPackageDao(), entity.getClassNameDao(), entity, extras);
-            if (!entity.isProtobuf() && !entity.isSkipGeneration()) {
-                generate(templateEntity, job, entity.getJavaPackage(), entity.getClassName(), entity);
-            }
             generate(templateEntityInfo, job, entity.getJavaPackageDao(), entity.getClassName() + "_",
                     entity, createExtrasForEntityInfo(entity));
-            GeneratorOutput outputTest = job.getOutputTest();
-            if (outputTest != null && !entity.isSkipGenerationTest()) {
-                String javaPackageTest = entity.getJavaPackageTest();
-                String classNameTest = entity.getClassNameTest();
-                File testFile = outputTest.getFileOrNull(javaPackageTest, classNameTest, ".java");
-                if (testFile != null && !testFile.exists()) {
-                    generate(templateBoxUnitTest, outputTest, javaPackageTest, classNameTest, ".java",
-                            schema, entity, null);
-                } else {
-                    log("Skipped " + (testFile != null ? testFile.getCanonicalPath() : classNameTest));
-                }
-            }
         }
         if (job.getOutputFlatbuffersSchema() != null) {
             generate(templateFlatbuffersSchema, job.getOutputFlatbuffersSchema(), "", "flatbuffers", ".fbs",
@@ -230,9 +193,6 @@ public class BoxGenerator {
         String javaPackage = entity.getJavaPackage();
         if (isNotEmpty(javaPackage) && !javaPackage.equals(entity.getJavaPackageDao())) {
             imports.add(String.format("%s.%s", javaPackage, entity.getClassName()));
-        }
-        if (entity.isProtobuf() && isNotEmpty(javaPackage)) {
-            imports.add(String.format("%s.%s.Builder", javaPackage, entity.getClassName()));
         }
 
         imports.addAll(entity.getAdditionalImportsDao());
@@ -325,14 +285,6 @@ public class BoxGenerator {
         }
         String filePath = javaPackage + "." + fileName + fileExtension;
         try {
-            File file = output.getFileOrNull(javaPackage, fileName, fileExtension);
-            if (file != null) {
-                filePath = file.getCanonicalPath();
-                if (entity != null && entity.getHasKeepSections()) {
-                    checkKeepSections(file, root);
-                }
-            }
-
             try (Writer writer = output.createWriter(javaPackage, fileName, fileExtension)) {
                 template.process(root, writer);
                 writer.flush();
@@ -342,32 +294,6 @@ public class BoxGenerator {
             System.err.println("Data map for template: " + root);
             System.err.println("Error while generating " + filePath);
             throw ex;
-        }
-    }
-
-    /** Not really useful at the moment, future version may drop this completely. */
-    private void checkKeepSections(File file, Map<String, Object> root) {
-        if (file.exists()) {
-            try {
-                String contents = FileUtils.readUtf8(file);
-                Matcher matcher;
-                matcher = patternKeepIncludes.matcher(contents);
-                if (matcher.matches()) {
-                    root.put("keepIncludes", matcher.group(1));
-                }
-
-                matcher = patternKeepFields.matcher(contents);
-                if (matcher.matches()) {
-                    root.put("keepFields", matcher.group(1));
-                }
-
-                matcher = patternKeepMethods.matcher(contents);
-                if (matcher.matches()) {
-                    root.put("keepMethods", matcher.group(1));
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }
     }
 

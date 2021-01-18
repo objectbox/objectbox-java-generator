@@ -26,7 +26,6 @@ import io.objectbox.generator.TextUtil;
 import io.objectbox.model.PropertyFlags;
 
 /** Model class for an entity's property: a Java property mapped to a data base representation. */
-@SuppressWarnings("unused")
 public class Property implements HasParsedElement {
 
     public static class PropertyBuilder {
@@ -38,7 +37,6 @@ public class Property implements HasParsedElement {
 
         public PropertyBuilder dbName(String dbName) {
             property.dbName = dbName;
-            property.nonDefaultDbName = dbName != null;
             return this;
         }
 
@@ -59,32 +57,6 @@ public class Property implements HasParsedElement {
 
         public PropertyBuilder primaryKey() {
             property.primaryKey = true;
-            return this;
-        }
-
-        public PropertyBuilder primaryKeyAsc() {
-            property.primaryKey = true;
-            property.pkAsc = true;
-            return this;
-        }
-
-        public PropertyBuilder primaryKeyDesc() {
-            property.primaryKey = true;
-            property.pkDesc = true;
-            return this;
-        }
-
-        public PropertyBuilder autoincrement() {
-            if (!property.primaryKey || property.propertyType != PropertyType.Long) {
-                throw new ModelRuntimeException(
-                        "AUTOINCREMENT is only available to primary key properties of type long/Long");
-            }
-            property.pkAutoincrement = true;
-            return this;
-        }
-
-        public PropertyBuilder unique() {
-            property.unique = true;
             return this;
         }
 
@@ -112,41 +84,14 @@ public class Property implements HasParsedElement {
         }
 
         public PropertyBuilder index() {
-            Index index = new Index();
-            index.addProperty(property);
-            property.entity.addIndex(index);
-            return this;
+            return index(PropertyFlags.INDEXED, 0, false);
         }
 
-        public PropertyBuilder indexAsc(String indexNameOrNull, boolean isUnique) {
-            Index index = new Index();
-            index.addPropertyAsc(property);
-            if (isUnique) {
-                index.makeUnique();
-            }
-            index.setName(indexNameOrNull);
-            property.entity.addIndex(index);
-            return this;
-        }
-
-        public PropertyBuilder indexAsc(String indexNameOrNull, int type, int maxValueLength, boolean unique) {
-            Index index = new Index();
-            index.addPropertyAsc(property);
-            index.setName(indexNameOrNull);
+        public PropertyBuilder index(int type, int maxValueLength, boolean unique) {
+            Index index = new Index(property);
             index.setType(type);
             index.setMaxValueLength(maxValueLength);
-            if(unique) index.makeUnique();
-            property.entity.addIndex(index);
-            return this;
-        }
-
-        public PropertyBuilder indexDesc(String indexNameOrNull, boolean isUnique) {
-            Index index = new Index();
-            index.addPropertyDesc(property);
-            if (isUnique) {
-                index.makeUnique();
-            }
-            index.setName(indexNameOrNull);
+            if (unique) index.makeUnique();
             property.entity.addIndex(index);
             return this;
         }
@@ -156,53 +101,6 @@ public class Property implements HasParsedElement {
             property.customTypeClassName = TextUtil.getClassnameFromFullyQualified(customType);
             property.converter = converter;
             property.converterClassName = TextUtil.getClassnameFromFullyQualified(converter);
-            return this;
-        }
-
-        public PropertyBuilder codeBeforeField(String code) {
-            property.codeBeforeField = code;
-            return this;
-        }
-
-        public PropertyBuilder codeBeforeGetter(String code) {
-            property.codeBeforeGetter = code;
-            return this;
-        }
-
-        public PropertyBuilder codeBeforeSetter(String code) {
-            property.codeBeforeSetter = code;
-            return this;
-        }
-
-        public PropertyBuilder codeBeforeGetterAndSetter(String code) {
-            property.codeBeforeGetter = code;
-            property.codeBeforeSetter = code;
-            return this;
-        }
-
-        public PropertyBuilder javaDocField(String javaDoc) {
-            property.javaDocField = checkConvertToJavaDoc(javaDoc);
-            return this;
-        }
-
-        private String checkConvertToJavaDoc(String javaDoc) {
-            return TextUtil.checkConvertToJavaDoc(javaDoc, "    ");
-        }
-
-        public PropertyBuilder javaDocGetter(String javaDoc) {
-            property.javaDocGetter = checkConvertToJavaDoc(javaDoc);
-            return this;
-        }
-
-        public PropertyBuilder javaDocSetter(String javaDoc) {
-            property.javaDocSetter = checkConvertToJavaDoc(javaDoc);
-            return this;
-        }
-
-        public PropertyBuilder javaDocGetterAndSetter(String javaDoc) {
-            javaDoc = checkConvertToJavaDoc(javaDoc);
-            property.javaDocGetter = javaDoc;
-            property.javaDocSetter = javaDoc;
             return this;
         }
 
@@ -246,20 +144,8 @@ public class Property implements HasParsedElement {
     private String converter;
     private String converterClassName;
 
-    private String codeBeforeField;
-    private String codeBeforeGetter;
-    private String codeBeforeSetter;
-
-    private String javaDocField;
-    private String javaDocGetter;
-    private String javaDocSetter;
-
     private boolean primaryKey;
-    private boolean pkAsc;
-    private boolean pkDesc;
-    private boolean pkAutoincrement;
 
-    private boolean unique;
     private boolean notNull;
     private boolean nonPrimitiveType;
     private boolean idAssignable;
@@ -268,8 +154,6 @@ public class Property implements HasParsedElement {
     private int ordinal;
 
     private String javaType;
-
-    private boolean nonDefaultDbName;
 
     /** For virtual properties, this is target host where the property actually is located (e.g. a {@link ToOne}). */
     private String virtualTargetName;
@@ -305,10 +189,6 @@ public class Property implements HasParsedElement {
         return propertyType;
     }
 
-    void setPropertyType(PropertyType propertyType) {
-        this.propertyType = propertyType;
-    }
-
     public IdUid getModelId() {
         return modelId;
     }
@@ -329,10 +209,6 @@ public class Property implements HasParsedElement {
         return dbName;
     }
 
-    public boolean isNonDefaultDbName() {
-        return nonDefaultDbName;
-    }
-
     public String getDbType() {
         return dbType;
     }
@@ -343,22 +219,6 @@ public class Property implements HasParsedElement {
 
     public boolean isPrimaryKey() {
         return primaryKey;
-    }
-
-    public boolean isPkAsc() {
-        return pkAsc;
-    }
-
-    public boolean isPkDesc() {
-        return pkDesc;
-    }
-
-    public boolean isAutoincrement() {
-        return pkAutoincrement;
-    }
-
-    public boolean isUnique() {
-        return unique;
     }
 
     public boolean isNotNull() {
@@ -410,34 +270,6 @@ public class Property implements HasParsedElement {
         return converterClassName;
     }
 
-    public String getCodeBeforeField() {
-        return codeBeforeField;
-    }
-
-    public String getCodeBeforeGetter() {
-        return codeBeforeGetter;
-    }
-
-    public String getCodeBeforeSetter() {
-        return codeBeforeSetter;
-    }
-
-    public String getJavaDocField() {
-        return javaDocField;
-    }
-
-    public String getJavaDocGetter() {
-        return javaDocGetter;
-    }
-
-    public String getJavaDocSetter() {
-        return javaDocSetter;
-    }
-
-    public boolean isFieldAccessible() {
-        return fieldAccessible;
-    }
-
     public boolean isVirtual() {
         return virtualTargetName != null;
     }
@@ -462,11 +294,10 @@ public class Property implements HasParsedElement {
         if (propertyType != PropertyType.Long && propertyType != PropertyType.RelationId) {
             throw new ModelRuntimeException("Relation ID property must be of type long: " + this);
         }
-        setPropertyType(PropertyType.RelationId);
+        propertyType = PropertyType.RelationId;
         targetEntity = target;
         if (index == null) {
-            index = new Index();
-            index.addProperty(this);
+            index = new Index(this);
             entity.addIndex(index);
         }
     }
@@ -518,34 +349,6 @@ public class Property implements HasParsedElement {
         return builder.toString();
     }
 
-    // Got too messy in template:
-    // <#if property.propertyType == "Byte">(byte) </#if>
-    // <#if property.propertyType == "Date">new java.util.Date(</#if>
-    // cursor.get${toCursorType[property.propertyType]}(offset + ${property_index})
-    // <#if property.propertyType == "Boolean"> != 0</#if>
-    // <#if property.propertyType == "Date">)</#if>
-    public String getEntityValueExpression(String databaseValue) {
-        StringBuilder builder = new StringBuilder();
-        if (customType != null) {
-            builder.append(propertyName).append("Converter.convertToEntityProperty(");
-        }
-        if (propertyType == PropertyType.Byte) {
-            builder.append("(byte) ");
-        } else if (propertyType == PropertyType.Date) {
-            builder.append("new java.util.Date(");
-        }
-        builder.append(databaseValue);
-        if (propertyType == PropertyType.Boolean) {
-            builder.append(" != 0");
-        } else if (propertyType == PropertyType.Date) {
-            builder.append(")");
-        }
-        if (customType != null) {
-            builder.append(')');
-        }
-        return builder.toString();
-    }
-
     public Entity getEntity() {
         return entity;
     }
@@ -568,9 +371,6 @@ public class Property implements HasParsedElement {
         }
         if (dbName == null) {
             dbName = TextUtil.dbName(propertyName);
-            nonDefaultDbName = false;
-        } else if (primaryKey && propertyType == PropertyType.Long && dbName.equals("_id")) {
-            nonDefaultDbName = false;
         }
         if (!nonPrimitiveType) {
             javaType = schema.mapToJavaTypeNotNull(propertyType);

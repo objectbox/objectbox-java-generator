@@ -25,12 +25,10 @@ import io.objectbox.generator.TextUtil;
 public class ToManyStandalone extends ToManyBase {
 
     private IdUid modelId;
-
-    // TODO actually parse and set this
     private String dbName;
 
-    public ToManyStandalone(Schema schema, Entity sourceEntity, Entity targetEntity) {
-        super(schema, sourceEntity, targetEntity);
+    public ToManyStandalone(Entity sourceEntity, Entity targetEntity) {
+        super(sourceEntity, targetEntity);
     }
 
     public IdUid getModelId() {

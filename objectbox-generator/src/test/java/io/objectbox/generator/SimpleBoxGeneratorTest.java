@@ -199,14 +199,6 @@ public class SimpleBoxGeneratorTest {
         assertEquals("CamelCaseXXXX", TextUtil.dbName("CamelCaseXXXX"));
     }
 
-    @Test(expected = RuntimeException.class)
-    public void testInterfacesError() {
-        Schema schema = new Schema(1, "io.objectbox.test");
-        Entity addressTable = schema.addEntity("FooBar");
-        addressTable.implementsInterface("Dummy");
-        addressTable.implementsInterface("Dummy");
-    }
-
     @Test
     public void testRelation() throws Exception {
         Schema schema = new Schema(1, "io.objectbox.test.relationbox");
