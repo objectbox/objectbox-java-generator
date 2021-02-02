@@ -39,7 +39,7 @@ open class GradleBuildTracker(toolName: String) : BasicBuildTracker(toolName) {
     fun trackBuild(env: ProjectEnv) {
         countBuild()
         if (shouldSendBuildEvent()) {
-            sendEventAsync("Build", buildEventProperties(env))
+            sendEvent("Build", buildEventProperties(env))
         }
     }
 

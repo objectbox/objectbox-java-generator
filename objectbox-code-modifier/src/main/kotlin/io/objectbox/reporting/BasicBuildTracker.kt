@@ -20,6 +20,7 @@ package io.objectbox.reporting
 
 import com.squareup.moshi.JsonWriter
 import io.objectbox.CodeModifierBuildConfig
+import io.objectbox.logging.log
 import okio.Buffer
 import org.greenrobot.essentials.hash.Murmur3F
 import java.io.PrintWriter
@@ -106,15 +107,15 @@ open class BasicBuildTracker(private val toolName: String) {
     }
 
     fun trackError(message: String?, throwable: Throwable? = null) {
-        sendEventAsync("Error", errorProperties(message, throwable))
+        sendEvent("Error", errorProperties(message, throwable))
     }
 
     fun trackFatal(message: String?, throwable: Throwable? = null) {
-        sendEventAsync("Fatal", errorProperties(message, throwable))
+        sendEvent("Fatal", errorProperties(message, throwable))
     }
 
     fun trackNoBuildPropertiesFile(message: String?, throwable: Throwable? = null) {
-        sendEventAsync("NoBuildProperties", errorProperties(message, throwable), false)
+        sendEvent("NoBuildProperties", errorProperties(message, throwable), false)
     }
 
     fun trackStats(
@@ -132,16 +133,17 @@ open class BasicBuildTracker(private val toolName: String) {
         event.key("T1C").value(toOneCount.toString()).comma()
         event.key("TMC").value(toManyCount.toString()).comma()
         event.key("OK").value(completed.toString())
-        sendEventAsync("Stats", event.toString())
+        sendEvent("Stats", event.toString())
     }
 
-    fun sendEventAsync(eventName: String, eventProperties: String, sendUniqueId: Boolean = true) {
+    fun sendEvent(eventName: String, eventProperties: String, sendUniqueId: Boolean = true) {
         if (sendUniqueId && buildPropertiesFile.hasNoFile) {
             return // can not save state (e.g. unique ID) so do not send events
         }
-        Thread {
-            sendEvent(eventName, eventProperties, sendUniqueId)
-        }.start()
+        // Note: never run this in a thread! Code is executed as part of a Gradle build, so if run in a thread it may
+        // run on a totally different classpath with e.g. Kotlin API missing or not run at all.
+        // https://github.com/objectbox/objectbox-java/issues/946
+        sendEventImpl(eventName, eventProperties, sendUniqueId)
     }
 
     /**
@@ -151,7 +153,7 @@ open class BasicBuildTracker(private val toolName: String) {
      *
      * Returns 0 if one or more data objects in the body are invalid.
      */
-    fun sendEvent(eventName: String, eventProperties: String, sendUniqueId: Boolean): String? {
+    fun sendEventImpl(eventName: String, eventProperties: String, sendUniqueId: Boolean): String? {
         val event = eventData(eventName, eventProperties, sendUniqueId)
 
         // https://developer.mixpanel.com/reference/events#track-event

@@ -12,7 +12,7 @@ class BasicBuildTrackerTest {
         // Check Mixpanel Live View, the event should show up shortly after this has run.
         assertThat(
             BasicBuildTracker("BasicBuildTrackerTest")
-                .sendEvent("Test Event", "\"test\":\"success\"", false)
+                .sendEventImpl("Test Event", "\"test\":\"success\"", false)
         ).isEqualTo("1")
     }
 
