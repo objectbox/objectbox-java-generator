@@ -18,10 +18,7 @@ def internalRepoArgsBat = '-PinternalObjectBoxRepo=%MVN_REPO_URL% ' +
 def uploadRepoArgs = '-PpreferredRepo=$MVN_REPO_UPLOAD_URL ' +
                 '-PpreferredUsername=$MVN_REPO_LOGIN_USR ' +
                 '-PpreferredPassword=$MVN_REPO_LOGIN_PSW '
-// Note: add quotes around URL parameter to avoid line breaks due to semicolon in URL.
-def uploadRepoArgsBintray = '\"-PpreferredRepo=$BINTRAY_URL\" ' +
-                '-PpreferredUsername=$BINTRAY_LOGIN_USR ' +
-                '-PpreferredPassword=$BINTRAY_LOGIN_PSW'
+def uploadRepoArgsCentral = '-PsonatypeUsername=$OSSRH_LOGIN_USR -PsonatypePassword=$OSSRH_LOGIN_PSW'
 
 pipeline {
     // It should be "agent none", but googlechatnotification requires a agent (bug?).
@@ -85,24 +82,27 @@ pipeline {
             }
         }
 
-        stage('upload-to-bintray') {
+        stage('upload-to-central') {
             when { expression { return isPublish } }
             agent { label 'linux' }
 
             environment {
                 // Note: for key use Jenkins secret file with PGP key as text in ASCII-armored format.
                 ORG_GRADLE_PROJECT_signingKeyFile = credentials('objectbox_signing_key')
-                BINTRAY_URL = credentials('bintray_url')
-                BINTRAY_LOGIN = credentials('bintray_login')
+                OSSRH_LOGIN = credentials('ossrh-login')
             }
             steps {
                 googlechatnotification url: 'id:gchat_java',
-                    message: "*Publishing* ${currentBuild.fullDisplayName} to Bintray...\n${env.BUILD_URL}"
+                    message: "*Publishing* ${currentBuild.fullDisplayName} to Central...\n${env.BUILD_URL}"
 
-                sh "./gradlew $gradleArgs $internalRepoArgs $uploadRepoArgsBintray uploadArchives"
+                // Step 1: upload files to staging repository.
+                sh "./gradlew $gradleArgs $internalRepoArgs $uploadRepoArgsCentral uploadArchives"
+
+                // Step 2: close and release staging repository.
+                sh "./gradlew $gradleArgs $internalRepoArgs $uploadRepoArgsCentral closeAndReleaseRepository"
 
                 googlechatnotification url: 'id:gchat_java',
-                    message: "Published ${currentBuild.fullDisplayName} successfully to Bintray - check https://bintray.com/objectbox/objectbox\n${env.BUILD_URL}"
+                    message: "Published ${currentBuild.fullDisplayName} successfully to Central - check https://repo1.maven.org/maven2/io/objectbox/ in a few minutes.\n${env.BUILD_URL}"
             }
         }
     }
