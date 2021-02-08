@@ -143,6 +143,8 @@ open class BasicBuildTracker(private val toolName: String) {
         // Note: never run this in a thread! Code is executed as part of a Gradle build, so if run in a thread it may
         // run on a totally different classpath with e.g. Kotlin API missing or not run at all.
         // https://github.com/objectbox/objectbox-java/issues/946
+        // Might be able to use incubating Gradle Worker API (since 5.6) for callers from an explicit Gradle task
+        // (e.g. trackBuild), but most callers do not have access to Gradle API (e.g. processor, transformer).
         sendEventImpl(eventName, eventProperties, sendUniqueId)
     }
 
