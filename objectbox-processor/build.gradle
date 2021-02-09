@@ -1,7 +1,5 @@
 apply plugin: 'kotlin'
 
-group = 'io.objectbox'
-
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
 

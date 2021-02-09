@@ -5,8 +5,6 @@ apply plugin: 'de.fuerstenau.buildconfig'
 apply plugin: 'idea' // to pick up generated BuildConfig in IntelliJ
 apply plugin: 'maven-publish'
 
-group = 'io.objectbox'
-
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
 

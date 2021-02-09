@@ -3,7 +3,6 @@ apply plugin: 'kotlin-kapt'
 apply plugin: 'de.fuerstenau.buildconfig'
 apply plugin: 'idea' // to pick up generated BuildConfig in IntelliJ
 
-group = 'io.objectbox'
 archivesBaseName = 'objectbox-code-modifier'
 
 sourceCompatibility = '1.8'

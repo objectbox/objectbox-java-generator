@@ -70,7 +70,8 @@ buildscript {
 apply plugin: "com.github.ben-manes.versions"
 apply from: 'gradle/objectbox-deploy.gradle'
 
-subprojects {
+allprojects {
+    group = 'io.objectbox'
     version = "$objectbox_plugin_version"
 
     repositories {

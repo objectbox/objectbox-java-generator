@@ -1,7 +1,6 @@
 apply plugin: 'java'
 apply plugin: 'kotlin'
 
-group = 'io.objectbox'
 archivesBaseName = 'objectbox-generator'
 
 sourceCompatibility = '1.8'
