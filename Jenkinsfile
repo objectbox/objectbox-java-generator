@@ -99,7 +99,7 @@ pipeline {
                 googlechatnotification url: 'id:gchat_java',
                     message: "*Publishing* ${currentBuild.fullDisplayName} to Bintray...\n${env.BUILD_URL}"
 
-                sh "./gradlew $gradleArgs $uploadRepoArgsBintray uploadArchives"
+                sh "./gradlew $gradleArgs $internalRepoArgs $uploadRepoArgsBintray uploadArchives"
 
                 googlechatnotification url: 'id:gchat_java',
                     message: "Published ${currentBuild.fullDisplayName} successfully to Bintray - check https://bintray.com/objectbox/objectbox\n${env.BUILD_URL}"
