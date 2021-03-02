@@ -1,17 +1,7 @@
 // Configures common publishing settings
 
-apply plugin: "maven"
+apply plugin: "maven-publish"
 apply plugin: "signing"
-
-configurations {
-    deployerJars
-}
-
-dependencies {
-    // Using an older version to remain compatible with Wagon API used by Gradle/Maven
-    deployerJars 'org.apache.maven.wagon:wagon-webdav-jackrabbit:3.2.0'
-    deployerJars 'org.apache.maven.wagon:wagon-ftp:3.3.2'
-}
 
 javadoc {
     if(JavaVersion.current().isJava8Compatible()) {
@@ -35,76 +25,81 @@ signing {
     }
 }
 
-// Use afterEvaluate or dependencies might be lost in the generated POM
-afterEvaluate { project ->
-    uploadArchives {
-        repositories {
-            mavenDeployer {
-                def preferredRepo = project.findProperty('preferredRepo')
-                println "preferredRepo=$preferredRepo"
 
-                if (preferredRepo == 'local') {
-                    repository url: repositories.mavenLocal().url
-                    println "uploadArchives repo is mavenLocal()."
-                } else if (preferredRepo != null
-                        && project.hasProperty('preferredUsername')
-                        && project.hasProperty('preferredPassword')) {
-                    if (!hasSigningProperties()) {
-                        throw new InvalidUserDataException("To upload to repo signing is required.")
-                    }
+publishing {
+    repositories {
+        maven {
+            name = 'GitLab'
+            if (project.hasProperty('gitlabUrl') && project.hasProperty('gitlabPrivateToken')) {
+                // "https://gitlab.example.com/api/v4/projects/<PROJECT_ID>/packages/maven"
+                url = "$gitlabUrl/api/v4/projects/18/packages/maven"
+                println "GitLab repository set to $url."
 
-                    configuration = configurations.deployerJars
-
-                    // replace placeholders
-                    def repositoryUrl = preferredRepo
-                            .replace('__groupId__', project.group)
-                            .replace('__artifactId__', project.archivesBaseName)
-                    repository(url: repositoryUrl) {
-                        authentication(userName: preferredUsername, password: preferredPassword)
-                    }
-                    println "uploadArchives repo is $repositoryUrl."
-                } else if (project.hasProperty('sonatypeUsername')
-                        && project.hasProperty('sonatypePassword')) {
-                    beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
-                    def isSnapshot = version.endsWith('-SNAPSHOT')
-                    def sonatypeRepositoryUrl = isSnapshot ?
-                            "https://oss.sonatype.org/content/repositories/snapshots/"
-                            : "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
-                    repository(url: sonatypeRepositoryUrl) {
-                        authentication(userName: sonatypeUsername, password: sonatypePassword)
-                    }
-                    println "uploadArchives repo is $sonatypeRepositoryUrl."
-                } else {
-                    println "WARNING: uploadArchives settings incomplete, can not upload archives.."
+                if (!hasSigningProperties()) {
+                    throw new InvalidUserDataException("To upload to repo signing is required.")
                 }
 
-                // Common properties, projects still need to set name, description and license
-                pom.project {
-                    packaging 'jar'
-                    url 'https://objectbox.io'
+                credentials(HttpHeaderCredentials) {
+                    name = "Private-Token"
+                    value = gitlabPrivateToken
+                }
+                authentication {
+                    header(HttpHeaderAuthentication)
+                }
+            } else {
+                println "WARNING: Can not publish to GitLab: gitlabUrl or gitlabPrivateToken not set."
+            }
+        }
+        maven {
+            name = 'Sonatype'
+            url = version.endsWith('SNAPSHOT') ?
+                    "https://oss.sonatype.org/content/repositories/snapshots/" :
+                    "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+            if (project.hasProperty('sonatypeUsername') && project.hasProperty('sonatypePassword')) {
+                if (!hasSigningProperties()) {
+                    throw new InvalidUserDataException("To upload to repo signing is required.")
+                }
 
-                    scm {
-                        url 'https://github.com/objectbox/objectbox-java'
-                        connection 'scm:git@github.com:objectbox/objectbox-java.git'
-                        developerConnection 'scm:git@github.com:objectbox/objectbox-java.git'
-                    }
+                credentials {
+                    username = sonatypeUsername
+                    password = sonatypePassword
+                }
+            } else {
+                println "WARNING: Can not publish to Sonatype OSSRH: sonatypeUsername or sonatypePassword not set."
+            }
+        }
+    }
 
-                    developers {
-                        developer {
-                            id 'ObjectBox'
-                            name 'ObjectBox'
-                        }
+    publications {
+        mavenJava(MavenPublication) {
+            pom {
+                packaging = 'jar'
+                url = 'https://objectbox.io'
+                licenses {
+                    license {
+                        name = 'GNU General Public License, Version 3'
+                        url = 'http://www.gnu.org/licenses/gpl.txt'
+                        distribution = 'repo'
                     }
-
-                    issueManagement {
-                        system 'GitHub Issues'
-                        url 'https://github.com/objectbox/objectbox-java/issues'
+                }
+                developers {
+                    developer {
+                        id = 'ObjectBox'
+                        name = 'ObjectBox'
                     }
-
-                    organization {
-                        name 'ObjectBox Ltd.'
-                        url 'https://objectbox.io'
-                    }
+                }
+                issueManagement {
+                    system = 'GitHub Issues'
+                    url = 'https://github.com/objectbox/objectbox-java/issues'
+                }
+                organization {
+                    name = 'ObjectBox Ltd.'
+                    url = 'https://objectbox.io'
+                }
+                scm {
+                    connection = 'scm:git@github.com:objectbox/objectbox-java.git'
+                    developerConnection = 'scm:git@github.com:objectbox/objectbox-java.git'
+                    url = 'https://github.com/objectbox/objectbox-java'
                 }
             }
         }

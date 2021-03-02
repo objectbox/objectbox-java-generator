@@ -15,9 +15,7 @@ def internalRepoArgs = '-PinternalObjectBoxRepo=$MVN_REPO_URL ' +
 def internalRepoArgsBat = '-PinternalObjectBoxRepo=%MVN_REPO_URL% ' +
                 '-PinternalObjectBoxRepoUser=%MVN_REPO_LOGIN_USR% ' +
                 '-PinternalObjectBoxRepoPassword=%MVN_REPO_LOGIN_PSW%'
-def uploadRepoArgs = '-PpreferredRepo=$MVN_REPO_UPLOAD_URL ' +
-                '-PpreferredUsername=$MVN_REPO_LOGIN_USR ' +
-                '-PpreferredPassword=$MVN_REPO_LOGIN_PSW '
+def gitlabRepoArgs = '-PgitlabUrl=$GITLAB_URL -PgitlabPrivateToken=$GITLAB_TOKEN'
 def uploadRepoArgsCentral = '-PsonatypeUsername=$OSSRH_LOGIN_USR -PsonatypePassword=$OSSRH_LOGIN_PSW'
 
 pipeline {
@@ -28,7 +26,8 @@ pipeline {
     environment {
         MVN_REPO_LOGIN = credentials('objectbox_internal_mvn_user')
         MVN_REPO_URL = credentials('objectbox_internal_mvn_repo_http')
-        MVN_REPO_UPLOAD_URL = credentials('objectbox_internal_mvn_repo')
+        GITLAB_URL = credentials('gitlab_url')
+        GITLAB_TOKEN = credentials('GITLAB_TOKEN_ALL')
         // Note: can't set key file here as it points to path, which must be agent-specific.
         ORG_GRADLE_PROJECT_signingKeyId = credentials('objectbox_signing_key_id')
         ORG_GRADLE_PROJECT_signingPassword = credentials('objectbox_signing_key_password')
@@ -78,7 +77,7 @@ pipeline {
                 ORG_GRADLE_PROJECT_signingKeyFile = credentials('objectbox_signing_key')
             }
             steps {
-                sh "./gradlew $gradleArgs $internalRepoArgs $uploadRepoArgs -PversionPostFix=$versionPostfix uploadArchives"
+                sh "./gradlew $gradleArgs $internalRepoArgs $gitlabRepoArgs -PversionPostFix=$versionPostfix publishMavenJavaPublicationToGitLabRepository"
             }
         }
 
@@ -96,7 +95,7 @@ pipeline {
                     message: "*Publishing* ${currentBuild.fullDisplayName} to Central...\n${env.BUILD_URL}"
 
                 // Step 1: upload files to staging repository.
-                sh "./gradlew $gradleArgs $internalRepoArgs $uploadRepoArgsCentral uploadArchives"
+                sh "./gradlew $gradleArgs $internalRepoArgs $uploadRepoArgsCentral publishMavenJavaPublicationToSonatypeRepository"
 
                 // Step 2: close and release staging repository.
                 sh "./gradlew $gradleArgs $internalRepoArgs $uploadRepoArgsCentral closeAndReleaseRepository"
