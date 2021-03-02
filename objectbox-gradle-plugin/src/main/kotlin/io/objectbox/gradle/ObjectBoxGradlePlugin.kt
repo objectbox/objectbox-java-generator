@@ -239,9 +239,7 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
             if (!project.hasObjectBoxDep("${getLibWithSyncVariantPrefix()}-android") &&
                 !project.hasObjectBoxDep("${getLibWithSyncVariantPrefix()}-android-objectbrowser")
             ) {
-                // The @aar is necessary because the sync version of the library uses a classifier,
-                // which Gradle wrongly assumes a JAR by default. It's harmless to use on the regular version of the lib.
-                project.addDep(compileConfig, "io.objectbox:${getLibWithSyncVariantPrefix()}-android:${getLibWithSyncVariantVersion()}@aar")
+                project.addDep(compileConfig, "io.objectbox:${getLibWithSyncVariantPrefix()}-android:${getLibWithSyncVariantVersion()}")
             }
 
             // for instrumented unit tests
