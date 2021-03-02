@@ -8,7 +8,12 @@ class ObjectBoxSyncGradlePlugin : ObjectBoxGradlePlugin() {
 
     override val pluginId = "io.objectbox.sync"
 
-    override fun getNativeLibraryVersionToApply(): String {
+    override fun getLibWithSyncVariantPrefix(): String {
+        // Use Sync version.
+        return "objectbox-sync"
+    }
+
+    override fun getLibWithSyncVariantVersion(): String {
         return ProjectEnv.Const.nativeSyncVersionToApply
     }
 

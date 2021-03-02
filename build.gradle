@@ -17,8 +17,7 @@ buildscript {
 
         def libsRelease = isRelease  // e.g. diverge if plugin is still SNAPSHOT, but libs are already final
         def libsVersion = versionNumber + (libsRelease ? "" : "-dev-SNAPSHOT")
-        // Note: sync version uses classifier
-        def libsSyncVersion = versionNumber + (libsRelease ? ":sync" : "-sync-SNAPSHOT:sync")
+        def libsSyncVersion = versionNumber + (libsRelease ? "" : "-sync-SNAPSHOT")
 
         // Calculate version codes.
         def versionPostFix

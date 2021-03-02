@@ -199,7 +199,19 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
         dependencies.add(configurationName, dep)
     }
 
-    internal open fun getNativeLibraryVersionToApply(): String {
+    /**
+     * Prefix for libraries that have Sync enabled versions.
+     */
+    internal open fun getLibWithSyncVariantPrefix(): String {
+        // Use non-Sync version.
+        return "objectbox"
+    }
+
+    /**
+     * Version for libraries that have Sync enabled versions.
+     * All others always use [ProjectEnv.Const.nativeVersionToApply].
+     */
+    internal open fun getLibWithSyncVariantVersion(): String {
         return ProjectEnv.Const.nativeVersionToApply
     }
 
@@ -224,12 +236,12 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
 
         if (env.hasAndroidPlugin) {
             // for this detection to work apply the plugin after the dependencies block
-            if (!project.hasObjectBoxDep("objectbox-android") &&
-                !project.hasObjectBoxDep("objectbox-android-objectbrowser")
+            if (!project.hasObjectBoxDep("${getLibWithSyncVariantPrefix()}-android") &&
+                !project.hasObjectBoxDep("${getLibWithSyncVariantPrefix()}-android-objectbrowser")
             ) {
                 // The @aar is necessary because the sync version of the library uses a classifier,
                 // which Gradle wrongly assumes a JAR by default. It's harmless to use on the regular version of the lib.
-                project.addDep(compileConfig, "io.objectbox:objectbox-android:${getNativeLibraryVersionToApply()}@aar")
+                project.addDep(compileConfig, "io.objectbox:${getLibWithSyncVariantPrefix()}-android:${getLibWithSyncVariantVersion()}@aar")
             }
 
             // for instrumented unit tests
@@ -245,7 +257,6 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
     }
 
     private fun addNativeDependency(env: ProjectEnv, config: String, searchTestConfigs: Boolean) {
-        val nativeVersion = getNativeLibraryVersionToApply()
         val project = env.project
 
         if (DEBUG) log(
@@ -254,14 +265,16 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
         )
 
         // note: for this detection to work apply the plugin after the dependencies block
-        if (project.hasObjectBoxDep("objectbox-linux", searchTestConfigs)
+        if (project.hasObjectBoxDep("${getLibWithSyncVariantPrefix()}-linux", searchTestConfigs)
             || project.hasObjectBoxDep("objectbox-windows", searchTestConfigs)
             || project.hasObjectBoxDep("objectbox-macos", searchTestConfigs)
         ) {
             if (DEBUG) log("Detected native dependency, not auto-adding one.")
         } else {
+            // Note: there are no Sync variants for Windows and Mac, yet.
+            val nativeVersion = ProjectEnv.Const.nativeVersionToApply
             when {
-                env.isLinux64 -> project.addDep(config, "io.objectbox:objectbox-linux:$nativeVersion")
+                env.isLinux64 -> project.addDep(config, "io.objectbox:${getLibWithSyncVariantPrefix()}-linux:${getLibWithSyncVariantVersion()}")
                 env.isWindows64 -> project.addDep(config, "io.objectbox:objectbox-windows:$nativeVersion")
                 env.isMac64 -> project.addDep(config, "io.objectbox:objectbox-macos:$nativeVersion")
                 else -> env.logInfo("Could not set up native dependency for ${env.osName}")

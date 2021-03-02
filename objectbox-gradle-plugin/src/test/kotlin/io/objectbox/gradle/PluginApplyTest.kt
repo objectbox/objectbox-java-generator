@@ -4,7 +4,6 @@ import com.android.build.gradle.AppExtension
 import io.objectbox.gradle.transform.ObjectBoxAndroidTransform
 import org.gradle.api.Project
 import org.gradle.api.artifacts.DependencySet
-import org.gradle.api.artifacts.ModuleDependency
 import org.gradle.api.internal.plugins.PluginApplicationException
 import org.gradle.api.internal.project.ProjectInternal
 import org.gradle.api.plugins.InvalidPluginException
@@ -23,7 +22,9 @@ import org.junit.Test
 open class PluginApplyTest {
 
     open val pluginId = "io.objectbox"
-    open val expectedNativeLibVersion = ProjectEnv.Const.nativeVersionToApply
+    open val expectedLibWithSyncVariantPrefix = "objectbox"
+    open val expectedLibWithSyncVariantVersion = ProjectEnv.Const.nativeVersionToApply
+    private val expectedNativeLibVersion = ProjectEnv.Const.nativeVersionToApply
 
     @Test
     fun apply_noRequiredPlugins_fails() {
@@ -216,17 +217,18 @@ open class PluginApplyTest {
     }
 
     open fun assertNativeDependency(compileDeps: DependencySet) {
+        // Note: there are no Sync variants for Windows and Mac, yet.
         assertEquals(1, compileDeps.count {
             it.group == "io.objectbox"
-                    && (it.name == "objectbox-linux" || it.name == "objectbox-windows" || it.name == "objectbox-macos")
-                    && it.version == expectedNativeLibVersion
+                    && ((it.name == "$expectedLibWithSyncVariantPrefix-linux" && it.version == expectedLibWithSyncVariantVersion)
+                    || ((it.name == "objectbox-windows" || it.name == "objectbox-macos") && it.version == expectedNativeLibVersion))
         })
     }
 
     open fun assertAndroidDependency(deps: DependencySet) {
         assertEquals(1, deps.count {
-            it.group == "io.objectbox" && it.name == "objectbox-android"
-                    && it.version == expectedNativeLibVersion
+            it.group == "io.objectbox" && it.name == "$expectedLibWithSyncVariantPrefix-android"
+                    && it.version == expectedLibWithSyncVariantVersion
         })
     }
 
