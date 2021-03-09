@@ -19,9 +19,8 @@ class IncrementalCompilationTest {
     @Rule
     val testProjectDir: TemporaryFolder = TemporaryFolder.builder().assureDeletion().build()
 
-    private val internalObjectBoxRepo = System.getProperty("internalObjectBoxRepo")
-    private val internalObjectBoxRepoUser = System.getProperty("internalObjectBoxRepoUser")
-    private val internalObjectBoxRepoPassword = System.getProperty("internalObjectBoxRepoPassword")
+    private val gitlabUrl = System.getProperty("gitlabUrl")
+    private val gitlabPrivateToken = System.getProperty("gitlabPrivateToken")
 
     /**
      * Tests that when changing entity compilation is incremental,
@@ -242,10 +241,13 @@ class IncrementalCompilationTest {
                 maven { url "$testRepository" }
                 jcenter()
                 maven {
-                    url "$internalObjectBoxRepo"
-                    credentials {
-                        username "$internalObjectBoxRepoUser"
-                        password "$internalObjectBoxRepoPassword"
+                    url "$gitlabUrl/api/v4/groups/objectbox/-/packages/maven"
+                    credentials(HttpHeaderCredentials) {
+                        name = 'Private-Token'
+                        value = "$gitlabPrivateToken"
+                    }
+                    authentication {
+                        header(HttpHeaderAuthentication)
                     }
                 }
             }

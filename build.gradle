@@ -44,11 +44,11 @@ buildscript {
         println "  applies_ob_native_sync_version=$applies_ob_native_sync_version\n"
 
         // Internal Maven repo: used in all projects, printing info/warning only once here.
-        hasInternalObjectBoxRepo = project.hasProperty('internalObjectBoxRepo')
+        hasInternalObjectBoxRepo = project.hasProperty('gitlabUrl')
         if (hasInternalObjectBoxRepo) {
-            println("Using internal ObjectBox repository $internalObjectBoxRepo.")
+            println "gitlabUrl=$gitlabUrl added to repositories."
         } else {
-            println "Warning: internalObjectBoxRepo, internalObjectBoxRepoUser and internalObjectBoxRepoPassword missing from gradle.properties."
+            println "WARNING: gitlabUrl missing from gradle.properties."
         }
     }
 
@@ -80,11 +80,15 @@ allprojects {
         google()
         if (hasInternalObjectBoxRepo) {
             maven {
-                credentials {
-                    username internalObjectBoxRepoUser
-                    password internalObjectBoxRepoPassword
+                url "$gitlabUrl/api/v4/groups/objectbox/-/packages/maven"
+                name "GitLab"
+                credentials(HttpHeaderCredentials) {
+                    name = 'Private-Token'
+                    value = gitlabPrivateToken
                 }
-                url internalObjectBoxRepo
+                authentication {
+                    header(HttpHeaderAuthentication)
+                }
             }
         }
         mavenLocal()

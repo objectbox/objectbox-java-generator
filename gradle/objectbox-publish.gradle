@@ -35,10 +35,6 @@ publishing {
                 url = "$gitlabUrl/api/v4/projects/18/packages/maven"
                 println "GitLab repository set to $url."
 
-                if (!hasSigningProperties()) {
-                    throw new InvalidUserDataException("To upload to repo signing is required.")
-                }
-
                 credentials(HttpHeaderCredentials) {
                     name = "Private-Token"
                     value = gitlabPrivateToken

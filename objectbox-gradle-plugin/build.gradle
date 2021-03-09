@@ -102,9 +102,8 @@ tasks {
         dependsOn "publishModifierPublicationToTestRepository", "publishGeneratorPublicationToTestRepository", "publishProcessorPublicationToTestRepository"
 
         // For integration tests (TestKit): steal project properties required for TestKit projects.
-        systemProperty("internalObjectBoxRepo", internalObjectBoxRepo)
-        systemProperty("internalObjectBoxRepoUser", internalObjectBoxRepoUser)
-        systemProperty("internalObjectBoxRepoPassword", internalObjectBoxRepoPassword)
+        systemProperty("gitlabUrl", gitlabUrl)
+        systemProperty("gitlabPrivateToken", gitlabPrivateToken)
     }
 }
 

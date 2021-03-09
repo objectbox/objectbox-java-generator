@@ -9,13 +9,8 @@ String versionPostfix = BRANCH_NAME == 'objectbox-dev' ? 'dev'
                       : BRANCH_NAME
 
 // Note: using single quotes to avoid Groovy String interpolation leaking secrets.
-def internalRepoArgs = '-PinternalObjectBoxRepo=$MVN_REPO_URL ' +
-                '-PinternalObjectBoxRepoUser=$MVN_REPO_LOGIN_USR ' +
-                '-PinternalObjectBoxRepoPassword=$MVN_REPO_LOGIN_PSW'
-def internalRepoArgsBat = '-PinternalObjectBoxRepo=%MVN_REPO_URL% ' +
-                '-PinternalObjectBoxRepoUser=%MVN_REPO_LOGIN_USR% ' +
-                '-PinternalObjectBoxRepoPassword=%MVN_REPO_LOGIN_PSW%'
 def gitlabRepoArgs = '-PgitlabUrl=$GITLAB_URL -PgitlabPrivateToken=$GITLAB_TOKEN'
+def gitlabRepoArgsBat = '-PgitlabUrl=%GITLAB_URL% -PgitlabPrivateToken=%GITLAB_TOKEN%'
 def uploadRepoArgsCentral = '-PsonatypeUsername=$OSSRH_LOGIN_USR -PsonatypePassword=$OSSRH_LOGIN_PSW'
 
 pipeline {
@@ -24,8 +19,6 @@ pipeline {
     agent { label 'gchat' }
 
     environment {
-        MVN_REPO_LOGIN = credentials('objectbox_internal_mvn_user')
-        MVN_REPO_URL = credentials('objectbox_internal_mvn_repo_http')
         GITLAB_URL = credentials('gitlab_url')
         GITLAB_TOKEN = credentials('GITLAB_TOKEN_ALL')
         // Note: can't set key file here as it points to path, which must be agent-specific.
@@ -45,7 +38,7 @@ pipeline {
                     steps {
                         sh 'chmod +x gradlew'
                         sh "./gradlew -version"
-                        sh "./gradlew $gradleArgs $internalRepoArgs clean check"
+                        sh "./gradlew $gradleArgs $gitlabRepoArgs clean check"
                     }
                     post {
                         always {
@@ -58,7 +51,7 @@ pipeline {
                     agent { label 'windows' }
                     steps {
                         bat "gradlew -version"
-                        bat "gradlew $gradleArgs $internalRepoArgsBat clean check"
+                        bat "gradlew $gradleArgs $gitlabRepoArgsBat clean check"
                     }
                     post {
                         always {
@@ -77,7 +70,7 @@ pipeline {
                 ORG_GRADLE_PROJECT_signingKeyFile = credentials('objectbox_signing_key')
             }
             steps {
-                sh "./gradlew $gradleArgs $internalRepoArgs $gitlabRepoArgs -PversionPostFix=$versionPostfix publishMavenJavaPublicationToGitLabRepository"
+                sh "./gradlew $gradleArgs $gitlabRepoArgs -PversionPostFix=$versionPostfix publishMavenJavaPublicationToGitLabRepository"
             }
         }
 
@@ -95,10 +88,10 @@ pipeline {
                     message: "*Publishing* ${currentBuild.fullDisplayName} to Central...\n${env.BUILD_URL}"
 
                 // Step 1: upload files to staging repository.
-                sh "./gradlew $gradleArgs $internalRepoArgs $uploadRepoArgsCentral publishMavenJavaPublicationToSonatypeRepository"
+                sh "./gradlew $gradleArgs $gitlabRepoArgs $uploadRepoArgsCentral publishMavenJavaPublicationToSonatypeRepository"
 
                 // Step 2: close and release staging repository.
-                sh "./gradlew $gradleArgs $internalRepoArgs $uploadRepoArgsCentral closeAndReleaseRepository"
+                sh "./gradlew $gradleArgs $gitlabRepoArgs $uploadRepoArgsCentral closeAndReleaseRepository"
 
                 googlechatnotification url: 'id:gchat_java',
                     message: "Published ${currentBuild.fullDisplayName} successfully to Central - check https://repo1.maven.org/maven2/io/objectbox/ in a few minutes.\n${env.BUILD_URL}"
