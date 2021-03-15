@@ -117,12 +117,6 @@ task sourcesJar(type: Jar) {
     from 'README'
 }
 
-artifacts {
-    // jar added by java plugin.
-    archives javadocJar
-    archives sourcesJar
-}
-
 apply from: rootProject.file("gradle/objectbox-publish.gradle")
 // Set project-specific properties
 publishing.publications {

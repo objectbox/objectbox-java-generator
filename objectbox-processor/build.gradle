@@ -43,19 +43,13 @@ task sourcesJar(type: Jar) {
     from 'README'
 }
 
-artifacts {
-    // jar added by java plugin.
-    archives javadocJar
-    archives sourcesJar
-}
-
-
 apply from: rootProject.file("gradle/objectbox-publish.gradle")
 // Set project-specific properties
 publishing.publications {
     mavenJava(MavenPublication) {
         from components.java
         artifact sourcesJar
+        artifact javadocJar
         pom {
             name = 'ObjectBox Processor'
             description = 'Annotation processor for ObjectBox (NoSQL for Objects)'
