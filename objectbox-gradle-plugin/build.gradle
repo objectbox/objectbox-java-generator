@@ -102,13 +102,10 @@ tasks {
         dependsOn "publishModifierPublicationToTestRepository", "publishGeneratorPublicationToTestRepository", "publishProcessorPublicationToTestRepository"
 
         // For integration tests (TestKit): steal project properties required for TestKit projects.
-        systemProperty("internalObjectBoxRepo", internalObjectBoxRepo)
-        systemProperty("internalObjectBoxRepoUser", internalObjectBoxRepoUser)
-        systemProperty("internalObjectBoxRepoPassword", internalObjectBoxRepoPassword)
+        systemProperty("gitlabUrl", gitlabUrl)
+        systemProperty("gitlabPrivateToken", gitlabPrivateToken)
     }
 }
-
-apply from: rootProject.file("gradle/objectbox-publish.gradle")
 
 task javadocJar(type: Jar) {
     archiveClassifier = 'javadoc'
@@ -126,22 +123,16 @@ artifacts {
     archives sourcesJar
 }
 
-uploadArchives {
-    repositories {
-        mavenDeployer {
-            // Basic definitions are defined in root project
-            pom.project {
-                name 'ObjectBox Gradle Plugin'
-                description 'Gradle Plugin for ObjectBox (NoSQL for Objects)'
-
-                licenses {
-                    license {
-                        name 'GNU General Public License, Version 3'
-                        url 'http://www.gnu.org/licenses/gpl.txt'
-                        distribution 'repo'
-                    }
-                }
-            }
+apply from: rootProject.file("gradle/objectbox-publish.gradle")
+// Set project-specific properties
+publishing.publications {
+    mavenJava(MavenPublication) {
+        from components.java
+        artifact sourcesJar
+        artifact javadocJar
+        pom {
+            name = 'ObjectBox Gradle Plugin'
+            description = 'Gradle Plugin for ObjectBox (NoSQL for Objects)'
         }
     }
 }

@@ -9,19 +9,9 @@ String versionPostfix = BRANCH_NAME == 'objectbox-dev' ? 'dev'
                       : BRANCH_NAME
 
 // Note: using single quotes to avoid Groovy String interpolation leaking secrets.
-def internalRepoArgs = '-PinternalObjectBoxRepo=$MVN_REPO_URL ' +
-                '-PinternalObjectBoxRepoUser=$MVN_REPO_LOGIN_USR ' +
-                '-PinternalObjectBoxRepoPassword=$MVN_REPO_LOGIN_PSW'
-def internalRepoArgsBat = '-PinternalObjectBoxRepo=%MVN_REPO_URL% ' +
-                '-PinternalObjectBoxRepoUser=%MVN_REPO_LOGIN_USR% ' +
-                '-PinternalObjectBoxRepoPassword=%MVN_REPO_LOGIN_PSW%'
-def uploadRepoArgs = '-PpreferredRepo=$MVN_REPO_UPLOAD_URL ' +
-                '-PpreferredUsername=$MVN_REPO_LOGIN_USR ' +
-                '-PpreferredPassword=$MVN_REPO_LOGIN_PSW '
-// Note: add quotes around URL parameter to avoid line breaks due to semicolon in URL.
-def uploadRepoArgsBintray = '\"-PpreferredRepo=$BINTRAY_URL\" ' +
-                '-PpreferredUsername=$BINTRAY_LOGIN_USR ' +
-                '-PpreferredPassword=$BINTRAY_LOGIN_PSW'
+def gitlabRepoArgs = '-PgitlabUrl=$GITLAB_URL -PgitlabPrivateToken=$GITLAB_TOKEN'
+def gitlabRepoArgsBat = '-PgitlabUrl=%GITLAB_URL% -PgitlabPrivateToken=%GITLAB_TOKEN%'
+def uploadRepoArgsCentral = '-PsonatypeUsername=$OSSRH_LOGIN_USR -PsonatypePassword=$OSSRH_LOGIN_PSW'
 
 pipeline {
     // It should be "agent none", but googlechatnotification requires a agent (bug?).
@@ -29,9 +19,8 @@ pipeline {
     agent { label 'gchat' }
 
     environment {
-        MVN_REPO_LOGIN = credentials('objectbox_internal_mvn_user')
-        MVN_REPO_URL = credentials('objectbox_internal_mvn_repo_http')
-        MVN_REPO_UPLOAD_URL = credentials('objectbox_internal_mvn_repo')
+        GITLAB_URL = credentials('gitlab_url')
+        GITLAB_TOKEN = credentials('GITLAB_TOKEN_ALL')
         // Note: can't set key file here as it points to path, which must be agent-specific.
         ORG_GRADLE_PROJECT_signingKeyId = credentials('objectbox_signing_key_id')
         ORG_GRADLE_PROJECT_signingPassword = credentials('objectbox_signing_key_password')
@@ -49,7 +38,7 @@ pipeline {
                     steps {
                         sh 'chmod +x gradlew'
                         sh "./gradlew -version"
-                        sh "./gradlew $gradleArgs $internalRepoArgs clean check"
+                        sh "./gradlew $gradleArgs $gitlabRepoArgs clean check"
                     }
                     post {
                         always {
@@ -62,7 +51,7 @@ pipeline {
                     agent { label 'windows' }
                     steps {
                         bat "gradlew -version"
-                        bat "gradlew $gradleArgs $internalRepoArgsBat clean check"
+                        bat "gradlew $gradleArgs $gitlabRepoArgsBat clean check"
                     }
                     post {
                         always {
@@ -81,28 +70,27 @@ pipeline {
                 ORG_GRADLE_PROJECT_signingKeyFile = credentials('objectbox_signing_key')
             }
             steps {
-                sh "./gradlew $gradleArgs $internalRepoArgs $uploadRepoArgs -PversionPostFix=$versionPostfix uploadArchives"
+                sh "./gradlew $gradleArgs $gitlabRepoArgs -PversionPostFix=$versionPostfix publishMavenJavaPublicationToGitLabRepository"
             }
         }
 
-        stage('upload-to-bintray') {
+        stage('upload-to-central') {
             when { expression { return isPublish } }
             agent { label 'linux' }
 
             environment {
                 // Note: for key use Jenkins secret file with PGP key as text in ASCII-armored format.
                 ORG_GRADLE_PROJECT_signingKeyFile = credentials('objectbox_signing_key')
-                BINTRAY_URL = credentials('bintray_url')
-                BINTRAY_LOGIN = credentials('bintray_login')
+                OSSRH_LOGIN = credentials('ossrh-login')
             }
             steps {
                 googlechatnotification url: 'id:gchat_java',
-                    message: "*Publishing* ${currentBuild.fullDisplayName} to Bintray...\n${env.BUILD_URL}"
+                    message: "*Publishing* ${currentBuild.fullDisplayName} to Central...\n${env.BUILD_URL}"
 
-                sh "./gradlew $gradleArgs $internalRepoArgs $uploadRepoArgsBintray uploadArchives"
+                sh "./gradlew $gradleArgs $gitlabRepoArgs $uploadRepoArgsCentral publishMavenJavaPublicationToSonatypeRepository closeAndReleaseStagingRepository"
 
                 googlechatnotification url: 'id:gchat_java',
-                    message: "Published ${currentBuild.fullDisplayName} successfully to Bintray - check https://bintray.com/objectbox/objectbox\n${env.BUILD_URL}"
+                    message: "Published ${currentBuild.fullDisplayName} successfully to Central - check https://repo1.maven.org/maven2/io/objectbox/ in a few minutes.\n${env.BUILD_URL}"
             }
         }
     }
