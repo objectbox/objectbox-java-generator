@@ -46,24 +46,7 @@ publishing {
                 println "WARNING: Can not publish to GitLab: gitlabUrl or gitlabPrivateToken not set."
             }
         }
-        maven {
-            name = 'Sonatype'
-            url = version.endsWith('SNAPSHOT') ?
-                    "https://oss.sonatype.org/content/repositories/snapshots/" :
-                    "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
-            if (project.hasProperty('sonatypeUsername') && project.hasProperty('sonatypePassword')) {
-                if (!hasSigningProperties()) {
-                    throw new InvalidUserDataException("To upload to repo signing is required.")
-                }
-
-                credentials {
-                    username = sonatypeUsername
-                    password = sonatypePassword
-                }
-            } else {
-                println "WARNING: Can not publish to Sonatype OSSRH: sonatypeUsername or sonatypePassword not set."
-            }
-        }
+        // Note: Sonatype repo created by publish-plugin, see root build.gradle.
     }
 
     publications {
