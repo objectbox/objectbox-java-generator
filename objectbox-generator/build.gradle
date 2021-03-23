@@ -11,7 +11,8 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
 
     implementation "io.objectbox:objectbox-java:$objectbox_java_version"
-    implementation 'org.freemarker:freemarker:2.3.28'
+    // https://freemarker.apache.org/docs/app_versions.html
+    implementation 'org.freemarker:freemarker:2.3.31'
     implementation "org.greenrobot:essentials:$essentials_version"
 
     testImplementation "junit:junit:$junit_version"
