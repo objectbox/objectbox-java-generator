@@ -7,7 +7,8 @@ buildscript {
         android_version = '3.6.3' // Minimal supported version is 3.0.0. http://google.github.io/android-gradle-dsl/javadoc/
         essentials_version = '3.1.0'
         junit_version = '4.13.2' // https://junit.org/junit4/
-        truth_version = '1.1.2' // https://github.com/google/truth/releases
+        // Note: truth 1.1.2 breaks Android plugin apply test.
+        truth_version = '1.0' // https://github.com/google/truth/releases
         mockito_version = '3.8.0' // https://github.com/mockito/mockito/releases
         moshi_version = '1.11.0'
 
