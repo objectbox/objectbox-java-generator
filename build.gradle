@@ -62,12 +62,24 @@ buildscript {
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "gradle.plugin.de.fuerstenau:BuildConfigPlugin:1.1.8" // for code-modifier, gradle-plugin
-        classpath "com.github.ben-manes:gradle-versions-plugin:0.36.0"
+        classpath "com.github.ben-manes:gradle-versions-plugin:0.38.0"
         classpath "io.github.gradle-nexus:publish-plugin:1.0.0"
     }
 }
 
 apply plugin: "com.github.ben-manes.versions"
+def isNonStable = { String version ->
+    def stableKeyword = ['RELEASE', 'FINAL', 'GA'].any { it -> version.toUpperCase().contains(it) }
+    def regex = /^[0-9,.v-]+(-r)?$/
+    return !stableKeyword && !(version ==~ regex)
+}
+dependencyUpdates {
+    rejectVersionIf {
+        isNonStable(it.candidate.version)
+    }
+}
+
+
 apply from: 'gradle/objectbox-deploy.gradle'
 
 allprojects {
