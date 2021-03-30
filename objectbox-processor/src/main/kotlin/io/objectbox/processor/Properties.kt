@@ -27,6 +27,7 @@ import io.objectbox.annotation.NameInDb
 import io.objectbox.annotation.Transient
 import io.objectbox.annotation.Uid
 import io.objectbox.annotation.Unique
+import io.objectbox.annotation.Unsigned
 import io.objectbox.converter.NullToEmptyStringConverter
 import io.objectbox.generator.IdUid
 import io.objectbox.generator.model.Entity
@@ -145,6 +146,20 @@ class Properties(
             propertyBuilder.primaryKey()
             if (idAnnotation.assignable) {
                 propertyBuilder.idAssignable()
+            }
+        }
+
+        // @Unsigned
+        if (field.hasAnnotation(Unsigned::class.java)) {
+            val type = propertyBuilder.property.propertyType
+            if (type != PropertyType.Byte && type != PropertyType.Short && type != PropertyType.Int
+                && type != PropertyType.Long && type != PropertyType.Char
+            ) {
+                messages.error("@Unsigned is only supported for integer properties.")
+            } else if (hasIdAnnotation) {
+                messages.error("@Unsigned can not be used with @Id. ID properties are unsigned internally by default.")
+            } else {
+                propertyBuilder.unsigned()
             }
         }
 
