@@ -47,13 +47,19 @@ import javax.lang.model.util.Types
 /**
  * Parses properties from fields for a given entity and adds them to the entity model.
  */
-class Properties(val elementUtils: Elements, val typeUtils: Types, val messages: Messages,
-                 val relations: Relations, val entityModel: Entity, entityElement: Element) {
+class Properties(
+    private val elementUtils: Elements,
+    private val typeUtils: Types,
+    private val messages: Messages,
+    private val relations: Relations,
+    private val entityModel: Entity,
+    entityElement: Element
+) {
 
     private val typeHelper = TypeHelper(elementUtils, typeUtils)
 
-    val fields: List<VariableElement> = ElementFilter.fieldsIn(entityElement.enclosedElements)
-    val methods: List<ExecutableElement> = ElementFilter.methodsIn(entityElement.enclosedElements)
+    private val fields: List<VariableElement> = ElementFilter.fieldsIn(entityElement.enclosedElements)
+    private val methods: List<ExecutableElement> = ElementFilter.methodsIn(entityElement.enclosedElements)
 
     fun hasBoxStoreField(): Boolean {
         return fields.find { it.simpleName.toString() == "__boxStore" } != null
@@ -100,16 +106,20 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
     }
 
     private fun parseProperty(field: VariableElement) {
-        // Why nullable? A property might not be parsed due to an error. We do not throw here.
-        val propertyBuilder: Property.PropertyBuilder = (if (field.hasAnnotation(DefaultValue::class.java)) {
-            defaultValuePropertyBuilderOrNull(field)
-        } else if (field.hasAnnotation(Convert::class.java)) {
-            // verify @Convert custom type
-            customPropertyBuilderOrNull(field)
-        } else {
-            // verify that supported type is used
-            supportedPropertyBuilderOrNull(field)
-        }) ?: return
+        // Why nullable? A property might not be parsed due to an error. Do not throw here.
+        val propertyBuilder: Property.PropertyBuilder = when {
+            field.hasAnnotation(DefaultValue::class.java) -> {
+                defaultValuePropertyBuilderOrNull(field)
+            }
+            field.hasAnnotation(Convert::class.java) -> {
+                // verify @Convert custom type
+                customPropertyBuilderOrNull(field)
+            }
+            else -> {
+                // verify that supported type is used
+                supportedPropertyBuilderOrNull(field)
+            }
+        } ?: return
 
         propertyBuilder.property.parsedElement = field
 
@@ -259,20 +269,15 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
         // may be a parameterized type like List<CustomType>, so erase any type parameters
         val customType = typeUtils.erasure(field.asType())
 
-        val propertyBuilder: Property.PropertyBuilder
-        try {
-            propertyBuilder = entityModel.addProperty(propertyType, field.simpleName.toString())
-        } catch (e: Exception) {
-            messages.error("Could not add property: ${e.message}", field)
-            if (e is ModelException) return null else throw e
-        }
+        val propertyBuilder = entityModel.tryToAddProperty(propertyType, field) ?: return null
+
         propertyBuilder.customType(customType.toString(), converter.toString())
         // note: custom types are already assumed non-primitive by Property#isNonPrimitiveType()
         return propertyBuilder
     }
 
     /**
-     * Parses the [field] and setting its database type to [propertyType], returns the started builder.
+     * Parses the [field] and tries to add the property to the entity model, returns the started builder.
      * If adding the property to the model fails, prints an error and returns null.
      */
     private fun supportedPropertyBuilderOrNull(field: VariableElement): Property.PropertyBuilder? {
@@ -284,13 +289,7 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
             return null
         }
 
-        val propertyBuilder: Property.PropertyBuilder
-        try {
-            propertyBuilder = entityModel.addProperty(propertyType, field.simpleName.toString())
-        } catch (e: Exception) {
-            messages.error("Could not add property: ${e.message}", field)
-            if (e is ModelException) return null else throw e
-        }
+        val propertyBuilder = entityModel.tryToAddProperty(propertyType, field) ?: return null
 
         val isPrimitive = typeMirror.kind.isPrimitive
         if (isPrimitive) {
@@ -302,6 +301,15 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
         }
 
         return propertyBuilder
+    }
+
+    private fun Entity.tryToAddProperty(propertyType: PropertyType, field: VariableElement): Property.PropertyBuilder? {
+        return try {
+            addProperty(propertyType, field.simpleName.toString())
+        } catch (e: Exception) {
+            messages.error("Could not add property: ${e.message}", field)
+            if (e is ModelException) null else throw e
+        }
     }
 
     private fun getAnnotationMirror(element: Element, annotationClass: Class<*>): AnnotationMirror? {
@@ -328,7 +336,7 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
         return null
     }
 
-    fun <A : Annotation> Element.hasAnnotation(annotationType: Class<A>): Boolean {
+    private fun <A : Annotation> Element.hasAnnotation(annotationType: Class<A>): Boolean {
         return getAnnotation(annotationType) != null
     }
 
@@ -370,6 +378,7 @@ class Properties(val elementUtils: Elements, val typeUtils: Types, val messages:
     }
 
     companion object {
+        @Suppress("unused") // Preserved for future use.
         private const val INDEX_MAX_VALUE_LENGTH_MAX = 450
     }
 
