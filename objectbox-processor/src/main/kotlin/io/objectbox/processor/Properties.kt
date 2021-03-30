@@ -152,7 +152,9 @@ class Properties(
         // @Unsigned
         if (field.hasAnnotation(Unsigned::class.java)) {
             val type = propertyBuilder.property.propertyType
-            if (type != PropertyType.Short && type != PropertyType.Int && type != PropertyType.Long) {
+            if (type != PropertyType.Byte && type != PropertyType.Short && type != PropertyType.Int
+                && type != PropertyType.Long && type != PropertyType.Char
+            ) {
                 messages.error("@Unsigned is only supported for integer properties.")
             } else if (hasIdAnnotation) {
                 messages.error("@Unsigned can not be used with @Id. ID properties are unsigned internally by default.")

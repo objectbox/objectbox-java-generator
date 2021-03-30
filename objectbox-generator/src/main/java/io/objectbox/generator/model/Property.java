@@ -84,10 +84,11 @@ public class Property implements HasParsedElement {
         }
 
         public PropertyBuilder unsigned() {
+            PropertyType type = property.propertyType;
             if (property.primaryKey || (
-                    property.propertyType != PropertyType.Short
-                            && property.propertyType != PropertyType.Int
-                            && property.propertyType != PropertyType.Long
+                    type != PropertyType.Byte && type != PropertyType.Short
+                            && type != PropertyType.Int && type != PropertyType.Long
+                            && type != PropertyType.Char
             )) {
                 throw new RuntimeException("Only non-primary key and integer properties can be marked unsigned.");
             }
