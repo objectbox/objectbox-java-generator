@@ -26,7 +26,7 @@ package io.objectbox.generator.model;
 public enum PropertyType {
 
     Boolean(true), Byte(true), Short(true), Char(true), Int(true), Long(true), Float(true), Double(true),
-    String(false), ByteArray(false), Date(false),
+    String(false), ByteArray(false), StringArray(false), Date(false),
     /** a long representing a ObjectBox to-one relation */
     RelationId(true);
 

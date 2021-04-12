@@ -118,9 +118,12 @@ class TypeHelper(
         }
 
         if (kind == TypeKind.ARRAY) {
-            val arrayType = typeMirror as ArrayType
-            if (arrayType.componentType.kind == TypeKind.BYTE) {
+            val arrayComponentType = (typeMirror as ArrayType).componentType
+            if (arrayComponentType.kind == TypeKind.BYTE) {
                 return PropertyType.ByteArray
+            }
+            if (arrayComponentType.isSameTypeAs(typeString)) {
+                return PropertyType.StringArray
             }
         }
 
