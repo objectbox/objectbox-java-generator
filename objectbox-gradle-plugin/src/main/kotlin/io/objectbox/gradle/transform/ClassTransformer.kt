@@ -292,7 +292,7 @@ class ClassTransformer(val debug: Boolean = false) {
                     else if (field.relationType == ClassConst.toMany) context.stats.toManyInitializerAdded++
                     changed = true
                 } else {
-                    logWarning("${ctClass.name} constructor initializes relation field '$fieldName', this might break ObjectBox relations")
+                    log("${ctClass.name} constructor initializes relation field '$fieldName', make sure to read https://docs.objectbox.io/relations#initialization-magic")
                 }
             }
         }
@@ -414,8 +414,8 @@ class ClassTransformer(val debug: Boolean = false) {
                 }
             })
             if (assignsBoxStoreField) {
-                logWarning("${ctClass.name}.${ClassConst.cursorAttachEntityMethodName} assigns " +
-                        "${ClassConst.boxStoreFieldName}, this might break ObjectBox relations")
+                log("${ctClass.name}.${ClassConst.cursorAttachEntityMethodName} assigns " +
+                        "${ClassConst.boxStoreFieldName}, make sure to read https://docs.objectbox.io/relations#initialization-magic")
                 return false // just copy, change nothing
             }
 
