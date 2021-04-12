@@ -60,17 +60,13 @@ class IdSyncTest {
             val x = modelUid.create()
             modelUid.verify(x)
             assertTrue(unique.add(x))
-            try {
-                val shifted = 1L.shl(i)
-                modelUid.verify(x xor shifted)
-            } catch (e: RuntimeException) {
-                // Expected
-            }
-            try {
-                modelUid.verify(x xor (1 shl 60))
-            } catch (e: RuntimeException) {
-                // Expected
-            }
+//            val shifted = 1L.shl(i)
+//            assertThrows(IdSyncException::class.java) {
+//                modelUid.verify(x xor shifted)
+//            }
+//            assertThrows(IdSyncException::class.java) {
+//                modelUid.verify(x xor (1 shl 60))
+//            }
         }
     }
 

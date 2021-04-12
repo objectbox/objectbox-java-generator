@@ -20,7 +20,6 @@ package io.objectbox.generator.idsync
 
 import org.greenrobot.essentials.hash.Murmur3F
 import java.security.SecureRandom
-import java.util.*
 
 /**
  * A random ID to be assigned to model artifacts such as entities and properties.
@@ -28,10 +27,10 @@ import java.util.*
  */
 // Note: make it independent from the (real) ID, it will be necessary to change ID after git conflicts.
 class UidHelper(
-        val existingUids: MutableSet<Long> = HashSet()
+        private val existingUids: MutableSet<Long> = HashSet()
 ) {
     // Use SecureRandom to better avoid conflicts when IDs are assigned in diverging git branches
-    val random = SecureRandom()
+    private val random = SecureRandom()
 
     init {
         existingUids.forEach { verify(it) }
@@ -48,6 +47,9 @@ class UidHelper(
         ids.forEach { addExistingId(it) }
     }
 
+    /**
+     * Creates random long where lowest byte is Murmur3F hash of upper bytes.
+     */
     fun create(): Long {
         var newId:Long
         do {
@@ -59,15 +61,20 @@ class UidHelper(
         return newId
     }
 
+    /**
+     * This previously verified that the lowest byte is the Murmur3F hash of all upper bytes.
+     *
+     * As other language bindings never enforced this, currently only verifies that the value is positive.
+     */
     fun verify(value: Long) {
-        if (value < 0) throw IdSyncException("Illegal UID: $value")
-        val randomPart = value and 0x7FFFFFFFFFFFFF00
-        if (randomPart == 0L) throw IdSyncException("Illegal UID: $value")
-        val murmur = Murmur3F()
-        murmur.updateLongLE(randomPart)
-        if (value < 0 || (value and 0xFF != murmur.value and 0xFF)) {
-            throw IdSyncException("Illegal UID: $value")
-        }
+        if (value <= 0) throw IdSyncException("Illegal UID: $value")
+//        val randomPart = value and 0x7FFFFFFFFFFFFF00
+//        if (randomPart == 0L) throw IdSyncException("Illegal UID: $value")
+//        val murmur = Murmur3F()
+//        murmur.updateLongLE(randomPart)
+//        if (value < 0 || (value and 0xFF != murmur.value and 0xFF)) {
+//            throw IdSyncException("Illegal UID: $value")
+//        }
     }
 
 }
