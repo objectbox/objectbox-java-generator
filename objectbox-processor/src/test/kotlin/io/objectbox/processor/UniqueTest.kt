@@ -12,7 +12,7 @@ class UniqueTest : BaseProcessorTest() {
     fun unique_createsUniqueIndex() {
         val entity = "UniqueCreatesIndex"
 
-        val environment = TestEnvironment("unique-creates-index-temp.json")
+        val environment = TestEnvironment("unique-creates-index.json", useTemporaryModelFile = true)
 
         val compilation = environment.compile(entity)
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
@@ -38,7 +38,7 @@ class UniqueTest : BaseProcessorTest() {
     fun unique_unsupportedProperties_failsWithError() {
         val entity = "UniqueUnsupported"
 
-        val environment = TestEnvironment("unique-unsupported-temp.json")
+        val environment = TestEnvironment("unique-unsupported.json", useTemporaryModelFile = true)
 
         val compilation = environment.compile(entity)
         CompilationSubject.assertThat(compilation).failed()
@@ -58,7 +58,7 @@ class UniqueTest : BaseProcessorTest() {
     fun unique_andIndex_makesIndexUnique() {
         val entity = "UniqueAndIndex"
 
-        val environment = TestEnvironment("unique-and-index-temp.json")
+        val environment = TestEnvironment("unique-and-index.json", useTemporaryModelFile = true)
 
         val compilation = environment.compile(entity)
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()

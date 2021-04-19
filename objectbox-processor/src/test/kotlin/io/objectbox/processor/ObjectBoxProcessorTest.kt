@@ -76,8 +76,7 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
 
     private fun testSchemaAndModel(className: String, relatedClassName: String) {
         // ensure mode file is re-created on each run
-        val environment = TestEnvironment("default-temp.json")
-        environment.cleanModelFile()
+        val environment = TestEnvironment("default.json", useTemporaryModelFile = true)
 
         val compilation = environment.compileDaoCompat(className, relatedClassName)
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
@@ -294,7 +293,7 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
     fun simpleEntity_noPackage() {
         val className = "SimpleEntityNoPackage"
 
-        val environment = TestEnvironment("default-no-pkg-temp.json")
+        val environment = TestEnvironment("default-no-pkg.json", useTemporaryModelFile = true)
 
         val compilation = environment.compile(className)
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
@@ -343,8 +342,7 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
         val entityTopLastPackageName = "MultiPackageTopLast"
         val entitySubPackageName = "MultiPackageSub"
 
-        val environment = TestEnvironment("multiple-packages-temp.json")
-        environment.cleanModelFile()
+        val environment = TestEnvironment("multiple-packages.json", useTemporaryModelFile = true)
 
         // add to compiler ordered by length of package (unsorted)
         val compilation = environment.compile(entityTopLastPackageName, entityTopFirstPackageName, entitySubPackageName)
@@ -362,8 +360,7 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
         val parentName = "ToOneParent"
         val childName = "ToOneAllArgs"
 
-        val environment = TestEnvironment("to-one-all-args-temp.json")
-        environment.cleanModelFile()
+        val environment = TestEnvironment("to-one-all-args.json", useTemporaryModelFile = true)
 
         val compilation = environment.compile(parentName, childName)
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
@@ -377,8 +374,7 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
     fun testKotlinByteCode() {
         val entityName = "SimpleKotlinEntity"
 
-        val environment = TestEnvironment("kotlin-temp.json")
-        environment.cleanModelFile()
+        val environment = TestEnvironment("kotlin.json", useTemporaryModelFile = true)
 
         val compilation = environment.compile(entityName)
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
@@ -431,7 +427,7 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
         val parentName = "NameConflict"
         val childName = "Property" // <-- named like ObjectBox class io.objectbox.Property imported in generated classes
 
-        val environment = TestEnvironment("name-conflict-temp.json")
+        val environment = TestEnvironment("name-conflict.json", useTemporaryModelFile = true)
 
         val compilation = environment.compile(parentName, childName)
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
@@ -464,7 +460,7 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
             JavaFileObjects.forSourceString("com.example.duplicate.Example", it)
         }
 
-        val environment = TestEnvironment("getter-matching-return-temp.json")
+        val environment = TestEnvironment("getter-matching-return.json", useTemporaryModelFile = true)
 
         val compilation = environment.compile(listOf(javaFileObjectOriginal, javaFileObjectDuplicate))
         CompilationSubject.assertThat(compilation)

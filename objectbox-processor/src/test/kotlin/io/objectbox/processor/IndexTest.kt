@@ -18,7 +18,7 @@ class IndexTest : BaseProcessorTest() {
     fun index_type_autoDetectAsExpected() {
         val entity = "IndexAutoDetect"
 
-        val environment = TestEnvironment("index-auto-detect-temp.json")
+        val environment = TestEnvironment("index-auto-detect.json", useTemporaryModelFile = true)
 
         val compilation = environment.compile(entity)
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
@@ -50,7 +50,7 @@ class IndexTest : BaseProcessorTest() {
     fun index_unsupportedProperties_failsWithError() {
         val entity = "IndexUnsupported"
 
-        val environment = TestEnvironment("index-unsupported-temp.json")
+        val environment = TestEnvironment("index-unsupported.json", useTemporaryModelFile = true)
 
         val compilation = environment.compile(entity)
         CompilationSubject.assertThat(compilation).failed()
@@ -70,7 +70,7 @@ class IndexTest : BaseProcessorTest() {
     fun index_hash_failsForUnsupportedTypes() {
         val entity = "IndexHashNotSupported"
 
-        val environment = TestEnvironment("index-hash-not-temp.json")
+        val environment = TestEnvironment("index-hash-not.json", useTemporaryModelFile = true)
 
         val compilation = environment.compile(entity)
         CompilationSubject.assertThat(compilation).failed()
@@ -87,7 +87,7 @@ class IndexTest : BaseProcessorTest() {
     fun index_hash64_failsForUnsupportedTypes() {
         val entity = "IndexHash64NotSupported"
 
-        val environment = TestEnvironment("index-hash64-not-temp.json")
+        val environment = TestEnvironment("index-hash64-not.json", useTemporaryModelFile = true)
 
         val compilation = environment.compile(entity)
         CompilationSubject.assertThat(compilation).failed()
@@ -104,7 +104,7 @@ class IndexTest : BaseProcessorTest() {
     fun index_type_ifSetOverridesDefault() {
         val entity = "IndexTypeOverride"
 
-        val environment = TestEnvironment("index-override-temp.json")
+        val environment = TestEnvironment("index-override.json", useTemporaryModelFile = true)
 
         val compilation = environment.compile(entity)
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()

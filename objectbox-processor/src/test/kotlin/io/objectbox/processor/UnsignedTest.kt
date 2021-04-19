@@ -38,7 +38,7 @@ class UnsignedTest : BaseProcessorTest() {
         }
 
         // Assert model file, ensure it is re-created on each run.
-        val environment = TestEnvironment("unsigned-temp.json")
+        val environment = TestEnvironment("unsigned.json", useTemporaryModelFile = true)
         val compilation = environment.compile(listOf(javaFileObject))
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
 
@@ -64,7 +64,7 @@ class UnsignedTest : BaseProcessorTest() {
             JavaFileObjects.forSourceString("com.example.Example", it)
         }
 
-        val environment = TestEnvironment("not-generated.json")
+        val environment = TestEnvironment("not-generated.json", useTemporaryModelFile = true)
 
         val compilation = environment.compile(listOf(javaFileObject))
         CompilationSubject.assertThat(compilation).failed()
@@ -90,7 +90,7 @@ class UnsignedTest : BaseProcessorTest() {
             JavaFileObjects.forSourceString("com.example.Example", it)
         }
 
-        val environment = TestEnvironment("not-generated.json")
+        val environment = TestEnvironment("not-generated.json", useTemporaryModelFile = true)
 
         val compilation = environment.compile(listOf(javaFileObject))
         CompilationSubject.assertThat(compilation).failed()

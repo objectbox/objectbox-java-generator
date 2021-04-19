@@ -10,18 +10,24 @@
       "properties": [
         {
           "id": "1:2420324358983356316",
-          "name": "id"
+          "name": "id",
+          "type": 6,
+          "flags": 3
         },
         {
           "id": "3:4055646088440538446",
+          "name": "toOneId",
           "indexId": "1:6913000642538303411",
-          "name": "toOneId"
+          "type": 11,
+          "flags": 1548,
+          "relationTarget": "UidRelationNewEntity"
         }
       ],
       "relations": [
         {
           "id": "1:823077930327936262",
-          "name": "toManyStandalone"
+          "name": "toManyStandalone",
+          "targetId": "1:2361091532752425885"
         }
       ]
     }
@@ -30,7 +36,8 @@
   "lastIndexId": "1:6913000642538303411",
   "lastRelationId": "1:823077930327936262",
   "lastSequenceId": "0:0",
-  "modelVersion": 4,
+  "modelVersion": 5,
+  "modelVersionParserMinimum": 5,
   "newUidPool": [
     3843553193211826785
   ],

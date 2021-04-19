@@ -25,8 +25,7 @@ class IdTest : BaseProcessorTest() {
             JavaFileObjects.forSourceString("io.objectbox.processor.test.NoIdEntity", it)
         }
 
-        val environment = TestEnvironment("not-generated.json")
-        environment.cleanModelFile()
+        val environment = TestEnvironment("not-generated.json", useTemporaryModelFile = true)
 
         val compilation = environment.compile(listOf(sourceFile))
         CompilationSubject.assertThat(compilation).failed()
@@ -51,8 +50,7 @@ class IdTest : BaseProcessorTest() {
             JavaFileObjects.forSourceString("io.objectbox.processor.test.NotLongEntity", it)
         }
 
-        val environment = TestEnvironment("not-generated.json")
-        environment.cleanModelFile()
+        val environment = TestEnvironment("not-generated.json", useTemporaryModelFile = true)
 
         val compilation = environment.compile(listOf(sourceFile))
         CompilationSubject.assertThat(compilation).failed()
@@ -76,8 +74,7 @@ class IdTest : BaseProcessorTest() {
             JavaFileObjects.forSourceString("com.example.objectbox.PrivateEntity", it)
         }
 
-        val environment = TestEnvironment("not-generated.json")
-        environment.cleanModelFile()
+        val environment = TestEnvironment("not-generated.json", useTemporaryModelFile = true)
 
         val compilation = environment.compile(listOf(sourceFile))
         CompilationSubject.assertThat(compilation).failed()

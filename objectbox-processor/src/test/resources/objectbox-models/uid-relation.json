@@ -14,8 +14,8 @@
         },
         {
           "id": "3:4055646088440538446",
-          "indexId": "1:6913000642538303411",
-          "name": "toOneId"
+          "name": "toOneId",
+          "indexId": "1:6913000642538303411"
         }
       ],
       "relations": [
@@ -30,7 +30,8 @@
   "lastIndexId": "1:6913000642538303411",
   "lastRelationId": "1:823077930327936262",
   "lastSequenceId": "0:0",
-  "modelVersion": 3,
+  "modelVersion": 5,
+  "modelVersionParserMinimum": 5,
   "retiredEntityUids": [],
   "retiredIndexUids": [],
   "retiredPropertyUids": [

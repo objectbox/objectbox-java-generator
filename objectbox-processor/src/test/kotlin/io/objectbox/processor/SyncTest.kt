@@ -38,9 +38,7 @@ class SyncTest : BaseProcessorTest() {
         }
 
         // Use temp model file to assert model file.
-        TestEnvironment("sync-works-temp.json").let { environment ->
-            environment.cleanModelFile()
-
+        TestEnvironment("sync-works.json", useTemporaryModelFile = true).let { environment ->
             val compilation = environment.compile(listOf(sourceFile))
             CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
 
@@ -91,8 +89,7 @@ class SyncTest : BaseProcessorTest() {
             JavaFileObjects.forSourceString("com.example.Related", it)
         }
 
-        val environment = TestEnvironment("sync-relation-works-temp.json")
-        environment.cleanModelFile()
+        val environment = TestEnvironment("sync-relation-works.json", useTemporaryModelFile = true)
 
         val compilation = environment.compile(listOf(exampleFile, relatedFile))
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
@@ -129,8 +126,7 @@ class SyncTest : BaseProcessorTest() {
             JavaFileObjects.forSourceString("com.example.Related", it)
         }
 
-        val environment = TestEnvironment("sync-relation-fails-temp.json")
-        environment.cleanModelFile()
+        val environment = TestEnvironment("sync-relation-fails.json", useTemporaryModelFile = true)
 
         val compilation = environment.compile(listOf(exampleFile, relatedFile))
         CompilationSubject.assertThat(compilation).failed()
@@ -167,9 +163,7 @@ class SyncTest : BaseProcessorTest() {
         }
 
         // Use temp model file to assert model file.
-        TestEnvironment("sync-global-ids-works-temp.json").let { environment ->
-            environment.cleanModelFile()
-
+        TestEnvironment("sync-global-ids-works.json", useTemporaryModelFile = true).let { environment ->
             val compilation = environment.compile(listOf(sourceFile))
             CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
 

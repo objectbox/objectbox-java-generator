@@ -1,2 +1,4 @@
 *.json.copy
 *.json.copy.bak
+*.json.tmp
+*.json.tmp.bak

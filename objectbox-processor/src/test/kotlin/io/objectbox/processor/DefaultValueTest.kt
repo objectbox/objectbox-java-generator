@@ -27,8 +27,7 @@ class DefaultValueTest : BaseProcessorTest() {
             JavaFileObjects.forSourceString("com.example.DefaultValueEntity", it)
         }
 
-        val environment = TestEnvironment("default-value-empty-string-temp.json")
-        environment.cleanModelFile()
+        val environment = TestEnvironment("default-value-empty-string.json", useTemporaryModelFile = true)
 
         val compilation = environment.compile(listOf(sourceFile))
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
@@ -64,8 +63,7 @@ class DefaultValueTest : BaseProcessorTest() {
             JavaFileObjects.forSourceString("com.example.DefaultValueEntity", it)
         }
 
-        val environment = TestEnvironment("default-value-not-empty-string-temp.json")
-        environment.cleanModelFile()
+        val environment = TestEnvironment("default-value-not-empty-string.json", useTemporaryModelFile = true)
 
         val compilation = environment.compile(listOf(sourceFile))
         CompilationSubject.assertThat(compilation).failed()
@@ -93,8 +91,7 @@ class DefaultValueTest : BaseProcessorTest() {
             JavaFileObjects.forSourceString("com.example.DefaultValueEntity", it)
         }
 
-        val environment = TestEnvironment("default-value-prop-not-string-temp.json")
-        environment.cleanModelFile()
+        val environment = TestEnvironment("default-value-prop-not-string.json", useTemporaryModelFile = true)
 
         val compilation = environment.compile(listOf(sourceFile))
         CompilationSubject.assertThat(compilation).failed()
@@ -138,8 +135,7 @@ class DefaultValueTest : BaseProcessorTest() {
             JavaFileObjects.forSourceString("com.example.DefaultValueEntity", it)
         }
 
-        val environment = TestEnvironment("default-value-convert-temp.json")
-        environment.cleanModelFile()
+        val environment = TestEnvironment("default-value-convert.json", useTemporaryModelFile = true)
 
         val compilation = environment.compile(listOf(sourceFile))
         CompilationSubject.assertThat(compilation).failed()

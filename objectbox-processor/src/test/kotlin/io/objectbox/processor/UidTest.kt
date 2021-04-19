@@ -32,19 +32,20 @@ class UidTest {
 
     @Test
     fun testUidEmpty() {
-        val environment = TestEnvironment("uid.json", copyModelFile = true)
-        val compilation = environment.compile("UidEmptyEntity")
+        val environment = TestEnvironment("uid.json")
+        // Note: suggested UID added to newUidPool in model file.
+        val compilation = environment.compile("UidEmptyEntity", modelExpectedToChange = true)
         CompilationSubject.assertThat(compilation).failed()
         CompilationSubject.assertThat(compilation).hadErrorContaining("@Uid(2361091532752425885L)")
     }
 
     @Test
     fun testUidNew() {
-        val environment = TestEnvironment("uid-new-uid-pool.json", copyModelFile = true)
+        val environment = TestEnvironment("uid-new-uid-pool.json")
         val modelBefore = environment.readModel()
         Assert.assertEquals(1, modelBefore.newUidPool.size)
 
-        val compilation = environment.compile("UidNewEntity")
+        val compilation = environment.compile("UidNewEntity", modelExpectedToChange = true)
         CompilationSubject.assertThat(compilation).succeeded()
         val model = environment.readModel()
 
@@ -57,21 +58,22 @@ class UidTest {
 
     @Test
     fun testPropertyUidEmpty() {
-        val environment = TestEnvironment("uid.json", copyModelFile = true)
-        val compilation = environment.compile("UidPropertyEmptyEntity")
+        val environment = TestEnvironment("uid.json")
+        // Note: suggested UID added to newUidPool in model file.
+        val compilation = environment.compile("UidPropertyEmptyEntity", modelExpectedToChange = true)
         CompilationSubject.assertThat(compilation).failed()
         CompilationSubject.assertThat(compilation).hadErrorContaining("@Uid(7287685531948841886L)")
     }
 
     @Test
     fun testPropertyUidNew() {
-        val environment = TestEnvironment("uid-new-uid-pool.json", copyModelFile = true)
+        val environment = TestEnvironment("uid-new-uid-pool.json")
         val entityName = "UidPropertyNewEntity"
         val modelBefore = environment.readModel()
         Assert.assertEquals(1, modelBefore.newUidPool.size)
         val entityBefore = modelBefore.findEntity("UidEntity", null)!!
 
-        val compilation = environment.compile(entityName)
+        val compilation = environment.compile(entityName, modelExpectedToChange = true)
         CompilationSubject.assertThat(compilation).succeeded()
         val model = environment.readModel()
         val entity = model.findEntity("UidEntity", null)!!
@@ -87,21 +89,22 @@ class UidTest {
 
     @Test
     fun testToOneUidEmpty() {
-        val environment = TestEnvironment("uid-relation.json", copyModelFile = true)
-        val compilation = environment.compile("UidToOneEmptyEntity")
+        val environment = TestEnvironment("uid-relation.json")
+        // Note: suggested UID added to newUidPool in model file.
+        val compilation = environment.compile("UidToOneEmptyEntity", modelExpectedToChange = true)
         CompilationSubject.assertThat(compilation).failed()
         CompilationSubject.assertThat(compilation).hadErrorContaining("@Uid(4055646088440538446L)")
     }
 
     @Test
     fun testToOneUidNew() {
-        val environment = TestEnvironment("uid-relation-new-uid-pool.json", copyModelFile = true)
+        val environment = TestEnvironment("uid-relation-new-uid-pool.json")
         val entityName = "UidToOneNewEntity"
         val modelBefore = environment.readModel()
         Assert.assertEquals(1, modelBefore.newUidPool.size)
         val entityBefore = modelBefore.findEntity("UidRelationNewEntity", null)!!
 
-        val compilation = environment.compile(entityName)
+        val compilation = environment.compile(entityName, modelExpectedToChange = true)
         CompilationSubject.assertThat(compilation).succeeded()
         val model = environment.readModel()
         val entity = model.findEntity("UidRelationNewEntity", null)!!
@@ -117,12 +120,12 @@ class UidTest {
 
     @Test
     fun testToManyUidNew() {
-        val environment = TestEnvironment("uid-relation-new-uid-pool.json", copyModelFile = true)
+        val environment = TestEnvironment("uid-relation-new-uid-pool.json")
         val entityName = "UidToManyNewEntity"
         val modelBefore = environment.readModel()
         Assert.assertEquals(1, modelBefore.newUidPool.size)
 
-        val compilation = environment.compile(entityName)
+        val compilation = environment.compile(entityName, modelExpectedToChange = true)
         CompilationSubject.assertThat(compilation).succeeded()
         val model = environment.readModel()
         val entity = model.findEntity("UidRelationNewEntity", null)!!
@@ -138,8 +141,8 @@ class UidTest {
 
     @Test
     fun testToManyUidEmpty() {
-        val environment = TestEnvironment("uid-relation.json", copyModelFile = true)
-        val compilation = environment.compile("UidToManyEmptyEntity")
+        val environment = TestEnvironment("uid-relation.json")
+        val compilation = environment.compile("UidToManyEmptyEntity", modelExpectedToChange = true)
         CompilationSubject.assertThat(compilation).failed()
         CompilationSubject.assertThat(compilation).hadErrorContaining("@Uid(823077930327936262L)")
     }

@@ -30,8 +30,7 @@ class RelationsTest : BaseProcessorTest() {
         testToOneSources(parentName, childName, "relation.json")
 
         // assert schema and model
-        val environment = TestEnvironment("relation-temp.json")
-        environment.cleanModelFile()
+        val environment = TestEnvironment("relation.json", useTemporaryModelFile = true)
 
         val compilation = environment.compile(parentName, childName)
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
@@ -78,8 +77,7 @@ class RelationsTest : BaseProcessorTest() {
         testToOneSources(parentName, childName, "to-one.json")
 
         // assert schema and model
-        val environment = TestEnvironment("to-one-temp.json")
-        environment.cleanModelFile()
+        val environment = TestEnvironment("to-one.json", useTemporaryModelFile = true)
 
         val compilation = environment.compile(parentName, childName)
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
@@ -187,8 +185,7 @@ class RelationsTest : BaseProcessorTest() {
             JavaFileObjects.forSourceString("com.example.ToOneSource", it)
         }
 
-        val environment = TestEnvironment("not-generated.json")
-        environment.cleanModelFile()
+        val environment = TestEnvironment("not-generated.json", useTemporaryModelFile = true)
 
         val compilation = environment.compile(listOf(javaFileObjectSource, javaFileObjectToOneTarget))
         CompilationSubject.assertThat(compilation).failed()
@@ -223,8 +220,7 @@ class RelationsTest : BaseProcessorTest() {
             JavaFileObjects.forSourceString("com.example.ToOneSource", it)
         }
 
-        val environment = TestEnvironment("not-generated.json")
-        environment.cleanModelFile()
+        val environment = TestEnvironment("not-generated.json", useTemporaryModelFile = true)
 
         val compilation = environment.compile(listOf(javaFileObjectSource, javaFileObjectToOneTarget))
         CompilationSubject.assertThat(compilation).failed()
@@ -239,8 +235,8 @@ class RelationsTest : BaseProcessorTest() {
         val parentName = "ToOneParent"
         val childName = "ToOneNoBoxStore"
 
-        val environment = TestEnvironment("not-generated.json", optionDisableTransform = true)
-        environment.cleanModelFile()
+        val environment =
+            TestEnvironment("not-generated.json", optionDisableTransform = true, useTemporaryModelFile = true)
 
         val compilation = environment.compile(parentName, childName)
         CompilationSubject.assertThat(compilation).failed()
@@ -289,7 +285,7 @@ class RelationsTest : BaseProcessorTest() {
         val targetName = "BacklinkToManyTarget"
         val sourceName = "BacklinkToManySource"
 
-        val environment = TestEnvironment("backlink-to-many-to-many-temp.json")
+        val environment = TestEnvironment("backlink-to-many-to-many.json", useTemporaryModelFile = true)
 
         val compilation = environment.compile(targetName, sourceName)
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
@@ -391,8 +387,7 @@ class RelationsTest : BaseProcessorTest() {
      * Tests if multiple relation fields for one @Backlink (without 'to' value) are causing an error.
      */
     private fun assertMultipleRelationsError(targetName: String, sourceName: String) {
-        val environment = TestEnvironment("not-generated.json")
-        environment.cleanModelFile()
+        val environment = TestEnvironment("not-generated.json", useTemporaryModelFile = true)
 
         val compilation = environment.compile(targetName, sourceName)
         CompilationSubject.assertThat(compilation).failed()
@@ -417,8 +412,7 @@ class RelationsTest : BaseProcessorTest() {
     }
 
     private fun assertMultipleBacklinksError(backlinkEntity: String, relationEntity: String) {
-        val environment = TestEnvironment("not-generated.json")
-        environment.cleanModelFile()
+        val environment = TestEnvironment("not-generated.json", useTemporaryModelFile = true)
 
         val compilation = environment.compile(backlinkEntity, relationEntity)
         CompilationSubject.assertThat(compilation).failed()
@@ -432,8 +426,7 @@ class RelationsTest : BaseProcessorTest() {
         val targetName = "BacklinkWithToTarget"
         val sourceName = "BacklinkWithToSource"
 
-        val environment = TestEnvironment("backlink-with-to-temp.json")
-        environment.cleanModelFile()
+        val environment = TestEnvironment("backlink-with-to.json", useTemporaryModelFile = true)
 
         val compilation = environment.compile(targetName, sourceName)
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
@@ -499,8 +492,7 @@ class RelationsTest : BaseProcessorTest() {
         val targetName = "BacklinkWrongToTarget"
         val sourceName = "BacklinkWrongToSource"
 
-        val environment = TestEnvironment("not-generated.json")
-        environment.cleanModelFile()
+        val environment = TestEnvironment("not-generated.json", useTemporaryModelFile = true)
 
         val compilation = environment.compile(targetName, sourceName)
         CompilationSubject.assertThat(compilation).failed()
@@ -513,8 +505,7 @@ class RelationsTest : BaseProcessorTest() {
     fun backlink_toOne_shouldError() {
         val sourceName = "BacklinkToOneError"
 
-        val environment = TestEnvironment("not-generated.json")
-        environment.cleanModelFile()
+        val environment = TestEnvironment("not-generated.json", useTemporaryModelFile = true)
 
         val compilation = environment.compile(sourceName)
         CompilationSubject.assertThat(compilation).failed()
@@ -580,8 +571,7 @@ class RelationsTest : BaseProcessorTest() {
     fun toOne_relatedEntityIsGeneric_error() {
         val className = "ToOneGenerics"
 
-        val environment = TestEnvironment("not-generated.json")
-        environment.cleanModelFile()
+        val environment = TestEnvironment("not-generated.json", useTemporaryModelFile = true)
 
         val compilation = environment.compile(className)
         CompilationSubject.assertThat(compilation).failed()
@@ -594,8 +584,7 @@ class RelationsTest : BaseProcessorTest() {
     fun toMany_relatedEntityIsGeneric_error() {
         val className = "ToManyGenerics"
 
-        val environment = TestEnvironment("not-generated.json")
-        environment.cleanModelFile()
+        val environment = TestEnvironment("not-generated.json", useTemporaryModelFile = true)
 
         val compilation = environment.compile(className)
         CompilationSubject.assertThat(compilation).failed()

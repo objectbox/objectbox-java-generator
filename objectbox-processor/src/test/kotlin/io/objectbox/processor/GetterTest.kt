@@ -33,7 +33,7 @@ class GetterTest : BaseProcessorTest() {
         """
         val javaFileObject = JavaFileObjects.forSourceString("com.example.objectbox.Example", source)
 
-        val environment = TestEnvironment("getter-is-temp.json")
+        val environment = TestEnvironment("getter-is.json", useTemporaryModelFile = true)
 
         val compilation = environment.compile(listOf(javaFileObject))
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
@@ -71,7 +71,7 @@ class GetterTest : BaseProcessorTest() {
         """
         val javaFileObject = JavaFileObjects.forSourceString("com.example.objectbox.Example", source)
 
-        val environment = TestEnvironment("getter-matching-return-temp.json")
+        val environment = TestEnvironment("getter-matching-return.json", useTemporaryModelFile = true)
 
         val compilation = environment.compile(listOf(javaFileObject))
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()

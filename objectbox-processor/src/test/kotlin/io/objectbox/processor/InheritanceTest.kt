@@ -223,7 +223,7 @@ class InheritanceTest : BaseProcessorTest() {
         val nameBase = "InheritanceBase"
         val nameSub = "InheritanceSubOverride"
 
-        val environment = TestEnvironment("inheritance-overridden-temp.json")
+        val environment = TestEnvironment("inheritance-overridden.json", useTemporaryModelFile = true)
 
         val compilation = environment.compile(nameBase, nameSub)
         CompilationSubject.assertThat(compilation).failed()
