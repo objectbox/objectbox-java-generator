@@ -230,7 +230,7 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
 
             val schemaProperty = schemaProperties.find { it.dbName == name }!!
             assertThat(property.type).isEqualTo(schemaProperty.dbTypeId)
-            assertThat(property.flags).isEqualTo(if (schemaProperty.propertyFlags != 0) schemaProperty.propertyFlags else null)
+            assertThat(property.flags).isEqualTo(schemaProperty.propertyFlagsForModelFile)
 
             when (name) {
                 "indexedProperty" -> {

@@ -181,8 +181,8 @@ public class Property implements HasParsedElement {
 
     private Object parsedElement;
 
-    private Integer propertyFlags;
-    private Set<String> propertyFlagsNames;
+    private Integer propertyFlagsModelFile;
+    private Set<String> propertyFlagsGeneratedCode;
 
     /**
      * Index, which has only this property
@@ -418,71 +418,77 @@ public class Property implements HasParsedElement {
 
     /**
      * Based on this properties attributes computes required {@link PropertyFlags}.
-     * @see #getPropertyFlags()
-     * @see #getPropertyFlagsNames()
+     * @see #getPropertyFlagsForModelFile()
+     * @see #getPropertyFlagsForGeneratedCode()
      */
     public void computePropertyFlags() {
-        int flags = 0;
-        Set<String> flagsNames = new LinkedHashSet<>(); // keep in insert-order
+        int flagsModelFile = 0;
+        Set<String> flagsGeneratedCode = new LinkedHashSet<>(); // keep in insert-order
 
         if (isPrimaryKey()) {
-            flags |= PropertyFlags.ID;
-            flagsNames.add("PropertyFlags.ID");
+            flagsModelFile |= PropertyFlags.ID;
+            flagsGeneratedCode.add("PropertyFlags.ID");
         }
         if (isIdAssignable()) {
-            flags |= PropertyFlags.ID_SELF_ASSIGNABLE;
-            flagsNames.add("PropertyFlags.ID_SELF_ASSIGNABLE");
+            flagsModelFile |= PropertyFlags.ID_SELF_ASSIGNABLE;
+            flagsGeneratedCode.add("PropertyFlags.ID_SELF_ASSIGNABLE");
         }
         // Note: Primary key/ID properties must always be not null. Do not explicitly add this flag for them.
         if (isNotNull() && !isPrimaryKey()) {
-            flags |= PropertyFlags.NOT_NULL;
-            flagsNames.add("PropertyFlags.NOT_NULL");
+            flagsModelFile |= PropertyFlags.NOT_NULL;
+            flagsGeneratedCode.add("PropertyFlags.NOT_NULL");
         }
         if (isNonPrimitiveType() && getPropertyType().isScalar()) {
-            flags |= PropertyFlags.NON_PRIMITIVE_TYPE;
-            flagsNames.add("PropertyFlags.NON_PRIMITIVE_TYPE");
+            // Note: not exported to model file, is specific to Java.
+            flagsGeneratedCode.add("PropertyFlags.NON_PRIMITIVE_TYPE");
         }
         if (isVirtual()) {
-            flags |= PropertyFlags.VIRTUAL;
-            flagsNames.add("PropertyFlags.VIRTUAL");
+            // Note: not exported to model file, is specific to Java.
+            flagsGeneratedCode.add("PropertyFlags.VIRTUAL");
         }
         if (isUnsigned()) {
-            flags |= PropertyFlags.UNSIGNED;
-            flagsNames.add("PropertyFlags.UNSIGNED");
+            flagsModelFile |= PropertyFlags.UNSIGNED;
+            flagsGeneratedCode.add("PropertyFlags.UNSIGNED");
         }
 
         if (getPropertyType() == PropertyType.RelationId) {
-            flags |= PropertyFlags.INDEXED;
-            flagsNames.add("PropertyFlags.INDEXED");
-            flags |= PropertyFlags.INDEX_PARTIAL_SKIP_ZERO;
-            flagsNames.add("PropertyFlags.INDEX_PARTIAL_SKIP_ZERO");
+            flagsModelFile |= PropertyFlags.INDEXED;
+            flagsGeneratedCode.add("PropertyFlags.INDEXED");
+            flagsModelFile |= PropertyFlags.INDEX_PARTIAL_SKIP_ZERO;
+            flagsGeneratedCode.add("PropertyFlags.INDEX_PARTIAL_SKIP_ZERO");
         } else if (getIndex() != null) {
-            flags |= getIndex().getIndexFlags();
-            flagsNames.addAll(getIndex().getIndexFlagsAsNames());
+            flagsModelFile |= getIndex().getIndexFlags();
+            flagsGeneratedCode.addAll(getIndex().getIndexFlagsAsNames());
         }
 
-        this.propertyFlags = flags;
-        this.propertyFlagsNames = flagsNames;
+        this.propertyFlagsModelFile = flagsModelFile;
+        this.propertyFlagsGeneratedCode = flagsGeneratedCode;
     }
 
     /**
-     * Returns combined {@link io.objectbox.model.PropertyFlags} value.
+     * Returns combined {@link io.objectbox.model.PropertyFlags} value of only those flags
+     * that should be stored in the model file. Returns null if there would be no flags.
+     * <p>
+     * These may be different from {@link #getPropertyFlagsForGeneratedCode()}, see {@link #computePropertyFlags()}.
      */
-    public int getPropertyFlags() {
-        if (propertyFlags == null) {
+    @Nullable
+    public Integer getPropertyFlagsForModelFile() {
+        if (propertyFlagsModelFile == null) {
             computePropertyFlags();
         }
-        return propertyFlags;
+        return propertyFlagsModelFile != 0 ? propertyFlagsModelFile : null;
     }
 
     /**
-     * Returns names of {@link io.objectbox.model.PropertyFlags}.
+     * Returns names of {@link io.objectbox.model.PropertyFlags} to be used in generated model builder code.
+     * <p>
+     * These may be different from {@link #getPropertyFlagsForModelFile()}, see {@link #computePropertyFlags()}.
      */
-    public Set<String> getPropertyFlagsNames() {
-        if (propertyFlagsNames == null) {
+    public Set<String> getPropertyFlagsForGeneratedCode() {
+        if (propertyFlagsGeneratedCode == null) {
             computePropertyFlags();
         }
-        return propertyFlagsNames;
+        return propertyFlagsGeneratedCode;
     }
 
     @Override

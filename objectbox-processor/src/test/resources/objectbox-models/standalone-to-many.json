@@ -12,7 +12,7 @@
           "id": "1:1826906556673625342",
           "name": "id",
           "type": 6,
-          "flags": 3
+          "flags": 1
         }
       ],
       "relations": [
@@ -32,7 +32,7 @@
           "id": "1:3998626054824627444",
           "name": "id",
           "type": 6,
-          "flags": 3
+          "flags": 1
         }
       ],
       "relations": []

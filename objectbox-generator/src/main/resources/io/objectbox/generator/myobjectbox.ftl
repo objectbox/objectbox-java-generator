@@ -76,7 +76,7 @@ public class MyObjectBox {
     </#if>
 
     <#list entity.propertiesColumns as property>
-        <#assign propertyFlags = property.propertyFlagsNames>
+        <#assign propertyFlags = property.propertyFlagsForGeneratedCode>
         entityBuilder.property("${property.dbName}", <#--
         --><#if property.targetEntity??>"${property.targetEntity.dbName}", <#--
             --><#if property.virtualTargetName??>"${property.virtualTargetName}", </#if></#if><#--
