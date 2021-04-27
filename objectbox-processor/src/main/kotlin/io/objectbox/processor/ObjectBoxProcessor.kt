@@ -243,7 +243,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
             return // avoid changing files (model file, generated source)
         }
 
-        if (!validateSyncEnabledEntities(schema.entities)) {
+        if (!checkSyncEnabledEntities(schema.entities)) {
             return
         }
 
@@ -564,28 +564,44 @@ open class ObjectBoxProcessor : AbstractProcessor() {
     }
 
     /**
-     * Returns false if a synced entity has a relation to an entity that is not synced.
-     * Will also create an error message.
+     * Checks sync enabled entities to not contain relations to not synced entities
+     * and to only contain unique indexes with REPLACE conflict strategy. Returns
+     * false if any check has failed. Adds error messages for each failed check.
      */
-    private fun validateSyncEnabledEntities(entities: List<ModelEntity>): Boolean {
-        var isValid = true
+    private fun checkSyncEnabledEntities(entities: List<ModelEntity>): Boolean {
+        var hasNoFailures = true
         entities
             .filter { it.isSyncEnabled }
             .forEach { syncedEntity ->
+                // Check there are no relations to not synced entities.
                 syncedEntity.toOneRelations
                     .forEach {
                         if (!it.targetEntity!!.checkIsSynced(syncedEntity, it.name)) {
-                            isValid = false
+                            hasNoFailures = false
                         }
                     }
                 syncedEntity.toManyRelations
                     .forEach {
                         if (!it.targetEntity!!.checkIsSynced(syncedEntity, it.name)) {
-                            isValid = false
+                            hasNoFailures = false
                         }
                     }
+                // Check that all unique indexes use the REPLACE conflict strategy.
+                val uniqueNotReplaceIndexes = syncedEntity.indexes.filter {
+                    it.isUnique &&
+                    it.uniqueOnConflictFlag != PropertyFlags.UNIQUE_ON_CONFLICT_REPLACE
+                }
+                if (uniqueNotReplaceIndexes.isNotEmpty()) {
+                    hasNoFailures = false
+                    messages.error(
+                        "Synced entities must use @Unique(onConflict = ConflictStrategy.REPLACE) for all unique properties, but found others in '${syncedEntity.className}':\n${
+                            uniqueNotReplaceIndexes.joinToString(separator = "\n") { "  ${it.properties[0].propertyName}" }
+                        }",
+                        syncedEntity
+                    )
+                }
             }
-        return isValid
+        return hasNoFailures
     }
 
     private fun ModelEntity.checkIsSynced(syncedEntity: ModelEntity, relationName: String): Boolean {

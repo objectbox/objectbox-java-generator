@@ -15,14 +15,20 @@ class SyncTest : BaseProcessorTest() {
     fun sync_works() {
         val sourceFile = """
         package com.example;
+        
+        import io.objectbox.annotation.ConflictStrategy;
         import io.objectbox.annotation.Entity;
         import io.objectbox.annotation.Id;
         import io.objectbox.annotation.Sync;
+        import io.objectbox.annotation.Unique;
 
         @Entity
         @Sync
         public class Example {
             @Id long id;
+            
+            @Unique(onConflict = ConflictStrategy.REPLACE)
+            public long replaceProp;
         }
         """.trimIndent().let {
             JavaFileObjects.forSourceString("com.example.Example", it)
@@ -180,5 +186,41 @@ class SyncTest : BaseProcessorTest() {
                 assertThat(it.flags).isEqualTo(EntityFlags.SHARED_GLOBAL_IDS or EntityFlags.SYNC_ENABLED)
             }
         }
+    }
+
+    @Test
+    fun sync_uniqueNotReplace_fails() {
+        val exampleFile = """
+        package com.example;
+        
+        import io.objectbox.annotation.ConflictStrategy;
+        import io.objectbox.annotation.Entity;
+        import io.objectbox.annotation.Id;
+        import io.objectbox.annotation.Sync;
+        import io.objectbox.annotation.Unique;
+
+        @Entity
+        @Sync
+        public class Example {
+            @Id long id;
+            
+            @Unique(onConflict = ConflictStrategy.REPLACE)
+            public long replaceProp;
+            
+            @Unique
+            public long failProp;
+        }
+        """.trimIndent().let {
+            JavaFileObjects.forSourceString("com.example.Example", it)
+        }
+
+        val environment = TestEnvironment("not-generated.json", useTemporaryModelFile = true)
+
+        val compilation = environment.compile(listOf(exampleFile))
+        CompilationSubject.assertThat(compilation).failed()
+        CompilationSubject.assertThat(compilation).hadErrorContaining(
+            "Synced entities must use @Unique(onConflict = ConflictStrategy.REPLACE) for all unique properties"
+        )
+        assertThat(environment.isModelFileExists()).isFalse()
     }
 }
