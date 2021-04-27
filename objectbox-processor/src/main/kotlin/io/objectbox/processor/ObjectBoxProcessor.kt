@@ -507,6 +507,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
     }
 
     private fun syncIdModel(schema: Schema): Boolean {
+        val customModelPath = this.customModelPath
         val useDefaultPath = customModelPath.isNullOrEmpty()
         val modelFile = if (useDefaultPath) {
             try {
@@ -518,7 +519,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
                 return false
             }
         } else {
-            File(customModelPath)
+            File(customModelPath!!)
         }
 
         val modelFolder = modelFile.parentFile
