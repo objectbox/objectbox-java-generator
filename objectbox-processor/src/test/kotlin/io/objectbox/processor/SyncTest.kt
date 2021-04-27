@@ -131,7 +131,7 @@ class SyncTest : BaseProcessorTest() {
         val compilation = environment.compile(listOf(exampleFile, relatedFile))
         CompilationSubject.assertThat(compilation).failed()
         CompilationSubject.assertThat(compilation).hadErrorContaining(
-            "Synced entity 'Example' can't have a relation to not-synced entity 'Related'."
+            "Synced entity 'Example' can't have a relation to not-synced entity 'Related', but found relation 'relation'."
         )
         assertThat(environment.isModelFileExists()).isFalse()
     }

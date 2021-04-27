@@ -47,6 +47,7 @@ import javax.lang.model.type.TypeMirror
 import javax.lang.model.util.ElementFilter
 import javax.lang.model.util.Elements
 import javax.lang.model.util.Types
+import io.objectbox.generator.model.Entity as ModelEntity
 
 /**
  * ObjectBox annotation processor which parses [@Entity][Entity] and [@BaseEntity][BaseEntity]
@@ -401,7 +402,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
     private fun parseProperties(
         annotatedElements: Set<Element>,
         relations: Relations,
-        entityModel: io.objectbox.generator.model.Entity,
+        entityModel: ModelEntity,
         entityElement: Element
     ) {
         // The current entity...
@@ -424,7 +425,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         }
     }
 
-    private fun io.objectbox.generator.model.Entity.ensureIdProperty() {
+    private fun ModelEntity.ensureIdProperty() {
         // Note: do not use pkProperty as it is only initialized during schema finalization (2nd pass).
         val idPropertyCount = properties.count { it.isPrimaryKey }
         if (idPropertyCount == 0) {
@@ -444,7 +445,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
      * Returns true if the entity has a constructor where param types, names and order matches the properties of the
      * given entity model.
      */
-    private fun hasAllArgsConstructor(entity: Element, entityModel: io.objectbox.generator.model.Entity): Boolean {
+    private fun hasAllArgsConstructor(entity: Element, entityModel: ModelEntity): Boolean {
         if (debug) messages.debug("Checking for all-args constructor for ${entityModel.className}...")
         val constructors = ElementFilter.constructorsIn(entity.enclosedElements)
         val properties = entityModel.properties
@@ -549,28 +550,33 @@ open class ObjectBoxProcessor : AbstractProcessor() {
      * Returns false if a synced entity has a relation to an entity that is not synced.
      * Will also create an error message.
      */
-    private fun validateSyncEnabledEntities(entities: List<io.objectbox.generator.model.Entity>): Boolean {
+    private fun validateSyncEnabledEntities(entities: List<ModelEntity>): Boolean {
+        var isValid = true
         entities
             .filter { it.isSyncEnabled }
             .forEach { syncedEntity ->
                 syncedEntity.toOneRelations
                     .forEach {
-                        if (!it.targetEntity!!.checkIsSynced(syncedEntity)) return false
+                        if (!it.targetEntity!!.checkIsSynced(syncedEntity, it.name)) {
+                            isValid = false
+                        }
                     }
                 syncedEntity.toManyRelations
                     .forEach {
-                        if (!it.targetEntity!!.checkIsSynced(syncedEntity)) return false
+                        if (!it.targetEntity!!.checkIsSynced(syncedEntity, it.name)) {
+                            isValid = false
+                        }
                     }
             }
-        return true
+        return isValid
     }
 
-    private fun io.objectbox.generator.model.Entity.checkIsSynced(syncedEntity: io.objectbox.generator.model.Entity): Boolean {
+    private fun ModelEntity.checkIsSynced(syncedEntity: ModelEntity, relationName: String): Boolean {
         return if (isSyncEnabled) {
             true
         } else {
             messages.error(
-                "Synced entity '${syncedEntity.className}' can't have a relation to not-synced entity '$className'.",
+                "Synced entity '${syncedEntity.className}' can't have a relation to not-synced entity '$className', but found relation '$relationName'.",
                 syncedEntity
             )
             false
