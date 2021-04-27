@@ -30,6 +30,7 @@ import io.objectbox.generator.idsync.IdSync
 import io.objectbox.generator.idsync.IdSyncException
 import io.objectbox.generator.model.Property
 import io.objectbox.generator.model.Schema
+import io.objectbox.model.PropertyFlags
 import io.objectbox.reporting.BasicBuildTracker
 import net.ltgt.gradle.incap.IncrementalAnnotationProcessorType
 import java.io.File
@@ -334,6 +335,8 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         parseProperties(annotatedElements, relations, entityModel, entity)
         // Verify there is an @Id property.
         entityModel.ensureIdProperty()
+        // Verify there is at most 1 unique property with REPLACE strategy.
+        entityModel.ensureSingleUniqueReplace()
 
         // if not added automatically and relations are used, ensure there is a box store field
         if (!transformationEnabled && relations.hasRelations(entityModel) && !entityModel.hasBoxStoreField) {
@@ -436,6 +439,19 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         } else if (idPropertyCount > 1) {
             messages.error(
                 "Only one @Id property is allowed for '${className}'.",
+                this
+            )
+        }
+    }
+
+    private fun ModelEntity.ensureSingleUniqueReplace() {
+        val uniqueReplaceIndexes =
+            indexes.filter { it.uniqueOnConflictFlag == PropertyFlags.UNIQUE_ON_CONFLICT_REPLACE }
+        if (uniqueReplaceIndexes.size > 1) {
+            messages.error(
+                "ConflictStrategy.REPLACE can only be used on a single property, but found multiple in '${className}':\n${
+                    uniqueReplaceIndexes.joinToString(separator = "\n") { "  ${it.properties[0].propertyName}" }
+                }",
                 this
             )
         }
