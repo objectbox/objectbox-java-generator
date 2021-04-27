@@ -29,7 +29,7 @@ class UniqueTest : BaseProcessorTest() {
                 assertWithMessage("${prop.propertyName} should have index").that(prop.index).isNotNull()
 
                 // assert index is unique
-                assertWithMessage("${prop.propertyName} index is not unique").that(prop.index.isUnique).isTrue()
+                assertWithMessage("${prop.propertyName} index should be unique").that(prop.index!!.isUnique).isTrue()
             }
         }
     }
@@ -76,10 +76,10 @@ class UniqueTest : BaseProcessorTest() {
 
                 if (prop.propertyName == "notUniqueProp") {
                     // assert index is non-unique
-                    assertWithMessage("${prop.propertyName} index should not be unique").that(prop.index.isUnique).isFalse()
+                    assertWithMessage("${prop.propertyName} index should not be unique").that(prop.index!!.isUnique).isFalse()
                 } else {
                     // assert index is unique
-                    assertWithMessage("${prop.propertyName} index should be unique").that(prop.index.isUnique).isTrue()
+                    assertWithMessage("${prop.propertyName} index should be unique").that(prop.index!!.isUnique).isTrue()
                 }
             }
         }

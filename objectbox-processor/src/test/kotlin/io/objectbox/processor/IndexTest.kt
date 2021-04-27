@@ -40,7 +40,7 @@ class IndexTest : BaseProcessorTest() {
                     PropertyFlags.INDEXED // 8
                 }
                 assertWithMessage("${prop.propertyName} index type is wrong")
-                        .that(prop.index.type)
+                        .that(prop.index!!.type)
                         .isEqualTo(expectedIndexType)
             }
         }
@@ -128,7 +128,7 @@ class IndexTest : BaseProcessorTest() {
                     }
                 }
                 assertWithMessage("${prop.propertyName} index type is wrong")
-                        .that(prop.index.type)
+                        .that(prop.index!!.type)
                         .isEqualTo(expectedIndexType)
             }
         }

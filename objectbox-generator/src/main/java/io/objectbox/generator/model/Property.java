@@ -21,6 +21,8 @@ package io.objectbox.generator.model;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import io.objectbox.generator.IdUid;
 import io.objectbox.generator.TextUtil;
 import io.objectbox.model.PropertyFlags;
@@ -371,6 +373,10 @@ public class Property implements HasParsedElement {
         return entity;
     }
 
+    /**
+     * Note: index is not set until after finishing schema.
+     */
+    @Nullable
     public Index getIndex() {
         return index;
     }
