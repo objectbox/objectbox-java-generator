@@ -99,14 +99,20 @@ public class Property implements HasParsedElement {
         }
 
         public PropertyBuilder index() {
-            return index(PropertyFlags.INDEXED, 0, false);
+            return index(PropertyFlags.INDEXED, 0, false, 0);
         }
 
-        public PropertyBuilder index(int type, int maxValueLength, boolean unique) {
+        /**
+         * @param indexFlag            One of the INDEX {@link io.objectbox.model.PropertyFlags}.
+         * @param uniqueOnConflictFlag One of the UNIQUE_ON_CONFLICT {@link io.objectbox.model.PropertyFlags} or 0.
+         */
+        public PropertyBuilder index(int indexFlag, int maxValueLength, boolean unique, int uniqueOnConflictFlag) {
             Index index = new Index(property);
-            index.setType(type);
+            index.setIndexFlag(indexFlag);
             index.setMaxValueLength(maxValueLength);
-            if (unique) index.makeUnique();
+            if (unique) {
+                index.makeUnique(uniqueOnConflictFlag);
+            }
             property.entity.addIndex(index);
             return this;
         }
@@ -456,24 +462,30 @@ public class Property implements HasParsedElement {
             flags |= PropertyFlags.INDEX_PARTIAL_SKIP_ZERO;
             flagsNames.add("PropertyFlags.INDEX_PARTIAL_SKIP_ZERO");
         } else if (getIndex() != null) {
-            switch (getIndex().getType()) {
-                case 0:
+            int indexFlag = getIndex().getIndexFlag();
+            switch (indexFlag) {
                 case PropertyFlags.INDEXED:
-                    flags |= PropertyFlags.INDEXED;
+                    flags |= indexFlag;
                     flagsNames.add("PropertyFlags.INDEXED");
                     break;
                 case PropertyFlags.INDEX_HASH:
-                    flags |= PropertyFlags.INDEX_HASH;
+                    flags |= indexFlag;
                     flagsNames.add("PropertyFlags.INDEX_HASH");
                     break;
                 case PropertyFlags.INDEX_HASH64:
-                    flags |= PropertyFlags.INDEX_HASH64;
+                    flags |= indexFlag;
                     flagsNames.add("PropertyFlags.INDEX_HASH64");
                     break;
             }
             if (getIndex().isUnique()) {
                 flags |= PropertyFlags.UNIQUE;
                 flagsNames.add("PropertyFlags.UNIQUE");
+
+                int onConflictFlag = getIndex().getUniqueOnConflictFlag();
+                if (onConflictFlag == PropertyFlags.UNIQUE_ON_CONFLICT_REPLACE) {
+                    flags |= onConflictFlag;
+                    flagsNames.add("PropertyFlags.UNIQUE_ON_CONFLICT_REPLACE");
+                }
             }
         }
 

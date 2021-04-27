@@ -18,6 +18,7 @@
 
 package io.objectbox.processor
 
+import io.objectbox.annotation.ConflictStrategy
 import io.objectbox.annotation.Convert
 import io.objectbox.annotation.DefaultValue
 import io.objectbox.annotation.Id
@@ -231,7 +232,13 @@ class Properties(
             messages.error("@$annotationName is not supported for $propertyType, remove @$annotationName.", field)
         }
 
-        propertyBuilder.index(indexFlags, 0, uniqueAnnotation != null)
+        // determine unique conflict resolution
+        val uniqueOnConflictFlag = when (uniqueAnnotation?.onConflict) {
+            ConflictStrategy.REPLACE -> PropertyFlags.UNIQUE_ON_CONFLICT_REPLACE
+            else -> 0 // default strategy or not unique
+        }
+
+        propertyBuilder.index(indexFlags, 0, uniqueAnnotation != null, uniqueOnConflictFlag)
     }
 
     private fun defaultValuePropertyBuilderOrNull(field: VariableElement): Property.PropertyBuilder? {

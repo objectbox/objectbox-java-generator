@@ -99,6 +99,7 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
         assertThat(schemaEntity.indexes).hasSize(2) /* @Index and ToOne */
         val index = schemaEntity.indexes[0]
         assertThat(index.isUnique).isFalse()
+        assertThat(index.uniqueOnConflictFlag).isEqualTo(0)
         assertThat(index.properties).hasSize(1)
         val indexProperty = index.properties[0]
 

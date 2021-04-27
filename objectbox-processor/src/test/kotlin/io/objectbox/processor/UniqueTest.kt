@@ -2,7 +2,6 @@ package io.objectbox.processor
 
 import com.google.common.truth.Truth.assertWithMessage
 import com.google.testing.compile.CompilationSubject
-import com.google.testing.compile.JavaFileObjects
 import org.junit.Test
 
 
@@ -26,10 +25,14 @@ class UniqueTest : BaseProcessorTest() {
                 }
 
                 // assert index is created
-                assertWithMessage("${prop.propertyName} should have index").that(prop.index).isNotNull()
+                assertWithMessage("${prop.propertyName} should have index")
+                    .that(prop.index).isNotNull()
 
                 // assert index is unique
-                assertWithMessage("${prop.propertyName} index should be unique").that(prop.index!!.isUnique).isTrue()
+                assertWithMessage("${prop.propertyName} index should be unique")
+                    .that(prop.index!!.isUnique).isTrue()
+                assertWithMessage("${prop.propertyName} on conflict flag should not be set")
+                    .that(prop.index!!.uniqueOnConflictFlag).isEqualTo(0)
             }
         }
     }
@@ -76,11 +79,15 @@ class UniqueTest : BaseProcessorTest() {
 
                 if (prop.propertyName == "notUniqueProp") {
                     // assert index is non-unique
-                    assertWithMessage("${prop.propertyName} index should not be unique").that(prop.index!!.isUnique).isFalse()
+                    assertWithMessage("${prop.propertyName} index should not be unique")
+                        .that(prop.index!!.isUnique).isFalse()
                 } else {
                     // assert index is unique
-                    assertWithMessage("${prop.propertyName} index should be unique").that(prop.index!!.isUnique).isTrue()
+                    assertWithMessage("${prop.propertyName} index should be unique")
+                        .that(prop.index!!.isUnique).isTrue()
                 }
+                assertWithMessage("${prop.propertyName} on conflict flag should not be set")
+                    .that(prop.index!!.uniqueOnConflictFlag).isEqualTo(0)
             }
         }
     }

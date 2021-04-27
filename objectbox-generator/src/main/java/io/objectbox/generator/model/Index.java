@@ -21,11 +21,14 @@ package io.objectbox.generator.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.objectbox.model.PropertyFlags;
+
 public class Index {
     private final List<Property> properties;
+    /** Value mapped to a {@link PropertyFlags} constant in Java API. */
+    private int indexFlag;
     private boolean unique;
-    /** Value mapped to a PropertyFlags constant in Java API. */
-    private int type;
+    private int uniqueOnConflictFlag;
     /** Used to restrict index value length for String and byte[] if using value based index. */
     private int maxValueLength;
 
@@ -42,20 +45,25 @@ public class Index {
         return properties;
     }
 
-    public void makeUnique() {
+    public int getIndexFlag() {
+        return indexFlag == 0 ? PropertyFlags.INDEXED : indexFlag;
+    }
+
+    public void setIndexFlag(int flag) {
+        this.indexFlag = flag;
+    }
+
+    public void makeUnique(int uniqueOnConflictFlag) {
         unique = true;
+        this.uniqueOnConflictFlag = uniqueOnConflictFlag;
     }
 
     public boolean isUnique() {
         return unique;
     }
 
-    public int getType() {
-        return type;
-    }
-
-    public void setType(int type) {
-        this.type = type;
+    public int getUniqueOnConflictFlag() {
+        return uniqueOnConflictFlag;
     }
 
     public int getMaxValueLength() {
