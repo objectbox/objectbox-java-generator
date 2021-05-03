@@ -2,7 +2,6 @@ package io.objectbox.processor
 
 import com.google.common.truth.Truth.assertWithMessage
 import com.google.testing.compile.CompilationSubject
-import com.google.testing.compile.JavaFileObjects
 import io.objectbox.generator.model.PropertyType
 import io.objectbox.model.PropertyFlags
 import org.junit.Assert
@@ -40,7 +39,7 @@ class IndexTest : BaseProcessorTest() {
                     PropertyFlags.INDEXED // 8
                 }
                 assertWithMessage("${prop.propertyName} index type is wrong")
-                        .that(prop.index!!.indexFlag)
+                        .that(prop.index!!.indexFlags)
                         .isEqualTo(expectedIndexFlag)
             }
         }
@@ -128,7 +127,7 @@ class IndexTest : BaseProcessorTest() {
                     }
                 }
                 assertWithMessage("${prop.propertyName} index type is wrong")
-                        .that(prop.index!!.indexFlag)
+                        .that(prop.index!!.indexFlags)
                         .isEqualTo(expectedIndexFlag)
             }
         }

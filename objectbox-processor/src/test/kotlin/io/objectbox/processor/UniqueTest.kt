@@ -34,7 +34,7 @@ class UniqueTest : BaseProcessorTest() {
                 assertWithMessage("${prop.propertyName} index should be unique")
                     .that(prop.index!!.isUnique).isTrue()
                 assertWithMessage("${prop.propertyName} on conflict flag should not be set")
-                    .that(prop.index!!.uniqueOnConflictFlag).isEqualTo(0)
+                    .that(prop.index!!.isUniqueOnConflictReplace).isFalse()
             }
         }
     }
@@ -89,7 +89,7 @@ class UniqueTest : BaseProcessorTest() {
                         .that(prop.index!!.isUnique).isTrue()
                 }
                 assertWithMessage("${prop.propertyName} on conflict flag should not be set")
-                    .that(prop.index!!.uniqueOnConflictFlag).isEqualTo(0)
+                    .that(prop.index!!.isUniqueOnConflictReplace).isFalse()
             }
         }
     }

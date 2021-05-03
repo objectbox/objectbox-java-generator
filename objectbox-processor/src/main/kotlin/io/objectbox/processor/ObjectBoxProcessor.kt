@@ -445,8 +445,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
     }
 
     private fun ModelEntity.ensureSingleUniqueReplace() {
-        val uniqueReplaceIndexes =
-            indexes.filter { it.uniqueOnConflictFlag == PropertyFlags.UNIQUE_ON_CONFLICT_REPLACE }
+        val uniqueReplaceIndexes = indexes.filter { it.isUniqueOnConflictReplace }
         if (uniqueReplaceIndexes.size > 1) {
             messages.error(
                 "ConflictStrategy.REPLACE can only be used on a single property, but found multiple in '${className}':\n${
@@ -588,8 +587,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
                     }
                 // Check that all unique indexes use the REPLACE conflict strategy.
                 val uniqueNotReplaceIndexes = syncedEntity.indexes.filter {
-                    it.isUnique &&
-                    it.uniqueOnConflictFlag != PropertyFlags.UNIQUE_ON_CONFLICT_REPLACE
+                    it.isUnique && !it.isUniqueOnConflictReplace
                 }
                 if (uniqueNotReplaceIndexes.isNotEmpty()) {
                     hasNoFailures = false
