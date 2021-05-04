@@ -24,6 +24,7 @@ import com.google.testing.compile.CompilationSubject
 import com.google.testing.compile.JavaFileObjects
 import io.objectbox.generator.IdUid
 import io.objectbox.generator.model.PropertyType
+import io.objectbox.model.PropertyFlags
 import org.junit.Assert.assertEquals
 import org.junit.Assert.fail
 import org.junit.Test
@@ -99,6 +100,7 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
         assertThat(schemaEntity.indexes).hasSize(2) /* @Index and ToOne */
         val index = schemaEntity.indexes[0]
         assertThat(index.isUnique).isFalse()
+        assertThat(index.indexFlags).isEqualTo(PropertyFlags.INDEXED)
         assertThat(index.properties).hasSize(1)
         val indexProperty = index.properties[0]
 

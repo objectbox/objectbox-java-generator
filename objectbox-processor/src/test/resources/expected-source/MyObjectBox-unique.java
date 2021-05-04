@@ -19,7 +19,7 @@ public class MyObjectBox {
     private static byte[] getModel() {
         ModelBuilder modelBuilder = new ModelBuilder();
         modelBuilder.lastEntityId(1, 1699443392711810012L);
-        modelBuilder.lastIndexId(2, 8578641540773014588L);
+        modelBuilder.lastIndexId(3, 7706993945356253869L);
         modelBuilder.lastRelationId(0, 0L);
 
         buildEntityUniqueGenerated(modelBuilder);
@@ -29,7 +29,7 @@ public class MyObjectBox {
 
     private static void buildEntityUniqueGenerated(ModelBuilder modelBuilder) {
         EntityBuilder entityBuilder = modelBuilder.entity("UniqueGenerated");
-        entityBuilder.id(1, 1699443392711810012L).lastPropertyId(3, 3165064094626578066L);
+        entityBuilder.id(1, 1699443392711810012L).lastPropertyId(6, 6475363620969729920L);
         entityBuilder.flags(io.objectbox.model.EntityFlags.USE_NO_ARG_CONSTRUCTOR);
 
         entityBuilder.property("id", PropertyType.Long).id(1, 1304105407891414803L)
@@ -38,6 +38,8 @@ public class MyObjectBox {
                 .flags(PropertyFlags.NOT_NULL | PropertyFlags.INDEXED | PropertyFlags.UNIQUE).indexId(1, 1990008421926689894L);
         entityBuilder.property("stringProp", PropertyType.String).id(3, 3165064094626578066L)
                 .flags(PropertyFlags.INDEXED | PropertyFlags.UNIQUE).indexId(2, 8578641540773014588L);
+        entityBuilder.property("replaceProp", PropertyType.Long).id(4, 236090259555528649L)
+                .flags(PropertyFlags.NOT_NULL | PropertyFlags.INDEXED | PropertyFlags.UNIQUE | PropertyFlags.UNIQUE_ON_CONFLICT_REPLACE).indexId(3, 7706993945356253869L);
 
 
         entityBuilder.entityDone();

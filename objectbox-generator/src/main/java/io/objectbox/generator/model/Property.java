@@ -99,14 +99,15 @@ public class Property implements HasParsedElement {
         }
 
         public PropertyBuilder index() {
-            return index(PropertyFlags.INDEXED, 0, false);
+            return index(PropertyFlags.INDEXED, 0);
         }
 
-        public PropertyBuilder index(int type, int maxValueLength, boolean unique) {
-            Index index = new Index(property);
-            index.setType(type);
+        /**
+         * @param indexFlags One or more of the INDEX or UNIQUE {@link io.objectbox.model.PropertyFlags}.
+         */
+        public PropertyBuilder index(int indexFlags, int maxValueLength) {
+            Index index = new Index(property, indexFlags);
             index.setMaxValueLength(maxValueLength);
-            if (unique) index.makeUnique();
             property.entity.addIndex(index);
             return this;
         }
@@ -456,25 +457,8 @@ public class Property implements HasParsedElement {
             flags |= PropertyFlags.INDEX_PARTIAL_SKIP_ZERO;
             flagsNames.add("PropertyFlags.INDEX_PARTIAL_SKIP_ZERO");
         } else if (getIndex() != null) {
-            switch (getIndex().getType()) {
-                case 0:
-                case PropertyFlags.INDEXED:
-                    flags |= PropertyFlags.INDEXED;
-                    flagsNames.add("PropertyFlags.INDEXED");
-                    break;
-                case PropertyFlags.INDEX_HASH:
-                    flags |= PropertyFlags.INDEX_HASH;
-                    flagsNames.add("PropertyFlags.INDEX_HASH");
-                    break;
-                case PropertyFlags.INDEX_HASH64:
-                    flags |= PropertyFlags.INDEX_HASH64;
-                    flagsNames.add("PropertyFlags.INDEX_HASH64");
-                    break;
-            }
-            if (getIndex().isUnique()) {
-                flags |= PropertyFlags.UNIQUE;
-                flagsNames.add("PropertyFlags.UNIQUE");
-            }
+            flags |= getIndex().getIndexFlags();
+            flagsNames.addAll(getIndex().getIndexFlagsAsNames());
         }
 
         this.propertyFlags = flags;

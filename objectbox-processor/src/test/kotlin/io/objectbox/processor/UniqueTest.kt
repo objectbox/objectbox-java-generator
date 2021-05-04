@@ -1,5 +1,6 @@
 package io.objectbox.processor
 
+import com.google.common.truth.Truth.assertThat
 import com.google.common.truth.Truth.assertWithMessage
 import com.google.testing.compile.CompilationSubject
 import com.google.testing.compile.JavaFileObjects
@@ -26,10 +27,14 @@ class UniqueTest : BaseProcessorTest() {
                 }
 
                 // assert index is created
-                assertWithMessage("${prop.propertyName} should have index").that(prop.index).isNotNull()
+                assertWithMessage("${prop.propertyName} should have index")
+                    .that(prop.index).isNotNull()
 
                 // assert index is unique
-                assertWithMessage("${prop.propertyName} index should be unique").that(prop.index!!.isUnique).isTrue()
+                assertWithMessage("${prop.propertyName} index should be unique")
+                    .that(prop.index!!.isUnique).isTrue()
+                assertWithMessage("${prop.propertyName} on conflict flag should not be set")
+                    .that(prop.index!!.isUniqueOnConflictReplace).isFalse()
             }
         }
     }
@@ -76,13 +81,52 @@ class UniqueTest : BaseProcessorTest() {
 
                 if (prop.propertyName == "notUniqueProp") {
                     // assert index is non-unique
-                    assertWithMessage("${prop.propertyName} index should not be unique").that(prop.index!!.isUnique).isFalse()
+                    assertWithMessage("${prop.propertyName} index should not be unique")
+                        .that(prop.index!!.isUnique).isFalse()
                 } else {
                     // assert index is unique
-                    assertWithMessage("${prop.propertyName} index should be unique").that(prop.index!!.isUnique).isTrue()
+                    assertWithMessage("${prop.propertyName} index should be unique")
+                        .that(prop.index!!.isUnique).isTrue()
                 }
+                assertWithMessage("${prop.propertyName} on conflict flag should not be set")
+                    .that(prop.index!!.isUniqueOnConflictReplace).isFalse()
             }
         }
+    }
+
+    @Test
+    fun unique_onConflictReplaceOnMultiple_fails() {
+        val sourceFile = """
+        package com.example;
+        
+        import io.objectbox.annotation.ConflictStrategy;
+        import io.objectbox.annotation.Entity;
+        import io.objectbox.annotation.Id;
+        import io.objectbox.annotation.Unique;
+        
+        @Entity
+        public class Example {
+        
+            @Id public long id;
+        
+            @Unique(onConflict = ConflictStrategy.REPLACE)
+            public long replace1;
+            
+            @Unique(onConflict = ConflictStrategy.REPLACE)
+            public long replace2;
+        }
+        """.trimIndent().let {
+            JavaFileObjects.forSourceString("com.example.Example", it)
+        }
+
+        val environment = TestEnvironment("not-generated.json", useTemporaryModelFile = true)
+
+        val compilation = environment.compile(listOf(sourceFile))
+        CompilationSubject.assertThat(compilation).failed()
+        CompilationSubject.assertThat(compilation).hadErrorContaining(
+            "ConflictStrategy.REPLACE can only be used on a single property"
+        )
+        assertThat(environment.isModelFileExists()).isFalse()
     }
 
     @Test

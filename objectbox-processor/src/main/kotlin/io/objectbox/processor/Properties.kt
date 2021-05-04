@@ -18,6 +18,7 @@
 
 package io.objectbox.processor
 
+import io.objectbox.annotation.ConflictStrategy
 import io.objectbox.annotation.Convert
 import io.objectbox.annotation.DefaultValue
 import io.objectbox.annotation.Id
@@ -198,19 +199,6 @@ class Properties(
         val supportsHashIndex = propertyType == PropertyType.String
                 // || propertyType == PropertyType.ByteArray // Not yet supported for byte[]
         val indexType = indexAnnotation?.type ?: IndexType.DEFAULT
-        val indexFlags: Int = when (indexType) {
-            IndexType.VALUE -> PropertyFlags.INDEXED
-            IndexType.HASH -> PropertyFlags.INDEX_HASH
-            IndexType.HASH64 -> PropertyFlags.INDEX_HASH64
-            IndexType.DEFAULT -> {
-                // auto detect
-                if (supportsHashIndex) {
-                    PropertyFlags.INDEX_HASH // String and byte[] like HASH
-                } else {
-                    PropertyFlags.INDEXED // others like VALUE
-                }
-            }
-        }
 
         // error if HASH or HASH64 is not supported by property type
         if (!supportsHashIndex && (indexType == IndexType.HASH || indexType == IndexType.HASH64)) {
@@ -231,7 +219,29 @@ class Properties(
             messages.error("@$annotationName is not supported for $propertyType, remove @$annotationName.", field)
         }
 
-        propertyBuilder.index(indexFlags, 0, uniqueAnnotation != null)
+        // compute actual property flags for model
+        var indexFlags: Int = when (indexType) {
+            IndexType.VALUE -> PropertyFlags.INDEXED
+            IndexType.HASH -> PropertyFlags.INDEX_HASH
+            IndexType.HASH64 -> PropertyFlags.INDEX_HASH64
+            IndexType.DEFAULT -> {
+                // auto detect
+                if (supportsHashIndex) {
+                    PropertyFlags.INDEX_HASH // String and byte[] like HASH
+                } else {
+                    PropertyFlags.INDEXED // others like VALUE
+                }
+            }
+        }
+        if (uniqueAnnotation != null) {
+            indexFlags = indexFlags or PropertyFlags.UNIQUE
+            // determine unique conflict resolution
+            if (uniqueAnnotation.onConflict == ConflictStrategy.REPLACE) {
+                indexFlags = indexFlags or PropertyFlags.UNIQUE_ON_CONFLICT_REPLACE
+            }
+        }
+
+        propertyBuilder.index(indexFlags, 0)
     }
 
     private fun defaultValuePropertyBuilderOrNull(field: VariableElement): Property.PropertyBuilder? {

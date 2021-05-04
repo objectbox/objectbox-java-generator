@@ -1,5 +1,6 @@
 package io.objectbox.processor.test;
 
+import io.objectbox.annotation.ConflictStrategy;
 import io.objectbox.annotation.Entity;
 import io.objectbox.annotation.Id;
 import io.objectbox.annotation.Index;
@@ -19,5 +20,8 @@ public class UniqueGenerated {
     @Unique
     @Index(type = IndexType.VALUE)
     String stringProp;
+
+    @Unique(onConflict = ConflictStrategy.REPLACE)
+    long replaceProp;
 
 }

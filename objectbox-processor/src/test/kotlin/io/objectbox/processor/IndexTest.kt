@@ -2,7 +2,6 @@ package io.objectbox.processor
 
 import com.google.common.truth.Truth.assertWithMessage
 import com.google.testing.compile.CompilationSubject
-import com.google.testing.compile.JavaFileObjects
 import io.objectbox.generator.model.PropertyType
 import io.objectbox.model.PropertyFlags
 import org.junit.Assert
@@ -33,15 +32,15 @@ class IndexTest : BaseProcessorTest() {
                 assertWithMessage("${prop.propertyName} should have index").that(prop.index).isNotNull()
 
                 // assert index has expected type
-                val expectedIndexType = if (prop.propertyType == PropertyType.String
+                val expectedIndexFlag = if (prop.propertyType == PropertyType.String
                         || prop.propertyType == PropertyType.ByteArray) {
                     PropertyFlags.INDEX_HASH // 2048
                 } else {
                     PropertyFlags.INDEXED // 8
                 }
                 assertWithMessage("${prop.propertyName} index type is wrong")
-                        .that(prop.index!!.type)
-                        .isEqualTo(expectedIndexType)
+                        .that(prop.index!!.indexFlags)
+                        .isEqualTo(expectedIndexFlag)
             }
         }
     }
@@ -119,7 +118,7 @@ class IndexTest : BaseProcessorTest() {
                 assertWithMessage("${prop.propertyName} should have index").that(prop.index).isNotNull()
 
                 // assert index type is overridden from default type
-                val expectedIndexType = when (prop.propertyName) {
+                val expectedIndexFlag = when (prop.propertyName) {
                     "valueProp" -> PropertyFlags.INDEXED // 8
                     "hash64Prop" -> PropertyFlags.INDEX_HASH64 // 4096
                     else -> {
@@ -128,8 +127,8 @@ class IndexTest : BaseProcessorTest() {
                     }
                 }
                 assertWithMessage("${prop.propertyName} index type is wrong")
-                        .that(prop.index!!.type)
-                        .isEqualTo(expectedIndexType)
+                        .that(prop.index!!.indexFlags)
+                        .isEqualTo(expectedIndexFlag)
             }
         }
     }
