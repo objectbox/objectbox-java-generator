@@ -64,7 +64,7 @@ buildscript {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "gradle.plugin.de.fuerstenau:BuildConfigPlugin:1.1.8" // for code-modifier, gradle-plugin
         classpath "com.github.ben-manes:gradle-versions-plugin:0.38.0"
-        classpath "io.github.gradle-nexus:publish-plugin:1.0.0"
+        classpath "io.github.gradle-nexus:publish-plugin:1.1.0"
     }
 }
 
