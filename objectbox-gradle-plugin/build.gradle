@@ -105,8 +105,8 @@ tasks {
 
         // For integration tests (TestKit): steal project properties required for TestKit projects.
         systemProperty("gitlabUrl", gitlabUrl)
-        systemProperty("gitlabTokenName", gitlabTokenName)
-        systemProperty("gitlabToken", gitlabToken)
+        systemProperty("gitlabTokenName", project.hasProperty("gitlabTokenName") ? gitlabTokenName : "Private-Token")
+        systemProperty("gitlabToken", project.hasProperty("gitlabToken") ? gitlabToken : gitlabPrivateToken)
     }
 }
 

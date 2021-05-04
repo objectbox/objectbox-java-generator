@@ -97,8 +97,8 @@ allprojects {
                 url "$gitlabUrl/api/v4/groups/objectbox/-/packages/maven"
                 name "GitLab"
                 credentials(HttpHeaderCredentials) {
-                    name = gitlabTokenName
-                    value = gitlabToken
+                    name = project.hasProperty("gitlabTokenName") ? gitlabTokenName : "Private-Token"
+                    value = project.hasProperty("gitlabToken") ? gitlabToken : gitlabPrivateToken
                 }
                 authentication {
                     header(HttpHeaderAuthentication)

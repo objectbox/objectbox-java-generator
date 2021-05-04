@@ -14,20 +14,20 @@ publishing {
         maven {
             name = 'GitLab'
             if (project.hasProperty('gitlabUrl')
-                    && project.hasProperty('gitlabTokenName') && project.hasProperty('gitlabToken')) {
+                    && (project.hasProperty('gitlabToken') || project.hasProperty('gitlabPrivateToken') )) {
                 // "https://gitlab.example.com/api/v4/projects/<PROJECT_ID>/packages/maven"
                 url = "$gitlabUrl/api/v4/projects/18/packages/maven"
                 println "GitLab repository set to $url."
 
                 credentials(HttpHeaderCredentials) {
-                    name = gitlabTokenName
-                    value = gitlabToken
+                    name = project.hasProperty("gitlabTokenName") ? gitlabTokenName : "Private-Token"
+                    value = project.hasProperty("gitlabToken") ? gitlabToken : gitlabPrivateToken
                 }
                 authentication {
                     header(HttpHeaderAuthentication)
                 }
             } else {
-                println "WARNING: Can not publish to GitLab: gitlabUrl, gitlabTokenName or gitlabToken not set."
+                println "WARNING: Can not publish to GitLab, URL and token not set."
             }
         }
         // Note: Sonatype repo created by publish-plugin, see root build.gradle.
