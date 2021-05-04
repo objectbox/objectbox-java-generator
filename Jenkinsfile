@@ -6,9 +6,14 @@ String versionPostfix = BRANCH_NAME == 'objectbox-dev' ? 'dev'
                       : isPublish ? '' // build script detects empty string as not set
                       : BRANCH_NAME
 
+// Note: using Jenkins only for publishing to Central, so only run all stages if triggered manually.
+def buildCauses = currentBuild.getBuildCauses()
+boolean startedByUser = currentBuild.getBuildCauses('hudson.model.Cause$UserIdCause').size() > 0
+echo "startedByUser=$startedByUser, build causes: $buildCauses"
+
 // Note: using single quotes to avoid Groovy String interpolation leaking secrets.
-def gitlabRepoArgs = '-PgitlabUrl=$GITLAB_URL -PgitlabPrivateToken=$GITLAB_TOKEN'
-def gitlabRepoArgsBat = '-PgitlabUrl=%GITLAB_URL% -PgitlabPrivateToken=%GITLAB_TOKEN%'
+def gitlabRepoArgs = '-PgitlabUrl=$GITLAB_URL -PgitlabTokenName=Private-Token -PgitlabToken=$GITLAB_TOKEN'
+def gitlabRepoArgsBat = '-PgitlabUrl=%GITLAB_URL% -PgitlabTokenName=Private-Token -PgitlabToken=%GITLAB_TOKEN%'
 def uploadRepoArgsCentral = '-PsonatypeUsername=$OSSRH_LOGIN_USR -PsonatypePassword=$OSSRH_LOGIN_PSW'
 
 pipeline {
@@ -24,12 +29,9 @@ pipeline {
         ORG_GRADLE_PROJECT_signingPassword = credentials('objectbox_signing_key_password')
     }
 
-    options {
-        gitLabConnection('objectbox-gitlab-connection')
-    }
-
     stages {
         stage ('build') {
+            when { expression { startedByUser } }
             parallel {
                 stage('build-linux') {
                     agent { label 'linux' }
@@ -62,6 +64,7 @@ pipeline {
         }
 
         stage('upload-to-internal') {
+            when { expression { startedByUser } }
             agent { label 'linux' }
             environment {
                 // Note: for key use Jenkins secret file with PGP key as text in ASCII-armored format.
@@ -102,8 +105,6 @@ pipeline {
         }
 
         failure {
-            updateGitlabCommitStatus name: 'build', state: 'failed'
-
             emailext (
                 subject: "${currentBuild.currentResult}: ${currentBuild.fullDisplayName}",
                 mimeType: 'text/html',
@@ -117,10 +118,6 @@ pipeline {
                     <p>Build time: ${currentBuild.durationString}
                 """
             )
-        }
-
-        success {
-            updateGitlabCommitStatus name: 'build', state: 'success'
         }
     }
 }
