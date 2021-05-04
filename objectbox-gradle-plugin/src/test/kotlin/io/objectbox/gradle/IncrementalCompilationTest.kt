@@ -20,7 +20,8 @@ class IncrementalCompilationTest {
     val testProjectDir: TemporaryFolder = TemporaryFolder.builder().assureDeletion().build()
 
     private val gitlabUrl = System.getProperty("gitlabUrl")
-    private val gitlabPrivateToken = System.getProperty("gitlabPrivateToken")
+    private val gitlabTokenName = System.getProperty("gitlabTokenName")
+    private val gitlabToken =  System.getProperty("gitlabToken")
 
     /**
      * Tests that when changing entity compilation is incremental,
@@ -243,8 +244,8 @@ class IncrementalCompilationTest {
                 maven {
                     url "$gitlabUrl/api/v4/groups/objectbox/-/packages/maven"
                     credentials(HttpHeaderCredentials) {
-                        name = 'Private-Token'
-                        value = "$gitlabPrivateToken"
+                        name = "$gitlabTokenName"
+                        value = "$gitlabToken"
                     }
                     authentication {
                         header(HttpHeaderAuthentication)

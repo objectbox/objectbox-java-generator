@@ -12,8 +12,8 @@ boolean startedByUser = currentBuild.getBuildCauses('hudson.model.Cause$UserIdCa
 echo "startedByUser=$startedByUser, build causes: $buildCauses"
 
 // Note: using single quotes to avoid Groovy String interpolation leaking secrets.
-def gitlabRepoArgs = '-PgitlabUrl=$GITLAB_URL -PgitlabPrivateToken=$GITLAB_TOKEN'
-def gitlabRepoArgsBat = '-PgitlabUrl=%GITLAB_URL% -PgitlabPrivateToken=%GITLAB_TOKEN%'
+def gitlabRepoArgs = '-PgitlabUrl=$GITLAB_URL -PgitlabTokenName=Private-Token -PgitlabToken=$GITLAB_TOKEN'
+def gitlabRepoArgsBat = '-PgitlabUrl=%GITLAB_URL% -PgitlabTokenName=Private-Token -PgitlabToken=%GITLAB_TOKEN%'
 def uploadRepoArgsCentral = '-PsonatypeUsername=$OSSRH_LOGIN_USR -PsonatypePassword=$OSSRH_LOGIN_PSW'
 
 pipeline {

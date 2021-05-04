@@ -87,6 +87,7 @@ allprojects {
     group = 'io.objectbox'
     version = "$objectbox_plugin_version"
 
+    // Note: also update IncrementalCompilationTest.projectSetup as needed.
     repositories {
         jcenter()
         mavenCentral()
@@ -96,8 +97,8 @@ allprojects {
                 url "$gitlabUrl/api/v4/groups/objectbox/-/packages/maven"
                 name "GitLab"
                 credentials(HttpHeaderCredentials) {
-                    name = 'Private-Token'
-                    value = gitlabPrivateToken
+                    name = gitlabTokenName
+                    value = gitlabToken
                 }
                 authentication {
                     header(HttpHeaderAuthentication)

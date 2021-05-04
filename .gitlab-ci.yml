@@ -1,0 +1,53 @@
+# Default image for linux builds
+image: objectboxio/buildenv:20.2.19-centos7
+
+variables:
+  GRADLE_ARGS: "--stacktrace"
+  GITLAB_REPO_ARGS: "-PgitlabUrl=$CI_SERVER_URL -PgitlabTokenName=Job-Token -PgitlabToken=$CI_JOB_TOKEN"
+
+stages:
+  - test
+  - upload-to-internal
+
+# Common template to calculate version postfix
+.common:
+  except: # Version postfix is derived from branch name
+    - tags
+  before_script:
+    # Print Gradle and JVM version info
+    - ./gradlew -version
+    # Calculate version postfix
+    - |
+      if [ "$CI_COMMIT_BRANCH" == "objectbox-dev" ]; then
+        VERSION_ARGS="-PversionPostFix=dev"
+      elif [ "$CI_COMMIT_BRANCH" == "objectbox-publish" ]; then
+        VERSION_ARGS=""
+      else
+        VERSION_ARGS="-PversionPostFix=$CI_COMMIT_BRANCH"
+      fi
+
+# Template for tests
+.tests:
+  extends: .common
+  stage: test
+  script:
+    - ./gradlew $GRADLE_ARGS $GITLAB_REPO_ARGS $VERSION_ARGS clean check
+  artifacts:
+    when: always
+    reports:
+      junit: "**/build/test-results/**/TEST-*.xml"
+
+test:linux:
+  extends: .tests
+  tags: [ docker, x64 ]
+
+test:windows:
+  extends: .tests
+  tags: [ windows ]
+
+upload-to-internal:linux:
+  extends: .common
+  stage: upload-to-internal
+  tags: [ docker, x64 ]
+  script:
+    - ./gradlew $GRADLE_ARGS $GITLAB_REPO_ARGS $VERSION_ARGS publishMavenJavaPublicationToGitLabRepository
