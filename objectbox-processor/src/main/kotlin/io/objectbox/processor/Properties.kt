@@ -213,7 +213,7 @@ class Properties(
 
         // error if unsupported property type
         if (propertyType == PropertyType.ByteArray || propertyType == PropertyType.Float ||
-            propertyType == PropertyType.Double
+            propertyType == PropertyType.Double || propertyType == PropertyType.StringArray
         ) {
             val annotationName = if (indexAnnotation != null) "Index" else "Unique"
             messages.error("@$annotationName is not supported for $propertyType, remove @$annotationName.", field)

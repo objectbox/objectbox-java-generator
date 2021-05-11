@@ -63,6 +63,7 @@ class IndexTest : BaseProcessorTest() {
         CompilationSubject.assertThat(compilation).hadErrorContaining("@Index is not supported for Float, remove @Index.")
         CompilationSubject.assertThat(compilation).hadErrorContaining("@Index is not supported for Double, remove @Index.")
         CompilationSubject.assertThat(compilation).hadErrorContaining("@Index is not supported for ByteArray, remove @Index.")
+        CompilationSubject.assertThat(compilation).hadErrorContaining("@Index is not supported for StringArray, remove @Index.")
     }
 
     @Test

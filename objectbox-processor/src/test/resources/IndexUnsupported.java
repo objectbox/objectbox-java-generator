@@ -27,4 +27,6 @@ public class IndexUnsupported {
 
     @Index byte[] byteArrayProp;
 
+    @Index String[] stringArrayProp;
+
 }
