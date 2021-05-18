@@ -21,7 +21,6 @@ package io.objectbox.gradle.transform
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
 import org.junit.Test
-import java.io.IOException
 
 
 class ClassTransformerInheritanceTest : AbstractTransformTest() {

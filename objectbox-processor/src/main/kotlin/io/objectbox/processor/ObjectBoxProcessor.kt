@@ -30,7 +30,6 @@ import io.objectbox.generator.idsync.IdSync
 import io.objectbox.generator.idsync.IdSyncException
 import io.objectbox.generator.model.Property
 import io.objectbox.generator.model.Schema
-import io.objectbox.model.PropertyFlags
 import io.objectbox.reporting.BasicBuildTracker
 import net.ltgt.gradle.incap.IncrementalAnnotationProcessorType
 import java.io.File

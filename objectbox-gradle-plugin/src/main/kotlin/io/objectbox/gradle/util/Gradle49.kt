@@ -3,7 +3,6 @@ package io.objectbox.gradle.util
 import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.Task
-import org.gradle.api.tasks.compile.AbstractCompile
 
 /**
  * Gradle 4.9 introduces API to avoid task configuration to speed up project configuration.

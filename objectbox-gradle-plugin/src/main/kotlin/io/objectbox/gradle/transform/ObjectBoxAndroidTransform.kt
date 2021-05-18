@@ -33,11 +33,10 @@ import com.android.build.gradle.TestExtension
 import com.android.build.gradle.TestPlugin
 import com.android.build.gradle.api.BaseVariant
 import com.android.build.gradle.api.UnitTestVariant
-import io.objectbox.logging.log
 import io.objectbox.gradle.GradleBuildTracker
 import io.objectbox.gradle.PluginOptions
 import io.objectbox.gradle.util.GradleCompat
-import org.gradle.api.Action
+import io.objectbox.logging.log
 import org.gradle.api.Project
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.compile.AbstractCompile

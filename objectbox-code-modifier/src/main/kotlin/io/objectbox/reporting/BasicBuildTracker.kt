@@ -20,7 +20,6 @@ package io.objectbox.reporting
 
 import com.squareup.moshi.JsonWriter
 import io.objectbox.CodeModifierBuildConfig
-import io.objectbox.logging.log
 import okio.Buffer
 import org.greenrobot.essentials.hash.Murmur3F
 import java.io.PrintWriter
