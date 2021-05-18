@@ -33,11 +33,11 @@ abstract class AbstractTransformTest {
             "out/test/classes/",
             "objectbox-gradle-plugin/out/test/classes/"
     )
-    val classDir = classDirs.map(::File).first { it.exists() }
+    private val classDir = classDirs.map(::File).first { it.exists() }
 
-    val prober = ClassProber()
+    private val prober = ClassProber()
 
-    val transformer = ClassTransformer(true)
+    private val transformer = ClassTransformer(true)
 
     @Test
     fun testClassDir() {

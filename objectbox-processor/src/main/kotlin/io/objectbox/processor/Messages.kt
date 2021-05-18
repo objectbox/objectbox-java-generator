@@ -31,7 +31,7 @@ import javax.tools.Diagnostic
  */
 class Messages(private val messager: Messager, private val debug: Boolean) {
 
-    var errorCount: Int = 0
+    private var errorCount: Int = 0
 
     val errorRaised: Boolean
         get() = errorCount > 0

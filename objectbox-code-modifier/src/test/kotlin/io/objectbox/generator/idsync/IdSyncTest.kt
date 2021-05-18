@@ -37,8 +37,8 @@ import java.io.File
 
 class IdSyncTest {
 
-    val file: File = File.createTempFile("idsync-test", ".json")
-    var idSync: IdSync? = null
+    private val file: File = File.createTempFile("idsync-test", ".json")
+    private var idSync: IdSync? = null
 
     @Before
     fun initIdSync() {

@@ -54,7 +54,7 @@ class PluginIntegrationTest {
 //        buildTestProject("kotlin-android", args, "io/objectbox/test/kotlin", "kapt/release/", true)
 //    }
 
-    fun buildTestProject(name: String, args: List<String>, expectedPackageDir: String, genDirPath: String,
+    private fun buildTestProject(name: String, args: List<String>, expectedPackageDir: String, genDirPath: String,
                          generateBuildFile: Boolean = false) {
         var dir = File("test-gradle-projects/$name")
         if (!dir.exists()) {

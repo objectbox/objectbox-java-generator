@@ -28,7 +28,7 @@ import java.io.File
  * @see ClassTransformer
  * @see ObjectBoxAndroidTransform
  */
-class ObjectBoxJavaTransform(val debug: Boolean) {
+class ObjectBoxJavaTransform(private val debug: Boolean) {
 
     fun transform(byteCodeDirs: List<File>) {
         try {

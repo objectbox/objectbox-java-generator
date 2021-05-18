@@ -36,7 +36,7 @@ import org.mockito.Mockito.spy
 import java.io.File
 
 class BuildTrackerTest {
-    val toolName = "TestTool"
+    private val toolName = "TestTool"
 
     @Test
     fun testBuildEventData() {

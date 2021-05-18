@@ -49,9 +49,9 @@ class ProjectEnv(val project: Project) {
     val osName: String = System.getProperty("os.name")
     val is64Bit = System.getProperty("sun.arch.data.model") == "64"
     private val osNameLowerCase = osName.toLowerCase(Locale.US)
-    val isLinux = osNameLowerCase.contains("linux")
-    val isMac = osNameLowerCase.contains("mac")
-    val isWindows = osNameLowerCase.contains("windows")
+    private val isLinux = osNameLowerCase.contains("linux")
+    private val isMac = osNameLowerCase.contains("mac")
+    private val isWindows = osNameLowerCase.contains("windows")
     val isLinux64 = isLinux && is64Bit
     val isMac64 = isMac && is64Bit
     val isWindows64 = isWindows && is64Bit

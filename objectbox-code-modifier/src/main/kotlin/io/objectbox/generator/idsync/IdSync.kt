@@ -36,7 +36,7 @@ import java.io.File
 import java.io.FileNotFoundException
 import java.util.*
 
-class IdSync(val jsonFile: File = File("objectmodel.json")) {
+class IdSync(private val jsonFile: File = File("objectmodel.json")) {
     private val noteSeeDocs = "Please read the docs how to resolve this."
 
     // public for tests to delete
@@ -490,7 +490,7 @@ class IdSync(val jsonFile: File = File("objectmodel.json")) {
         }
     }
 
-    fun findRelation(entity: Entity, name: String, uid: Long?): Relation? {
+    private fun findRelation(entity: Entity, name: String, uid: Long?): Relation? {
         if (entity.relations == null) return null
         if (uid != null && uid != 0L && uid != -1L) {
             val filtered = entity.relations.filter { it.uid == uid }

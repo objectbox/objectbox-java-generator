@@ -51,7 +51,7 @@ import java.io.File
  *
  * @see ClassTransformer
  */
-class ObjectBoxAndroidTransform(val options: PluginOptions) : Transform() {
+class ObjectBoxAndroidTransform(private val options: PluginOptions) : Transform() {
 
     object Registration {
         fun to(project: Project, options: PluginOptions) {
