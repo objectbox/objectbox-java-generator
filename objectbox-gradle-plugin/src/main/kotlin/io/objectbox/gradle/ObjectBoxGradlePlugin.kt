@@ -266,7 +266,11 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
 
         // note: for this detection to work apply the plugin after the dependencies block
         if (project.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_DEFAULT-linux", searchTestConfigs)
+            || project.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_DEFAULT-linux-armv7", searchTestConfigs)
+            || project.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_DEFAULT-linux-arm64", searchTestConfigs)
             || project.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_SYNC-linux", searchTestConfigs)
+            || project.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_SYNC-linux-armv7", searchTestConfigs)
+            || project.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_SYNC-linux-arm64", searchTestConfigs)
             || project.hasObjectBoxDep("objectbox-windows", searchTestConfigs)
             || project.hasObjectBoxDep("objectbox-macos", searchTestConfigs)
         ) {
