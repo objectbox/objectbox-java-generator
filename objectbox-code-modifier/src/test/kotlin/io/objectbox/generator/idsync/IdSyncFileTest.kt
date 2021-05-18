@@ -88,7 +88,7 @@ class IdSyncFileTest {
                 "mismatching-last-property-id.json" to
                         "Property Note.integerProperty ID 4:8044051146334126065 does not match UID of lastPropertyId 4:8303367770402050741"
         )
-        assertTrue(badFiles.size > 0)
+        assertTrue(badFiles.isNotEmpty())
         for (file in badFiles) {
             assertTrue(file.exists())
             try {

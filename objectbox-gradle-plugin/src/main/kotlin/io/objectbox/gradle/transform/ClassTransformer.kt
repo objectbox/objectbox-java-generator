@@ -438,7 +438,7 @@ class ClassTransformer(val debug: Boolean = false) {
             // entityCtClass just keeps null
         }
         if (entityCtClass == null) {
-            System.out.println("Warning: cursor transformer did not find entity class $entityClass")
+            println("Warning: cursor transformer did not find entity class $entityClass")
             entityCtClass = classPool.makeClass(entityClass)
             val fieldCode = "transient ${ClassConst.boxStoreClass} ${ClassConst.boxStoreFieldName};"
             entityCtClass.addField(CtField.make(fieldCode, entityCtClass))

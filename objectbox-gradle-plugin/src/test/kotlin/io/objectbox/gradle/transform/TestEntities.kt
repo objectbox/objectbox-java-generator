@@ -151,7 +151,7 @@ class TestCursor : Cursor<EntityBoxStoreField>() {
 
 class CursorExistingImplReads : Cursor<EntityBoxStoreField>() {
     private fun attachEntity(entity: EntityBoxStoreField) {
-        System.out.println(entity.__boxStore)
+        println(entity.__boxStore)
     }
 }
 

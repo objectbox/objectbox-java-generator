@@ -36,8 +36,8 @@ class ClassTransformerTest : AbstractTransformTest() {
         val constructorSignature = toOne.constructors.single().signature
         // Verify its not the test fake
         assertEquals("(Ljava/lang/Object;Lio/objectbox/relation/RelationInfo;)V", constructorSignature)
-        assertTrue(toOne.declaredFields.size > 0)
-        assertTrue(toOne.declaredMethods.size > 0)
+        assertTrue(toOne.declaredFields.isNotEmpty())
+        assertTrue(toOne.declaredMethods.isNotEmpty())
     }
 
     @Test

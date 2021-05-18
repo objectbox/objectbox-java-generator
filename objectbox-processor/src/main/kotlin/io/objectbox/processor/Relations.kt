@@ -22,7 +22,6 @@ import io.objectbox.annotation.Backlink
 import io.objectbox.annotation.NameInDb
 import io.objectbox.annotation.TargetIdProperty
 import io.objectbox.annotation.Uid
-import io.objectbox.codemodifier.nullIfBlank
 import io.objectbox.generator.IdUid
 import io.objectbox.generator.model.Entity
 import io.objectbox.generator.model.ModelException
@@ -76,7 +75,7 @@ class Relations(private val messages: Messages) {
             ToManyByBacklink(
                 name = field.simpleName.toString(),
                 targetEntityName = targetEntityName,
-                targetPropertyName = backlinkAnnotation?.to?.nullIfBlank(),
+                targetPropertyName = backlinkAnnotation?.to?.ifBlank { null },
                 isFieldAccessible = isFieldAccessible
             )
         } else {
@@ -100,13 +99,13 @@ class Relations(private val messages: Messages) {
         }
 
         val relationAnnotation = field.getAnnotation(TargetIdProperty::class.java)
-        val idRefPropertyName = relationAnnotation?.value?.nullIfBlank()
+        val idRefPropertyName = relationAnnotation?.value?.ifBlank { null }
 
         val toOne = ToOne(
             name = field.simpleName.toString(),
             isFieldAccessible = !field.modifiers.contains(Modifier.PRIVATE),
             idRefPropertyName = idRefPropertyName,
-            idRefPropertyNameInDb = field.getAnnotation(NameInDb::class.java)?.value?.nullIfBlank(),
+            idRefPropertyNameInDb = field.getAnnotation(NameInDb::class.java)?.value?.ifBlank { null },
             idRefPropertyUid = field.getAnnotation(Uid::class.java)?.value?.let { if (it == 0L) -1L else it },
             targetEntityName = targetEntityName
         )

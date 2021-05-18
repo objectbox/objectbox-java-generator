@@ -449,8 +449,7 @@ class IdSyncTest {
 
         idSync!!.sync(schema)
 
-        val model = idSync!!.justRead()!!
-        return model
+        return idSync!!.justRead()!!
     }
 
     private fun addBasicPropertiesTo(entity: Entity, uid: Long? = null, onlyUidForLast: Boolean = false) {
