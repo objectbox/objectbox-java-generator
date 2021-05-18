@@ -10,7 +10,7 @@ class ObjectBoxSyncGradlePlugin : ObjectBoxGradlePlugin() {
 
     override fun getLibWithSyncVariantPrefix(): String {
         // Use Sync version.
-        return "objectbox-sync"
+        return LIBRARY_NAME_PREFIX_SYNC
     }
 
     override fun getLibWithSyncVariantVersion(): String {
