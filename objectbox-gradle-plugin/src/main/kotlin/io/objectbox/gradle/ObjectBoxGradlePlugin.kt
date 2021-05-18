@@ -105,9 +105,9 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
                 // assumes that classes task depends on compileJava depends on compileKotlin
                 val classesTaskName = sourceSet.classesTaskName
                 try {
-                    GradleCompat.get().configureTask(project, sourceSet.classesTaskName, Action {
+                    GradleCompat.get().configureTask(project, sourceSet.classesTaskName) {
                         it.dependsOn(transformTask)
-                    })
+                    }
                 } catch (e: UnknownDomainObjectException) {
                     throw RuntimeException("Could not find classes task '$classesTaskName'.", e)
                 }
@@ -120,7 +120,7 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
                     throw RuntimeException("Could not find compileJava task '${sourceSet.compileJavaTaskName}'.", e)
                 }
 
-                GradleCompat.get().configureTask(project, taskName, Action {
+                GradleCompat.get().configureTask(project, taskName) {
                     it.group = "objectbox"
                     it.description = "Transforms Java bytecode"
 
@@ -133,7 +133,7 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
                             .destinationDir
                         ObjectBoxJavaTransform(env.debug).transform(listOf(compileJavaTaskOutputDir))
                     }
-                })
+                }
             }
         }
     }
@@ -239,7 +239,10 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
             if (!project.hasObjectBoxDep("${getLibWithSyncVariantPrefix()}-android") &&
                 !project.hasObjectBoxDep("${getLibWithSyncVariantPrefix()}-android-objectbrowser")
             ) {
-                project.addDep(compileConfig, "io.objectbox:${getLibWithSyncVariantPrefix()}-android:${getLibWithSyncVariantVersion()}")
+                project.addDep(
+                    compileConfig,
+                    "io.objectbox:${getLibWithSyncVariantPrefix()}-android:${getLibWithSyncVariantVersion()}"
+                )
             }
 
             // for instrumented unit tests
@@ -272,7 +275,10 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
             // Note: there are no Sync variants for Windows and Mac, yet.
             val nativeVersion = ProjectEnv.Const.nativeVersionToApply
             when {
-                env.isLinux64 -> project.addDep(config, "io.objectbox:${getLibWithSyncVariantPrefix()}-linux:${getLibWithSyncVariantVersion()}")
+                env.isLinux64 -> project.addDep(
+                    config,
+                    "io.objectbox:${getLibWithSyncVariantPrefix()}-linux:${getLibWithSyncVariantVersion()}"
+                )
                 env.isWindows64 -> project.addDep(config, "io.objectbox:objectbox-windows:$nativeVersion")
                 env.isMac64 -> project.addDep(config, "io.objectbox:objectbox-macos:$nativeVersion")
                 else -> env.logInfo("Could not set up native dependency for ${env.osName}")
