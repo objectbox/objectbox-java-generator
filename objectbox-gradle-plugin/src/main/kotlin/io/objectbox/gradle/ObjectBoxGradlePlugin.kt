@@ -43,9 +43,6 @@ import org.gradle.api.tasks.compile.JavaCompile
  * - adds a [PrepareTask] that runs as part of the build task.
  */
 open class ObjectBoxGradlePlugin : Plugin<Project> {
-    companion object {
-        const val DEBUG = false
-    }
 
     /**
      * The Gradle plugin id as registered in resources/META-INF/gradle-plugins.
@@ -204,7 +201,7 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
      */
     internal open fun getLibWithSyncVariantPrefix(): String {
         // Use non-Sync version.
-        return "objectbox"
+        return LIBRARY_NAME_PREFIX_DEFAULT
     }
 
     /**
@@ -236,8 +233,10 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
 
         if (env.hasAndroidPlugin) {
             // for this detection to work apply the plugin after the dependencies block
-            if (!project.hasObjectBoxDep("${getLibWithSyncVariantPrefix()}-android") &&
-                !project.hasObjectBoxDep("${getLibWithSyncVariantPrefix()}-android-objectbrowser")
+            if (!project.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_DEFAULT-android") &&
+                !project.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_DEFAULT-android-objectbrowser") &&
+                !project.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_SYNC-android") &&
+                !project.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_SYNC-android-objectbrowser")
             ) {
                 project.addDep(
                     compileConfig,
@@ -266,7 +265,8 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
         )
 
         // note: for this detection to work apply the plugin after the dependencies block
-        if (project.hasObjectBoxDep("${getLibWithSyncVariantPrefix()}-linux", searchTestConfigs)
+        if (project.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_DEFAULT-linux", searchTestConfigs)
+            || project.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_SYNC-linux", searchTestConfigs)
             || project.hasObjectBoxDep("objectbox-windows", searchTestConfigs)
             || project.hasObjectBoxDep("objectbox-macos", searchTestConfigs)
         ) {
@@ -304,6 +304,12 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
             config.dependencies.find { it.group == "io.objectbox" && it.name == name }?.let { return it }
         }
         return null
+    }
+
+    companion object {
+        const val DEBUG = false
+        const val LIBRARY_NAME_PREFIX_DEFAULT = "objectbox"
+        const val LIBRARY_NAME_PREFIX_SYNC = "objectbox-sync"
     }
 
 }
