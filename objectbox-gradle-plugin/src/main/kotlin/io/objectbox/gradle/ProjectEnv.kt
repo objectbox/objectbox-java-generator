@@ -79,7 +79,5 @@ class ProjectEnv(val project: Project) {
         }
     }
 
-    fun logDebug(msg: String) = project.logger.debug(msg)
     fun logInfo(msg: String) = project.logger.info(msg)
-    fun logWarn(msg: String) = project.logger.warn(msg)
 }
