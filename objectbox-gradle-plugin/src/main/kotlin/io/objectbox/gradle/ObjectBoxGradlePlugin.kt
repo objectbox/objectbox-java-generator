@@ -233,10 +233,11 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
 
         if (env.hasAndroidPlugin) {
             // for this detection to work apply the plugin after the dependencies block
-            if (!project.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_DEFAULT-android") &&
-                !project.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_DEFAULT-android-objectbrowser") &&
-                !project.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_SYNC-android") &&
-                !project.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_SYNC-android-objectbrowser")
+            if (!project.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_DEFAULT-android")
+                && !project.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_DEFAULT-android-objectbrowser")
+                && !project.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_SYNC-android")
+                && !project.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_SYNC-android-objectbrowser")
+                && !project.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_SYNC-server-android")
             ) {
                 project.addDep(
                     compileConfig,
