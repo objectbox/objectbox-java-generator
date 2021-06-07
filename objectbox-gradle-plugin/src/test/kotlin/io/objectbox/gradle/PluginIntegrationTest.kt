@@ -84,8 +84,7 @@ class PluginIntegrationTest {
             buildFile.appendText("""buildscript {
     repositories {
         mavenLocal()
-        jcenter()
-        maven { url "http://objectbox.net/beta-repo/" }
+        mavenCentral()
     }
     dependencies {
         classpath files($classpathString)

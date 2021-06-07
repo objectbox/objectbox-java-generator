@@ -240,7 +240,7 @@ class IncrementalCompilationTest {
 
             repositories {
                 maven { url "$testRepository" }
-                jcenter()
+                mavenCentral()
                 maven {
                     url "$gitlabUrl/api/v4/groups/objectbox/-/packages/maven"
                     credentials(HttpHeaderCredentials) {
