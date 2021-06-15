@@ -36,6 +36,10 @@ import java.io.File
 import java.io.FileNotFoundException
 import java.util.*
 
+/**
+ * Reads and validates the model [jsonFile], syncs it with the internal [Schema],
+ * writes the updated model JSON file after creating a backup.
+ */
 class IdSync(private val jsonFile: File = File("objectmodel.json")) {
     private val noteSeeDocs = "Please read the docs how to resolve this."
 
