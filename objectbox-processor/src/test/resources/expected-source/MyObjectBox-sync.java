@@ -38,7 +38,7 @@ public class MyObjectBox {
         entityBuilder.property("id", PropertyType.Long).id(1, 2074054563011321890L)
                 .flags(PropertyFlags.ID);
         entityBuilder.property("replaceProp", PropertyType.Long).id(2, 5165842600627391174L)
-                .flags(PropertyFlags.NOT_NULL | PropertyFlags.INDEXED | PropertyFlags.UNIQUE | PropertyFlags.UNIQUE_ON_CONFLICT_REPLACE).indexId(1, 3609601155488943582L);
+                .flags(PropertyFlags.INDEXED | PropertyFlags.UNIQUE | PropertyFlags.UNIQUE_ON_CONFLICT_REPLACE).indexId(1, 3609601155488943582L);
 
 
         entityBuilder.entityDone();

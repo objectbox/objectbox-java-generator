@@ -19,7 +19,7 @@
           "name": "intProp",
           "indexId": "1:1990008421926689894",
           "type": 5,
-          "flags": 44
+          "flags": 40
         },
         {
           "id": "3:3165064094626578066",
@@ -33,7 +33,7 @@
           "name": "replaceProp",
           "indexId": "3:7706993945356253869",
           "type": 6,
-          "flags": 32812
+          "flags": 32808
         }
       ],
       "relations": []

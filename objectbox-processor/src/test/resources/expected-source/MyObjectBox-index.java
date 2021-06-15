@@ -35,9 +35,9 @@ public class MyObjectBox {
         entityBuilder.property("id", PropertyType.Long).id(1, 5446539300635330200L)
                 .flags(PropertyFlags.ID);
         entityBuilder.property("defaultProp", PropertyType.Int).id(2, 5084698942674518401L)
-                .flags(PropertyFlags.NOT_NULL | PropertyFlags.INDEXED).indexId(1, 6484382999829587572L);
+                .flags(PropertyFlags.INDEXED).indexId(1, 6484382999829587572L);
         entityBuilder.property("valueProp", PropertyType.Bool).id(3, 7492569418772139189L)
-                .flags(PropertyFlags.NOT_NULL | PropertyFlags.INDEXED).indexId(2, 6991639645044933453L);
+                .flags(PropertyFlags.INDEXED).indexId(2, 6991639645044933453L);
         entityBuilder.property("hashProp", PropertyType.String).id(4, 104351152796407233L)
                 .flags(PropertyFlags.INDEX_HASH).indexId(3, 1690874977862683848L);
         entityBuilder.property("hash64Prop", PropertyType.String).id(5, 386689427203097845L)

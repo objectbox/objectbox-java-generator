@@ -33,7 +33,7 @@
           "name": "targetId",
           "indexId": "1:3805303550911331096",
           "type": 11,
-          "flags": 1548,
+          "flags": 1544,
           "relationTarget": "BacklinkToOneListTarget"
         }
       ],

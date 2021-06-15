@@ -35,11 +35,11 @@ public class MyObjectBox {
         entityBuilder.property("id", PropertyType.Long).id(1, 1304105407891414803L)
                 .flags(PropertyFlags.ID);
         entityBuilder.property("intProp", PropertyType.Int).id(2, 1326107629162952823L)
-                .flags(PropertyFlags.NOT_NULL | PropertyFlags.INDEXED | PropertyFlags.UNIQUE).indexId(1, 1990008421926689894L);
+                .flags(PropertyFlags.INDEXED | PropertyFlags.UNIQUE).indexId(1, 1990008421926689894L);
         entityBuilder.property("stringProp", PropertyType.String).id(3, 3165064094626578066L)
                 .flags(PropertyFlags.INDEXED | PropertyFlags.UNIQUE).indexId(2, 8578641540773014588L);
         entityBuilder.property("replaceProp", PropertyType.Long).id(4, 236090259555528649L)
-                .flags(PropertyFlags.NOT_NULL | PropertyFlags.INDEXED | PropertyFlags.UNIQUE | PropertyFlags.UNIQUE_ON_CONFLICT_REPLACE).indexId(3, 7706993945356253869L);
+                .flags(PropertyFlags.INDEXED | PropertyFlags.UNIQUE | PropertyFlags.UNIQUE_ON_CONFLICT_REPLACE).indexId(3, 7706993945356253869L);
 
 
         entityBuilder.entityDone();

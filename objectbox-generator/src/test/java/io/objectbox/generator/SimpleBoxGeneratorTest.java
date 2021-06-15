@@ -43,7 +43,7 @@ public class SimpleBoxGeneratorTest {
         Entity miniEntity = schema.addEntity("MiniBox");
         miniEntity.addIdProperty();
         miniEntity.addProperty(PropertyType.Int, "count").index();
-        miniEntity.addProperty(PropertyType.Int, "dummy").notNull();
+        miniEntity.addProperty(PropertyType.Int, "dummy");
         assertEquals(1, schema.getEntities().size());
         assertEquals(3, miniEntity.getProperties().size());
 
@@ -122,7 +122,7 @@ public class SimpleBoxGeneratorTest {
         Entity multiCollectEntity = schema.addEntity("MultiCollectBox");
         multiCollectEntity.addIdProperty();
         multiCollectEntity.addProperty(PropertyType.Float, "foo").index();
-        multiCollectEntity.addProperty(PropertyType.Float, "bar").notNull();
+        multiCollectEntity.addProperty(PropertyType.Float, "bar");
         multiCollectEntity.addProperty(PropertyType.Float, "box");
         multiCollectEntity.addProperty(PropertyType.Float, "in2ndCall");
         multiCollectEntity.addProperty(PropertyType.Float, "in2ndCall2");

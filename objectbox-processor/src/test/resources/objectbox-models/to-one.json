@@ -19,7 +19,7 @@
           "name": "parentId",
           "indexId": "1:5047407137272902187",
           "type": 11,
-          "flags": 1548,
+          "flags": 1544,
           "relationTarget": "ToOneParent"
         },
         {
@@ -27,7 +27,7 @@
           "name": "aParentId",
           "indexId": "3:2562844073064310031",
           "type": 11,
-          "flags": 524,
+          "flags": 520,
           "relationTarget": "ToOneParent"
         }
       ],
