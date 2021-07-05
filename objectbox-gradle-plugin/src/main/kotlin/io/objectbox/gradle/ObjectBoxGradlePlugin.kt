@@ -266,14 +266,14 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
         )
 
         // note: for this detection to work apply the plugin after the dependencies block
-        if (project.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_DEFAULT-linux", searchTestConfigs)
-            || project.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_DEFAULT-linux-armv7", searchTestConfigs)
-            || project.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_DEFAULT-linux-arm64", searchTestConfigs)
-            || project.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_SYNC-linux", searchTestConfigs)
-            || project.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_SYNC-linux-armv7", searchTestConfigs)
-            || project.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_SYNC-linux-arm64", searchTestConfigs)
-            || project.hasObjectBoxDep("objectbox-windows", searchTestConfigs)
-            || project.hasObjectBoxDep("objectbox-macos", searchTestConfigs)
+        // Note: use startsWith to detect e.g. -armv7 and -arm64 and any possible future suffixes.
+        if (project.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_DEFAULT-linux", searchTestConfigs, startsWith = true)
+            || project.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_DEFAULT-macos", searchTestConfigs, startsWith = true)
+            || project.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_DEFAULT-windows", searchTestConfigs, startsWith = true)
+            || project.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_SYNC-linux", searchTestConfigs, startsWith = true)
+            || project.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_SYNC-server-linux", searchTestConfigs, startsWith = true)
+            || project.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_SYNC-macos", searchTestConfigs, startsWith = true)
+            || project.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_SYNC-windows", searchTestConfigs, startsWith = true)
         ) {
             if (DEBUG) log("Detected native dependency, not auto-adding one.")
         } else {
@@ -292,21 +292,34 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
     }
 
     /**
-     * Note: for this detection to work apply the plugin after the dependencies block.
+     * Checks for exact name match. Set [startsWith] to true to only check for prefix.
+     *
+     * Note: for this detection to work the plugin must be applied after the dependencies block.
      */
-    private fun Project.hasObjectBoxDep(name: String, searchTestConfigs: Boolean = false): Boolean {
-        val dependency = findObjectBoxDependency(this, name, searchTestConfigs)
+    private fun Project.hasObjectBoxDep(
+        name: String,
+        searchTestConfigs: Boolean = false,
+        startsWith: Boolean = false
+    ): Boolean {
+        val dependency = findObjectBoxDependency(this, name, searchTestConfigs, startsWith)
         if (DEBUG) log("$name dependency: $dependency")
         return dependency != null
     }
 
-    private fun findObjectBoxDependency(project: Project, name: String, searchTestConfigs: Boolean): Dependency? {
+    private fun findObjectBoxDependency(
+        project: Project,
+        name: String,
+        searchTestConfigs: Boolean,
+        startsWith: Boolean
+    ): Dependency? {
         if (searchTestConfigs) {
             project.configurations
         } else {
             project.configurations.filterNot { it.name.contains("test", ignoreCase = true) }
         }.forEach { config ->
-            config.dependencies.find { it.group == "io.objectbox" && it.name == name }?.let { return it }
+            config.dependencies.find {
+                it.group == "io.objectbox" && (if (startsWith) it.name.startsWith(name) else it.name == name)
+            }?.let { return it }
         }
         return null
     }
