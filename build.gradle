@@ -80,8 +80,6 @@ dependencyUpdates {
 }
 
 
-apply from: 'gradle/objectbox-deploy.gradle'
-
 allprojects {
     group = 'io.objectbox'
     version = "$objectbox_plugin_version"
