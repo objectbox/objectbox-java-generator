@@ -7,5 +7,5 @@ This is a collection of Gradle projects:
 - `objectbox-generator` provides a source code generator used by the annotation processor,
 - `objectbox-code-modifier` provides model file ("IdSync") generation used by the annotation processor.
 
-All are published as artifacts to Bintray (see `gradle` folder). See the company Wiki for the release process.
+All are published as Maven artifacts (see `gradle` folder). See the company Wiki for the release process.
 https://objectbox.atlassian.net/l/c/MnRArbzL
