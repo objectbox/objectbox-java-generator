@@ -76,7 +76,8 @@ pipeline {
         }
 
         stage('upload-to-central') {
-            when { expression { return isPublish } }
+            // Note: publishing to Central has moved to GitLab.
+            when { expression { return isPublish && startedByUser } }
             agent { label 'linux' }
 
             environment {

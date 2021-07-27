@@ -4,10 +4,12 @@ image: objectboxio/buildenv:21.5.27-centos7
 variables:
   GRADLE_ARGS: "--stacktrace"
   GITLAB_REPO_ARGS: "-PgitlabUrl=$CI_SERVER_URL -PgitlabTokenName=Job-Token -PgitlabToken=$CI_JOB_TOKEN"
+  CENTRAL_REPO_ARGS: "-PsonatypeUsername=$SONATYPE_USER -PsonatypePassword=$SONATYPE_PWD"
 
 stages:
   - test
   - upload-to-internal
+  - upload-to-central
 
 # Common template to calculate version postfix
 .common:
@@ -51,3 +53,13 @@ upload-to-internal:linux:
   tags: [ docker, x64 ]
   script:
     - ./gradlew $GRADLE_ARGS $GITLAB_REPO_ARGS $VERSION_ARGS publishMavenJavaPublicationToGitLabRepository
+
+upload-to-central:linux:
+  extends: .common
+  stage: upload-to-central
+  tags: [ docker, x64 ]
+  only:
+    - objectbox-publish
+  script:
+    - ./gradlew $GRADLE_ARGS $GITLAB_REPO_ARGS $VERSION_ARGS $CENTRAL_REPO_ARGS publishMavenJavaPublicationToSonatypeRepository closeAndReleaseSonatypeStagingRepository
+    - echo "Published successfully to Central - check https://repo1.maven.org/maven2/io/objectbox/ in a few minutes."
