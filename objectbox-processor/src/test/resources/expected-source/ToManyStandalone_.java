@@ -104,4 +104,14 @@ public final class ToManyStandalone_ implements EntityInfo<ToManyStandalone> {
             },
             1);
 
+    /** To-many relation "childrenList" to target entity "IdEntity". */
+    public static final RelationInfo<ToManyStandalone, IdEntity> childrenList = new RelationInfo<>(ToManyStandalone_.__INSTANCE, IdEntity_.__INSTANCE,
+            new ToManyGetter<ToManyStandalone>() {
+                @Override
+                public List<IdEntity> getToMany(ToManyStandalone entity) {
+                    return entity.childrenList;
+                }
+            },
+            2);
+
 }

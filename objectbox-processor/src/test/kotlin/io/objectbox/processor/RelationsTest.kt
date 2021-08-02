@@ -522,6 +522,7 @@ class RelationsTest : BaseProcessorTest() {
         val parentFileObject = """
         package io.objectbox.processor.test;
         
+        import java.util.List;
         import io.objectbox.annotation.Entity;
         import io.objectbox.annotation.Id;
         import io.objectbox.relation.ToMany;
@@ -532,9 +533,11 @@ class RelationsTest : BaseProcessorTest() {
             Long id;
         
             ToMany<IdEntity> children = new ToMany<>(this, ToManyStandalone_.children);
+                                                        
+            List<IdEntity> childrenList = new ToMany<>(this, ToManyStandalone_.childrenList);
         }
         """.trimIndent().let {
-            JavaFileObjects.forSourceString("io.objectbox.processor.test.ToManyStandalone", it)
+            JavaFileObjects.forSourceString("io.objectbox.processor.test.${parentName}", it)
         }
         val childName = "IdEntity"
 
@@ -548,7 +551,7 @@ class RelationsTest : BaseProcessorTest() {
 
         assertToManySchema(environment.schema, parentName, childName)
 
-        assertToManyStandaloneModel(environment, parentName, "children")
+        assertToManyStandaloneModel(environment, parentName, listOf("children", "childrenList"))
     }
 
     @Test
@@ -572,7 +575,7 @@ class RelationsTest : BaseProcessorTest() {
         assertEquals("Hoolaloop", toMany.dbName)
         assertEquals(420000000L, toMany.modelId!!.uid)
 
-        assertToManyStandaloneModel(environment, parentName, "Hoolaloop")
+        assertToManyStandaloneModel(environment, parentName, listOf("Hoolaloop"))
     }
 
     @Test
@@ -688,7 +691,11 @@ class RelationsTest : BaseProcessorTest() {
         assertThat(toOneRelation.name).isEqualTo(toOneFieldName)
     }
 
-    private fun assertToManyStandaloneModel(environment: TestEnvironment, parentName: String, relationName: String) {
+    private fun assertToManyStandaloneModel(
+        environment: TestEnvironment,
+        parentName: String,
+        relationNames: List<String>
+    ) {
         val model = environment.readModel()
         val modelParent = model.findEntity(parentName, null)
 
@@ -696,13 +703,10 @@ class RelationsTest : BaseProcessorTest() {
         assertThat(relations).isNotEmpty()
 
         for (relation in relations) {
-            when (relation.name) {
-                relationName -> {
-                    assertThat(relation.id).isNotNull()
-                    assertThat(relation.id).isNotEqualTo(IdUid())
-                }
-                else -> fail("Found stray relation '${relation.name}' in model file.")
-            }
+            if (relationNames.contains(relation.name)) {
+                assertThat(relation.id).isNotNull()
+                assertThat(relation.id).isNotEqualTo(IdUid())
+            } else fail("Found stray relation '${relation.name}' in model file.")
         }
     }
 

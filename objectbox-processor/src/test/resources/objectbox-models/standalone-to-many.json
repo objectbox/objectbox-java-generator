@@ -20,6 +20,11 @@
           "id": "1:5028542044911165101",
           "name": "children",
           "targetId": "2:6121770550573222603"
+        },
+        {
+          "id": "2:2173965128819127066",
+          "name": "childrenList",
+          "targetId": "2:6121770550573222603"
         }
       ]
     },
@@ -40,7 +45,7 @@
   ],
   "lastEntityId": "2:6121770550573222603",
   "lastIndexId": "1:3805303550911331096",
-  "lastRelationId": "1:5028542044911165101",
+  "lastRelationId": "2:2173965128819127066",
   "lastSequenceId": "0:0",
   "modelVersion": 5,
   "modelVersionParserMinimum": 5,

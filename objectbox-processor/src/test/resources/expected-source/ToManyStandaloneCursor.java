@@ -51,12 +51,13 @@ public final class ToManyStandaloneCursor extends Cursor<ToManyStandalone> {
 
         attachEntity(entity);
         checkApplyToManyToDb(entity.children, IdEntity.class);
+        checkApplyToManyToDb(entity.childrenList, IdEntity.class);
         return __assignedId;
     }
 
     private void attachEntity(ToManyStandalone entity) {
         // Transformer will create __boxStore field in entity and init it here:
-        //entity.__boxStore = boxStoreForEntities;
+        // entity.__boxStore = boxStoreForEntities;
     }
 
 }
