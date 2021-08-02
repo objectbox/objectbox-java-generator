@@ -20,6 +20,8 @@ import org.junit.Test
  */
 class RelationsTest : BaseProcessorTest() {
 
+    private val idEntityFileObject = JavaFileObjects.forResource("IdEntity.java")
+
     @Test
     fun testRelation() {
         // tested relation: a child has a parent
@@ -517,11 +519,28 @@ class RelationsTest : BaseProcessorTest() {
     @Test
     fun testToManyStandalone() {
         val parentName = "ToManyStandalone"
+        val parentFileObject = """
+        package io.objectbox.processor.test;
+        
+        import io.objectbox.annotation.Entity;
+        import io.objectbox.annotation.Id;
+        import io.objectbox.relation.ToMany;
+        
+        @Entity
+        public class ToManyStandalone {
+            @Id
+            Long id;
+        
+            ToMany<IdEntity> children = new ToMany<>(this, ToManyStandalone_.children);
+        }
+        """.trimIndent().let {
+            JavaFileObjects.forSourceString("io.objectbox.processor.test.ToManyStandalone", it)
+        }
         val childName = "IdEntity"
 
         val environment = TestEnvironment("standalone-to-many.json")
 
-        val compilation = environment.compile(parentName, childName)
+        val compilation = environment.compile(listOf(parentFileObject, idEntityFileObject))
         CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
 
         compilation.assertGeneratedSourceMatches("${parentName}_")
