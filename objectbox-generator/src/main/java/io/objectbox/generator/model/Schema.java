@@ -96,6 +96,8 @@ public class Schema {
                 io.objectbox.model.PropertyType.StringVector, "StringVector", "String[]", "String[]"));
         propertyTypeMapping.put(PropertyType.Date, new Mapping(
                 io.objectbox.model.PropertyType.Date, "Date", "java.util.Date", "java.util.Date"));
+        propertyTypeMapping.put(PropertyType.DateNano, new Mapping(
+                io.objectbox.model.PropertyType.DateNano, "DateNano", "Long", "long"));
         propertyTypeMapping.put(PropertyType.RelationId, new Mapping(
                 io.objectbox.model.PropertyType.Relation, "Relation", "Long", "long"));
     }

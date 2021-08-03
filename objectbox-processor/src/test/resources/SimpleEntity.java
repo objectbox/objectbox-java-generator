@@ -5,11 +5,13 @@ import java.util.Date;
 import java.util.List;
 
 import io.objectbox.annotation.Convert;
+import io.objectbox.annotation.DatabaseType;
 import io.objectbox.annotation.Entity;
 import io.objectbox.annotation.Id;
 import io.objectbox.annotation.Index;
 import io.objectbox.annotation.NameInDb;
 import io.objectbox.annotation.Transient;
+import io.objectbox.annotation.Type;
 import io.objectbox.annotation.Uid;
 import io.objectbox.converter.PropertyConverter;
 import io.objectbox.relation.ToMany;
@@ -70,6 +72,11 @@ public class SimpleEntity {
 
     @Convert(converter = SimpleEnumListConverter.class, dbType = Integer.class)
     List<SimpleEnum> customTypes;
+
+    @Type(DatabaseType.DateNano)
+    long dateNanoPrimitive;
+    @Type(DatabaseType.DateNano)
+    Long dateNano;
 
     ToOne<IdEntity> toOne = new ToOne<>(this, SimpleEntity_.toOne);
 

@@ -156,6 +156,8 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
                     assertThat(prop.converter).isEqualTo("io.objectbox.processor.test.SimpleEntity.SimpleEnumListConverter")
                     assertType(prop, PropertyType.Int)
                 }
+                "dateNanoPrimitive" -> { assertPrimitiveType(prop, PropertyType.DateNano) }
+                "dateNano" -> { assertType(prop, PropertyType.DateNano) }
                 "toOneId" -> {
                     assertThat(prop.dbName).isEqualTo(prop.propertyName)
                     assertThat(prop.virtualTargetName).isEqualTo("toOne")
@@ -213,6 +215,8 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
                 "B",
                 "customType",
                 "customTypes",
+                "dateNanoPrimitive",
+                "dateNano",
                 "toOneId" // last
         )
         val modelProperties = modelEntity.properties

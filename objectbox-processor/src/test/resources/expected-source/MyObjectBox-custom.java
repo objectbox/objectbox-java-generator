@@ -40,7 +40,7 @@ public class MyObjectBox {
 
     private static void buildEntitySimpleEntity(ModelBuilder modelBuilder) {
         EntityBuilder entityBuilder = modelBuilder.entity("A");
-        entityBuilder.id(1, 4858050548069557694L).lastPropertyId(26, 6896463341468697768L);
+        entityBuilder.id(1, 4858050548069557694L).lastPropertyId(28, 3312356255575143881L);
         entityBuilder.flags(io.objectbox.model.EntityFlags.USE_NO_ARG_CONSTRUCTOR);
 
         entityBuilder.property("id", PropertyType.Long).id(1, 8303367770402050741L)
@@ -79,6 +79,9 @@ public class MyObjectBox {
         entityBuilder.property("customType", PropertyType.Int).id(21, 8133069888579241668L)
                 .flags(PropertyFlags.NON_PRIMITIVE_TYPE);
         entityBuilder.property("customTypes", PropertyType.Int).id(22, 4772590935549770830L)
+                .flags(PropertyFlags.NON_PRIMITIVE_TYPE);
+        entityBuilder.property("dateNanoPrimitive", PropertyType.DateNano).id(27, 1074761176027041968L);
+        entityBuilder.property("dateNano", PropertyType.DateNano).id(28, 3312356255575143881L)
                 .flags(PropertyFlags.NON_PRIMITIVE_TYPE);
         entityBuilder.property("toOneId", "IdEntity", "toOne", PropertyType.Relation).id(25, 8807838229280449251L)
                 .flags(PropertyFlags.VIRTUAL | PropertyFlags.INDEXED | PropertyFlags.INDEX_PARTIAL_SKIP_ZERO).indexId(2, 6174264050444102923L);
