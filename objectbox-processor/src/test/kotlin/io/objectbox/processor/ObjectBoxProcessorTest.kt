@@ -232,10 +232,11 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
             assertWithMessage("Property '$name' has no id").that(property!!.id).isNotNull()
             assertWithMessage("Property '$name' id:uid is 0:0").that(property.id).isNotEqualTo(IdUid())
 
+            // Assert model property type and flags match schema.
             val schemaProperty = schemaProperties.find { it.dbName == name }!!
             assertThat(property.type).isEqualTo(schemaProperty.dbTypeId)
             assertThat(property.flags).isEqualTo(schemaProperty.propertyFlagsForModelFile)
-
+            // Additional asserts for specific properties.
             when (name) {
                 "indexedProperty" -> {
                     // has valid IdUid
