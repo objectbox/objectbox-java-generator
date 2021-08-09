@@ -444,7 +444,7 @@ class Properties(
         val plainMapType = typeUtils.erasure(field.asType()).toString()
 
         builder.customType(plainMapType, converterCanonicalName)
-        messages.info("Using $converterCanonicalName to convert map property, to change this use @Convert.")
+        messages.info("Using $converterCanonicalName to convert map property '${field.simpleName}' in '${entityModel.className}', to change this use @Convert.")
 
         return builder
     }
