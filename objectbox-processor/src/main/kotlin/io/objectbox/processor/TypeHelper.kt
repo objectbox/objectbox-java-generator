@@ -23,6 +23,7 @@ import io.objectbox.relation.ToMany
 import io.objectbox.relation.ToOne
 import java.util.*
 import javax.lang.model.type.ArrayType
+import javax.lang.model.type.DeclaredType
 import javax.lang.model.type.TypeKind
 import javax.lang.model.type.TypeMirror
 import javax.lang.model.util.Elements
@@ -48,6 +49,8 @@ class TypeHelper(
     private val typeCharacter = java.lang.Character::class.java.getTypeMirror()
     private val typeString = java.lang.String::class.java.getTypeMirror()
 
+    private val typeMapString = java.util.Map::class.java.getTypeMirror(eraseTypeParameters = true)
+
     // The ToOne and ToMany ObjectBox types should exist if there are @Entity classes (Java lib must be in classpath).
     private val typeToOne = ToOne::class.java.getTypeMirror(eraseTypeParameters = true)
     private val typeToMany = ToMany::class.java.getTypeMirror(eraseTypeParameters = true)
@@ -71,6 +74,19 @@ class TypeHelper(
 
     fun isList(typeMirror: TypeMirror): Boolean {
         return typeMirror.isSameTypeAs(typeList, eraseTypeParameters = true)
+    }
+
+    fun isJavaStringMap(typeMirror: TypeMirror): Boolean {
+        // Is it a Map?
+        if (!typeMirror.isSameTypeAs(typeMapString, eraseTypeParameters = true)) {
+            return false
+        }
+        val typeArguments = (typeMirror as DeclaredType).typeArguments
+        if (typeArguments.size != 2) {
+            return false // Map must have 2, verify anyhow.
+        }
+        // Are both type parameters String?
+        return typeArguments[0].isSameTypeAs(typeString) && typeArguments[1].isSameTypeAs(typeString)
     }
 
     /**

@@ -46,6 +46,13 @@ class Messages(private val messager: Messager, private val debug: Boolean) {
     }
 
     /**
+     * Prints `message` as note.
+     */
+    fun info(message: String) {
+        printMessage(Diagnostic.Kind.NOTE, message)
+    }
+
+    /**
      * Prints `message` as error.
      */
     fun error(message: String) {

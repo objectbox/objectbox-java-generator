@@ -32,6 +32,7 @@ import io.objectbox.annotation.Uid
 import io.objectbox.annotation.Unique
 import io.objectbox.annotation.Unsigned
 import io.objectbox.converter.NullToEmptyStringConverter
+import io.objectbox.converter.StringMapConverter
 import io.objectbox.generator.IdUid
 import io.objectbox.generator.model.Entity
 import io.objectbox.generator.model.ModelException
@@ -120,8 +121,14 @@ class Properties(
                 customPropertyBuilderOrNull(field)
             }
             else -> {
-                // verify that supported type is used
-                supportedPropertyBuilderOrNull(field)
+                // Is it a type directly supported by the database?
+                val propertyType = typeHelper.getPropertyType(field.asType())
+                if (propertyType != null) {
+                    supportedPropertyBuilderOrNull(field, propertyType)
+                } else {
+                    // Maybe a built-in converter can be used?
+                    autoConvertedPropertyBuilderOrNull(field)
+                }
             }
         } ?: return
 
@@ -288,16 +295,20 @@ class Properties(
         val dbType = getAnnotationValueType(annotationMirror, "dbType")!!
 
         // Detect property type based on dbType of annotation.
-        val propertyType = determinePropertyType(
+        val propertyType = typeHelper.getPropertyType(dbType)
+        if (propertyType == null) {
+            messages.error("@Convert dbType type is not supported, use a Java primitive wrapper class.", field)
+            return null
+        }
+        val propertyDbType = determinePropertyDatabaseType(
             field,
-            dbType,
-            "@Convert dbType type is not supported, use a Java primitive wrapper class."
+            propertyType
         ) ?: return null
 
         // may be a parameterized type like List<CustomType>, so erase any type parameters
         val customType = typeUtils.erasure(field.asType())
 
-        val propertyBuilder = entityModel.tryToAddProperty(propertyType, field) ?: return null
+        val propertyBuilder = entityModel.tryToAddProperty(propertyDbType, field) ?: return null
 
         propertyBuilder.customType(customType.toString(), converter.toString())
         // note: custom types are already assumed non-primitive by Property#isNonPrimitiveType()
@@ -308,20 +319,19 @@ class Properties(
      * Parses the [field] and tries to add the property to the entity model, returns the started builder.
      * If adding the property to the model fails, prints an error and returns null.
      */
-    private fun supportedPropertyBuilderOrNull(field: VariableElement): Property.PropertyBuilder? {
-        // Detect property type based on field type.
-        val fieldType = field.asType()
-        val propertyType = determinePropertyType(
+    private fun supportedPropertyBuilderOrNull(
+        field: VariableElement,
+        propertyType: PropertyType
+    ): Property.PropertyBuilder? {
+        val propertyDbType = determinePropertyDatabaseType(
             field,
-            fieldType,
-            "Field type $fieldType is not supported. Consider making the target an @Entity, " +
-                    "or using @Convert or @Transient on the field (see docs)."
+            propertyType
         ) ?: return null
 
-        val propertyBuilder = entityModel.tryToAddProperty(propertyType, field) ?: return null
+        val propertyBuilder = entityModel.tryToAddProperty(propertyDbType, field) ?: return null
 
         val isPrimitive = field.asType().kind.isPrimitive
-        if (!isPrimitive && propertyType.isScalar) {
+        if (!isPrimitive && propertyDbType.isScalar) {
             // treat wrapper types (Long, Integer, ...) of scalar types as non-primitive
             propertyBuilder.nonPrimitiveType()
         }
@@ -329,14 +339,11 @@ class Properties(
         return propertyBuilder
     }
 
-    private fun determinePropertyType(field: VariableElement, type: TypeMirror, errorIfNotSupported: String): PropertyType? {
-        val propertyType = typeHelper.getPropertyType(type)
-        if (propertyType == null) {
-            messages.error(errorIfNotSupported, field)
-            return null
-        }
-
-        // Check if detected property type is overridden using @Type annotation.
+    /**
+     * If property type is overridden using a `@Type` annotation, returns the new property type.
+     * Errors and returns null if `@Type` is used incorrectly.
+     */
+    private fun determinePropertyDatabaseType(field: VariableElement, propertyType: PropertyType): PropertyType? {
         val typeAnnotation = field.getAnnotation(Type::class.java)
         if (typeAnnotation != null) {
             return when (typeAnnotation.value) {
@@ -357,6 +364,31 @@ class Properties(
 
         // Not overridden, use property type detected based on field type.
         return propertyType
+    }
+
+    /**
+     * If [field] has a type for which a built-in converter is available,
+     * prints which converter is used and returns a builder. Otherwise, prints an error and returns null.
+     */
+    private fun autoConvertedPropertyBuilderOrNull(field: VariableElement): Property.PropertyBuilder? {
+        val fieldType = field.asType()
+
+        if (typeHelper.isJavaStringMap(fieldType)) {
+            val builder = entityModel.tryToAddProperty(PropertyType.ByteArray, field) ?: return null
+
+            // Is Map<String, String>, so erase type params (-> Map) as generator model does not support them.
+            val plainMapType = typeUtils.erasure(fieldType).toString()
+
+            builder.customType(plainMapType, StringMapConverter::class.java.canonicalName)
+            messages.info("Using io.objectbox.converter.StringMapConverter to convert Map<String, String> property, " +
+                    "to change this use @Convert.")
+
+            return builder
+        }
+
+        messages.error("Field type \"$fieldType\" is not supported. Consider making the target an @Entity, " +
+                "or using @Convert or @Transient on the field (see docs).", field)
+        return null
     }
 
     private fun Entity.tryToAddProperty(propertyType: PropertyType, field: VariableElement): Property.PropertyBuilder? {
