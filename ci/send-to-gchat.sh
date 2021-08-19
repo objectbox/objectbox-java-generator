@@ -23,4 +23,4 @@ fi
 #https://developers.google.com/chat/reference/rest/v1/spaces.messages
 gchat_json="{\"text\": \"$*\"}"
 
-curl -X POST  -H 'Content-Type: application/json' "$gchat_url" -d "${gchat_json}"
+curl -X POST  -H 'Content-Type: application/json' "$gchat_url" -d "${gchat_json}" || true
