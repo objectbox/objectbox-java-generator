@@ -102,10 +102,10 @@ class TestEnvironment(
      * Asserts the model file contains the same string as the original file it was copied from.
      */
     private fun assertModelFileMatchesOriginal() {
-        // Note: remove Windows CR (\r) newline character on original file, might be checked out on Windows.
+        // Note: remove Windows CR (\r) newline character on files, might be checked out on Windows.
         // ObjectBox always generates LF (\n) only.
         assertWithMessage("Model file:\n    $modelFilePath\nshould have matched original:\n    $modelFilePathOriginal")
-            .that(File(modelFilePath).readText())
+            .that(File(modelFilePath).readText().replace("\r", ""))
             .isEqualTo(File(modelFilePathOriginal).readText().replace("\r", ""))
     }
 
