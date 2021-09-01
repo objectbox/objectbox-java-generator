@@ -22,7 +22,7 @@ public final class BacklinkToManyTarget_ implements EntityInfo<BacklinkToManyTar
 
     public static final String __ENTITY_NAME = "BacklinkToManyTarget";
 
-    public static final int __ENTITY_ID = 1;
+    public static final int __ENTITY_ID = 2;
 
     public static final Class<BacklinkToManyTarget> __ENTITY_CLASS = BacklinkToManyTarget.class;
 

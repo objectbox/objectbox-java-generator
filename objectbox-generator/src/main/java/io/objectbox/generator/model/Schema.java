@@ -19,6 +19,7 @@
 package io.objectbox.generator.model;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -200,6 +201,9 @@ public class Schema {
 
         init2ndPass();
         init3rdPass();
+
+        // Order entities by name to ensure generated code is stable if no entities change
+        getEntities().sort(Comparator.comparing(Entity::getDbName));
 
         isFinished = true;
     }
