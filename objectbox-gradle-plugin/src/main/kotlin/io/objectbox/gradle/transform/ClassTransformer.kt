@@ -267,6 +267,7 @@ class ClassTransformer(private val debug: Boolean = false) {
     private fun transformConstructors(context: Context, ctClassEntity: CtClass, ctClass: CtClass,
                                       relationFields: List<RelationField>): Boolean {
         var changed = false
+        val initializedRelationFields = mutableSetOf<String>()
         for (constructor in ctClass.constructors) {
             // Skip constructors that call another (this) constructor to avoid initializing fields multiple times.
             // This would also overwrite potential changes to relation fields made in the called constructor.
@@ -292,9 +293,14 @@ class ClassTransformer(private val debug: Boolean = false) {
                     else if (field.relationType == ClassConst.toMany) context.stats.toManyInitializerAdded++
                     changed = true
                 } else {
-                    log("${ctClass.name} constructor initializes relation field '$fieldName', make sure to read https://docs.objectbox.io/relations#initialization-magic")
+                    initializedRelationFields.add(fieldName)
                 }
             }
+        }
+        // Only print relation init warning once for each entity class.
+        if (initializedRelationFields.isNotEmpty()) {
+            val fieldNames = initializedRelationFields.joinToString()
+            log("In '${ctClass.name}' relation fields ($fieldNames) are initialized, make sure to read https://docs.objectbox.io/relations#initialization-magic")
         }
         return changed
     }
