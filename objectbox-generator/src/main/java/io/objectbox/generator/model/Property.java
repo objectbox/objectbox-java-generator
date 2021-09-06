@@ -198,6 +198,8 @@ public class Property implements HasParsedElement {
     private int ordinal;
 
     private String javaType;
+    @Nullable
+    private String javaRawType;
 
     /** For virtual properties, this is target host where the property actually is located (e.g. a {@link ToOne}). */
     private String virtualTargetName;
@@ -299,8 +301,19 @@ public class Property implements HasParsedElement {
         return idAssignable;
     }
 
+    /**
+     * Returns the type including type parameters, e.g. {@code List<String>}.
+     */
     public String getJavaType() {
         return javaType;
+    }
+
+    /**
+     * If the Java type is generic, returns the raw type. E.g. {@code List} instead of {@code List<String>}.
+     * Otherwise, returns the same as {@link #getJavaType()}.
+     */
+    public String getJavaRawType() {
+        return javaRawType != null ? javaRawType : javaType;
     }
 
     public String getJavaTypeInEntity() {
@@ -446,6 +459,11 @@ public class Property implements HasParsedElement {
             javaType = schema.mapToJavaTypeNotNull(propertyType);
         } else {
             javaType = schema.mapToJavaTypeNullable(propertyType);
+        }
+        // Extract raw type if type is generic (e.g. extract List from List<String>)
+        int typeArgumentsOpen = javaType.indexOf("<");
+        if (typeArgumentsOpen != -1) {
+            javaRawType = javaType.substring(0, typeArgumentsOpen);
         }
     }
 
