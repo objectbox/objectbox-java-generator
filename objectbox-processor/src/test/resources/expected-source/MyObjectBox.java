@@ -34,7 +34,7 @@ public class MyObjectBox {
 
     private static void buildEntitySimpleEntity(ModelBuilder modelBuilder) {
         EntityBuilder entityBuilder = modelBuilder.entity("A");
-        entityBuilder.id(1, 4858050548069557694L).lastPropertyId(29, 5381545072285823697L);
+        entityBuilder.id(1, 4858050548069557694L).lastPropertyId(30, 8403031692314570141L);
         entityBuilder.flags(io.objectbox.model.EntityFlags.USE_NO_ARG_CONSTRUCTOR);
 
         entityBuilder.property("id", PropertyType.Long).id(1, 8303367770402050741L)
@@ -67,6 +67,8 @@ public class MyObjectBox {
         entityBuilder.property("simpleString", PropertyType.String).id(17, 6798801512033870238L);
         entityBuilder.property("simpleByteArray", PropertyType.ByteVector).id(18, 5561205097618864485L);
         entityBuilder.property("simpleStringArray", PropertyType.StringVector).id(26, 6896463341468697768L);
+        entityBuilder.property("simpleStringList", PropertyType.StringVector).id(30, 8403031692314570141L)
+                .flags(PropertyFlags.NON_PRIMITIVE_TYPE);
         entityBuilder.property("indexedProperty", PropertyType.Int).id(19, 267919077724297667L)
                 .flags(PropertyFlags.NON_PRIMITIVE_TYPE | PropertyFlags.INDEXED).indexId(1, 4551328960004588074L);
         entityBuilder.property("B", PropertyType.String).secondaryName("namedProperty").id(20, 8754346312277232208L);

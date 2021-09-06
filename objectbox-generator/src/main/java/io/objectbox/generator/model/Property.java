@@ -100,10 +100,12 @@ public class Property implements HasParsedElement {
         /**
          * Use to explicitly flag property as non-primitive.
          * Currently, only to indicate wrapper types are used for scalar properties,
-         * and when using custom types.
+         * when using custom types or String list is used instead of String array.
          */
         public PropertyBuilder nonPrimitiveFlag() {
-            if (!property.propertyType.isScalar() && property.customType == null) {
+            if (!property.propertyType.isScalar()
+                    && property.customType == null
+                    && property.propertyType != PropertyType.StringArray) {
                 throw new ModelRuntimeException("Type is already non-primitive");
             }
             property.isNonPrimitiveFlag = true;
@@ -455,7 +457,10 @@ public class Property implements HasParsedElement {
             dbName = TextUtil.dbName(propertyName);
         }
         // TODO: is it correct to use not-null type if using custom type?
-        if (isTypeNotNull() || customType != null) {
+        // Note: in Property-Type mapping String array is stored as the not null type, String list as the nullable type.
+        if (isTypeNotNull()
+                || customType != null
+                || (propertyType == PropertyType.StringArray && !isNonPrimitiveFlag())) {
             javaType = schema.mapToJavaTypeNotNull(propertyType);
         } else {
             javaType = schema.mapToJavaTypeNullable(propertyType);

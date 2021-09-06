@@ -101,29 +101,32 @@ public final class SimpleEntity_ implements EntityInfo<SimpleEntity> {
     public final static io.objectbox.Property<SimpleEntity> simpleStringArray =
             new io.objectbox.Property<>(__INSTANCE, 20, 26, String[].class, "simpleStringArray");
 
+    public final static io.objectbox.Property<SimpleEntity> simpleStringList =
+            new io.objectbox.Property<>(__INSTANCE, 21, 30, java.util.List.class, "simpleStringList");
+
     public final static io.objectbox.Property<SimpleEntity> indexedProperty =
-            new io.objectbox.Property<>(__INSTANCE, 21, 19, Integer.class, "indexedProperty");
+            new io.objectbox.Property<>(__INSTANCE, 22, 19, Integer.class, "indexedProperty");
 
     public final static io.objectbox.Property<SimpleEntity> namedProperty =
-            new io.objectbox.Property<>(__INSTANCE, 22, 20, String.class, "namedProperty", false, "B");
+            new io.objectbox.Property<>(__INSTANCE, 23, 20, String.class, "namedProperty", false, "B");
 
     public final static io.objectbox.Property<SimpleEntity> customType =
-            new io.objectbox.Property<>(__INSTANCE, 23, 21, int.class, "customType", false, "customType", SimpleEnumConverter.class, SimpleEnum.class);
+            new io.objectbox.Property<>(__INSTANCE, 24, 21, int.class, "customType", false, "customType", SimpleEnumConverter.class, SimpleEnum.class);
 
     public final static io.objectbox.Property<SimpleEntity> customTypes =
-            new io.objectbox.Property<>(__INSTANCE, 24, 22, int.class, "customTypes", false, "customTypes", SimpleEnumListConverter.class, List.class);
+            new io.objectbox.Property<>(__INSTANCE, 25, 22, int.class, "customTypes", false, "customTypes", SimpleEnumListConverter.class, List.class);
 
     public final static io.objectbox.Property<SimpleEntity> dateNanoPrimitive =
-            new io.objectbox.Property<>(__INSTANCE, 25, 27, long.class, "dateNanoPrimitive");
+            new io.objectbox.Property<>(__INSTANCE, 26, 27, long.class, "dateNanoPrimitive");
 
     public final static io.objectbox.Property<SimpleEntity> dateNano =
-            new io.objectbox.Property<>(__INSTANCE, 26, 28, Long.class, "dateNano");
+            new io.objectbox.Property<>(__INSTANCE, 27, 28, Long.class, "dateNano");
 
     public final static io.objectbox.Property<SimpleEntity> idCompanion =
-            new io.objectbox.Property<>(__INSTANCE, 27, 29, java.util.Date.class, "idCompanion");
+            new io.objectbox.Property<>(__INSTANCE, 28, 29, java.util.Date.class, "idCompanion");
 
     public final static io.objectbox.Property<SimpleEntity> toOneId =
-            new io.objectbox.Property<>(__INSTANCE, 28, 25, long.class, "toOneId", true);
+            new io.objectbox.Property<>(__INSTANCE, 29, 25, long.class, "toOneId", true);
 
     @SuppressWarnings("unchecked")
     public final static io.objectbox.Property<SimpleEntity>[] __ALL_PROPERTIES = new io.objectbox.Property[]{
@@ -148,6 +151,7 @@ public final class SimpleEntity_ implements EntityInfo<SimpleEntity> {
             simpleString,
             simpleByteArray,
             simpleStringArray,
+            simpleStringList,
             indexedProperty,
             namedProperty,
             customType,

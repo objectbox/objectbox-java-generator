@@ -95,8 +95,12 @@ class Properties(
             // ToOne<TARGET> property
             errorIfIndexOrUniqueAnnotation(field, "ToOne")
             relations.parseToOne(entityModel, field)
-        } else if (!field.hasAnnotation(Convert::class.java) && typeHelper.isList(field.asType())) {
-            // List<TARGET> property
+        } else if (
+            !field.hasAnnotation(Convert::class.java)
+            && typeHelper.isList(field.asType())
+            && !typeHelper.isStringList(field.asType())
+        ) {
+            // List<TARGET> property, except List<String>
             errorIfIndexOrUniqueAnnotation(field, "List")
             relations.parseToMany(entityModel, field)
         } else if (typeHelper.isToMany(field.asType())) {
@@ -358,9 +362,10 @@ class Properties(
 
         val propertyBuilder = entityModel.tryToAddProperty(propertyDbType, field) ?: return null
 
-        val isPrimitive = field.asType().kind.isPrimitive
-        if (!isPrimitive && propertyDbType.isScalar) {
-            // treat wrapper types (Long, Integer, ...) of scalar types as non-primitive
+        val typeMirror = field.asType()
+        val isPrimitive = typeMirror.kind.isPrimitive
+        // Flag wrapper types (Long, Integer, ...) of scalar types and String list as non-primitive to the database
+        if (!isPrimitive && (propertyDbType.isScalar || typeHelper.isStringList(typeMirror))) {
             propertyBuilder.nonPrimitiveFlag()
         }
         // Only Java primitive types can never be null
