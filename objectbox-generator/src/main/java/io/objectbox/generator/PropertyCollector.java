@@ -207,7 +207,7 @@ class PropertyCollector {
             String name = property.getPropertyName();
             String propertyId = "__ID_" + name;
             String propertyIdLocal = "__id" + property.getOrdinal();
-            if (property.isNonPrimitiveType()) {
+            if (!property.isTypeNotNull()) {
                 preCall.append(INDENT).append(property.getJavaTypeInEntity()).append(' ').append(name)
                         .append(" = ").append(getValue(property)).append(";\n");
                 preCall.append(INDENT).append("int ").append(propertyIdLocal).append(" = ").append(name)
@@ -241,7 +241,7 @@ class PropertyCollector {
                                    StringBuilder call, boolean first, boolean last) {
         // ID property before preCall for non-primitives
         // TODO check if we can use fields directly
-        if (last && idProperty.isNonPrimitiveType()) {
+        if (last && !idProperty.isTypeNotNull()) {
             all.append(INDENT).append(idProperty.getJavaTypeInEntity()).append(' ')
                     .append(idProperty.getPropertyName()).append(" = ").append(getValue(idProperty)).append(";\n");
         }
@@ -254,7 +254,7 @@ class PropertyCollector {
         }
         all.append("collect").append(collectSignature).append("(cursor, ");
         if (last) {
-            if (idProperty.isNonPrimitiveType()) {
+            if (!idProperty.isTypeNotNull()) {
                 all.append(idProperty.getPropertyName()).append(" != null ? ").append(idProperty.getPropertyName())
                         .append(": 0");
             } else {

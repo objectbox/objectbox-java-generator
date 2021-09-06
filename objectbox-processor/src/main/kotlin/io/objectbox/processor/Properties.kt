@@ -338,7 +338,8 @@ class Properties(
         val propertyBuilder = entityModel.tryToAddProperty(propertyDbType, field) ?: return null
 
         propertyBuilder.customType(customType.toString(), converter.toString())
-        // note: custom types are already assumed non-primitive by Property#isNonPrimitiveType()
+        // Flag custom type properties as non-primitive to the database
+        propertyBuilder.nonPrimitiveFlag()
         return propertyBuilder
     }
 
@@ -360,8 +361,10 @@ class Properties(
         val isPrimitive = field.asType().kind.isPrimitive
         if (!isPrimitive && propertyDbType.isScalar) {
             // treat wrapper types (Long, Integer, ...) of scalar types as non-primitive
-            propertyBuilder.nonPrimitiveType()
+            propertyBuilder.nonPrimitiveFlag()
         }
+        // Only Java primitive types can never be null
+        if (isPrimitive) propertyBuilder.typeNotNull()
 
         return propertyBuilder
     }

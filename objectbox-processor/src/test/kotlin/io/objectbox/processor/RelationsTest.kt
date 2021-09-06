@@ -52,7 +52,7 @@ class RelationsTest : BaseProcessorTest() {
                     assertThat(prop.isPrimaryKey).isTrue()
                     assertThat(prop.isIdAssignable).isFalse()
                     assertThat(prop.dbName).isEqualTo("id")
-                    assertType(prop, PropertyType.Long)
+                    assertType(prop, PropertyType.Long, hasNonPrimitiveFlag = true)
                 }
                 "parentId" -> {
                     assertThat(prop.dbName).isEqualTo(prop.propertyName)
@@ -100,7 +100,7 @@ class RelationsTest : BaseProcessorTest() {
                     assertThat(prop.isPrimaryKey).isTrue()
                     assertThat(prop.isIdAssignable).isFalse()
                     assertThat(prop.dbName).isEqualTo("id")
-                    assertType(prop, PropertyType.Long)
+                    assertType(prop, PropertyType.Long, hasNonPrimitiveFlag = true)
                 }
                 "parentId" -> {
                     assertThat(prop.dbName).isEqualTo(prop.propertyName)
@@ -324,7 +324,7 @@ class RelationsTest : BaseProcessorTest() {
         assertThat(target.properties).isNotEmpty()
         for (prop in target.properties) {
             when (prop.propertyName) {
-                "id" -> assertType(prop, PropertyType.Long)
+                "id" -> assertType(prop, PropertyType.Long, hasNonPrimitiveFlag = true)
                 else -> fail("Found stray property '${prop.propertyName}' in schema.")
             }
         }
@@ -340,7 +340,7 @@ class RelationsTest : BaseProcessorTest() {
         assertThat(source.properties).isNotEmpty()
         for (prop in source.properties) {
             when (prop.propertyName) {
-                "id" -> assertType(prop, PropertyType.Long)
+                "id" -> assertType(prop, PropertyType.Long, hasNonPrimitiveFlag = true)
                 else -> fail("Found stray property '${prop.propertyName}' in schema.")
             }
         }
@@ -628,7 +628,7 @@ class RelationsTest : BaseProcessorTest() {
                     assertThat(prop.isPrimaryKey).isTrue()
                     assertThat(prop.isIdAssignable).isFalse()
                     assertThat(prop.dbName).isEqualTo("id")
-                    assertType(prop, PropertyType.Long)
+                    assertType(prop, PropertyType.Long, hasNonPrimitiveFlag = true)
                 }
                 else -> fail("Found stray property '${prop.propertyName}' in schema.")
             }
@@ -642,7 +642,7 @@ class RelationsTest : BaseProcessorTest() {
                     assertThat(prop.isPrimaryKey).isTrue()
                     assertThat(prop.isIdAssignable).isFalse()
                     assertThat(prop.dbName).isEqualTo("id")
-                    assertType(prop, PropertyType.Long)
+                    assertType(prop, PropertyType.Long, hasNonPrimitiveFlag = true)
                 }
                 "${targetPropertyName}Id" -> {
                     assertThat(prop.dbName).isEqualTo(prop.propertyName)

@@ -120,7 +120,7 @@ public class SimpleBoxGeneratorTest {
     public void testSchemaWithTwoCollects() throws Exception {
         Schema schema = new Schema(1, "io.objectbox.test.multicollect");
         Entity multiCollectEntity = schema.addEntity("MultiCollectBox");
-        multiCollectEntity.addIdProperty();
+        multiCollectEntity.addIdProperty().typeNotNull();
         multiCollectEntity.addProperty(PropertyType.Float, "foo").index();
         multiCollectEntity.addProperty(PropertyType.Float, "bar");
         multiCollectEntity.addProperty(PropertyType.Float, "box");
@@ -147,12 +147,12 @@ public class SimpleBoxGeneratorTest {
     public void testSchemaWithTwoCollects_StringsBeforePrimitives() throws Exception {
         Schema schema = new Schema(1, "io.objectbox.test.multicollect");
         Entity multiCollectEntity = schema.addEntity("MultiCollectBox_StringsBeforePrimitives");
-        multiCollectEntity.addIdProperty();
+        multiCollectEntity.addIdProperty().typeNotNull();
         multiCollectEntity.addProperty(PropertyType.String, "string1");
         multiCollectEntity.addProperty(PropertyType.String, "string2");
         multiCollectEntity.addProperty(PropertyType.String, "string3");
         multiCollectEntity.addProperty(PropertyType.String, "string4");
-        multiCollectEntity.addProperty(PropertyType.Int, "primitive");
+        multiCollectEntity.addProperty(PropertyType.Int, "primitive").typeNotNull();
 
         File outputDir = new File("build/test-out");
         outputDir.mkdirs();
@@ -213,7 +213,7 @@ public class SimpleBoxGeneratorTest {
         order.setModelId(2).setModelUid(1003L).setLastPropertyId(new IdUid(2, 502));
         order.addIdProperty().modelId(new IdUid(1, 1004)).getProperty();
         Property customerId = order.addProperty(PropertyType.Long, "customerId").modelId(new IdUid(2, 1005))
-                .modelIndexId(new IdUid(1, 1100)).getProperty();
+                .modelIndexId(new IdUid(1, 1100)).typeNotNull().getProperty();
         ToOne toOne = new ToOne(
                 "customer",
                 false,

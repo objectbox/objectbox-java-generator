@@ -70,8 +70,20 @@ public class Property implements HasParsedElement {
             return this;
         }
 
-        public PropertyBuilder notNull() {
-            property.notNull = true;
+        /**
+         * @see Property#isTypeNotNull()
+         */
+        public PropertyBuilder typeNotNull() {
+            property.isTypeNotNull = true;
+            return this;
+        }
+
+        /**
+         * @see Property#isNotNullFlag()
+         */
+        @SuppressWarnings("unused") // Currently not used.
+        public PropertyBuilder notNullFlag() {
+            property.isNotNullFlag = true;
             return this;
         }
 
@@ -85,11 +97,16 @@ public class Property implements HasParsedElement {
             return this;
         }
 
-        public PropertyBuilder nonPrimitiveType() {
-            if (!property.propertyType.isScalar()) {
+        /**
+         * Use to explicitly flag property as non-primitive.
+         * Currently, only to indicate wrapper types are used for scalar properties,
+         * and when using custom types.
+         */
+        public PropertyBuilder nonPrimitiveFlag() {
+            if (!property.propertyType.isScalar() && property.customType == null) {
                 throw new ModelRuntimeException("Type is already non-primitive");
             }
-            property.nonPrimitiveType = true;
+            property.isNonPrimitiveFlag = true;
             return this;
         }
 
@@ -171,8 +188,9 @@ public class Property implements HasParsedElement {
     private boolean primaryKey;
     private boolean idCompanion;
 
-    private boolean notNull;
-    private boolean nonPrimitiveType;
+    private boolean isTypeNotNull;
+    private boolean isNotNullFlag;
+    private boolean isNonPrimitiveFlag;
     private boolean isUnsigned;
     private boolean idAssignable;
     private boolean fieldAccessible;
@@ -251,13 +269,26 @@ public class Property implements HasParsedElement {
         return idCompanion;
     }
 
-    public boolean isNotNull() {
-        return notNull;
+    /**
+     * If a property value may never be null, so e.g. null checks in generated code are not necessary.
+     */
+    public boolean isTypeNotNull() {
+        return isTypeNotNull;
     }
 
-    /** Either explicitly tagged as nonPrimitiveType OR non-scalar type (String, Date, ...) OR custom type */
-    public boolean isNonPrimitiveType() {
-        return nonPrimitiveType || !propertyType.isScalar() || customType != null;
+    /**
+     * If {@link PropertyFlags#NOT_NULL} should be set on this property.
+     */
+    public boolean isNotNullFlag() {
+        return isNotNullFlag;
+    }
+
+    /**
+     * If the non-primitive flag should be given to the database.
+     * Note: use {@link #isTypeNotNull()} instead to check if the property value can be null.
+     */
+    public boolean isNonPrimitiveFlag() {
+        return isNonPrimitiveFlag;
     }
 
     public boolean isUnsigned() {
@@ -410,7 +441,8 @@ public class Property implements HasParsedElement {
         if (dbName == null) {
             dbName = TextUtil.dbName(propertyName);
         }
-        if (!nonPrimitiveType) {
+        // TODO: is it correct to use not-null type if using custom type?
+        if (isTypeNotNull() || customType != null) {
             javaType = schema.mapToJavaTypeNotNull(propertyType);
         } else {
             javaType = schema.mapToJavaTypeNullable(propertyType);
@@ -451,11 +483,11 @@ public class Property implements HasParsedElement {
             flagsGeneratedCode.add("PropertyFlags.ID_COMPANION");
         }
         // Note: Primary key/ID properties must always be not null. Do not explicitly add this flag for them.
-        if (isNotNull() && !isPrimaryKey()) {
+        if (isNotNullFlag() && !isPrimaryKey()) {
             flagsModelFile |= PropertyFlags.NOT_NULL;
             flagsGeneratedCode.add("PropertyFlags.NOT_NULL");
         }
-        if (isNonPrimitiveType() && getPropertyType().isScalar()) {
+        if (isNonPrimitiveFlag()) {
             // Note: not exported to model file, is specific to Java.
             flagsGeneratedCode.add("PropertyFlags.NON_PRIMITIVE_TYPE");
         }

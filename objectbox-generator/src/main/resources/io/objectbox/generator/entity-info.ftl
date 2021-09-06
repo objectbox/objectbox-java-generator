@@ -114,7 +114,7 @@ property.converter??>, ${property.converterClassName}.class, ${property.customTy
     static final class ${entity.className}IdGetter implements IdGetter<${entity.className}> {
         @Override
         public long getId(${entity.className} object) {
-<#if entity.pkProperty.nonPrimitiveType>
+<#if !entity.pkProperty.isTypeNotNull()>
             ${entity.pkProperty.javaType} id = object.${entity.pkProperty.valueExpression};
             return id != null? id : 0;
 <#else>
