@@ -20,6 +20,7 @@ package io.objectbox.processor
 
 import com.google.common.truth.Truth.assertThat
 import com.google.testing.compile.JavaFileObjects
+import io.objectbox.generator.model.PropertyType
 import org.junit.Test
 
 /**
@@ -99,6 +100,51 @@ class IdTest : BaseProcessorTest() {
                 hadErrorContaining("An @Id property must not be private or have a not-private getter and setter.")
             }
         assertThat(environment.isModelFileExists()).isFalse()
+    }
+
+    /**
+     * While not recommended (many internal checks rely on ID == 0 to determine if an entity was not
+     * put), using a nullable type for the ID property should work.
+     */
+    @Test
+    fun id_nullable() {
+        val sourceFile = """
+        package com.example;
+        import io.objectbox.annotation.Entity;
+        import io.objectbox.annotation.Id;
+
+        @Entity
+        public class NullableIdEntity {
+            @Id Long id;
+        }
+        """.trimIndent()
+            .let { JavaFileObjects.forSourceString("com.example.NullableIdEntity", it) }
+
+        val environment = TestEnvironment("nullable-id.json")
+
+        environment.compile(listOf(sourceFile))
+            .assertThatIt {
+                succeededWithoutWarnings()
+            }
+            // Generated code should include null checks for @Id property.
+            .assertGeneratedSourceMatches(
+                "com.example.NullableIdEntity_",
+                "NullableIdEntity_.java"
+            )
+            .assertGeneratedSourceMatches(
+                "com.example.NullableIdEntityCursor",
+                "NullableIdEntityCursor.java"
+            )
+
+        environment.schema.entities[0].properties.find { it.dbName == "id" }!!
+            .run {
+                assertThat(propertyType).isEqualTo(PropertyType.Long)
+                assertThat(isPrimaryKey).isTrue()
+                // Type should be nullable.
+                assertThat(isTypeNotNull).isFalse()
+                // Non-primitive should be set so long wrapper type is used by JNI.
+                assertThat(isNonPrimitiveFlag).isTrue()
+            }
     }
 
 }
