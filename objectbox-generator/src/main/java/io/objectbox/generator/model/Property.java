@@ -257,24 +257,38 @@ public class Property implements HasParsedElement {
         return dbName;
     }
 
+    /**
+     * String representation of a {@link PropertyType} enum.
+     */
     public String getDbType() {
         return dbType;
     }
 
+    /**
+     * ID of the {@link io.objectbox.model.PropertyType}.
+     */
     public Short getDbTypeId() {
         return dbTypeId;
     }
 
+    /**
+     * If this property is a primary key and {@link PropertyFlags#ID} should be set.
+     */
     public boolean isPrimaryKey() {
         return primaryKey;
     }
 
+    /**
+     * If {@link PropertyFlags#ID_COMPANION} should be set on this property.
+     */
     public boolean isIdCompanion() {
         return idCompanion;
     }
 
     /**
      * If a property value may never be null, so e.g. null checks in generated code are not necessary.
+     * <p>
+     * Note: this is not related to {@link PropertyFlags#NOT_NULL}, use {@link #isNotNullFlag()} instead.
      */
     public boolean isTypeNotNull() {
         return isTypeNotNull;
@@ -282,23 +296,33 @@ public class Property implements HasParsedElement {
 
     /**
      * If {@link PropertyFlags#NOT_NULL} should be set on this property.
+     * <p>
+     * Note: this does not indicate if the property value may never be null,
+     * use {@link #isTypeNotNull()} instead.
      */
     public boolean isNotNullFlag() {
         return isNotNullFlag;
     }
 
     /**
-     * If the non-primitive flag should be given to the database.
+     * If {@link PropertyFlags#NON_PRIMITIVE_TYPE} should be set on this property.
+     * <p>
      * Note: use {@link #isTypeNotNull()} instead to check if the property value can be null.
      */
     public boolean isNonPrimitiveFlag() {
         return isNonPrimitiveFlag;
     }
 
+    /**
+     * If {@link PropertyFlags#UNSIGNED} should be set on this property.
+     */
     public boolean isUnsigned() {
         return isUnsigned;
     }
 
+    /**
+     * If {@link PropertyFlags#ID_SELF_ASSIGNABLE} should be set on this property.
+     */
     public boolean isIdAssignable() {
         return idAssignable;
     }
@@ -350,6 +374,10 @@ public class Property implements HasParsedElement {
         return converterClassName;
     }
 
+    /**
+     * If this property does not actually exist in the entity class, but only in the model
+     * and {@link PropertyFlags#VIRTUAL} should be set.
+     */
     public boolean isVirtual() {
         return virtualTargetName != null;
     }
@@ -486,6 +514,7 @@ public class Property implements HasParsedElement {
 
     /**
      * Based on this properties attributes computes required {@link PropertyFlags}.
+     *
      * @see #getPropertyFlagsForModelFile()
      * @see #getPropertyFlagsForGeneratedCode()
      */
