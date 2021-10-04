@@ -35,12 +35,12 @@ import com.android.build.gradle.api.BaseVariant
 import com.android.build.gradle.api.UnitTestVariant
 import io.objectbox.gradle.GradleBuildTracker
 import io.objectbox.gradle.PluginOptions
-import io.objectbox.gradle.util.GradleCompat
 import io.objectbox.logging.log
 import org.gradle.api.Project
-import org.gradle.api.provider.Provider
-import org.gradle.api.tasks.compile.AbstractCompile
-import org.gradle.api.tasks.compile.JavaCompile
+import org.gradle.api.file.ConfigurableFileCollection
+import org.gradle.api.tasks.testing.Test
+import org.jetbrains.kotlin.gradle.plugin.KotlinBasePluginWrapper
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.io.File
 
 /**
@@ -82,7 +82,8 @@ class ObjectBoxAndroidTransform(private val options: PluginOptions) : Transform(
         private fun getAllExtensions(project: Project): Set<BaseExtension> {
             val exClasses = getAndroidExtensionClasses(project)
             if (exClasses.isEmpty()) throw TransformException(
-                    "No Android plugin found - please apply ObjectBox plugins after the Android plugin")
+                "No Android plugin found - please apply ObjectBox plugins after the Android plugin"
+            )
             return exClasses.map { project.extensions.getByType(it) as BaseExtension }.toSet()
         }
 
@@ -99,83 +100,67 @@ class ObjectBoxAndroidTransform(private val options: PluginOptions) : Transform(
 
         /**
          * Creates a task that transforms the variants JavaCompile and if available KotlinCompile output before the unit
-         * test JavaCompile task for that variant runs. Unlike a regular [Transform] this overwrites the variants
-         * JavaCompile and KotlinCompile output.
+         * test task for that variant runs. Transformed classes are stored in a dedicated build directory which is added
+         * to the classpath of the test task.
+         *
+         * This mimics what registering a [Transform] does which only runs for
+         * instrumented (on-device) tests and assembling an app/library
+         * (bug report to support unit tests at https://issuetracker.google.com/issues/37076369).
          */
-        private fun injectTransformTask(project: Project, options: PluginOptions,
-                                        baseVariant: BaseVariant, unitTestVariant: UnitTestVariant?) {
+        private fun injectTransformTask(
+            project: Project, options: PluginOptions,
+            baseVariant: BaseVariant, unitTestVariant: UnitTestVariant?
+        ) {
             if (unitTestVariant == null) {
                 return
             }
 
-            // use register to defer creation until use
+            // Add compiled Java project sources, makes Java compile task a dependency.
+            // Note: javaCompileProvider requires at least Android Gradle Plugin 3.3.0
+            val inputClasspath = project.files(baseVariant.javaCompileProvider.map { it.destinationDir })
+
+            // Add compiled Java test sources, makes Java test compile task a dependency.
+            inputClasspath.from(unitTestVariant.javaCompileProvider.map { it.destinationDir })
+
+            // Same for Kotlin.
+            project.plugins.withType(KotlinBasePluginWrapper::class.java) {
+                addDestinationDirOfKotlinCompile(inputClasspath, project, baseVariant)
+                addDestinationDirOfKotlinCompile(inputClasspath, project, unitTestVariant)
+            }
+
             val transformTaskName = "objectboxTransform${unitTestVariant.name.capitalize()}"
-            val transformTask = GradleCompat.get().registerTask(project, transformTaskName)
-            GradleCompat.get().configureTask(project, transformTaskName) {
-                it.group = "objectbox"
-                it.description = "Transforms Java bytecode for local unit tests"
+            val outputDir =
+                project.buildDir.resolve("intermediates/objectbox/${unitTestVariant.dirName}")
+            // Use register to defer creation until use.
+            val transformTask = project.tasks.register(
+                transformTaskName,
+                ObjectBoxTestClassesTransformTask::class.java,
+                ObjectBoxTestClassesTransformTask.ConfigAction(options.debug, outputDir, inputClasspath)
+            )
 
-                it.mustRunAfter(baseVariant.javaCompileCompat())
-
-                it.doLast {
-                    // fine to get() JavaC task, no more need to defer its creation
-                    val compileAppOutput = baseVariant.javaCompileGet().destinationDir
-
-                    // using naming scheme promised by https://kotlinlang.org/docs/reference/using-gradle.html#compiler-options
-                    val kotlinTaskName = "compile${baseVariant.name.capitalize()}Kotlin"
-
-                    // Kotlin tasks are currently added after project evaluation, so detect them at runtime
-                    val kotlinCompile = project.tasks.findByName(kotlinTaskName)
-                    if (kotlinCompile != null && kotlinCompile is AbstractCompile) {
-                        // Kotlin + Java
-                        ObjectBoxJavaTransform(options.debug).transform(
-                            listOf(
-                                kotlinCompile.destinationDir,
-                                compileAppOutput
-                            )
-                        )
-                    } else {
-                        // Java
-                        ObjectBoxJavaTransform(options.debug).transform(listOf(compileAppOutput))
-                    }
-                }
-            }
-
-            unitTestVariant.javaCompileDependsOn(transformTask)
-        }
-
-        private fun BaseVariant.javaCompileDependsOn(task: Any) {
-            // Android Gradle Plugin 3.3.0 has deprecated variant.getJavaCompile()
-            // https://d.android.com/r/tools/task-configuration-avoidance
-            try {
-                javaCompileProvider.configure {
-                    it.dependsOn(task)
-                }
-            } catch (e: NoSuchMethodError) {
-                @Suppress("DEPRECATION")
-                javaCompile.dependsOn(task)
+            // Configure the test classpath by appending the transform output file collection to the start of
+            // the test classpath so the transformed files override the original ones. This also makes
+            // the test task (the one that runs the tests) depend on the transform task.
+            val outputFileCollection = project.files(transformTask.map { it.outputDir })
+            val testTaskProvider = project.tasks.named(
+                "test${unitTestVariant.name.capitalize()}", Test::class.java
+            )
+            testTaskProvider.configure {
+                it.classpath = outputFileCollection + it.classpath
             }
         }
 
-        private fun BaseVariant.javaCompileCompat(): Any {
-            // Android Gradle Plugin 3.3.0 has deprecated variant.getJavaCompile()
-            // https://d.android.com/r/tools/task-configuration-avoidance
-            return try {
-                javaCompileProvider
-            } catch (e: NoSuchMethodError) {
-                @Suppress("DEPRECATION")
-                javaCompile
-            }
+        private fun addDestinationDirOfKotlinCompile(
+            inputClasspath: ConfigurableFileCollection,
+            project: Project,
+            variant: BaseVariant
+        ) {
+            // Using naming scheme promised by https://kotlinlang.org/docs/reference/using-gradle.html#compiler-options
+            val kotlinTaskName = "compile${variant.name.capitalize()}Kotlin"
+            val kotlinCompileTaskProvider = project.tasks.named(kotlinTaskName, KotlinCompile::class.java)
+            inputClasspath.from(kotlinCompileTaskProvider.map { it.destinationDir })
         }
 
-        private fun BaseVariant.javaCompileGet(): JavaCompile {
-            val javaCompile = javaCompileCompat()
-            return if (javaCompile is Provider<*>) {
-                javaCompile.get() as JavaCompile
-            } else {
-                javaCompile as JavaCompile
-            }
-        }
     }
 
 
