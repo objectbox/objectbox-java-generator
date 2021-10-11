@@ -23,14 +23,15 @@ import io.objectbox.logging.log
 import java.io.File
 
 /**
- * Transforms class (byte code) files from multiple directories, overwriting the original class files.
+ * Transforms class (byte code) files from multiple directories,
+ * overwriting the original class files if no output directory is given.
  *
  * @see ClassTransformer
  * @see ObjectBoxAndroidTransform
  */
 class ObjectBoxJavaTransform(private val debug: Boolean) {
 
-    fun transform(byteCodeDirs: List<File>) {
+    fun transform(byteCodeDirs: List<File>, outDir: File? = null, copyNonTransformed: Boolean = true) {
         try {
             val probedClasses = mutableListOf<ProbedClass>()
 
@@ -39,13 +40,13 @@ class ObjectBoxJavaTransform(private val debug: Boolean) {
                 if (debug) log("Detected byte code dir ${byteCodeDir.path}")
                 byteCodeDir.walk().filter { it.isFile }.forEach { file ->
                     if (file.name.endsWith(".class")) {
-                        // overwrite original files with transformed files: so outDir == byteCodeDir
-                        probedClasses += classProber.probeClass(file, byteCodeDir)
+                        // If no out directory is given, overwrite original files with transformed files: so outDir == byteCodeDir
+                        probedClasses += classProber.probeClass(file, outDir ?: byteCodeDir)
                     }
                 }
             }
 
-            ClassTransformer(debug).transformOrCopyClasses(probedClasses)
+            ClassTransformer(debug).transformOrCopyClasses(probedClasses, copyNonTransformed)
         } catch (e: Throwable) {
             val buildTracker = GradleBuildTracker("Transformer")
             if (e is TransformException) buildTracker.trackError("Transform failed", e)

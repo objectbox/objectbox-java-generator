@@ -72,7 +72,10 @@ class ClassTransformer(private val debug: Boolean = false) {
                                 val targetTypeSignature: SignatureAttribute.ClassType?
     )
 
-    fun transformOrCopyClasses(probedClasses: List<ProbedClass>): ClassTransformerStats {
+    fun transformOrCopyClasses(
+        probedClasses: List<ProbedClass>,
+        copyNonTransformed: Boolean = true
+    ): ClassTransformerStats {
         val context = Context(probedClasses)
 
         // First define all EntityInfo (Entity_) and entity classes to ensure the real classes are used
@@ -93,16 +96,18 @@ class ClassTransformer(private val debug: Boolean = false) {
         // Transform Cursors after entities because this depends on entity CtClasses added to the ClassPool
         transformCursors(context)
 
-        probedClasses.filter { !context.wasTransformed(it) }.forEach { (outDir, file, name) ->
-            val targetFile = File(outDir, name.replace('.', '/') + ".class")
-            // do not copy if path is identical as overwrite would delete, then try to copy from file
-            if (file.path != targetFile.path) {
-                file.copyTo(targetFile, overwrite = true)
+        if (copyNonTransformed) {
+            probedClasses.filter { !context.wasTransformed(it) }.forEach { (outDir, file, name) ->
+                val targetFile = File(outDir, name.replace('.', '/') + ".class")
+                // do not copy if path is identical as overwrite would delete, then try to copy from file
+                if (file.path != targetFile.path) {
+                    file.copyTo(targetFile, overwrite = true)
+                }
             }
         }
 
         context.stats.countTransformed = context.transformedClasses.size
-        context.stats.countCopied = probedClasses.size - context.transformedClasses.size
+        context.stats.countCopied = if (copyNonTransformed) probedClasses.size - context.transformedClasses.size else 0
         context.stats.done()
 
         return context.stats

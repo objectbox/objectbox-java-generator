@@ -4,7 +4,7 @@ buildscript {
         // to avoid conflicts when compiling our Gradle plugin. https://youtrack.jetbrains.com/issue/KT-38010
         kotlin_version = '1.4.20' // Gradle 6.8.3
 
-        android_version = '3.6.3' // Minimal supported version is 3.0.0. http://google.github.io/android-gradle-dsl/javadoc/
+        android_version = '3.6.3' // See README for minimal supported version. http://google.github.io/android-gradle-dsl/javadoc/
         essentials_version = '3.1.0'
         junit_version = '4.13.2' // https://junit.org/junit4/
         // Note: truth 1.1.2 breaks Android plugin apply test.

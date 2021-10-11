@@ -29,6 +29,7 @@ dependencies {
     implementation gradleApi()
     implementation project(':objectbox-code-modifier')
     compileOnly "com.android.tools.build:gradle:$android_version"
+    compileOnly "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     // Note: override kotlin-reflect version from com.android.tools.build:gradle to avoid mismatch with stdlib above.
     implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
