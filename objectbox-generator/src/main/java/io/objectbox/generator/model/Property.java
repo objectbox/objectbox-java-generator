@@ -70,8 +70,20 @@ public class Property implements HasParsedElement {
             return this;
         }
 
-        public PropertyBuilder notNull() {
-            property.notNull = true;
+        /**
+         * @see Property#isTypeNotNull()
+         */
+        public PropertyBuilder typeNotNull() {
+            property.isTypeNotNull = true;
+            return this;
+        }
+
+        /**
+         * @see Property#isNotNullFlag()
+         */
+        @SuppressWarnings("unused") // Currently not used.
+        public PropertyBuilder notNullFlag() {
+            property.isNotNullFlag = true;
             return this;
         }
 
@@ -85,11 +97,18 @@ public class Property implements HasParsedElement {
             return this;
         }
 
-        public PropertyBuilder nonPrimitiveType() {
-            if (!property.propertyType.isScalar()) {
+        /**
+         * Use to explicitly flag property as non-primitive.
+         * Currently, only to indicate wrapper types are used for scalar properties,
+         * when using custom types or String list is used instead of String array.
+         */
+        public PropertyBuilder nonPrimitiveFlag() {
+            if (!property.propertyType.isScalar()
+                    && property.customType == null
+                    && property.propertyType != PropertyType.StringArray) {
                 throw new ModelRuntimeException("Type is already non-primitive");
             }
-            property.nonPrimitiveType = true;
+            property.isNonPrimitiveFlag = true;
             return this;
         }
 
@@ -171,8 +190,9 @@ public class Property implements HasParsedElement {
     private boolean primaryKey;
     private boolean idCompanion;
 
-    private boolean notNull;
-    private boolean nonPrimitiveType;
+    private boolean isTypeNotNull;
+    private boolean isNotNullFlag;
+    private boolean isNonPrimitiveFlag;
     private boolean isUnsigned;
     private boolean idAssignable;
     private boolean fieldAccessible;
@@ -180,6 +200,8 @@ public class Property implements HasParsedElement {
     private int ordinal;
 
     private String javaType;
+    @Nullable
+    private String javaRawType;
 
     /** For virtual properties, this is target host where the property actually is located (e.g. a {@link ToOne}). */
     private String virtualTargetName;
@@ -235,41 +257,89 @@ public class Property implements HasParsedElement {
         return dbName;
     }
 
+    /**
+     * String representation of a {@link PropertyType} enum.
+     */
     public String getDbType() {
         return dbType;
     }
 
+    /**
+     * ID of the {@link io.objectbox.model.PropertyType}.
+     */
     public Short getDbTypeId() {
         return dbTypeId;
     }
 
+    /**
+     * If this property is a primary key and {@link PropertyFlags#ID} should be set.
+     */
     public boolean isPrimaryKey() {
         return primaryKey;
     }
 
+    /**
+     * If {@link PropertyFlags#ID_COMPANION} should be set on this property.
+     */
     public boolean isIdCompanion() {
         return idCompanion;
     }
 
-    public boolean isNotNull() {
-        return notNull;
+    /**
+     * If a property value may never be null, so e.g. null checks in generated code are not necessary.
+     * <p>
+     * Note: this is not related to {@link PropertyFlags#NOT_NULL}, use {@link #isNotNullFlag()} instead.
+     */
+    public boolean isTypeNotNull() {
+        return isTypeNotNull;
     }
 
-    /** Either explicitly tagged as nonPrimitiveType OR non-scalar type (String, Date, ...) OR custom type */
-    public boolean isNonPrimitiveType() {
-        return nonPrimitiveType || !propertyType.isScalar() || customType != null;
+    /**
+     * If {@link PropertyFlags#NOT_NULL} should be set on this property.
+     * <p>
+     * Note: this does not indicate if the property value may never be null,
+     * use {@link #isTypeNotNull()} instead.
+     */
+    public boolean isNotNullFlag() {
+        return isNotNullFlag;
     }
 
+    /**
+     * If {@link PropertyFlags#NON_PRIMITIVE_TYPE} should be set on this property.
+     * <p>
+     * Note: use {@link #isTypeNotNull()} instead to check if the property value can be null.
+     */
+    public boolean isNonPrimitiveFlag() {
+        return isNonPrimitiveFlag;
+    }
+
+    /**
+     * If {@link PropertyFlags#UNSIGNED} should be set on this property.
+     */
     public boolean isUnsigned() {
         return isUnsigned;
     }
 
+    /**
+     * If {@link PropertyFlags#ID_SELF_ASSIGNABLE} should be set on this property.
+     */
     public boolean isIdAssignable() {
         return idAssignable;
     }
 
+    /**
+     * Returns the type including type parameters, e.g. {@code List<String>}.
+     */
     public String getJavaType() {
         return javaType;
+    }
+
+    /**
+     * If the Java type is generic, returns the raw type. E.g. {@code List} instead of {@code List<String>}.
+     * Otherwise, returns the same as {@link #getJavaType()}.
+     */
+    public String getJavaRawType() {
+        return javaRawType != null ? javaRawType : javaType;
     }
 
     public String getJavaTypeInEntity() {
@@ -304,6 +374,10 @@ public class Property implements HasParsedElement {
         return converterClassName;
     }
 
+    /**
+     * If this property does not actually exist in the entity class, but only in the model
+     * and {@link PropertyFlags#VIRTUAL} should be set.
+     */
     public boolean isVirtual() {
         return virtualTargetName != null;
     }
@@ -410,10 +484,19 @@ public class Property implements HasParsedElement {
         if (dbName == null) {
             dbName = TextUtil.dbName(propertyName);
         }
-        if (!nonPrimitiveType) {
+        // TODO: is it correct to use not-null type if using custom type?
+        // Note: in Property-Type mapping String array is stored as the not null type, String list as the nullable type.
+        if (isTypeNotNull()
+                || customType != null
+                || (propertyType == PropertyType.StringArray && !isNonPrimitiveFlag())) {
             javaType = schema.mapToJavaTypeNotNull(propertyType);
         } else {
             javaType = schema.mapToJavaTypeNullable(propertyType);
+        }
+        // Extract raw type if type is generic (e.g. extract List from List<String>)
+        int typeArgumentsOpen = javaType.indexOf("<");
+        if (typeArgumentsOpen != -1) {
+            javaRawType = javaType.substring(0, typeArgumentsOpen);
         }
     }
 
@@ -431,6 +514,7 @@ public class Property implements HasParsedElement {
 
     /**
      * Based on this properties attributes computes required {@link PropertyFlags}.
+     *
      * @see #getPropertyFlagsForModelFile()
      * @see #getPropertyFlagsForGeneratedCode()
      */
@@ -451,11 +535,11 @@ public class Property implements HasParsedElement {
             flagsGeneratedCode.add("PropertyFlags.ID_COMPANION");
         }
         // Note: Primary key/ID properties must always be not null. Do not explicitly add this flag for them.
-        if (isNotNull() && !isPrimaryKey()) {
+        if (isNotNullFlag() && !isPrimaryKey()) {
             flagsModelFile |= PropertyFlags.NOT_NULL;
             flagsGeneratedCode.add("PropertyFlags.NOT_NULL");
         }
-        if (isNonPrimitiveType() && getPropertyType().isScalar()) {
+        if (isNonPrimitiveFlag()) {
             // Note: not exported to model file, is specific to Java.
             flagsGeneratedCode.add("PropertyFlags.NON_PRIMITIVE_TYPE");
         }

@@ -76,6 +76,16 @@ class TypeHelper(
         return typeMirror.isSameTypeAs(typeList, eraseTypeParameters = true)
     }
 
+    fun isStringList(typeMirror: TypeMirror): Boolean {
+        if (!isList(typeMirror)) return false
+
+        val typeArguments = (typeMirror as DeclaredType).typeArguments
+        // Map must have 1, verify anyhow.
+        if (typeArguments.size != 1) return false
+
+        return typeArguments[0].isSameTypeAs(typeString)
+    }
+
     private fun TypeMirror.isMapOf(
         expectedKeyType: TypeMirror,
         expectedValueType: TypeMirror? = null
@@ -173,6 +183,10 @@ class TypeHelper(
             if (arrayComponentType.isSameTypeAs(typeString)) {
                 return PropertyType.StringArray
             }
+        }
+
+        if (isStringList(typeMirror)) {
+            return PropertyType.StringArray
         }
 
         return null

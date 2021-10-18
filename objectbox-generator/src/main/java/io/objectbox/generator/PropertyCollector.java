@@ -69,7 +69,7 @@ class PropertyCollector {
             int countStrings = propertiesByType.countElements(PropertyType.String);
             int countStringArrays = propertiesByType.countElements(PropertyType.StringArray);
             if (countStringArrays > 0) {
-                collectSignature = appendPropertyStringArray(properties, preCall);
+                collectSignature = appendPropertyStringArrayOrList(properties, preCall);
             } else if (countStrings > 3 || countByteArrays > 1) {
                 // If there are more non-primitive properties than we can process with one call, we must first collect
                 // them before mixing with primitives
@@ -168,9 +168,16 @@ class PropertyCollector {
         return "004000";
     }
 
-    private String appendPropertyStringArray(StringBuilder properties, StringBuilder preCall) {
-        appendProperty(preCall, properties, PropertyType.StringArray, false).append(");\n\n");
-        return "StringArray";
+    private String appendPropertyStringArrayOrList(StringBuilder sb, StringBuilder preCall) {
+        List<Property> properties = propertiesByType.get(PropertyType.StringArray);
+        Property nextProperty = properties.get(0);
+        appendProperty(preCall, sb, PropertyType.StringArray, false).append(");\n\n");
+        // Using non-primitive flag to differentiate String array from String list
+        if (nextProperty.isNonPrimitiveFlag()) {
+            return "StringList";
+        } else {
+            return "StringArray";
+        }
     }
 
     private StringBuilder appendProperty(StringBuilder preCall, StringBuilder sb, PropertyType type, boolean isScalar) {
@@ -207,7 +214,7 @@ class PropertyCollector {
             String name = property.getPropertyName();
             String propertyId = "__ID_" + name;
             String propertyIdLocal = "__id" + property.getOrdinal();
-            if (property.isNonPrimitiveType()) {
+            if (!property.isTypeNotNull()) {
                 preCall.append(INDENT).append(property.getJavaTypeInEntity()).append(' ').append(name)
                         .append(" = ").append(getValue(property)).append(";\n");
                 preCall.append(INDENT).append("int ").append(propertyIdLocal).append(" = ").append(name)
@@ -241,7 +248,7 @@ class PropertyCollector {
                                    StringBuilder call, boolean first, boolean last) {
         // ID property before preCall for non-primitives
         // TODO check if we can use fields directly
-        if (last && idProperty.isNonPrimitiveType()) {
+        if (last && !idProperty.isTypeNotNull()) {
             all.append(INDENT).append(idProperty.getJavaTypeInEntity()).append(' ')
                     .append(idProperty.getPropertyName()).append(" = ").append(getValue(idProperty)).append(";\n");
         }
@@ -254,7 +261,7 @@ class PropertyCollector {
         }
         all.append("collect").append(collectSignature).append("(cursor, ");
         if (last) {
-            if (idProperty.isNonPrimitiveType()) {
+            if (!idProperty.isTypeNotNull()) {
                 all.append(idProperty.getPropertyName()).append(" != null ? ").append(idProperty.getPropertyName())
                         .append(": 0");
             } else {

@@ -59,7 +59,7 @@ class TypeTest : BaseProcessorTest() {
         val schemaEntity = schema.entities[0]
         val schemaPropertyDateNano = schemaEntity.properties.find { it.propertyName == "customDateNano" }
         Truth.assertThat(schemaPropertyDateNano).isNotNull()
-        assertType(schemaPropertyDateNano!!, PropertyType.DateNano)
+        assertType(schemaPropertyDateNano!!, PropertyType.DateNano, hasNonPrimitiveFlag = true)
         Truth.assertThat(schemaPropertyDateNano.customType).isEqualTo("java.time.Instant")
 
         // Assert model file.

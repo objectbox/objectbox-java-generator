@@ -117,29 +117,30 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
                     assertPrimitiveType(prop, PropertyType.Long)
                 }
                 "simpleShortPrimitive" -> assertPrimitiveType(prop, PropertyType.Short)
-                "simpleShort" -> assertType(prop, PropertyType.Short)
+                "simpleShort" -> assertType(prop, PropertyType.Short, hasNonPrimitiveFlag = true)
                 "simpleIntPrimitive" -> assertPrimitiveType(prop, PropertyType.Int)
-                "simpleInt" -> assertType(prop, PropertyType.Int)
+                "simpleInt" -> assertType(prop, PropertyType.Int, hasNonPrimitiveFlag = true)
                 "simpleLongPrimitive" -> assertPrimitiveType(prop, PropertyType.Long)
-                "simpleLong" -> assertType(prop, PropertyType.Long)
+                "simpleLong" -> assertType(prop, PropertyType.Long, hasNonPrimitiveFlag = true)
                 "simpleFloatPrimitive" -> assertPrimitiveType(prop, PropertyType.Float)
-                "simpleFloat" -> assertType(prop, PropertyType.Float)
+                "simpleFloat" -> assertType(prop, PropertyType.Float, hasNonPrimitiveFlag = true)
                 "simpleDoublePrimitive" -> assertPrimitiveType(prop, PropertyType.Double)
-                "simpleDouble" -> assertType(prop, PropertyType.Double)
+                "simpleDouble" -> assertType(prop, PropertyType.Double, hasNonPrimitiveFlag = true)
                 "simpleBooleanPrimitive" -> assertPrimitiveType(prop, PropertyType.Boolean)
-                "simpleBoolean" -> assertType(prop, PropertyType.Boolean)
+                "simpleBoolean" -> assertType(prop, PropertyType.Boolean, hasNonPrimitiveFlag = true)
                 "simpleBytePrimitive" -> assertPrimitiveType(prop, PropertyType.Byte)
-                "simpleByte" -> assertType(prop, PropertyType.Byte)
+                "simpleByte" -> assertType(prop, PropertyType.Byte, hasNonPrimitiveFlag = true)
                 "simpleDate" -> assertType(prop, PropertyType.Date)
                 "simpleCharPrimitive" -> assertPrimitiveType(prop, PropertyType.Char)
-                "simpleChar" -> assertType(prop, PropertyType.Char)
+                "simpleChar" -> assertType(prop, PropertyType.Char, hasNonPrimitiveFlag = true)
                 "simpleString" -> assertType(prop, PropertyType.String)
                 "simpleByteArray" -> assertType(prop, PropertyType.ByteArray)
                 "simpleStringArray" -> assertType(prop, PropertyType.StringArray)
+                "simpleStringList" -> assertType(prop, PropertyType.StringArray, hasNonPrimitiveFlag = true)
                 "transientField", "transientField2", "transientField3" ->
                     fail("Transient field should not be added to schema.")
                 "indexedProperty" -> {
-                    assertType(prop, PropertyType.Int)
+                    assertType(prop, PropertyType.Int, hasNonPrimitiveFlag = true)
                     assertThat(prop.index).isEqualTo(index)
                     assertThat(prop).isEqualTo(indexProperty)
                 }
@@ -150,15 +151,15 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
                 "customType" -> {
                     assertThat(prop.customType).isEqualTo("io.objectbox.processor.test.SimpleEntity.SimpleEnum")
                     assertThat(prop.converter).isEqualTo("io.objectbox.processor.test.SimpleEntity.SimpleEnumConverter")
-                    assertType(prop, PropertyType.Int)
+                    assertType(prop, PropertyType.Int, hasNonPrimitiveFlag = true)
                 }
                 "customTypes" -> {
                     assertThat(prop.customType).isEqualTo("java.util.List")
                     assertThat(prop.converter).isEqualTo("io.objectbox.processor.test.SimpleEntity.SimpleEnumListConverter")
-                    assertType(prop, PropertyType.Int)
+                    assertType(prop, PropertyType.Int, hasNonPrimitiveFlag = true)
                 }
                 "dateNanoPrimitive" -> { assertPrimitiveType(prop, PropertyType.DateNano) }
-                "dateNano" -> { assertType(prop, PropertyType.DateNano) }
+                "dateNano" -> { assertType(prop, PropertyType.DateNano, hasNonPrimitiveFlag = true) }
                 "idCompanion" -> {
                     assertThat(prop.isIdCompanion).isTrue()
                     assertType(prop, PropertyType.Date)
@@ -216,6 +217,7 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
                 "simpleString",
                 "simpleByteArray",
                 "simpleStringArray",
+                "simpleStringList",
                 "indexedProperty", // indexed
                 "B",
                 "customType",
@@ -341,7 +343,7 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
                     assertThat(property.customType).isEqualTo("io.objectbox.processor.test.$className.SimpleEnum")
                     assertThat(property.converter)
                             .isEqualTo("io.objectbox.processor.test.$className.SimpleEnumConverter")
-                    assertType(property, PropertyType.String)
+                    assertType(property, PropertyType.String, hasNonPrimitiveFlag = true)
                 }
                 else -> fail("Found stray field '${property.propertyName}' in schema.")
             }
@@ -489,13 +491,13 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
                     assertThat(prop.dbName).isEqualTo("id")
                     assertPrimitiveType(prop, PropertyType.Long)
                 }
-                "simpleShort" -> assertType(prop, PropertyType.Short)
-                "simpleInt" -> assertType(prop, PropertyType.Int)
-                "simpleLong" -> assertType(prop, PropertyType.Long)
-                "simpleFloat" -> assertType(prop, PropertyType.Float)
-                "simpleDouble" -> assertType(prop, PropertyType.Double)
-                "simpleBoolean" -> assertType(prop, PropertyType.Boolean)
-                "simpleByte" -> assertType(prop, PropertyType.Byte)
+                "simpleShort" -> assertType(prop, PropertyType.Short, hasNonPrimitiveFlag = true)
+                "simpleInt" -> assertType(prop, PropertyType.Int, hasNonPrimitiveFlag = true)
+                "simpleLong" -> assertType(prop, PropertyType.Long, hasNonPrimitiveFlag = true)
+                "simpleFloat" -> assertType(prop, PropertyType.Float, hasNonPrimitiveFlag = true)
+                "simpleDouble" -> assertType(prop, PropertyType.Double, hasNonPrimitiveFlag = true)
+                "simpleBoolean" -> assertType(prop, PropertyType.Boolean, hasNonPrimitiveFlag = true)
+                "simpleByte" -> assertType(prop, PropertyType.Byte, hasNonPrimitiveFlag = true)
                 "simpleDate" -> assertType(prop, PropertyType.Date)
                 "simpleString" -> assertType(prop, PropertyType.String)
                 "simpleByteArray" -> assertType(prop, PropertyType.ByteArray)

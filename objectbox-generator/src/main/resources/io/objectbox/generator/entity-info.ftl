@@ -56,7 +56,7 @@ public final class ${entity.className}_ implements EntityInfo<${entity.className
 <#list entity.propertiesColumns as property>
     public final static io.objectbox.Property<${entity.className}> ${property.propertyName} =
         new io.objectbox.Property<>(__INSTANCE, ${property_index}, <#if
-    property.modelId??>${property.modelId.id?c}<#else>0</#if>, ${property.javaType}.class, "${property.propertyName}"<#if property.isVirtual()>, true</#if><#if
+    property.modelId??>${property.modelId.id?c}<#else>0</#if>, ${property.javaRawType}.class, "${property.propertyName}"<#if property.isVirtual()>, true</#if><#if
     property.primaryKey || (property.dbName?? && property.dbName != property.propertyName) || property.converter??>, ${property.primaryKey?string}, "${property.dbName}"<#if
 property.converter??>, ${property.converterClassName}.class, ${property.customTypeClassName}.class</#if></#if>);
 
@@ -114,7 +114,7 @@ property.converter??>, ${property.converterClassName}.class, ${property.customTy
     static final class ${entity.className}IdGetter implements IdGetter<${entity.className}> {
         @Override
         public long getId(${entity.className} object) {
-<#if entity.pkProperty.nonPrimitiveType>
+<#if !entity.pkProperty.isTypeNotNull()>
             ${entity.pkProperty.javaType} id = object.${entity.pkProperty.valueExpression};
             return id != null? id : 0;
 <#else>

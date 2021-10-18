@@ -56,6 +56,7 @@ public class SimpleEntity {
     byte[] simpleByteArray;
 
     String[] simpleStringArray;
+    List<String> simpleStringList;
 
     static String transientField;
     transient String transientField2;

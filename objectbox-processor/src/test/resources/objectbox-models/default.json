@@ -5,7 +5,7 @@
   "entities": [
     {
       "id": "1:4858050548069557694",
-      "lastPropertyId": "29:5381545072285823697",
+      "lastPropertyId": "30:8403031692314570141",
       "name": "A",
       "properties": [
         {
@@ -159,6 +159,11 @@
           "name": "idCompanion",
           "type": 10,
           "flags": 16384
+        },
+        {
+          "id": "30:8403031692314570141",
+          "name": "simpleStringList",
+          "type": 30
         }
       ],
       "relations": [
