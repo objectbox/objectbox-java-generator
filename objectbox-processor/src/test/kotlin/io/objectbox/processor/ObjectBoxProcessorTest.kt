@@ -367,6 +367,82 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
     }
 
     @Test
+    fun constructor_noArgCtrMissing_errors() {
+        val noArgCtrMissing = """
+        package io.objectbox.processor.test;
+        
+        import io.objectbox.annotation.Entity;
+        import io.objectbox.annotation.Id;
+        
+        @Entity
+        public class NoArgCtrMissing {
+        
+            @Id long id;
+            String secondProperty;
+        
+            // No no-arg constructor.
+            // public NoArgCtrMissing() { }
+        
+            // No all-args constructor either.
+            public NoArgCtrMissing(String secondProperty) {
+                this.secondProperty = secondProperty;
+            }
+        }
+        """.trimIndent().let {
+            JavaFileObjects.forSourceString("io.objectbox.processor.test.NoArgCtrMissing", it)
+        }
+
+        val environment = TestEnvironment("ctr-no-arg-missing.json", useTemporaryModelFile = true)
+
+        environment.compile(listOf(noArgCtrMissing))
+            .also {
+                CompilationSubject.assertThat(it).failed()
+                CompilationSubject.assertThat(it).hadErrorContaining(
+                    "No-argument or all-properties constructor is required for entity class."
+                )
+            }
+        assertThat(environment.isModelFileExists()).isFalse()
+    }
+
+    /**
+     * Ensures no-arg constructor check (see [constructor_noArgCtrMissing_errors]
+     * does not trigger if there is an all-properties constructor.
+     */
+    @Test
+    fun constructor_allPropertiesCtrOnly_works() {
+        val allPropertiesCtrOnly = """
+        package io.objectbox.processor.test;
+        
+        import io.objectbox.annotation.Entity;
+        import io.objectbox.annotation.Id;
+        
+        @Entity
+        public class AllPropsCtrOnly {
+        
+            @Id long id;
+            String secondProperty;
+        
+            // No no-arg constructor.
+            // public AllPropsCtrOnly() { }
+        
+            // But all-args constructor.
+            public AllPropsCtrOnly(long id, String secondProperty) {
+                this.id = id;
+                this.secondProperty = secondProperty;
+            }
+        }
+        """.trimIndent().let {
+            JavaFileObjects.forSourceString("io.objectbox.processor.test.AllPropsCtrOnly", it)
+        }
+
+        val environment = TestEnvironment("ctr-all-props.json", useTemporaryModelFile = true)
+
+        environment.compile(listOf(allPropertiesCtrOnly))
+            .also { CompilationSubject.assertThat(it).succeededWithoutWarnings() }
+        assertThat(environment.isModelFileExists()).isTrue()
+    }
+
+    @Test
     fun testAllArgsConstructor() {
         // tests if constructor with param for virtual property (to-one target id) and custom type is recognized
         // implicitly tests if all-args-constructor check can handle virtual and custom type properties

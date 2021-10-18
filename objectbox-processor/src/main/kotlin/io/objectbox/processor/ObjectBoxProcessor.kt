@@ -347,7 +347,16 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         relations.ensureToOneIdRefProperties(entityModel)
 
         // signal if a constructor will be available
-        entityModel.setHasAllArgsConstructor(hasAllArgsConstructor(entity, entityModel))
+        entityModel.setHasAllArgsConstructor(entity.hasAllPropertiesConstructor(entityModel))
+
+        // Require an all-properties or no-arg constructor so the native (JNI) database code can create objects.
+        // Note: visibility is not checked, access restrictions don't apply to native code.
+        // Note: for unknown reasons, on Android 8.1 or higher native code can create objects
+        // even without a no-arg constructor.
+        // https://github.com/objectbox/objectbox-java/issues/900
+        if (!entityModel.hasAllArgsConstructor() && !entity.hasNoArgConstructor()) {
+            messages.error("No-argument or all-properties constructor is required for entity class.", entity)
+        }
     }
 
     /**
@@ -459,9 +468,9 @@ open class ObjectBoxProcessor : AbstractProcessor() {
      * Returns true if the entity has a constructor where param types, names and order matches the properties of the
      * given entity model.
      */
-    private fun hasAllArgsConstructor(entity: Element, entityModel: ModelEntity): Boolean {
+    private fun Element.hasAllPropertiesConstructor(entityModel: ModelEntity): Boolean {
         if (debug) messages.debug("Checking for all-args constructor for ${entityModel.className}...")
-        val constructors = ElementFilter.constructorsIn(entity.enclosedElements)
+        val constructors = ElementFilter.constructorsIn(enclosedElements)
         val properties = entityModel.properties
         for (constructor in constructors) {
             val parameters = constructor.parameters
@@ -518,6 +527,15 @@ open class ObjectBoxProcessor : AbstractProcessor() {
             }
         }
         return true
+    }
+
+    /**
+     * Returns true if the [Element] has a constructor requiring no parameters.
+     */
+    private fun Element.hasNoArgConstructor(): Boolean {
+        ElementFilter.constructorsIn(enclosedElements)
+            .forEach { if (it.parameters.size == 0) return true }
+        return false
     }
 
     private fun syncIdModel(schema: Schema): Boolean {
