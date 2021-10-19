@@ -69,7 +69,11 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
             if (env.hasAndroidPlugin) {
                 // Cannot use afterEvaluate to register Android transform, thus our plugin must be applied after Android
                 if (ObjectBoxAndroidTransform.Registration.getAndroidExtensionClasses(project).isNotEmpty()) {
-                    ObjectBoxAndroidTransform.Registration.to(project, env.options)
+                    ObjectBoxAndroidTransform.Registration.to(
+                        project,
+                        env.options,
+                        env.hasKotlinAndroidPlugin || env.hasKotlinPlugin
+                    )
                 }
             } else {
                 // fall back to Gradle task

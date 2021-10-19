@@ -54,7 +54,7 @@ import java.io.File
 class ObjectBoxAndroidTransform(private val options: PluginOptions) : Transform() {
 
     object Registration {
-        fun to(project: Project, options: PluginOptions) {
+        fun to(project: Project, options: PluginOptions, hasKotlinPlugin: Boolean) {
             val transform = ObjectBoxAndroidTransform(options)
             getAllExtensions(project).forEach { extension ->
                 // for regular build and instrumentation tests
@@ -64,16 +64,16 @@ class ObjectBoxAndroidTransform(private val options: PluginOptions) : Transform(
                 // so inject our own transform task before local unit tests are compiled
                 when (extension) {
                     is AppExtension -> extension.applicationVariants.all {
-                        injectTransformTask(project, options, it, it.unitTestVariant)
+                        injectTransformTask(project, options, hasKotlinPlugin, it, it.unitTestVariant)
                     }
                     is LibraryExtension -> extension.libraryVariants.all {
-                        injectTransformTask(project, options, it, it.unitTestVariant)
+                        injectTransformTask(project, options, hasKotlinPlugin, it, it.unitTestVariant)
                     }
                     is FeatureExtension -> extension.featureVariants.all {
-                        injectTransformTask(project, options, it, it.unitTestVariant)
+                        injectTransformTask(project, options, hasKotlinPlugin, it, it.unitTestVariant)
                     }
                     is TestExtension -> extension.applicationVariants.all {
-                        injectTransformTask(project, options, it, it.unitTestVariant)
+                        injectTransformTask(project, options, hasKotlinPlugin, it, it.unitTestVariant)
                     }
                 }
             }
@@ -108,7 +108,7 @@ class ObjectBoxAndroidTransform(private val options: PluginOptions) : Transform(
          * (bug report to support unit tests at https://issuetracker.google.com/issues/37076369).
          */
         private fun injectTransformTask(
-            project: Project, options: PluginOptions,
+            project: Project, options: PluginOptions, hasKotlinPlugin: Boolean,
             baseVariant: BaseVariant, unitTestVariant: UnitTestVariant?
         ) {
             if (unitTestVariant == null) {
@@ -123,9 +123,12 @@ class ObjectBoxAndroidTransform(private val options: PluginOptions) : Transform(
             inputClasspath.from(unitTestVariant.javaCompileProvider.map { it.destinationDir })
 
             // Same for Kotlin.
-            project.plugins.withType(KotlinBasePluginWrapper::class.java) {
-                addDestinationDirOfKotlinCompile(inputClasspath, project, baseVariant)
-                addDestinationDirOfKotlinCompile(inputClasspath, project, unitTestVariant)
+            // Applying Kotlin plugin is optional for Android projects, so check before accessing Kotlin plugin classes.
+            if (hasKotlinPlugin) {
+                project.plugins.withType(KotlinBasePluginWrapper::class.java) {
+                    addDestinationDirOfKotlinCompile(inputClasspath, project, baseVariant)
+                    addDestinationDirOfKotlinCompile(inputClasspath, project, unitTestVariant)
+                }
             }
 
             val transformTaskName = "objectboxTransform${unitTestVariant.name.capitalize()}"
