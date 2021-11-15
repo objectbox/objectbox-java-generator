@@ -1,5 +1,5 @@
 # Default image for linux builds
-image: objectboxio/buildenv:21.5.27-centos7
+image: objectboxio/buildenv:21.11.11-centos7
 
 variables:
   GRADLE_ARGS: "--stacktrace"
