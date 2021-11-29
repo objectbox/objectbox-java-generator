@@ -38,6 +38,8 @@ public enum PropertyType {
     StringArray(false),
     Date(false),
     DateNano(true),
+    /** Map property containing flexible data with string keys backed by FlexBuffers, stored as byte array. */
+    FlexMap(false),
     /** a long representing a ObjectBox to-one relation */
     RelationId(true);
 
