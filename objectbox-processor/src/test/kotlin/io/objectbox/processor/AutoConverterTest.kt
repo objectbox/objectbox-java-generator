@@ -36,7 +36,7 @@ class AutoConverterTest : BaseProcessorTest() {
 
         environment.schema.entities[0].properties.find { it.dbName == "stringMap" }!!
             .run {
-                assertThat(propertyType).isEqualTo(PropertyType.FlexMap)
+                assertThat(propertyType).isEqualTo(PropertyType.Flex)
 
                 assertThat(converter).isEqualTo("io.objectbox.converter.StringMapConverter")
                 assertThat(converterClassName).isEqualTo("StringMapConverter")
@@ -46,7 +46,7 @@ class AutoConverterTest : BaseProcessorTest() {
             }
         environment.schema.entities[0].properties.find { it.dbName == "stringFlexMap" }!!
             .run {
-                assertThat(propertyType).isEqualTo(PropertyType.FlexMap)
+                assertThat(propertyType).isEqualTo(PropertyType.Flex)
 
                 assertThat(converter).isEqualTo("io.objectbox.converter.StringFlexMapConverter")
                 assertThat(converterClassName).isEqualTo("StringFlexMapConverter")
@@ -56,7 +56,7 @@ class AutoConverterTest : BaseProcessorTest() {
             }
         environment.schema.entities[0].properties.find { it.dbName == "stringLongMap" }!!
             .run {
-                assertThat(propertyType).isEqualTo(PropertyType.FlexMap)
+                assertThat(propertyType).isEqualTo(PropertyType.Flex)
 
                 assertThat(converter).isEqualTo("io.objectbox.converter.StringLongMapConverter")
                 assertThat(converterClassName).isEqualTo("StringLongMapConverter")
@@ -91,7 +91,7 @@ class AutoConverterTest : BaseProcessorTest() {
 
         environment.schema.entities[0].properties.find { it.dbName == "integerFlexMap" }!!
             .run {
-                assertThat(propertyType).isEqualTo(PropertyType.FlexMap)
+                assertThat(propertyType).isEqualTo(PropertyType.Flex)
 
                 assertThat(converter).isEqualTo("io.objectbox.converter.IntegerFlexMapConverter")
                 assertThat(converterClassName).isEqualTo("IntegerFlexMapConverter")
@@ -101,7 +101,7 @@ class AutoConverterTest : BaseProcessorTest() {
             }
         environment.schema.entities[0].properties.find { it.dbName == "integerLongMap" }!!
             .run {
-                assertThat(propertyType).isEqualTo(PropertyType.FlexMap)
+                assertThat(propertyType).isEqualTo(PropertyType.Flex)
 
                 assertThat(converter).isEqualTo("io.objectbox.converter.IntegerLongMapConverter")
                 assertThat(converterClassName).isEqualTo("IntegerLongMapConverter")
@@ -136,7 +136,7 @@ class AutoConverterTest : BaseProcessorTest() {
 
         environment.schema.entities[0].properties.find { it.dbName == "longFlexMap" }!!
             .run {
-                assertThat(propertyType).isEqualTo(PropertyType.FlexMap)
+                assertThat(propertyType).isEqualTo(PropertyType.Flex)
 
                 assertThat(converter).isEqualTo("io.objectbox.converter.LongFlexMapConverter")
                 assertThat(converterClassName).isEqualTo("LongFlexMapConverter")
@@ -146,7 +146,7 @@ class AutoConverterTest : BaseProcessorTest() {
             }
         environment.schema.entities[0].properties.find { it.dbName == "longLongMap" }!!
             .run {
-                assertThat(propertyType).isEqualTo(PropertyType.FlexMap)
+                assertThat(propertyType).isEqualTo(PropertyType.Flex)
 
                 assertThat(converter).isEqualTo("io.objectbox.converter.LongLongMapConverter")
                 assertThat(converterClassName).isEqualTo("LongLongMapConverter")

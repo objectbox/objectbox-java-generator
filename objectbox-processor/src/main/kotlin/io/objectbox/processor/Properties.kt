@@ -445,7 +445,7 @@ class Properties(
         field: VariableElement,
         converterCanonicalName: String
     ): Property.PropertyBuilder? {
-        val builder = entityModel.tryToAddProperty(PropertyType.FlexMap, field)
+        val builder = entityModel.tryToAddProperty(PropertyType.Flex, field)
             ?: return null
 
         // Is Map<K, V>, so erase type params (-> Map) as generator model does not support them.

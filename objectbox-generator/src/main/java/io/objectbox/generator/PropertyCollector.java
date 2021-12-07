@@ -62,7 +62,7 @@ class PropertyCollector {
         while (first || !last) {
             String collectSignature;
             int countByteArrays = propertiesByType.countElements(PropertyType.ByteArray) +
-                    propertiesByType.countElements(PropertyType.FlexMap);
+                    propertiesByType.countElements(PropertyType.Flex);
             int countScalarsNonFP = countScalarsNonFP();
             int countFloats = propertiesByType.countElements(PropertyType.Float);
             int countDoubles = propertiesByType.countElements(PropertyType.Double);
@@ -203,7 +203,7 @@ class PropertyCollector {
             } else if (type == PropertyType.Byte) {
                 return appendProperty(preCall, sb, PropertyType.Boolean, isScalar);
             } else if (type == PropertyType.ByteArray) {
-                return appendProperty(preCall, sb, PropertyType.FlexMap, isScalar);
+                return appendProperty(preCall, sb, PropertyType.Flex, isScalar);
             }
 
             // All smaller types checked, nothing found
