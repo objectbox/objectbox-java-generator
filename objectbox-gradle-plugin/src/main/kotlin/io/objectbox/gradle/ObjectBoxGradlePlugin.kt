@@ -217,7 +217,7 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
     }
 
     private fun addDependencies(env: ProjectEnv) {
-        val compileConfig = env.configApiOrCompile
+        val compileConfig = env.configApiOrImplOrCompile
         val project = env.project
 
         // Note: a preview release might apply different versions of the Java and native library,

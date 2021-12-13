@@ -58,11 +58,21 @@ class ProjectEnv(val project: Project) {
 
 
     /**
-     * See https://developer.android.com/studio/build/gradle-plugin-3-0-0-migration.html#new_configurations and
-     * https://docs.gradle.org/current/userguide/java_library_plugin.html#sec:java_library_configurations_graph
+     * See Gradle [java-library plugin configurations](https://docs.gradle.org/current/userguide/java_library_plugin.html#sec:java_library_configurations_graph)
+     * and [java plugin configurations](https://docs.gradle.org/current/userguide/java_plugin.html#sec:java_plugin_and_dependency_management)
+     * (used by `applications` plugin).
      */
-    val configApiOrCompile: String by lazy {
-        if (project.configurations.findByName("api") != null) "api" else "compile"
+    val configApiOrImplOrCompile: String by lazy {
+        if (project.configurations.findByName("api") != null) {
+            // Projects applying the java-library plugin.
+            // Try to use api by default so consuming projects inherit the dependency.
+            "api"
+        } else if (project.configurations.findByName("implementation") != null) {
+            // Projects applying the application plugin (does not have api configuration).
+            "implementation"
+        } else {
+            "compile"
+        }
     }
     val configAndroidTestImplOrCompile: String by lazy {
         if (project.configurations.findByName("androidTestImplementation") != null) {
