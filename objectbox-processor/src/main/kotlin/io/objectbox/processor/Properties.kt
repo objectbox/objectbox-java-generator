@@ -32,6 +32,7 @@ import io.objectbox.annotation.Type
 import io.objectbox.annotation.Uid
 import io.objectbox.annotation.Unique
 import io.objectbox.annotation.Unsigned
+import io.objectbox.converter.FlexObjectConverter
 import io.objectbox.converter.IntegerFlexMapConverter
 import io.objectbox.converter.IntegerLongMapConverter
 import io.objectbox.converter.LongFlexMapConverter
@@ -434,6 +435,15 @@ class Properties(
 
         if (typeHelper.isLongMap(fieldType)) {
             return addAutoConvertedMapProperty(field, LongFlexMapConverter::class.java.canonicalName)
+        }
+
+        if (typeHelper.isObject(fieldType)) {
+            val builder = entityModel.tryToAddProperty(PropertyType.Flex, field)
+                ?: return null
+            val converterCanonicalName = FlexObjectConverter::class.java.canonicalName
+            builder.customType(field.asType().toString(), converterCanonicalName)
+            messages.info("Using $converterCanonicalName to convert Object property '${field.simpleName}' in '${entityModel.className}', to change this use @Convert.")
+            return builder
         }
 
         messages.error("Field type \"$fieldType\" is not supported. Consider making the target an @Entity, " +

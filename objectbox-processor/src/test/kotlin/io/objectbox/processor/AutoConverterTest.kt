@@ -185,4 +185,37 @@ class AutoConverterTest : BaseProcessorTest() {
         assertThat(environment.isModelFileExists()).isFalse()
     }
 
+    @Test
+    fun object_isAutoConverted() {
+        val sourceFile = """
+        package com.example;
+        import io.objectbox.annotation.Entity;
+        import io.objectbox.annotation.Id;
+
+        @Entity
+        public class ObjectEntity {
+            @Id long id;
+            
+            Object flexProperty;
+        }
+        """.trimIndent()
+            .let { JavaFileObjects.forSourceString("com.example.ObjectEntity", it) }
+
+        val environment = TestEnvironment("auto-convert-object.json", useTemporaryModelFile = true)
+
+        environment.compile(listOf(sourceFile))
+            .also { CompilationSubject.assertThat(it).succeededWithoutWarnings() }
+
+        environment.schema.entities[0].properties.find { it.dbName == "flexProperty" }!!
+            .run {
+                assertThat(propertyType).isEqualTo(PropertyType.Flex)
+
+                assertThat(converter).isEqualTo("io.objectbox.converter.FlexObjectConverter")
+                assertThat(converterClassName).isEqualTo("FlexObjectConverter")
+
+                assertThat(customType).isEqualTo("java.lang.Object")
+                assertThat(customTypeClassName).isEqualTo("Object")
+            }
+    }
+
 }

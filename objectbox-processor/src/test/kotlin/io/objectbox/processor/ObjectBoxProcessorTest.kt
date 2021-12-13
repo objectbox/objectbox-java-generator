@@ -28,7 +28,6 @@ import io.objectbox.model.PropertyFlags
 import org.junit.Assert.assertEquals
 import org.junit.Assert.fail
 import org.junit.Test
-import javax.tools.JavaFileObject
 
 class ObjectBoxProcessorTest : BaseProcessorTest() {
 
@@ -164,6 +163,28 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
                     assertThat(prop.isIdCompanion).isTrue()
                     assertType(prop, PropertyType.Date)
                 }
+                "stringFlexMap" -> {
+                    prop.run {
+                        assertThat(propertyType).isEqualTo(PropertyType.Flex)
+
+                        assertThat(converter).isEqualTo("io.objectbox.converter.StringFlexMapConverter")
+                        assertThat(converterClassName).isEqualTo("StringFlexMapConverter")
+
+                        assertThat(customType).isEqualTo("java.util.Map")
+                        assertThat(customTypeClassName).isEqualTo("Map")
+                    }
+                }
+                "flexProperty" -> {
+                    prop.run {
+                        assertThat(propertyType).isEqualTo(PropertyType.Flex)
+
+                        assertThat(converter).isEqualTo("io.objectbox.converter.FlexObjectConverter")
+                        assertThat(converterClassName).isEqualTo("FlexObjectConverter")
+
+                        assertThat(customType).isEqualTo("java.lang.Object")
+                        assertThat(customTypeClassName).isEqualTo("Object")
+                    }
+                }
                 "toOneId" -> {
                     assertThat(prop.dbName).isEqualTo(prop.propertyName)
                     assertThat(prop.virtualTargetName).isEqualTo("toOne")
@@ -225,6 +246,8 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
                 "dateNanoPrimitive",
                 "dateNano",
                 "idCompanion",
+                "stringFlexMap",
+                "flexProperty",
                 "toOneId" // last
         )
         val modelProperties = modelEntity.properties

@@ -3,13 +3,17 @@ package io.objectbox.processor.test;
 import io.objectbox.BoxStore;
 import io.objectbox.Cursor;
 import io.objectbox.annotation.apihint.Internal;
+import io.objectbox.converter.FlexObjectConverter;
+import io.objectbox.converter.StringFlexMapConverter;
 import io.objectbox.internal.CursorFactory;
 import io.objectbox.processor.test.SimpleEntity.SimpleEnum;
 import io.objectbox.processor.test.SimpleEntity.SimpleEnumConverter;
 import io.objectbox.processor.test.SimpleEntity.SimpleEnumListConverter;
 import io.objectbox.relation.ToMany;
 import io.objectbox.relation.ToOne;
+import java.lang.Object;
 import java.util.List;
+import java.util.Map;
 
 //////
 // NOTE: this is the EXPECTED generated source.
@@ -32,6 +36,8 @@ public final class SimpleEntityCursor extends Cursor<SimpleEntity> {
 
     private final SimpleEnumConverter customTypeConverter = new SimpleEnumConverter();
     private final SimpleEnumListConverter customTypesConverter = new SimpleEnumListConverter();
+    private final StringFlexMapConverter stringFlexMapConverter = new StringFlexMapConverter();
+    private final FlexObjectConverter flexPropertyConverter = new FlexObjectConverter();
 
     private final static int __ID_simpleShortPrimitive = SimpleEntity_.simpleShortPrimitive.id;
     private final static int __ID_simpleShort = SimpleEntity_.simpleShort.id;
@@ -61,6 +67,8 @@ public final class SimpleEntityCursor extends Cursor<SimpleEntity> {
     private final static int __ID_dateNanoPrimitive = SimpleEntity_.dateNanoPrimitive.id;
     private final static int __ID_dateNano = SimpleEntity_.dateNano.id;
     private final static int __ID_idCompanion = SimpleEntity_.idCompanion.id;
+    private final static int __ID_stringFlexMap = SimpleEntity_.stringFlexMap.id;
+    private final static int __ID_flexProperty = SimpleEntity_.flexProperty.id;
     private final static int __ID_toOneId = SimpleEntity_.toOneId.id;
 
     public SimpleEntityCursor(io.objectbox.Transaction tx, long cursor, BoxStore boxStore) {
@@ -106,6 +114,17 @@ public final class SimpleEntityCursor extends Cursor<SimpleEntity> {
         int __id23 = namedProperty != null ? __ID_namedProperty : 0;
         byte[] simpleByteArray = entity.simpleByteArray;
         int __id19 = simpleByteArray != null ? __ID_simpleByteArray : 0;
+        Map stringFlexMap = entity.stringFlexMap;
+        int __id29 = stringFlexMap != null ? __ID_stringFlexMap : 0;
+        Object flexProperty = entity.flexProperty;
+        int __id30 = flexProperty != null ? __ID_flexProperty : 0;
+
+        collect430000(cursor, 0, 0,
+                __id18, simpleString, __id23, namedProperty,
+                0, null, 0, null,
+                __id19, simpleByteArray, __id29, __id29 != 0 ? stringFlexMapConverter.convertToDatabaseValue(stringFlexMap) : null,
+                __id30, __id30 != 0 ? flexPropertyConverter.convertToDatabaseValue(flexProperty) : null);
+
         Long simpleLong = entity.simpleLong;
         int __id6 = simpleLong != null ? __ID_simpleLong : 0;
         Integer simpleInt = entity.simpleInt;
@@ -114,8 +133,8 @@ public final class SimpleEntityCursor extends Cursor<SimpleEntity> {
         int __id22 = indexedProperty != null ? __ID_indexedProperty : 0;
 
         collect313311(cursor, 0, 0,
-                __id18, simpleString, __id23, namedProperty,
-                0, null, __id19, simpleByteArray,
+                0, null, 0, null,
+                0, null, 0, null,
                 __ID_simpleLongPrimitive, entity.simpleLongPrimitive, __id6, __id6 != 0 ? simpleLong : 0,
                 __ID_toOneId, entity.toOne.getTargetId(), __ID_simpleIntPrimitive, entity.simpleIntPrimitive,
                 __id4, __id4 != 0 ? simpleInt : 0, __id22, __id22 != 0 ? indexedProperty : 0,
