@@ -39,11 +39,25 @@ open class PluginApplyTest {
 
     @Test
     fun apply_beforeJavaPlugin_fails() {
+        assertApplyBeforePluginFails("java")
+    }
+
+    @Test
+    fun apply_beforeApplicationPlugin_fails() {
+        assertApplyBeforePluginFails("application")
+    }
+
+    @Test
+    fun apply_beforeJavaLibraryPlugin_fails() {
+        assertApplyBeforePluginFails("java-library")
+    }
+
+    private fun assertApplyBeforePluginFails(plugin: String) {
         val project = ProjectBuilder.builder().build()
         assertThrows(PluginApplicationException::class.java) {
             project.pluginManager.apply {
                 apply(pluginId)
-                apply("java")
+                apply(plugin)
             }
         }.also {
             assertEquals("Failed to apply plugin '$pluginId'.", it.message)
@@ -58,10 +72,36 @@ open class PluginApplyTest {
             apply(pluginId)
         }
 
+        assertJavaProject(project, "implementation")
+    }
+
+    @Test
+    fun apply_afterApplicationPlugin() {
+        val project = ProjectBuilder.builder().build()
+        project.pluginManager.apply {
+            apply("application") // Note: application plugin adds java plugin.
+            apply(pluginId)
+        }
+
+        assertJavaProject(project, "implementation")
+    }
+
+    @Test
+    fun apply_afterJavaLibraryPlugin() {
+        val project = ProjectBuilder.builder().build()
+        project.pluginManager.apply {
+            apply("java-library")
+            apply(pluginId)
+        }
+
+        assertJavaProject(project, "api")
+    }
+
+    private fun assertJavaProject(project: Project, configuration: String) {
         with(project.configurations) {
             assertProcessorDependency(getByName("annotationProcessor").dependencies)
 
-            getByName("compile").dependencies.let {
+            getByName(configuration).dependencies.let {
                 assertJavaDependency(it)
                 assertNativeDependency(it)
             }
