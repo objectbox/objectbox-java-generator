@@ -48,6 +48,7 @@ class TypeHelper(
     private val typeDate = Date::class.java.getTypeMirror()
     private val typeCharacter = java.lang.Character::class.java.getTypeMirror()
     private val typeString = java.lang.String::class.java.getTypeMirror()
+    private val typeObject = java.lang.Object::class.java.getTypeMirror()
 
     private val typeMap = java.util.Map::class.java.getTypeMirror(eraseTypeParameters = true)
 
@@ -129,6 +130,10 @@ class TypeHelper(
 
     fun isLongLongMap(typeMirror: TypeMirror): Boolean {
         return typeMirror.isMapOf(typeLong, typeLong)
+    }
+
+    fun isObject(typeMirror: TypeMirror): Boolean {
+        return typeMirror.isSameTypeAs(typeObject)
     }
 
     /**

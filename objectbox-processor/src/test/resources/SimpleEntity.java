@@ -3,6 +3,7 @@ package io.objectbox.processor.test;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import io.objectbox.annotation.Convert;
 import io.objectbox.annotation.DatabaseType;
@@ -86,6 +87,9 @@ public class SimpleEntity {
     ToOne<IdEntity> toOne = new ToOne<>(this, SimpleEntity_.toOne);
 
     ToMany<IdEntity> toMany = new ToMany<>(this, SimpleEntity_.toMany);
+
+    Map<String, Object> stringFlexMap;
+    Object flexProperty;
 
     public boolean isSimpleBooleanPrimitive() {
         return simpleBooleanPrimitive;

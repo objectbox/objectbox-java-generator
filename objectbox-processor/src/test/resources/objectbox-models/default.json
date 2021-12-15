@@ -5,7 +5,7 @@
   "entities": [
     {
       "id": "1:4858050548069557694",
-      "lastPropertyId": "30:8403031692314570141",
+      "lastPropertyId": "32:4612611183471672203",
       "name": "A",
       "properties": [
         {
@@ -164,6 +164,16 @@
           "id": "30:8403031692314570141",
           "name": "simpleStringList",
           "type": 30
+        },
+        {
+          "id": "31:553518482816470515",
+          "name": "stringFlexMap",
+          "type": 13
+        },
+        {
+          "id": "32:4612611183471672203",
+          "name": "flexProperty",
+          "type": 13
         }
       ],
       "relations": [
