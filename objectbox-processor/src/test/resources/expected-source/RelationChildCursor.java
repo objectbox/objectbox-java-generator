@@ -31,7 +31,7 @@ public final class RelationChildCursor extends Cursor<RelationChild> {
     }
 
     @Override
-    public final long getId(RelationChild entity) {
+    public long getId(RelationChild entity) {
         return ID_GETTER.getId(entity);
     }
 
@@ -41,7 +41,7 @@ public final class RelationChildCursor extends Cursor<RelationChild> {
      * @return The ID of the object within its box.
      */
     @Override
-    public final long put(RelationChild entity) {
+    public long put(RelationChild entity) {
         ToOne<RelationParent> parent = entity.parent;
         if(parent != null && parent.internalRequiresPutTarget()) {
             Cursor<RelationParent> targetCursor = getRelationTargetCursor(RelationParent.class);

@@ -63,7 +63,7 @@ public final class ${entity.classNameDao} extends Cursor<${entity.className}> {
     }
 
     @Override
-    public final long getId(${entity.className} entity) {
+    public long getId(${entity.className} entity) {
         return ID_GETTER.getId(entity);
     }
 
@@ -73,7 +73,7 @@ public final class ${entity.classNameDao} extends Cursor<${entity.className}> {
      * @return The ID of the object within its box.
      */
     @Override
-    public final long put(${entity.className} entity) {
+    public long put(${entity.className} entity) {
 <#list entity.toOneRelations as toOne>
         ToOne<${toOne.targetEntity.className}> ${toOne.name} = entity.${toOne.toOneValueExpression};
         if(${toOne.name} != null && ${toOne.name}.internalRequiresPutTarget()) {

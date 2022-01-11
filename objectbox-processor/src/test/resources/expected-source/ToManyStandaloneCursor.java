@@ -31,7 +31,7 @@ public final class ToManyStandaloneCursor extends Cursor<ToManyStandalone> {
     }
 
     @Override
-    public final long getId(ToManyStandalone entity) {
+    public long getId(ToManyStandalone entity) {
         return ID_GETTER.getId(entity);
     }
 
@@ -41,7 +41,7 @@ public final class ToManyStandaloneCursor extends Cursor<ToManyStandalone> {
      * @return The ID of the object within its box.
      */
     @Override
-    public final long put(ToManyStandalone entity) {
+    public long put(ToManyStandalone entity) {
         Long id = entity.id;
         long __assignedId = collect004000(cursor, id != null ? id: 0, PUT_FLAG_FIRST | PUT_FLAG_COMPLETE,
                 0, 0, 0, 0,

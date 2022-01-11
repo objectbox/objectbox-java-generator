@@ -76,7 +76,7 @@ public final class SimpleEntityCursor extends Cursor<SimpleEntity> {
     }
 
     @Override
-    public final long getId(SimpleEntity entity) {
+    public long getId(SimpleEntity entity) {
         return ID_GETTER.getId(entity);
     }
 
@@ -86,7 +86,7 @@ public final class SimpleEntityCursor extends Cursor<SimpleEntity> {
      * @return The ID of the object within its box.
      */
     @Override
-    public final long put(SimpleEntity entity) {
+    public long put(SimpleEntity entity) {
         ToOne<IdEntity> toOne = entity.toOne;
         if(toOne != null && toOne.internalRequiresPutTarget()) {
             Cursor<IdEntity> targetCursor = getRelationTargetCursor(IdEntity.class);

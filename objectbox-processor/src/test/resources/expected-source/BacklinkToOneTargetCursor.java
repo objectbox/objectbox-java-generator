@@ -31,7 +31,7 @@ public final class BacklinkToOneTargetCursor extends Cursor<BacklinkToOneTarget>
     }
 
     @Override
-    public final long getId(BacklinkToOneTarget entity) {
+    public long getId(BacklinkToOneTarget entity) {
         return ID_GETTER.getId(entity);
     }
 
@@ -41,7 +41,7 @@ public final class BacklinkToOneTargetCursor extends Cursor<BacklinkToOneTarget>
      * @return The ID of the object within its box.
      */
     @Override
-    public final long put(BacklinkToOneTarget entity) {
+    public long put(BacklinkToOneTarget entity) {
         Long id = entity.id;
         long __assignedId = collect004000(cursor, id != null ? id: 0, PUT_FLAG_FIRST | PUT_FLAG_COMPLETE,
                 0, 0, 0, 0,
