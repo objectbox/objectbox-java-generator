@@ -22,7 +22,7 @@ stages:
     - |
       if [ "$CI_COMMIT_BRANCH" == "objectbox-dev" ]; then
         VERSION_ARGS="-PversionPostFix=dev"
-      elif [ "$CI_COMMIT_BRANCH" == "objectbox-publish" ]; then
+      elif [ "$CI_COMMIT_BRANCH" == "publish" ]; then
         VERSION_ARGS=""
       else
         VERSION_ARGS="-PversionPostFix=$CI_COMMIT_BRANCH"
@@ -59,7 +59,7 @@ upload-to-central:linux:
   stage: upload-to-central
   tags: [ docker, x64 ]
   only:
-    - objectbox-publish
+    - publish
   script:
     - ./gradlew $GRADLE_ARGS $GITLAB_REPO_ARGS $VERSION_ARGS $CENTRAL_REPO_ARGS publishMavenJavaPublicationToSonatypeRepository closeAndReleaseSonatypeStagingRepository
     - echo "Published successfully to Central - check https://repo1.maven.org/maven2/io/objectbox/ in a few minutes."

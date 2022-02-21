@@ -1,7 +1,7 @@
 def COLOR_MAP = ['SUCCESS': 'good', 'FAILURE': 'danger', 'UNSTABLE': 'danger', 'ABORTED': 'danger']
 
 def gradleArgs = "--stacktrace"
-def isPublish = BRANCH_NAME == 'objectbox-publish'
+def isPublish = BRANCH_NAME == 'publish'
 String versionPostfix = BRANCH_NAME == 'objectbox-dev' ? 'dev'
                       : isPublish ? '' // build script detects empty string as not set
                       : BRANCH_NAME
