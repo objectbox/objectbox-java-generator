@@ -2,7 +2,10 @@
 image: objectboxio/buildenv:21.11.11-centos7
 
 variables:
-  GRADLE_ARGS: "--stacktrace"
+  # Disable the Gradle daemon. Gradle may run in a Docker container with a shared
+  # Docker volume containing GRADLE_USER_HOME. If the container is stopped after a job
+  # Gradle daemons may get killed, preventing proper clean-up of lock files in GRADLE_USER_HOME.
+  GRADLE_OPTS: "-Dorg.gradle.daemon=false"
   GITLAB_REPO_ARGS: "-PgitlabUrl=$CI_SERVER_URL -PgitlabTokenName=Job-Token -PgitlabToken=$CI_JOB_TOKEN"
   CENTRAL_REPO_ARGS: "-PsonatypeUsername=$SONATYPE_USER -PsonatypePassword=$SONATYPE_PWD"
 
@@ -33,7 +36,7 @@ stages:
   extends: .common
   stage: test
   script:
-    - ./gradlew $GRADLE_ARGS $GITLAB_REPO_ARGS $VERSION_ARGS clean check
+    - ./gradlew $GITLAB_REPO_ARGS $VERSION_ARGS clean check
   artifacts:
     when: always
     reports:
@@ -52,7 +55,7 @@ upload-to-internal:linux:
   stage: upload-to-internal
   tags: [ docker, x64 ]
   script:
-    - ./gradlew $GRADLE_ARGS $GITLAB_REPO_ARGS $VERSION_ARGS publishMavenJavaPublicationToGitLabRepository
+    - ./gradlew $GITLAB_REPO_ARGS $VERSION_ARGS publishMavenJavaPublicationToGitLabRepository
 
 upload-to-central:linux:
   extends: .common
@@ -61,7 +64,7 @@ upload-to-central:linux:
   only:
     - publish
   script:
-    - ./gradlew $GRADLE_ARGS $GITLAB_REPO_ARGS $VERSION_ARGS $CENTRAL_REPO_ARGS publishMavenJavaPublicationToSonatypeRepository closeAndReleaseSonatypeStagingRepository
+    - ./gradlew $GITLAB_REPO_ARGS $VERSION_ARGS $CENTRAL_REPO_ARGS publishMavenJavaPublicationToSonatypeRepository closeAndReleaseSonatypeStagingRepository
     - echo "Published successfully to Central - check https://repo1.maven.org/maven2/io/objectbox/ in a few minutes."
   before_script:
     - ci/send-to-gchat.sh "$GOOGLE_CHAT_WEBHOOK_JAVA_CI" --thread $CI_COMMIT_SHA "*Releasing Java plugin* $CI_JOB_NAME from branch $CI_COMMIT_BRANCH ($CI_COMMIT_SHORT_SHA)..."
