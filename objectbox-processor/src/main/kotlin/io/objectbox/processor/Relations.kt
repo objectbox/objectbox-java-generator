@@ -46,9 +46,15 @@ class Relations(private val messages: Messages) {
     fun hasRelations(entity: Entity) =
             (toOnesByEntity[entity]?.isNotEmpty() ?: false) || (toManysByEntity[entity]?.isNotEmpty() ?: false)
 
-    private fun targetEntityNameOrError(field: VariableElement): String? {
+    private fun targetEntityNameOrError(entityModel: Entity, field: VariableElement, relationType: String): String? {
         // assuming ToOne<TargetEntity>, List<TargetType> or ToMany<TargetType> field
+        // Note: Java allows to not specify a type parameter (ToOne instead of ToOne<Entity>), so check for one.
         val fieldTypeMirror = field.asType() as DeclaredType
+        if (fieldTypeMirror.typeArguments.isEmpty()) {
+            messages.error("The generic $relationType property '$field' in '${entityModel.className}' " +
+                    "must have a type argument, e.g. $relationType<Entity>.")
+            return null
+        }
         val targetTypeMirror = fieldTypeMirror.typeArguments[0]
         return if (targetTypeMirror is DeclaredType) {
             // can simply get as element as code would not have compiled if target type is not known
@@ -61,7 +67,8 @@ class Relations(private val messages: Messages) {
     }
 
     fun parseToMany(entityModel: Entity, field: VariableElement) {
-        val targetEntityName = targetEntityNameOrError(field) ?: return // skip faulty to-many
+        val targetEntityName = targetEntityNameOrError(entityModel, field, "ToMany")
+            ?: return // skip faulty to-many
 
         val backlinkAnnotation = field.getAnnotation(Backlink::class.java)
         val isBacklink = backlinkAnnotation != null
@@ -92,7 +99,8 @@ class Relations(private val messages: Messages) {
     }
 
     fun parseToOne(entityModel: Entity, field: VariableElement) {
-        val targetEntityName = targetEntityNameOrError(field) ?: return // skip faulty to-one
+        val targetEntityName = targetEntityNameOrError(entityModel, field, "ToOne")
+            ?: return // skip faulty to-one
 
         if (field.getAnnotation(Backlink::class.java) != null) {
             messages.error("'$field' @Backlink can only be used on a ToMany relation")
