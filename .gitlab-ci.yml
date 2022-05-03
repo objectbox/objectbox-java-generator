@@ -8,6 +8,8 @@ variables:
   GRADLE_OPTS: "-Dorg.gradle.daemon=false"
   GITLAB_REPO_ARGS: "-PgitlabUrl=$CI_SERVER_URL -PgitlabTokenName=Job-Token -PgitlabToken=$CI_JOB_TOKEN"
   CENTRAL_REPO_ARGS: "-PsonatypeUsername=$SONATYPE_USER -PsonatypePassword=$SONATYPE_PWD"
+  # CI_COMMIT_REF_SLUG is the branch or tag name, but web-safe (only 0-9, a-z)
+  VERSION_ARGS: "-PversionPostFix=$CI_COMMIT_REF_SLUG"
 
 stages:
   - test
@@ -22,15 +24,6 @@ stages:
   before_script:
     # Print Gradle and JVM version info
     - ./gradlew -version
-    # Calculate version postfix
-    - |
-      if [ "$CI_COMMIT_BRANCH" == "objectbox-dev" ]; then
-        VERSION_ARGS="-PversionPostFix=dev"
-      elif [ "$CI_COMMIT_BRANCH" == "publish" ]; then
-        VERSION_ARGS=""
-      else
-        VERSION_ARGS="-PversionPostFix=$CI_COMMIT_BRANCH"
-      fi
 
 # Template for tests
 .tests:
