@@ -164,6 +164,68 @@ class RelationsTest : BaseProcessorTest() {
     }
 
     @Test
+    fun toOne_noTypeParameter_errors() {
+        val javaFileObjectSource = """
+        package com.example;
+        import io.objectbox.BoxStore;
+        import io.objectbox.annotation.Entity;
+        import io.objectbox.annotation.Id;
+        import io.objectbox.relation.ToOne;
+        
+        @Entity
+        public class NoType {
+            @Id long id;
+        
+            ToOne toOne = new ToOne(this, NoType_.toOne);
+        
+            // need to add manually, as processor can not modify entity
+            transient BoxStore __boxStore;
+        }
+        """.trimIndent().let {
+            JavaFileObjects.forSourceString("com.example.NoType", it)
+        }
+
+        val environment = TestEnvironment("not-generated.json", useTemporaryModelFile = true)
+
+        val compilation = environment.compile(listOf(javaFileObjectSource, javaFileObjectToOneTarget))
+        CompilationSubject.assertThat(compilation).failed()
+        CompilationSubject.assertThat(compilation)
+            .hadErrorContaining("The generic ToOne property 'toOne' in 'NoType' must have a type argument, e.g. ToOne<Entity>.")
+        assertThat(environment.isModelFileExists()).isFalse()
+    }
+
+    @Test
+    fun toMany_noTypeParameter_errors() {
+        val javaFileObjectSource = """
+        package com.example;
+        import io.objectbox.BoxStore;
+        import io.objectbox.annotation.Entity;
+        import io.objectbox.annotation.Id;
+        import io.objectbox.relation.ToMany;
+        
+        @Entity
+        public class NoType {
+            @Id long id;
+        
+            ToMany toMany = new ToMany(this, NoType_.toMany);
+        
+            // need to add manually, as processor can not modify entity
+            transient BoxStore __boxStore;
+        }
+        """.trimIndent().let {
+            JavaFileObjects.forSourceString("com.example.NoType", it)
+        }
+
+        val environment = TestEnvironment("not-generated.json", useTemporaryModelFile = true)
+
+        val compilation = environment.compile(listOf(javaFileObjectSource, javaFileObjectToOneTarget))
+        CompilationSubject.assertThat(compilation).failed()
+        CompilationSubject.assertThat(compilation)
+            .hadErrorContaining("The generic ToMany property 'toMany' in 'NoType' must have a type argument, e.g. ToMany<Entity>.")
+        assertThat(environment.isModelFileExists()).isFalse()
+    }
+
+    @Test
     fun toOne_targetIdTypeNotLong_errors() {
         val javaFileObjectSource = """
         package com.example;
