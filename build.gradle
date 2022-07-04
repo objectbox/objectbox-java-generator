@@ -36,34 +36,34 @@ buildscript {
         applies_ob_native_version = libsVersion // Native library added to projects applying the ObjectBoxGradlePlugin.
         applies_ob_native_sync_version = libsSyncVersion // Native library added to projects applying the ObjectBoxSyncGradlePlugin.
 
-        println "version=$objectbox_plugin_version"
-        println "objectbox_java_version=$objectbox_java_version"
-        println "applies_ob_java_version=$applies_ob_java_version"
-        println "ObjectBoxGradlePlugin:"
-        println "  applies_ob_native_version=$applies_ob_native_version"
-        println "ObjectBoxSyncGradlePlugin:"
-        println "  applies_ob_native_sync_version=$applies_ob_native_sync_version\n"
+        println("version=$objectbox_plugin_version")
+        println("objectbox_java_version=$objectbox_java_version")
+        println("applies_ob_java_version=$applies_ob_java_version")
+        println("ObjectBoxGradlePlugin:")
+        println("  applies_ob_native_version=$applies_ob_native_version")
+        println("ObjectBoxSyncGradlePlugin:")
+        println("  applies_ob_native_sync_version=$applies_ob_native_sync_version\n")
 
         // Internal Maven repo: used in all projects, printing info/warning only once here.
         hasInternalObjectBoxRepo = project.hasProperty("gitlabUrl")
         if (hasInternalObjectBoxRepo) {
-            println "gitlabUrl=$gitlabUrl added to repositories."
+            println("gitlabUrl=$gitlabUrl added to repositories.")
         } else {
-            println "WARNING: gitlabUrl missing from gradle.properties."
+            println("WARNING: gitlabUrl missing from gradle.properties.")
         }
     }
 
     repositories {
         mavenCentral()
         google()
-        maven { url "https://plugins.gradle.org/m2/" }
+        maven { url = "https://plugins.gradle.org/m2/" }
     }
 
     dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath "gradle.plugin.de.fuerstenau:BuildConfigPlugin:1.1.8" // for code-modifier, gradle-plugin
-        classpath "com.github.ben-manes:gradle-versions-plugin:0.38.0"
-        classpath "io.github.gradle-nexus:publish-plugin:1.1.0"
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version")
+        classpath("gradle.plugin.de.fuerstenau:BuildConfigPlugin:1.1.8") // for code-modifier, gradle-plugin
+        classpath("com.github.ben-manes:gradle-versions-plugin:0.38.0")
+        classpath("io.github.gradle-nexus:publish-plugin:1.1.0")
     }
 }
 
@@ -90,8 +90,8 @@ allprojects {
         google()
         if (hasInternalObjectBoxRepo) {
             maven {
-                url "$gitlabUrl/api/v4/groups/objectbox/-/packages/maven"
-                name "GitLab"
+                url = "$gitlabUrl/api/v4/groups/objectbox/-/packages/maven"
+                name = "GitLab"
                 credentials(HttpHeaderCredentials) {
                     name = project.hasProperty("gitlabTokenName") ? gitlabTokenName : "Private-Token"
                     value = project.hasProperty("gitlabToken") ? gitlabToken : gitlabPrivateToken
