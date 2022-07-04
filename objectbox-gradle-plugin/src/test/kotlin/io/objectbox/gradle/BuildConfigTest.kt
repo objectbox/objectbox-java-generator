@@ -3,7 +3,8 @@ package io.objectbox.gradle
 import com.squareup.moshi.Moshi
 import io.objectbox.reporting.ObjectBoxBuildConfig
 import io.objectbox.reporting.ObjectBoxBuildConfigJsonAdapter
-import okio.Okio
+import okio.buffer
+import okio.source
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
@@ -27,7 +28,7 @@ class BuildConfigTest {
         assertTrue(file.exists())
         assertTrue(file.isFile)
 
-        val buildConfig = Okio.buffer(Okio.source(file)).use {
+        val buildConfig = file.source().buffer().use {
             ObjectBoxBuildConfigJsonAdapter(Moshi.Builder().build()).fromJson(it)!!
         }
         assertEquals("/example/dir", buildConfig.projectDir)

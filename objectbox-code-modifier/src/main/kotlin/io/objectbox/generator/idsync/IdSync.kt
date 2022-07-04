@@ -29,7 +29,9 @@ import io.objectbox.generator.model.ToManyStandalone
 import io.objectbox.logging.log
 import io.objectbox.model.EntityFlags
 import okio.Buffer
-import okio.Okio
+import okio.buffer
+import okio.sink
+import okio.source
 import org.greenrobot.essentials.collections.LongHashSet
 import org.jetbrains.annotations.TestOnly
 import java.io.File
@@ -459,7 +461,7 @@ class IdSync(private val jsonFile: File = File("objectmodel.json")) {
             return null
         }
         return try {
-            Okio.source(file).use { modelJsonAdapter.fromJson(Okio.buffer(it)) }
+            file.source().use { modelJsonAdapter.fromJson(it.buffer()) }
         } catch (e: FileNotFoundException) {
             null
         }
@@ -593,7 +595,7 @@ class IdSync(private val jsonFile: File = File("objectmodel.json")) {
             log("ID model file created: " + jsonFile.name)
         }
 
-        Okio.sink(jsonFile).use {
+        jsonFile.sink().use {
             buffer.readAll(it)
         }
     }

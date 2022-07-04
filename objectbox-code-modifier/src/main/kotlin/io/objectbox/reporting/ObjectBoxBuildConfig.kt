@@ -23,6 +23,7 @@ import com.squareup.moshi.JsonWriter
 import com.squareup.moshi.Moshi
 import okio.Buffer
 import okio.Okio
+import okio.sink
 import java.io.File
 
 @JsonClass(generateAdapter = true)
@@ -49,7 +50,7 @@ class ObjectBoxBuildConfig(val projectDir: String, val flavor: String? = null) {
 
         adapter.toJson(jsonWriter, this)
 
-        Okio.sink(buildFile(folder)).use {
+        buildFile(folder).sink().use {
             buffer.readAll(it)
         }
     }

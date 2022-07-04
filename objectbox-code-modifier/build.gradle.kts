@@ -13,6 +13,7 @@ java {
 val kotlin_version: String by rootProject.extra
 val essentials_version: String by rootProject.extra
 val moshi_version: String by rootProject.extra
+val okioVersion: String by rootProject.extra
 val objectbox_java_version: String by rootProject.extra
 val junit_version: String by rootProject.extra
 val truth_version: String by rootProject.extra
@@ -23,6 +24,7 @@ dependencies {
     implementation("org.greenrobot:essentials:$essentials_version")
     implementation("com.squareup.moshi:moshi:$moshi_version")
     kapt("com.squareup.moshi:moshi-kotlin-codegen:$moshi_version")
+    implementation("com.squareup.okio:okio:$okioVersion")
 
     implementation("io.objectbox:objectbox-java:$objectbox_java_version")
     implementation(project(":objectbox-generator"))

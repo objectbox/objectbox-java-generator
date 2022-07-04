@@ -16,7 +16,10 @@ buildscript {
     // Note: truth 1.1.2 breaks Android plugin apply test.
     val truth_version by extra("1.0") // https://github.com/google/truth/releases
     val mockito_version by extra("3.8.0") // https://github.com/mockito/mockito/releases
-    val moshi_version by extra("1.11.0")
+    // moshi 1.13.0+ requires Kotlin 1.6.0
+    val moshi_version by extra("1.12.0") // https://github.com/square/moshi/blob/master/CHANGELOG.md
+    // okio 3.1.0+ requires Kotlin 1.6.20
+    val okioVersion by extra("3.0.0") // https://github.com/square/okio/blob/master/CHANGELOG.md
 
     // Typically, only edit those two:
     val versionNumber = "3.2.1" // Without "-SNAPSHOT", e.g. "2.5.0" or "2.4.0-RC".
