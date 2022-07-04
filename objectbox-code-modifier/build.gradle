@@ -1,12 +1,12 @@
-apply plugin: 'kotlin'
-apply plugin: 'kotlin-kapt'
-apply plugin: 'de.fuerstenau.buildconfig'
-apply plugin: 'idea' // to pick up generated BuildConfig in IntelliJ
+apply plugin: "kotlin"
+apply plugin: "kotlin-kapt"
+apply plugin: "de.fuerstenau.buildconfig"
+apply plugin: "idea" // to pick up generated BuildConfig in IntelliJ
 
-archivesBaseName = 'objectbox-code-modifier'
+archivesBaseName = "objectbox-code-modifier"
 
-sourceCompatibility = '1.8'
-targetCompatibility = '1.8'
+sourceCompatibility = "1.8"
+targetCompatibility = "1.8"
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
@@ -16,7 +16,7 @@ dependencies {
     kapt "com.squareup.moshi:moshi-kotlin-codegen:$moshi_version"
 
     implementation "io.objectbox:objectbox-java:$objectbox_java_version"
-    implementation project (':objectbox-generator')
+    implementation project (":objectbox-generator")
 
     testImplementation "junit:junit:$junit_version"
     testImplementation "com.google.truth:truth:$truth_version"
@@ -24,17 +24,17 @@ dependencies {
 
 buildConfig {
     // rename to avoid conflict with other build config files (modules use same root package)
-    clsName = 'CodeModifierBuildConfig'
+    clsName = "CodeModifierBuildConfig"
 }
 
 task javadocJar(type: Jar) {
-    archiveClassifier = 'javadoc'
-    from 'README'
+    archiveClassifier = "javadoc"
+    from "README"
 }
 
 task sourcesJar(type: Jar) {
-    archiveClassifier = 'sources'
-    from 'README'
+    archiveClassifier = "sources"
+    from "README"
 }
 
 apply from: rootProject.file("gradle/objectbox-publish.gradle")
@@ -45,8 +45,8 @@ publishing.publications {
         artifact sourcesJar
         artifact javadocJar
         pom {
-            name = 'ObjectBox Code Modifier'
-            description = 'Code modifier for ObjectBox (NoSQL for Objects)'
+            name = "ObjectBox Code Modifier"
+            description = "Code modifier for ObjectBox (NoSQL for Objects)"
         }
     }
 }

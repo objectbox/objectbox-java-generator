@@ -2,18 +2,18 @@ buildscript {
     ext {
         // Kotlin version must match the one shipped with Gradle (see output of `gradlew --version`)
         // to avoid conflicts when compiling our Gradle plugin. https://youtrack.jetbrains.com/issue/KT-38010
-        kotlin_version = '1.4.20' // Gradle 6.8.3
+        kotlin_version = "1.4.20" // Gradle 6.8.3
 
-        android_version = '3.6.3' // See README for minimal supported version. http://google.github.io/android-gradle-dsl/javadoc/
-        essentials_version = '3.1.0'
-        junit_version = '4.13.2' // https://junit.org/junit4/
+        android_version = "3.6.3" // See README for minimal supported version. http://google.github.io/android-gradle-dsl/javadoc/
+        essentials_version = "3.1.0"
+        junit_version = "4.13.2" // https://junit.org/junit4/
         // Note: truth 1.1.2 breaks Android plugin apply test.
-        truth_version = '1.0' // https://github.com/google/truth/releases
-        mockito_version = '3.8.0' // https://github.com/mockito/mockito/releases
-        moshi_version = '1.11.0'
+        truth_version = "1.0" // https://github.com/google/truth/releases
+        mockito_version = "3.8.0" // https://github.com/mockito/mockito/releases
+        moshi_version = "1.11.0"
 
         // Typically, only edit those two:
-        def versionNumber = '3.2.1' // Without "-SNAPSHOT", e.g. '2.5.0' or '2.4.0-RC'.
+        def versionNumber = "3.2.1" // Without "-SNAPSHOT", e.g. "2.5.0" or "2.4.0-RC".
         def isRelease = false       // Set to true for releasing to ignore versionPostFix to avoid e.g. "-dev" versions.
 
         def libsRelease = isRelease  // e.g. diverge if plugin is still SNAPSHOT, but libs are already final
@@ -24,7 +24,7 @@ buildscript {
         def versionPostFix
         if (isRelease) {
             versionPostFix = ""
-        } else if (project.hasProperty('versionPostFix')) {
+        } else if (project.hasProperty("versionPostFix")) {
             versionPostFix = "-${project.versionPostFix}-SNAPSHOT"
         } else {
             versionPostFix = "-dev-SNAPSHOT"
@@ -45,7 +45,7 @@ buildscript {
         println "  applies_ob_native_sync_version=$applies_ob_native_sync_version\n"
 
         // Internal Maven repo: used in all projects, printing info/warning only once here.
-        hasInternalObjectBoxRepo = project.hasProperty('gitlabUrl')
+        hasInternalObjectBoxRepo = project.hasProperty("gitlabUrl")
         if (hasInternalObjectBoxRepo) {
             println "gitlabUrl=$gitlabUrl added to repositories."
         } else {
@@ -69,7 +69,7 @@ buildscript {
 
 apply plugin: "com.github.ben-manes.versions"
 def isNonStable = { String version ->
-    def stableKeyword = ['RELEASE', 'FINAL', 'GA'].any { it -> version.toUpperCase().contains(it) }
+    def stableKeyword = ["RELEASE", "FINAL", "GA"].any { it -> version.toUpperCase().contains(it) }
     def regex = /^[0-9,.v-]+(-r)?$/
     return !stableKeyword && !(version ==~ regex)
 }
@@ -81,7 +81,7 @@ dependencyUpdates {
 
 
 allprojects {
-    group = 'io.objectbox'
+    group = "io.objectbox"
     version = "$objectbox_plugin_version"
 
     // Note: also update IncrementalCompilationTest.projectSetup as needed.
@@ -107,20 +107,7 @@ allprojects {
     configurations.all {
         // Projects are using snapshot dependencies that may update more often than 24 hours.
         resolutionStrategy {
-            cacheChangingModulesFor 0, 'seconds'
-        }
-    }
-}
-
-task cleanOut {
-    description 'Clears IntelliJ build folders "out/"'
-    doLast {
-        project.allprojects {
-            def outDir = file("out")
-            if(outDir.isDirectory()) {
-                def deleted = delete outDir
-                println "Deleted dir \"${outDir.getAbsolutePath()}\": $deleted"
-            }
+            cacheChangingModulesFor 0, "seconds"
         }
     }
 }
@@ -140,11 +127,11 @@ nexusPublishing {
             // or with Nexus Staging Plugin getStagingProfile task.
             stagingProfileId = "1c4c69cbbab380"
             if (project.hasProperty("sonatypeUsername") && project.hasProperty("sonatypePassword")) {
-                println('nexusPublishing credentials supplied.')
+                println("nexusPublishing credentials supplied.")
                 username = sonatypeUsername
                 password = sonatypePassword
             } else {
-                println('nexusPublishing credentials NOT supplied.')
+                println("nexusPublishing credentials NOT supplied.")
             }
         }
     }
