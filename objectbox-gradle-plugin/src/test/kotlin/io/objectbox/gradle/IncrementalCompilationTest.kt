@@ -78,8 +78,9 @@ class IncrementalCompilationTest {
         // Compile 2nd time.
         with(compileJava()) {
             assertThat(output).doesNotContain(GRADLE_MSG_FULL_RECOMPILE_REQ)
-            // Why 5 classes? Example.java, Example_.java, ExampleCursor.java + anonym. Factory class, MyObjectBox.java.
-            assertThat(output).contains("Incremental compilation of 5 classes completed")
+            // Why 6 classes? Example.java + anonym. ID-Getter class, Example_.java,
+            // ExampleCursor.java + anonym. Factory class, MyObjectBox.java.
+            assertThat(output).contains("Incremental compilation of 6 classes completed")
             assertThat(output).contains("[ObjectBox] Valid all-args constructor found")
         }
     }
@@ -137,8 +138,9 @@ class IncrementalCompilationTest {
         // Compile 2nd time.
         with(compileJava()) {
             assertThat(output).doesNotContain(GRADLE_MSG_FULL_RECOMPILE_REQ)
-            // Why 5 classes? Example.java, Example_.java, ExampleCursor.java + anonym. Factory class, MyObjectBox.java.
-            assertThat(output).contains("Incremental compilation of 5 classes completed")
+            // Why 6 classes? Example.java + anonym. ID-Getter class, Example_.java,
+            // ExampleCursor.java + anonym. Factory class, MyObjectBox.java.
+            assertThat(output).contains("Incremental compilation of 6 classes completed")
             assertThat(output).contains("[ObjectBox] Detected entity inheritance chain: Example->BaseExample")
         }
     }
@@ -211,8 +213,9 @@ class IncrementalCompilationTest {
         // Compile 2nd time.
         with(compileJava()) {
             assertThat(output).doesNotContain(GRADLE_MSG_FULL_RECOMPILE_REQ)
-            // Why 5 classes? Example.java, Example_.java, ExampleCursor.java + anonym. Factory class, MyObjectBox.java.
-            assertThat(output).contains("Incremental compilation of 5 classes completed")
+            // Why 6 classes? Example.java + anonym. ID-Getter class, Example_.java,
+            // ExampleCursor.java + anonym. Factory class, MyObjectBox.java.
+            assertThat(output).contains("Incremental compilation of 6 classes completed")
             assertThat(output).contains("[ObjectBox] Detected entity inheritance chain: Example->BaseExample")
         }
     }
