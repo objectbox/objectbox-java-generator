@@ -30,7 +30,7 @@ publishing {
                 println "WARNING: Can not publish to GitLab, URL and token not set."
             }
         }
-        // Note: Sonatype repo created by publish-plugin, see root build.gradle.
+        // Note: Sonatype repo created by publish-plugin, see root build.gradle.kts.
     }
 
     publications {
