@@ -131,7 +131,7 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
                         // fine to get() compileJava task, no more need to defer its creation
                         val compileJavaTaskOutputDir = GradleCompat.get()
                             .getTask(project, JavaCompile::class.java, sourceSet.compileJavaTaskName)
-                            .destinationDir
+                            .destinationDirectory.get().asFile
                         ObjectBoxJavaTransform(env.debug).transform(listOf(compileJavaTaskOutputDir))
                     }
                 }

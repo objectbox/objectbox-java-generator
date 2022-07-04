@@ -117,10 +117,10 @@ class ObjectBoxAndroidTransform(private val options: PluginOptions) : Transform(
 
             // Add compiled Java project sources, makes Java compile task a dependency.
             // Note: javaCompileProvider requires at least Android Gradle Plugin 3.3.0
-            val inputClasspath = project.files(baseVariant.javaCompileProvider.map { it.destinationDir })
+            val inputClasspath = project.files(baseVariant.javaCompileProvider.map { it.destinationDirectory })
 
             // Add compiled Java test sources, makes Java test compile task a dependency.
-            inputClasspath.from(unitTestVariant.javaCompileProvider.map { it.destinationDir })
+            inputClasspath.from(unitTestVariant.javaCompileProvider.map { it.destinationDirectory })
 
             // Same for Kotlin.
             // Applying Kotlin plugin is optional for Android projects, so check before accessing Kotlin plugin classes.
@@ -161,7 +161,7 @@ class ObjectBoxAndroidTransform(private val options: PluginOptions) : Transform(
             // Using naming scheme promised by https://kotlinlang.org/docs/reference/using-gradle.html#compiler-options
             val kotlinTaskName = "compile${variant.name.capitalize()}Kotlin"
             val kotlinCompileTaskProvider = project.tasks.named(kotlinTaskName, KotlinCompile::class.java)
-            inputClasspath.from(kotlinCompileTaskProvider.map { it.destinationDir })
+            inputClasspath.from(kotlinCompileTaskProvider.map { it.destinationDirectory })
         }
 
     }

@@ -11,5 +11,5 @@ All are published as Maven artifacts (see `gradle` folder). See the company Wiki
 
 ## Requirements for projects applying the plugin
 
-- Gradle `5.0`
+- Gradle `6.1`
 - Android Plugin `3.3.0`
