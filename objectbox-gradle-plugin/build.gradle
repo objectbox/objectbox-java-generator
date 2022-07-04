@@ -1,9 +1,11 @@
 // https://docs.gradle.org/current/userguide/custom_plugins.html
-apply plugin: "kotlin"
-apply plugin: "groovy" // for dsl tests
-apply plugin: "de.fuerstenau.buildconfig"
-apply plugin: "idea" // to pick up generated BuildConfig in IntelliJ
-apply plugin: "maven-publish"
+
+plugins {
+    id("kotlin")
+    id("groovy") // for DSL tests
+    id("com.github.gmazzo.buildconfig")
+    id("maven-publish")
+}
 
 sourceCompatibility = "1.8"
 targetCompatibility = "1.8"
@@ -54,11 +56,14 @@ dependencies {
 
 buildConfig {
     // rename to avoid conflict with other build config files (modules use same root package)
-    clsName = "GradlePluginBuildConfig"
+    className("GradlePluginBuildConfig")
+    packageName("io.objectbox")
+
+    buildConfigField("String", "VERSION", provider { "\"${project.version}\"" })
     // Versions of libraries to add to projects applying the plugin.
-    buildConfigField "String", "APPLIES_JAVA_VERSION", {"$applies_ob_java_version"}
-    buildConfigField "String", "APPLIES_NATIVE_VERSION", {"$applies_ob_native_version"}
-    buildConfigField "String", "APPLIES_NATIVE_SYNC_VERSION", {"$applies_ob_native_sync_version"}
+    buildConfigField("String", "APPLIES_JAVA_VERSION", provider {"\"$applies_ob_java_version\""})
+    buildConfigField("String", "APPLIES_NATIVE_VERSION", provider {"\"$applies_ob_native_version\""})
+    buildConfigField("String", "APPLIES_NATIVE_SYNC_VERSION", provider {"\"$applies_ob_native_sync_version\""})
 }
 
 // For integration tests (TestKit): publish other modules to repository in build folder.

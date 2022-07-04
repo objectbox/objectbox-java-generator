@@ -1,8 +1,7 @@
 plugins {
     id("kotlin")
     id("kotlin-kapt")
-    id("de.fuerstenau.buildconfig")
-    id("idea")
+    id("com.github.gmazzo.buildconfig")
 }
 
 java {
@@ -35,7 +34,10 @@ dependencies {
 
 buildConfig {
     // rename to avoid conflict with other build config files (modules use same root package)
-    clsName = "CodeModifierBuildConfig"
+    className("CodeModifierBuildConfig")
+    packageName("io.objectbox")
+
+    buildConfigField("String", "VERSION", provider { "\"${project.version}\"" })
 }
 
 val javadocJar by tasks.registering(Jar::class) {
