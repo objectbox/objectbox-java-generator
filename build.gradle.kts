@@ -8,8 +8,9 @@ plugins {
 }
 
 buildscript {
-    // Kotlin version must match the one shipped with Gradle (see output of `gradlew --version`)
-    // to avoid conflicts when compiling our Gradle plugin. https://youtrack.jetbrains.com/issue/KT-38010
+    // Kotlin version must match the one embedded with Gradle (see output of `gradlew --version`)
+    // to avoid conflicts when compiling our Gradle plugin. https://github.com/gradle/gradle/issues/16345
+    // https://docs.gradle.org/7.5-rc-1/userguide/compatibility.html
     val kotlin_version by extra("1.5.31") // Gradle 6.8.3
 
     val android_version by extra("3.6.3") // See README for minimal supported version. http://google.github.io/android-gradle-dsl/javadoc/
