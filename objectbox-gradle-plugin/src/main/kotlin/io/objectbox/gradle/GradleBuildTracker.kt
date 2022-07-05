@@ -24,6 +24,7 @@ import com.android.build.gradle.LibraryExtension
 import com.android.build.gradle.LibraryPlugin
 import io.objectbox.reporting.BasicBuildTracker
 import org.gradle.api.plugins.ExtensionContainer
+import java.util.*
 import kotlin.reflect.KClass
 
 /**
@@ -101,7 +102,7 @@ open class GradleBuildTracker(toolName: String) : BasicBuildTracker(toolName) {
             // https://circleci.com/docs/1.0/environment-variables/
             System.getenv("CIRCLECI") != null -> "C"
             // https://documentation.codeship.com/pro/builds-and-configuration/steps/
-            System.getenv("CI_NAME")?.toLowerCase() == "codeship" -> "CS"
+            System.getenv("CI_NAME").lowercase(Locale.ROOT) == "codeship" -> "CS"
             System.getenv("CI") != null -> "Other"
             else -> null
         }

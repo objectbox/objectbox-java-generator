@@ -143,7 +143,7 @@ class IdSync(private val jsonFile: File = File("objectmodel.json")) {
                     uidHelper.addExistingId(entity.uid)
                     entity.properties.forEach { uidHelper.addExistingId(it.uid) }
                     entitiesReadByUid[entity.uid] = entity
-                    if (entitiesReadByName.put(entity.name.toLowerCase(), entity) != null) {
+                    if (entitiesReadByName.put(entity.name.lowercase(Locale.getDefault()), entity) != null) {
                         throw IdSyncException("Malformed model file \"${jsonFile.name}\": " +
                                 "duplicate entity name ${entity.name} - please edit the file to resolve the issue")
                     }
@@ -473,7 +473,7 @@ class IdSync(private val jsonFile: File = File("objectmodel.json")) {
                     if (newUidPool.contains(uid)) return null
                     else throw IdSyncException("No entity with UID $uid found")
         } else {
-            return entitiesReadByName[name.toLowerCase()]
+            return entitiesReadByName[name.lowercase(Locale.getDefault())]
         }
     }
 
@@ -489,8 +489,8 @@ class IdSync(private val jsonFile: File = File("objectmodel.json")) {
             check(filtered.size == 1) { "property name: $name, UID: $uid" }
             return filtered.first()
         } else {
-            val nameLowerCase = name.toLowerCase()
-            val filtered = entity.properties.filter { it.name.toLowerCase() == nameLowerCase }
+            val nameLowerCase = name.lowercase(Locale.getDefault())
+            val filtered = entity.properties.filter { it.name.lowercase(Locale.getDefault()) == nameLowerCase }
             check(filtered.size <= 1) { "size: ${filtered.size} property name: $name, UID: $uid" }
             return if (filtered.isNotEmpty()) filtered.first() else null
         }
@@ -509,8 +509,8 @@ class IdSync(private val jsonFile: File = File("objectmodel.json")) {
             check(filtered.size == 1) { "relation name: $name, UID: $uid" }
             return filtered.first()
         } else {
-            val nameLowerCase = name.toLowerCase()
-            val filtered = entity.relations.filter { it.name.toLowerCase() == nameLowerCase }
+            val nameLowerCase = name.lowercase(Locale.getDefault())
+            val filtered = entity.relations.filter { it.name.lowercase(Locale.getDefault()) == nameLowerCase }
             check(filtered.size <= 1) { "size: ${filtered.size} relation name: $name, UID: $uid" }
             return if (filtered.isNotEmpty()) filtered.first() else null
         }
@@ -604,13 +604,13 @@ class IdSync(private val jsonFile: File = File("objectmodel.json")) {
     private fun validateBeforeWrite(model: IdSyncModel) {
         val entityNames = mutableSetOf<String>()
         for (entity in model.entities) {
-            if (!entityNames.add(entity.name.toLowerCase())) {
+            if (!entityNames.add(entity.name.lowercase(Locale.getDefault()))) {
                 throw IdSyncException("Could not write model file \"${jsonFile.name}\" - verification failed: " +
                         "duplicate entity name \"${entity.name}\" (please report if you think this a bug)")
             }
             val propertyNames = mutableSetOf<String>()
             for (property in entity.properties) {
-                if (!propertyNames.add(property.name.toLowerCase())) {
+                if (!propertyNames.add(property.name.lowercase(Locale.getDefault()))) {
                     throw IdSyncException("Could not write model file \"${jsonFile.name}\" - verification failed: " +
                             "duplicate property name \"${property.name}\" in entity \"${entity.name}\" " +
                             "(please report if you think this a bug)")
