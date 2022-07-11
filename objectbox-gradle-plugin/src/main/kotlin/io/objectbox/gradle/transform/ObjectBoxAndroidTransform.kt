@@ -42,6 +42,7 @@ import org.gradle.api.tasks.testing.Test
 import org.jetbrains.kotlin.gradle.plugin.KotlinBasePluginWrapper
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.io.File
+import java.util.*
 
 /**
  * A byte-code [Transform] to be registered with the Android plugin to run before dexing (regular builds or instrumented
@@ -131,9 +132,10 @@ class ObjectBoxAndroidTransform(private val options: PluginOptions) : Transform(
                 }
             }
 
-            val transformTaskName = "objectboxTransform${unitTestVariant.name.capitalize()}"
-            val outputDir =
-                project.buildDir.resolve("intermediates/objectbox/${unitTestVariant.dirName}")
+            val unitTestVariantNameCapitalized = unitTestVariant.name
+                .replaceFirstChar { it.titlecase(Locale.getDefault()) }
+            val transformTaskName = "objectboxTransform$unitTestVariantNameCapitalized"
+            val outputDir = project.buildDir.resolve("intermediates/objectbox/${unitTestVariant.dirName}")
             // Use register to defer creation until use.
             val transformTask = project.tasks.register(
                 transformTaskName,
@@ -145,9 +147,7 @@ class ObjectBoxAndroidTransform(private val options: PluginOptions) : Transform(
             // the test classpath so the transformed files override the original ones. This also makes
             // the test task (the one that runs the tests) depend on the transform task.
             val outputFileCollection = project.files(transformTask.map { it.outputDir })
-            val testTaskProvider = project.tasks.named(
-                "test${unitTestVariant.name.capitalize()}", Test::class.java
-            )
+            val testTaskProvider = project.tasks.named("test$unitTestVariantNameCapitalized", Test::class.java)
             testTaskProvider.configure {
                 it.classpath = outputFileCollection + it.classpath
             }
@@ -159,7 +159,9 @@ class ObjectBoxAndroidTransform(private val options: PluginOptions) : Transform(
             variant: BaseVariant
         ) {
             // Using naming scheme promised by https://kotlinlang.org/docs/reference/using-gradle.html#compiler-options
-            val kotlinTaskName = "compile${variant.name.capitalize()}Kotlin"
+            val variantNameCapitalized = variant.name
+                .replaceFirstChar { it.titlecase(Locale.getDefault()) }
+            val kotlinTaskName = "compile${variantNameCapitalized}Kotlin"
             val kotlinCompileTaskProvider = project.tasks.named(kotlinTaskName, KotlinCompile::class.java)
             inputClasspath.from(kotlinCompileTaskProvider.map { it.destinationDirectory })
         }

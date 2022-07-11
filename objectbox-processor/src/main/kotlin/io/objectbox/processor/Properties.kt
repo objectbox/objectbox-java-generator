@@ -47,6 +47,7 @@ import io.objectbox.generator.model.ModelException
 import io.objectbox.generator.model.Property
 import io.objectbox.generator.model.PropertyType
 import io.objectbox.model.PropertyFlags
+import java.util.*
 import javax.lang.model.element.AnnotationMirror
 import javax.lang.model.element.Element
 import javax.lang.model.element.ExecutableElement
@@ -508,12 +509,12 @@ class Properties(
      * Tries to find a getter method name for the given property that returns the given type.
      * Prefers isPropertyName over getPropertyName if property starts with 'is' then uppercase letter.
      * Prefers isPropertyName over getPropertyName if property is Boolean.
-     * Otherwise looks for getPropertyName method.
+     * Otherwise, looks for getPropertyName method.
      * If none is found, returns null (Property falls back to expecting regular getter).
      */
     private fun getGetterMethodNameFor(fieldType: TypeMirror, property: Property): String? {
         val propertyName = property.propertyName
-        val propertyNameCapitalized = propertyName.capitalize()
+        val propertyNameCapitalized = propertyName.replaceFirstChar { it.titlecase(Locale.getDefault()) }
 
         // https://kotlinlang.org/docs/reference/java-to-kotlin-interop.html#properties
         // Kotlin: 'isProperty' (but not 'isproperty').

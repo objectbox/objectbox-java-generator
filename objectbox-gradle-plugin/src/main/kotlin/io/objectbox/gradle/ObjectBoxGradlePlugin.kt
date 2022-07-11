@@ -33,6 +33,7 @@ import org.gradle.api.artifacts.Dependency
 import org.gradle.api.plugins.InvalidPluginException
 import org.gradle.api.plugins.JavaPluginConvention
 import org.gradle.api.tasks.compile.JavaCompile
+import java.util.*
 
 /**
  * A Gradle plugin that depending on the other plugins/dependencies of a project it is applied to
@@ -97,7 +98,9 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
                 // name task based on SourceSet
                 val sourceSetName = sourceSet.name
                 val taskName =
-                    "objectboxJavaTransform" + if (sourceSetName != "main") sourceSetName.capitalize() else ""
+                    "objectboxJavaTransform" + if (sourceSetName != "main") {
+                        sourceSetName.replaceFirstChar { it.titlecase(Locale.getDefault()) }
+                    } else ""
 
                 // use register to defer creation until use
                 val transformTask = GradleCompat.get().registerTask(project, taskName)
