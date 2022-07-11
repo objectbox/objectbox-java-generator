@@ -3,7 +3,6 @@ package io.objectbox.gradle
 import com.google.common.truth.Truth.assertThat
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
-import org.gradle.util.TextUtil
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -220,6 +219,11 @@ class IncrementalCompilationTest {
         }
     }
 
+    /**
+     * Converts all native file separators in the specified string to '/'.
+     */
+    private fun String.normaliseFileSeparators(): String = replace(File.separatorChar, '/')
+
     private fun projectSetup(javaCompilerArgs: List<String> = emptyList()) {
         testProjectDir.newFile("settings.gradle").writeText("rootProject.name = 'incap-project'")
 
@@ -229,7 +233,7 @@ class IncrementalCompilationTest {
 
         // Note: instead of getting artifacts of the modules in this project from internal repo,
         // publish them to a directory in the build folder, then add that as repo below.
-        val testRepository = TextUtil.normaliseFileSeparators(File("build/repository").absolutePath)
+        val testRepository = File("build/repository").absolutePath.normaliseFileSeparators()
         val buildFile = testProjectDir.newFile("build.gradle")
         buildFile.writeText(
             """
