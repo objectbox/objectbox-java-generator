@@ -548,6 +548,29 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
     }
 
     @Test
+    fun entityWithReservedBoxstoreProperty_errors() {
+        val entityWithBoxstoreProperty = """
+        package com.example;
+        import io.objectbox.annotation.Entity;
+        import io.objectbox.annotation.Id;
+
+        @Entity
+        public class Example {
+            @Id long id;
+            String __boxStore;
+        }
+        """.let {
+            JavaFileObjects.forSourceString("com.example.Example", it)
+        }
+
+        val environment = TestEnvironment("reserved-boxstore.json", useTemporaryModelFile = true)
+
+        val compilation = environment.compile(listOf(entityWithBoxstoreProperty))
+        CompilationSubject.assertThat(compilation)
+            .hadErrorContaining("A property can not be named `__boxStore`. Adding a BoxStore field for relations? Annotate it with @Transient.")
+    }
+
+    @Test
     fun entity_duplicateWithSameName_shouldError() {
         val javaFileObjectOriginal = """
         package com.example.original;

@@ -76,7 +76,7 @@ class Properties(
     private val methods: List<ExecutableElement> = ElementFilter.methodsIn(entityElement.enclosedElements)
 
     fun hasBoxStoreField(): Boolean {
-        return fields.find { it.simpleName.toString() == "__boxStore" } != null
+        return fields.find { it.simpleName.toString() == BOXSTORE_FIELD_NAME } != null
     }
 
     fun parseFields() {
@@ -85,11 +85,23 @@ class Properties(
         }
     }
 
+    private fun String.isReservedName(): Boolean {
+        return this == BOXSTORE_FIELD_NAME
+    }
+
     private fun parseField(field: VariableElement) {
         // ignore static, transient or @Transient fields
         val modifiers = field.modifiers
         if (modifiers.contains(Modifier.STATIC) || modifiers.contains(Modifier.TRANSIENT)
                 || field.hasAnnotation(Transient::class.java)) {
+            return
+        }
+
+        if (field.simpleName.toString().isReservedName()) {
+            messages.error(
+                "A property can not be named `__boxStore`. Adding a BoxStore field for relations? Annotate it with @Transient.",
+                field
+            )
             return
         }
 
@@ -545,6 +557,8 @@ class Properties(
     companion object {
         @Suppress("unused") // Preserved for future use.
         private const val INDEX_MAX_VALUE_LENGTH_MAX = 450
+
+        private const val BOXSTORE_FIELD_NAME = "__boxStore"
     }
 
 }
