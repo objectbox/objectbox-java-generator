@@ -35,6 +35,12 @@ import java.util.*
 // Non-final for easier mocking
 open class BasicBuildTracker(private val toolName: String) {
     private companion object {
+        /**
+         * If this environment variable contains a value of "true" no events are sent,
+         * this is useful to prevent many events being sent by CI builds.
+         */
+        private const val ENV_VAR_DISABLE_ANALYTICS = "OBX_DISABLE_ANALYTICS"
+
         private const val PROPERTIES_KEY_UID = "uid"
         private const val PROPERTIES_KEY_LAST_DAY_BUILD_SENT = "lastBuildEvent"
         private const val PROPERTIES_KEY_BUILD_COUNT = "buildCount"
@@ -57,6 +63,8 @@ open class BasicBuildTracker(private val toolName: String) {
         }
     })
 
+    /** Open for testing purposes only. */
+    open val isAnalyticsDisabled: Boolean = System.getenv(ENV_VAR_DISABLE_ANALYTICS) == "true"
     var disconnect = true
 
     /**
@@ -64,6 +72,9 @@ open class BasicBuildTracker(private val toolName: String) {
      * older than 24 hours. If so updates the time stamp to the current time.
      */
     fun shouldSendBuildEvent(): Boolean {
+        if (isAnalyticsDisabled) {
+            return false
+        }
         val timeProperty: String? = buildPropertiesFile.properties.getProperty(PROPERTIES_KEY_LAST_DAY_BUILD_SENT)
         val timestamp = timeProperty?.toLongOrNull()
         return if (timestamp == null || timestamp < System.currentTimeMillis() - 24 * HOUR_IN_MILLIS) {
@@ -80,6 +91,9 @@ open class BasicBuildTracker(private val toolName: String) {
      * Increments the build counter. To reset the counter see [getAndResetBuildCount].
      */
     fun countBuild() {
+        if (isAnalyticsDisabled) {
+            return
+        }
         val countProperty: String? = buildPropertiesFile.properties.getProperty(PROPERTIES_KEY_BUILD_COUNT)
         val buildCount = countProperty?.toIntOrNull()
         val newBuildCount = if (buildCount == null || buildCount < 0) {
@@ -136,6 +150,9 @@ open class BasicBuildTracker(private val toolName: String) {
     }
 
     fun sendEvent(eventName: String, eventProperties: String, sendUniqueId: Boolean = true) {
+        if (isAnalyticsDisabled) {
+            return
+        }
         if (sendUniqueId && buildPropertiesFile.hasNoFile) {
             return // can not save state (e.g. unique ID) so do not send events
         }
@@ -148,13 +165,13 @@ open class BasicBuildTracker(private val toolName: String) {
     }
 
     /**
-     * Public for testing purposes only.
+     * Public and open for testing purposes only.
      *
      * Returns 1 if all data objects provided are valid. This does not signify a valid project token or secret.
      *
      * Returns 0 if one or more data objects in the body are invalid.
      */
-    fun sendEventImpl(eventName: String, eventProperties: String, sendUniqueId: Boolean): String? {
+    open fun sendEventImpl(eventName: String, eventProperties: String, sendUniqueId: Boolean): String? {
         val event = eventData(eventName, eventProperties, sendUniqueId)
 
         // https://developer.mixpanel.com/reference/events#track-event

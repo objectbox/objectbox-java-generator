@@ -11,6 +11,7 @@ variables:
   CENTRAL_REPO_ARGS: "-PsonatypeUsername=$SONATYPE_USER -PsonatypePassword=$SONATYPE_PWD"
   # CI_COMMIT_REF_SLUG is the branch or tag name, but web-safe (only 0-9, a-z)
   VERSION_ARGS: "-PversionPostFix=$CI_COMMIT_REF_SLUG"
+  OBX_DISABLE_ANALYTICS: "true" # Disable analytics for our CI, errors are triggered on purpose for testing.
 
 stages:
   - test

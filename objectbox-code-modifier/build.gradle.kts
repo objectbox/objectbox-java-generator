@@ -16,6 +16,7 @@ val okioVersion: String by rootProject.extra
 val objectbox_java_version: String by rootProject.extra
 val junit_version: String by rootProject.extra
 val truth_version: String by rootProject.extra
+val mockito_version: String by rootProject.extra
 
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version")
@@ -30,6 +31,7 @@ dependencies {
 
     testImplementation("junit:junit:$junit_version")
     testImplementation("com.google.truth:truth:$truth_version")
+    testImplementation("org.mockito:mockito-core:$mockito_version")
 }
 
 buildConfig {
