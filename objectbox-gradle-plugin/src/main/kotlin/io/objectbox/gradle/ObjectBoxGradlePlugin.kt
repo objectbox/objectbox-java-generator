@@ -55,12 +55,15 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
     override fun apply(project: Project) {
         try {
             val env = ProjectEnv(project)
-            if (!(env.hasAndroidPlugin || env.hasJavaPlugin || env.hasKotlinPlugin)) {
+            // Note: do not check for just a Kotlin plugin. Currently, the Kotlin Android and Kotlin JVM
+            // plugins ensure the Java plugin is applied, but they might not in the future. However, the
+            // ObjectBox Java library requires Java support.
+            if (!(env.hasAndroidPlugin || env.hasJavaPlugin)) {
                 throw InvalidPluginException(
-                    "'$pluginId' expects one of the following plugins to be applied to the project:\n" +
-                            "\t* java\n" +
-                            "\t* kotlin\n" +
-                            "\t${env.androidPluginIds.joinToString("\n\t") { "* $it" }}"
+                    "'$pluginId' can only be applied to a project if one of the following is applied before:\n" +
+                            "\t* an Android plugin\n" +
+                            "\t* the Kotlin Android or JVM plugin\n" +
+                            "\t* the Java Library, Java Application or Java plugin\n"
                 )
             }
             addDependenciesAnnotationProcessor(env)
