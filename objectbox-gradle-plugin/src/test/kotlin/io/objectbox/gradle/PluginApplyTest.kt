@@ -13,6 +13,7 @@ import org.hamcrest.MatcherAssert.assertThat
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertThrows
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 
@@ -64,6 +65,20 @@ open class PluginApplyTest {
         }
     }
 
+    /**
+     * Test PluginOptions extension is created and can be configured.
+     * To check if it actually is recognized, would have to assert log output,
+     * currently not doing that.
+     */
+    private fun Project.enableObjectBoxPluginDebugMode() {
+        extensions.apply {
+            configure<PluginOptions>("objectbox") {
+                it.debug = true
+            }
+        }
+        assertTrue(extensions.getByType(PluginOptions::class.java).debug)
+    }
+
     @Test
     fun apply_afterJavaPlugin() {
         val project = ProjectBuilder.builder().build()
@@ -71,6 +86,7 @@ open class PluginApplyTest {
             apply("java")
             apply(pluginId)
         }
+        project.enableObjectBoxPluginDebugMode()
 
         assertJavaProject(project, "implementation")
     }
@@ -82,6 +98,7 @@ open class PluginApplyTest {
             apply("application") // Note: application plugin adds java plugin.
             apply(pluginId)
         }
+        project.enableObjectBoxPluginDebugMode()
 
         assertJavaProject(project, "implementation")
     }
@@ -93,6 +110,7 @@ open class PluginApplyTest {
             apply("java-library")
             apply(pluginId)
         }
+        project.enableObjectBoxPluginDebugMode()
 
         assertJavaProject(project, "api")
     }
@@ -144,6 +162,7 @@ open class PluginApplyTest {
             apply("kotlin-kapt")
             apply(pluginId)
         }
+        project.enableObjectBoxPluginDebugMode()
 
         assertKotlinSetup(project)
     }
@@ -155,6 +174,7 @@ open class PluginApplyTest {
             apply("kotlin")
             apply(pluginId)
         }
+        project.enableObjectBoxPluginDebugMode()
 
         assertKotlinSetup(project)
     }
@@ -191,6 +211,7 @@ open class PluginApplyTest {
             apply("com.android.application")
             apply(pluginId)
         }
+        project.enableObjectBoxPluginDebugMode()
 
         with(project.configurations) {
             assertProcessorDependency(getByName("annotationProcessor").dependencies)
@@ -214,6 +235,7 @@ open class PluginApplyTest {
             apply("kotlin-kapt")
             apply(pluginId)
         }
+        project.enableObjectBoxPluginDebugMode()
 
         assertKotlinAndroidSetup(project)
     }
@@ -226,6 +248,7 @@ open class PluginApplyTest {
             apply("kotlin-android")
             apply(pluginId)
         }
+        project.enableObjectBoxPluginDebugMode()
 
         assertKotlinAndroidSetup(project)
     }
