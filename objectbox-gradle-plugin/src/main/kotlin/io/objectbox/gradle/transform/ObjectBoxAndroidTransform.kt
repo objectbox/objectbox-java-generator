@@ -69,7 +69,8 @@ class ObjectBoxAndroidTransform(private val options: PluginOptions) : Transform(
                 is AppExtension -> androidExtension.applicationVariants.all {
                     injectTransformTask(project, options, hasKotlinPlugin, it, it.unitTestVariant)
                 }
-                // Used for Android Instant App modules, but deprecated as of Android Plugin 3.4.0 (April 2019).
+                // Used for Android Instant App base and feature modules, but deprecated as of
+                // Android Plugin 3.4.0 (April 2019). Behaves similar to the library plugin.
                 // https://developer.android.com/topic/google-play-instant/feature-module-migration
                 is FeatureExtension -> androidExtension.featureVariants.all {
                     injectTransformTask(project, options, hasKotlinPlugin, it, it.unitTestVariant)
