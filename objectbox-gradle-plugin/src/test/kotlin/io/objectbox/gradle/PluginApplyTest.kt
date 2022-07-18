@@ -140,8 +140,8 @@ open class PluginApplyTest {
         sourceSetSuffix: String,
         classesTaskName: String
     ) {
-        // Created.
-        val transformTask = project.tasks.findByPath("objectboxJavaTransform$sourceSetSuffix")
+        // Is created.
+        val transformTask = project.tasks.findByPath("transform${sourceSetSuffix}ObjectBoxClasses")
         assertNotNull(transformTask)
 
         // Depends on compile task of source set.

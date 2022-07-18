@@ -31,7 +31,6 @@ import org.gradle.api.UnknownDomainObjectException
 import org.gradle.api.artifacts.Dependency
 import org.gradle.api.plugins.InvalidPluginException
 import org.gradle.api.tasks.compile.JavaCompile
-import java.util.*
 
 /**
  * A Gradle plugin that depending on the other plugins/dependencies of a project it is applied to
@@ -94,11 +93,7 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
         // Use all so SourceSets defined in build configs available only after evaluation are included.
         sourceSets.all { sourceSet ->
             // name task based on SourceSet
-            val sourceSetName = sourceSet.name
-            val taskName =
-                "objectboxJavaTransform" + if (sourceSetName != "main") {
-                    sourceSetName.replaceFirstChar { it.titlecase(Locale.getDefault()) }
-                } else ""
+            val taskName = sourceSet.getTaskName("transform", "objectBoxClasses")
 
             // Add compiled Java project sources, makes Java compile task a dependency.
             val compileJavaTaskOutputDir = project.tasks.withType(JavaCompile::class.java)
