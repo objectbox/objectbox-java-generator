@@ -11,7 +11,7 @@ import org.gradle.api.Task
  *
  * https://docs.gradle.org/current/userguide/task_configuration_avoidance.html
  */
-class Gradle49 : GradleCompat() {
+open class Gradle49 : Gradle46() {
     override fun registerTask(project: Project, name: String): Any {
         return project.tasks.register(name)
     }
