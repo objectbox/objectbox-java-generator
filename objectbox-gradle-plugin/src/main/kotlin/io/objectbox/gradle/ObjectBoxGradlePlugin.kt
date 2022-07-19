@@ -150,7 +150,7 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
 
         val prepareTask = GradleCompat.get()
             .registerTask(project, prepareTaskName, PrepareTask::class.java, env, buildTracker)
-        if (DEBUG) log("Registered $prepareTask in $project")
+        env.logDebug { "Registered $prepareTaskName task." }
 
         // make build task depend on prepare task
         val configureDepends = Action<Task> { it.dependsOn(prepareTask) }
@@ -166,7 +166,7 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
         if ((env.hasKotlinPlugin || env.hasKotlinAndroidPlugin) && !project.hasConfig("kapt")) {
             // Note: no-op if kapt plugin was already applied.
             project.plugins.apply("kotlin-kapt")
-            if (DEBUG) log("Applied 'kotlin-kapt'.")
+            env.logDebug { "Applied 'kotlin-kapt'." }
         }
 
         // Note: use plugin version for processor dependency as processor is part of this project.
@@ -225,14 +225,14 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
 
         // Note: a preview release might apply different versions of the Java and native library,
         // so explicitly apply the Java library to avoid the native library pulling in another version.
-        if (!project.hasObjectBoxDep("objectbox-java")) {
+        if (!env.hasObjectBoxDep("objectbox-java")) {
             project.addDep(compileConfig, "io.objectbox:objectbox-java:${ProjectEnv.Const.javaVersionToApply}")
         }
 
         if (env.hasKotlinPlugin || env.hasKotlinAndroidPlugin) {
-            if (DEBUG) log("Kotlin plugin detected")
-            if (project.hasObjectBoxDep("objectbox-kotlin")) {
-                if (DEBUG) log("Detected objectbox-kotlin dependency, not auto-adding.")
+            env.logDebug { "Kotlin plugin detected" }
+            if (env.hasObjectBoxDep("objectbox-kotlin")) {
+                env.logDebug { "Detected objectbox-kotlin dependency, not auto-adding." }
             } else {
                 project.addDep(compileConfig, "io.objectbox:objectbox-kotlin:${ProjectEnv.Const.javaVersionToApply}")
             }
@@ -240,11 +240,11 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
 
         if (env.hasAndroidPlugin) {
             // for this detection to work apply the plugin after the dependencies block
-            if (!project.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_DEFAULT-android")
-                && !project.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_DEFAULT-android-objectbrowser")
-                && !project.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_SYNC-android")
-                && !project.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_SYNC-android-objectbrowser")
-                && !project.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_SYNC-server-android")
+            if (!env.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_DEFAULT-android")
+                && !env.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_DEFAULT-android-objectbrowser")
+                && !env.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_SYNC-android")
+                && !env.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_SYNC-android-objectbrowser")
+                && !env.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_SYNC-server-android")
             ) {
                 project.addDep(
                     compileConfig,
@@ -267,22 +267,22 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
     private fun addNativeDependency(env: ProjectEnv, config: String, searchTestConfigs: Boolean) {
         val project = env.project
 
-        if (DEBUG) log(
+        env.logDebug {
             "Detected OS: ${env.osName} is64=${env.is64Bit} " +
                     "isLinux64=${env.isLinux64} isWindows64=${env.isWindows64} isMac64=${env.isMac64}"
-        )
+        }
 
         // note: for this detection to work apply the plugin after the dependencies block
         // Note: use startsWith to detect e.g. -armv7 and -arm64 and any possible future suffixes.
-        if (project.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_DEFAULT-linux", searchTestConfigs, startsWith = true)
-            || project.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_DEFAULT-macos", searchTestConfigs, startsWith = true)
-            || project.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_DEFAULT-windows", searchTestConfigs, startsWith = true)
-            || project.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_SYNC-linux", searchTestConfigs, startsWith = true)
-            || project.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_SYNC-server-linux", searchTestConfigs, startsWith = true)
-            || project.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_SYNC-macos", searchTestConfigs, startsWith = true)
-            || project.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_SYNC-windows", searchTestConfigs, startsWith = true)
+        if (env.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_DEFAULT-linux", searchTestConfigs, startsWith = true)
+            || env.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_DEFAULT-macos", searchTestConfigs, startsWith = true)
+            || env.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_DEFAULT-windows", searchTestConfigs, startsWith = true)
+            || env.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_SYNC-linux", searchTestConfigs, startsWith = true)
+            || env.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_SYNC-server-linux", searchTestConfigs, startsWith = true)
+            || env.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_SYNC-macos", searchTestConfigs, startsWith = true)
+            || env.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_SYNC-windows", searchTestConfigs, startsWith = true)
         ) {
-            if (DEBUG) log("Detected native dependency, not auto-adding one.")
+            env.logDebug { "Detected native dependency, not auto-adding one." }
         } else {
             // Note: there are no Sync variants for Windows and Mac, yet.
             val nativeVersion = ProjectEnv.Const.nativeVersionToApply
@@ -303,13 +303,13 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
      *
      * Note: for this detection to work the plugin must be applied after the dependencies block.
      */
-    private fun Project.hasObjectBoxDep(
+    private fun ProjectEnv.hasObjectBoxDep(
         name: String,
         searchTestConfigs: Boolean = false,
         startsWith: Boolean = false
     ): Boolean {
-        val dependency = findObjectBoxDependency(this, name, searchTestConfigs, startsWith)
-        if (DEBUG) log("$name dependency: $dependency")
+        val dependency = findObjectBoxDependency(project, name, searchTestConfigs, startsWith)
+        logDebug { "$name dependency: $dependency" }
         return dependency != null
     }
 
@@ -332,7 +332,6 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
     }
 
     companion object {
-        const val DEBUG = false
         const val LIBRARY_NAME_PREFIX_DEFAULT = "objectbox"
         const val LIBRARY_NAME_PREFIX_SYNC = "objectbox-sync"
     }

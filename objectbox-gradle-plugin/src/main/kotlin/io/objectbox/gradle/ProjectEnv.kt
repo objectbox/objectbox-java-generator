@@ -19,6 +19,7 @@
 package io.objectbox.gradle
 
 import io.objectbox.GradlePluginBuildConfig
+import io.objectbox.logging.log
 import org.gradle.api.Project
 import java.util.*
 
@@ -90,4 +91,15 @@ class ProjectEnv(val project: Project) {
     }
 
     fun logInfo(msg: String) = project.logger.info(msg)
+
+    /**
+     * Logs after evaluation phase when plugin options have been read
+     * and it is known if debug mode is enabled by build script.
+     * Using function for [message] to avoid String getting built unless in debug mode.
+     */
+    fun logDebug(message: () -> String) {
+        project.afterEvaluate {
+            if (debug) log(message())
+        }
+    }
 }
