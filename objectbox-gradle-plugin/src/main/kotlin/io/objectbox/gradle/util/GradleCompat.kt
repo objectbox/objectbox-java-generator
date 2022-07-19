@@ -1,11 +1,11 @@
 package io.objectbox.gradle.util
 
-import org.gradle.api.Action
 import org.gradle.api.Project
-import org.gradle.api.Task
 import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.util.GradleVersion
 
+// Note: would move implementations into separate modules, but the gradleApi() dependency version
+// is determined by the Gradle version used to build the project.
 abstract class GradleCompat {
 
     companion object {
@@ -13,11 +13,13 @@ abstract class GradleCompat {
             GradleVersion.current() >= GradleVersion.version("7.1") -> {
                 Gradle71()
             }
-            GradleVersion.current() >= GradleVersion.version("4.9") -> {
-                Gradle49()
+            // Using destinationDirectory API (not through this) which requires 6.1.
+            // Keep up-to-date with README.
+            GradleVersion.current() >= GradleVersion.version("6.1") -> {
+                GradleLegacy()
             }
             else -> {
-                Gradle46()
+                error("Gradle 6.1 or newer is required.")
             }
         }
 
@@ -25,16 +27,6 @@ abstract class GradleCompat {
             return instance
         }
     }
-
-    abstract fun registerTask(project: Project, name: String): Any
-
-    abstract fun <T : Task> registerTask(project: Project, name: String, type: Class<T>, vararg args: Any): Any
-
-    abstract fun configureTask(project: Project, name: String, configure: Action<in Task>)
-
-    abstract fun getTask(project: Project, name: String): Any
-
-    abstract fun <T : Task> getTask(project: Project, type: Class<T>, name: String): T
 
     abstract fun getJavaPluginSourceSets(project: Project): SourceSetContainer
 }

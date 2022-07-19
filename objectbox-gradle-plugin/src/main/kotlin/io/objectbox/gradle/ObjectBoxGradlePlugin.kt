@@ -50,6 +50,9 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
     private val buildTracker = GradleBuildTracker("GradlePlugin")
 
     override fun apply(project: Project) {
+        // Trigger Gradle version check.
+        GradleCompat.get()
+
         try {
             val env = ProjectEnv(project)
             // Note: do not check for just a Kotlin plugin. Currently, the Kotlin Android and Kotlin JVM
