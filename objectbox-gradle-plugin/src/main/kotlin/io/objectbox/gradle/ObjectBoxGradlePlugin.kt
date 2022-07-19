@@ -148,16 +148,15 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
         // use register to defer creation until use
         val prepareTaskName = "objectboxPrepareBuild"
 
-        val prepareTask = GradleCompat.get()
-            .registerTask(project, prepareTaskName, PrepareTask::class.java, env, buildTracker)
+        val prepareTask = project.tasks.register(prepareTaskName, PrepareTask::class.java, env, buildTracker)
         env.logDebug { "Registered $prepareTaskName task." }
 
         // make build task depend on prepare task
         val configureDepends = Action<Task> { it.dependsOn(prepareTask) }
         try {
-            GradleCompat.get().configureTask(project, "preBuild", configureDepends)  // Android
+            project.tasks.named("preBuild").configure(configureDepends) // Android
         } catch (e: Exception) {
-            GradleCompat.get().configureTask(project, "build", configureDepends) // Java
+            project.tasks.named("build").configure(configureDepends) // Java
         }
     }
 
