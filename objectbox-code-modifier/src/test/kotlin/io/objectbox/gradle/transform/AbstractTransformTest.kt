@@ -29,9 +29,6 @@ abstract class AbstractTransformTest {
             // See also: https://docs.gradle.org/4.0/release-notes.html#location-of-classes-in-the-build-directory
             "build/classes/kotlin/test",
             "objectbox-gradle-plugin/build/classes/kotlin/test",
-            // IntelliJ uses "out"
-            "out/test/classes/",
-            "objectbox-gradle-plugin/out/test/classes/"
     )
     private val classDir = classDirs.map(::File).first { it.exists() }
 

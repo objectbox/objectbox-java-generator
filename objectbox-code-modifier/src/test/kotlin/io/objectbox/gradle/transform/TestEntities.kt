@@ -23,7 +23,10 @@ package io.objectbox.gradle.transform
 import io.objectbox.BoxStore
 import io.objectbox.Cursor
 import io.objectbox.EntityInfo
+import io.objectbox.Property
 import io.objectbox.annotation.Entity
+import io.objectbox.internal.CursorFactory
+import io.objectbox.internal.IdGetter
 import io.objectbox.relation.RelationInfo
 import io.objectbox.relation.ToMany
 import io.objectbox.relation.ToOne
@@ -36,7 +39,7 @@ class EntityEmpty
 @Entity
 class EntityBoxStoreField {
     @JvmField // mimic generated Java code (transform adds field, not property with set/get)
-    var __boxStore = BoxStore()
+    var __boxStore: BoxStore? = null
 }
 
 @Entity
@@ -44,7 +47,7 @@ class EntityToOne {
     val entityEmpty = ToOne<EntityEmpty>(this, null)
 }
 
-object EntityToOne_ : EntityInfo<EntityToOneLateInit> {
+object EntityToOne_ : EntityInfo<EntityToOneLateInit>, EntityInfoStub<EntityToOneLateInit>() {
     @JvmField
     val entityEmpty = RelationInfo<EntityToOneLateInit, EntityEmpty>(null, null, null, null)
 }
@@ -54,7 +57,7 @@ class EntityToOneLateInit {
     lateinit var entityEmpty: ToOne<EntityEmpty>
 }
 
-object EntityToOneLateInit_ : EntityInfo<EntityToOneLateInit> {
+object EntityToOneLateInit_ : EntityInfo<EntityToOneLateInit>, EntityInfoStub<EntityToOneLateInit>() {
     @JvmField
     val entityEmpty = RelationInfo<EntityToOneLateInit, EntityEmpty>(null, null, null, null)
 }
@@ -64,7 +67,7 @@ class EntityToOneSuffix {
     lateinit var entityEmptyToOne: ToOne<EntityEmpty>
 }
 
-object EntityToOneSuffix_ : EntityInfo<EntityToOneLateInit> {
+object EntityToOneSuffix_ : EntityInfo<EntityToOneLateInit>, EntityInfoStub<EntityToOneLateInit>() {
     @JvmField
     val entityEmpty = RelationInfo<EntityToOneLateInit, EntityEmpty>(null, null, null, null)
 }
@@ -75,7 +78,7 @@ class EntityToMany {
     val entityEmptyList = listOf<EntityEmpty>()
 }
 
-object EntityToMany_ : EntityInfo<EntityToOneLateInit> {
+object EntityToMany_ : EntityInfo<EntityToOneLateInit>, EntityInfoStub<EntityToOneLateInit>() {
     @JvmField
     val entityEmpty = RelationInfo<EntityToOneLateInit, EntityEmpty>(null, null, null, null)
 }
@@ -85,7 +88,7 @@ class EntityToManyLateInit {
     lateinit var entityEmpty: ToMany<EntityEmpty>
 }
 
-object EntityToManyLateInit_ : EntityInfo<EntityToOneLateInit> {
+object EntityToManyLateInit_ : EntityInfo<EntityToOneLateInit>, EntityInfoStub<EntityToOneLateInit>() {
     @JvmField
     val entityEmpty = RelationInfo<EntityToManyLateInit, EntityEmpty>(null, null, null, null)
 }
@@ -95,7 +98,7 @@ class EntityToManySuffix {
     lateinit var entityEmptyToMany: ToMany<EntityEmpty>
 }
 
-object EntityToManySuffix_ : EntityInfo<EntityToOneLateInit> {
+object EntityToManySuffix_ : EntityInfo<EntityToOneLateInit>, EntityInfoStub<EntityToOneLateInit>() {
     @JvmField
     val entityEmpty = RelationInfo<EntityToOneLateInit, EntityEmpty>(null, null, null, null)
 }
@@ -106,7 +109,7 @@ class EntityToManyListLateInit {
     lateinit var entityEmpty: List<EntityEmpty>
 }
 
-object EntityToManyListLateInit_ : EntityInfo<EntityToOneLateInit> {
+object EntityToManyListLateInit_ : EntityInfo<EntityToOneLateInit>, EntityInfoStub<EntityToOneLateInit>() {
     @JvmField
     val entityEmpty = RelationInfo<EntityToOneLateInit, EntityEmpty>(null, null, null, null)
 }
@@ -125,7 +128,7 @@ class EntityTransientList {
     val dummyWithAlienAnnotation: Boolean = false
 }
 
-object EntityTransientList_ : EntityInfo<EntityToOneLateInit> {
+object EntityTransientList_ : EntityInfo<EntityToOneLateInit>, EntityInfoStub<EntityToOneLateInit>() {
     @JvmField
     val actualRelation = RelationInfo<EntityToOneLateInit, EntityEmpty>(null, null, null, null)
 }
@@ -140,25 +143,42 @@ class EntityMultipleCtors {
     constructor(someValue: String) : this()
 }
 
-object EntityMultipleCtors_ : EntityInfo<EntityMultipleCtors> {
+object EntityMultipleCtors_ : EntityInfo<EntityMultipleCtors>, EntityInfoStub<EntityMultipleCtors>() {
     @JvmField
     val toMany = RelationInfo<EntityMultipleCtors, EntityMultipleCtors>(null, null, null, null)
 }
 
-class TestCursor : Cursor<EntityBoxStoreField>() {
+class TestCursor : Cursor<EntityBoxStoreField>(null, 0, null, null) {
+    override fun getId(entity: EntityBoxStoreField): Long = throw NotImplementedError("Stub for testing")
+    override fun put(entity: EntityBoxStoreField): Long = throw NotImplementedError("Stub for testing")
     private fun attachEntity(@Suppress("UNUSED_PARAMETER") entity: EntityBoxStoreField) {}
 }
 
-class CursorExistingImplReads : Cursor<EntityBoxStoreField>() {
+class CursorExistingImplReads : Cursor<EntityBoxStoreField>(null, 0, null, null) {
+    override fun getId(entity: EntityBoxStoreField): Long = throw NotImplementedError("Stub for testing")
+    override fun put(entity: EntityBoxStoreField): Long = throw NotImplementedError("Stub for testing")
     private fun attachEntity(entity: EntityBoxStoreField) {
         println(entity.__boxStore)
     }
 }
 
-class CursorExistingImplWrites : Cursor<EntityBoxStoreField>() {
+class CursorExistingImplWrites : Cursor<EntityBoxStoreField>(null, 0, null, null) {
+    override fun getId(entity: EntityBoxStoreField): Long = throw NotImplementedError("Stub for testing")
+    override fun put(entity: EntityBoxStoreField): Long = throw NotImplementedError("Stub for testing")
     private fun attachEntity(entity: EntityBoxStoreField) {
         entity.__boxStore = super.boxStoreForEntities!!
     }
 }
 
 class JustCopyMe
+
+open class EntityInfoStub<T> : EntityInfo<T> {
+    override fun getEntityName(): String = throw NotImplementedError("Stub for testing")
+    override fun getDbName(): String = throw NotImplementedError("Stub for testing")
+    override fun getEntityClass(): Class<T> = throw NotImplementedError("Stub for testing")
+    override fun getEntityId(): Int = throw NotImplementedError("Stub for testing")
+    override fun getAllProperties(): Array<Property<T>> = throw NotImplementedError("Stub for testing")
+    override fun getIdProperty(): Property<T> = throw NotImplementedError("Stub for testing")
+    override fun getIdGetter(): IdGetter<T> = throw NotImplementedError("Stub for testing")
+    override fun getCursorFactory(): CursorFactory<T> = throw NotImplementedError("Stub for testing")
+}

@@ -29,7 +29,7 @@ abstract class ObjectBoxJavaClassesTransformTask : DefaultTask() {
         ObjectBoxJavaTransform(debug.get()).transform(compiledClasses, null, copyNonTransformed = false)
     }
 
-    internal class ConfigAction(
+    class ConfigAction(
         private val debug: Property<Boolean>,
         private val inputClasspath: FileCollection
     ) : Action<ObjectBoxJavaClassesTransformTask> {

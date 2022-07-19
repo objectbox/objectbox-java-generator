@@ -26,7 +26,8 @@ class ClassTransformerConverterTest : AbstractTransformTest() {
 
     @Test
     fun testTransformEntity_converter_shouldNotTransform() {
-        val classes = listOf(EntityConverterList::class,
+        val classes = listOf(
+            EntityConverterList::class,
                 EntityEmpty::class, EntityEmptyConverter::class)
         val (stats) = testTransformOrCopy(classes, 0, 3)
         Assert.assertEquals(0, stats.boxStoreFieldsAdded)
@@ -37,7 +38,8 @@ class ClassTransformerConverterTest : AbstractTransformTest() {
 
     @Test
     fun testTransformEntity_converterAndList_shouldTransformOnlyList() {
-        val classes = listOf(EntityConverterListAndList::class, EntityConverterListAndList_::class,
+        val classes = listOf(
+            EntityConverterListAndList::class, EntityConverterListAndList_::class,
                 EntityEmpty::class, EntityEmptyConverter::class)
         val (stats) = testTransformOrCopy(classes, 1, 3)
         Assert.assertEquals(1, stats.boxStoreFieldsAdded)

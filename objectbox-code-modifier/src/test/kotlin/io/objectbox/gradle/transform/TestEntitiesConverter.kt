@@ -54,7 +54,7 @@ class EntityConverterListAndList {
     lateinit var actualRelation: List<EntityEmpty>
 }
 
-object EntityConverterListAndList_ : EntityInfo<EntityConverterListAndList> {
+object EntityConverterListAndList_ : EntityInfo<EntityConverterListAndList>, EntityInfoStub<EntityConverterListAndList>() {
     @JvmField
     val actualRelation = RelationInfo<EntityConverterListAndList, EntityEmpty>(null, null, null, null)
 }
@@ -77,7 +77,7 @@ class EntityConverterAndToMany {
     lateinit var convertedString: JustCopyMe
 }
 
-object EntityConverterAndToMany_ : EntityInfo<EntityConverterAndToMany> {
+object EntityConverterAndToMany_ : EntityInfo<EntityConverterAndToMany>, EntityInfoStub<EntityConverterAndToMany>() {
     @JvmField
     val entityEmpty = RelationInfo<EntityConverterAndToMany, EntityEmpty>(null, null, null, null)
 }
@@ -90,7 +90,7 @@ class EntityConverterAndToOne(val someExternalType: LongHashSet? = LongHashSet(8
     lateinit var convertedString: JustCopyMe
 }
 
-object EntityConverterAndToOne_ : EntityInfo<EntityConverterAndToOne> {
+object EntityConverterAndToOne_ : EntityInfo<EntityConverterAndToOne>, EntityInfoStub<EntityConverterAndToOne>() {
     @JvmField
     val entityEmpty = RelationInfo<EntityConverterAndToOne, EntityEmpty>(null, null, null, null)
 }

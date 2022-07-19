@@ -18,10 +18,11 @@
 
 package io.objectbox.gradle
 
-import io.objectbox.gradle.transform.ObjectBoxAndroidTransform
+import io.objectbox.gradle.transform.AndroidPluginCompat
 import io.objectbox.gradle.transform.ObjectBoxJavaClassesTransformTask
 import io.objectbox.gradle.transform.ObjectBoxJavaTransform
 import io.objectbox.gradle.transform.TransformException
+import io.objectbox.gradle.util.AndroidCompat
 import io.objectbox.gradle.util.GradleCompat
 import org.gradle.api.Action
 import org.gradle.api.Plugin
@@ -36,7 +37,7 @@ import org.gradle.api.tasks.compile.JavaCompile
  * A Gradle plugin that depending on the other plugins/dependencies of a project it is applied to
  * - adds dependencies for the ObjectBox annotation processor,
  * - adds dependencies for the ObjectBox Java, Kotlin and native (Android, Linux, Windows, Mac) libraries,
- * - for Android projects, configures [ObjectBoxAndroidTransform],
+ * - for Android projects, configures [AndroidPluginCompat],
  * - for Java projects, adds a [ObjectBoxJavaTransform] task that runs after the compile task.
  * - adds a [PrepareTask] that runs as part of the build task.
  */
@@ -72,11 +73,7 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
             // ensure Android plugin API is available
             if (env.hasAndroidPlugin) {
                 // Cannot use afterEvaluate to register Android transform, thus our plugin must be applied after Android
-                ObjectBoxAndroidTransform.Registration.to(
-                    project,
-                    env.options.debug,
-                    env.hasKotlinAndroidPlugin || env.hasKotlinPlugin
-                )
+                AndroidCompat.getPlugin(project).registerTransform(project, env.options.debug, env.hasKotlinPlugin)
             } else {
                 // fall back to Gradle task
                 createPlainJavaTransformTask(env)

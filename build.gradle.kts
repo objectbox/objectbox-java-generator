@@ -13,8 +13,9 @@ buildscript {
     // https://docs.gradle.org/7.5-rc-1/userguide/compatibility.html
     val kotlin_version by extra("1.5.31") // Gradle 6.8.3
 
-    val android_version by extra("3.6.3") // See README for minimal supported version. http://google.github.io/android-gradle-dsl/javadoc/
+    val android_version by extra("7.2.0") // See README for minimal supported version. http://google.github.io/android-gradle-dsl/javadoc/
     val essentials_version by extra("3.1.0")
+    val javassist_version by extra("3.27.0-GA")
     val junit_version by extra("4.13.2") // https://junit.org/junit4/
     // Note: truth 1.1.2 breaks Android plugin apply test.
     val truth_version by extra("1.0") // https://github.com/google/truth/releases

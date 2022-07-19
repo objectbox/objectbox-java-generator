@@ -18,9 +18,9 @@
 
 package io.objectbox.gradle.transform
 
-import io.objectbox.gradle.GradleBuildTracker
 import io.objectbox.logging.log
 import io.objectbox.logging.logWarning
+import io.objectbox.reporting.BasicBuildTracker
 import org.gradle.api.file.ConfigurableFileCollection
 import java.io.File
 
@@ -28,8 +28,8 @@ import java.io.File
  * Transforms class (byte code) files from multiple directories,
  * overwriting the original class files if no output directory is given.
  *
+ * See ObjectBoxAndroidTransform in AGP 3.3 module.
  * @see ClassTransformer
- * @see ObjectBoxAndroidTransform
  */
 class ObjectBoxJavaTransform(private val debug: Boolean) {
 
@@ -59,7 +59,7 @@ class ObjectBoxJavaTransform(private val debug: Boolean) {
 
             ClassTransformer(debug).transformOrCopyClasses(probedClasses, copyNonTransformed)
         } catch (e: Throwable) {
-            val buildTracker = GradleBuildTracker("Transformer")
+            val buildTracker = BasicBuildTracker("Transformer")
             if (e is TransformException) buildTracker.trackError("Transform failed", e)
             else buildTracker.trackFatal("Transform failed", e)
             throw e

@@ -45,14 +45,16 @@ open class EntitySub : EntityBase(), EntityInterface {
     lateinit var entityEmptyList: List<EntityEmpty>
 }
 
-class EntitySub_ : EntityInfo<EntitySub> {
+class EntitySub_ : EntityInfo<EntitySub>, EntityInfoStub<EntitySub>() {
     @JvmField
     val entityEmptyToOne = RelationInfo<EntitySub, EntityEmpty>(null, null, null, null)
     @JvmField
     val entityEmptyToMany = RelationInfo<EntitySub, EntityEmpty>(null, null, null, null)
 }
 
-class EntitySubCursor : Cursor<EntitySub>() {
+class EntitySubCursor : Cursor<EntitySub>(null, 0, null, null) {
+    override fun getId(entity: EntitySub): Long = throw NotImplementedError("Stub for testing")
+    override fun put(entity: EntitySub): Long = throw NotImplementedError("Stub for testing")
     private fun attachEntity(@Suppress("UNUSED_PARAMETER") entity: EntitySub) {}
 }
 
