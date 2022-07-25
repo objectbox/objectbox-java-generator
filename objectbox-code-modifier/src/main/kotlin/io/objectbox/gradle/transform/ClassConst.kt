@@ -50,6 +50,7 @@ object ClassConst {
 
     const val cursorClass = "io.objectbox.Cursor"
     const val cursorAttachEntityMethodName = "attachEntity"
+    const val cursorBoxStoreFieldName = "boxStoreForEntities"
 
     const val listDescriptor = "Ljava/util/List;"
 

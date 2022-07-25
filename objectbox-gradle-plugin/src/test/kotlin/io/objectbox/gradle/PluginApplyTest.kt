@@ -1,7 +1,5 @@
 package io.objectbox.gradle
 
-import com.android.build.gradle.AppExtension
-import io.objectbox.gradle.transform.ObjectBoxAndroidTransform
 import org.gradle.api.Project
 import org.gradle.api.artifacts.DependencySet
 import org.gradle.api.internal.plugins.PluginApplicationException
@@ -220,10 +218,8 @@ open class PluginApplyTest {
         }
         assertNotNull(project.tasks.findByPath("objectboxPrepareBuild"))
 
-        // Special for Android: has byte-code transform.
-        assertAndroidByteCodeTransform(project)
-
-        // Note: can not evaluate and assert transform task for unit tests as Android plugin requires actual project.
+        // Note: can not evaluate and assert transform task for unit tests as Android plugin requires actual project,
+        // this is tested using Gradle TestKit in AndroidTransformTest.
     }
 
     @Test
@@ -261,8 +257,8 @@ open class PluginApplyTest {
         }
         assertNotNull(project.tasks.findByPath("objectboxPrepareBuild"))
 
-        // Special for Android: has byte-code transform.
-        assertAndroidByteCodeTransform(project)
+        // Note: can not evaluate and assert transform task for unit tests as Android plugin requires actual project,
+        // this is tested using Gradle TestKit in AndroidTransformTest.
     }
 
     private fun assertProcessorDependency(apDeps: DependencySet) {
@@ -295,9 +291,4 @@ open class PluginApplyTest {
         })
     }
 
-    private fun assertAndroidByteCodeTransform(project: Project) {
-        with(project.extensions.getByType(AppExtension::class.java)) {
-            assertEquals(1, transforms.count { it is ObjectBoxAndroidTransform })
-        }
-    }
 }

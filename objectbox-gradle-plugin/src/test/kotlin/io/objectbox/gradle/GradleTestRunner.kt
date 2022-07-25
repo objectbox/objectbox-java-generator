@@ -18,6 +18,7 @@ class GradleTestRunner(
     val javaCompilerArgs: MutableList<String> = mutableListOf()
     var buildscriptBlock: String = ""
     val additionalPlugins: MutableList<String> = mutableListOf()
+    var additionalBlocks: String = ""
 
     private val gitlabUrl = System.getProperty("gitlabUrl")
     private val gitlabTokenName = System.getProperty("gitlabTokenName")
@@ -84,6 +85,8 @@ class GradleTestRunner(
                     cacheChangingModulesFor(0, "seconds")
                 }
             }
+            
+            $additionalBlocks
             
             // Enable ObjectBox plugin and processor debug output.
             objectbox {

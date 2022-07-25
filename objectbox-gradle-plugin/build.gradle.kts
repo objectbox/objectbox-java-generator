@@ -14,6 +14,8 @@ java {
     targetCompatibility = JavaVersion.VERSION_1_8
 }
 
+val testPluginClasspath: Configuration by configurations.creating
+
 // For integration tests (TestKit): Write the plugin's classpath to a file to share with the tests.
 // https://docs.gradle.org/6.0/userguide/test_kit.html#sub:test-kit-classpath-injection
 val createClasspathManifest by tasks.registering {
@@ -27,7 +29,12 @@ val createClasspathManifest by tasks.registering {
 
     doLast {
         outputDir.mkdirs()
-        file("$outputDir/plugin-classpath.txt").writeText(sourceSets.main.get().runtimeClasspath.joinToString("\n"))
+        // Adapted from PluginUnderTestMetadata task, make sure to prevent duplicates.
+        val pluginClasspath = sourceSets.main.get().runtimeClasspath.map { it.toString() }.toMutableSet()
+        pluginClasspath.addAll(project.files(testPluginClasspath).map { it.absolutePath })
+        file("$outputDir/plugin-classpath.txt").writeText(
+            pluginClasspath.joinToString("\n")
+        )
     }
 }
 
@@ -54,14 +61,9 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlin_version")
 
     testImplementation(gradleTestKit())
+    // For new Gradle TestKit tests (see GradleTestRunner).
     testRuntimeOnly(files(createClasspathManifest))
-    testImplementation("io.objectbox:objectbox-java:$objectbox_java_version")
-    testImplementation("org.greenrobot:essentials:$essentials_version")
-    testImplementation("junit:junit:$junit_version")
-    testImplementation("org.mockito:mockito-core:$mockito_version")
-    testImplementation("com.google.truth:truth:$truth_version")
-    testImplementation("com.squareup.moshi:moshi:$moshi_version")
-    testImplementation("com.squareup.okio:okio:$okioVersion")
+    testPluginClasspath("com.android.tools.build:gradle:$android_version")
     // For plugin apply tests and outdated TestKit tests (dir "test-gradle-projects").
     testImplementation("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version")
     testImplementation("com.android.tools.build:gradle:$android_version")
@@ -75,6 +77,15 @@ dependencies {
                 .classpath.asFiles.first()
         )
     )
+
+    testImplementation("io.objectbox:objectbox-java:$objectbox_java_version")
+    testImplementation("org.greenrobot:essentials:$essentials_version")
+    testImplementation("junit:junit:$junit_version")
+    testImplementation("org.mockito:mockito-core:$mockito_version")
+    testImplementation("com.google.truth:truth:$truth_version")
+    testImplementation("com.squareup.moshi:moshi:$moshi_version")
+    testImplementation("com.squareup.okio:okio:$okioVersion")
+    testImplementation("org.javassist:javassist:$javassist_version")
 }
 
 val applies_ob_java_version: String by rootProject.extra

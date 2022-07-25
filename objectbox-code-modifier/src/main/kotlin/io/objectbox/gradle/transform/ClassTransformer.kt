@@ -393,9 +393,11 @@ class ClassTransformer(private val debug: Boolean = false) {
     }
 
     /**
-     * Finds the attach method, checks its signature is as expected and it does not contain existing code. Then checks
-     * if the entity class does exist. Then transforms the attach method to add code assigning the BoxStore field
-     * added by the entity transformer.
+     * Finds the attach method, checks its signature is as expected and warns if it
+     * does contain existing code. Then checks if the entity class does exist.
+     * Then transforms the attach method to add code assigning the BoxStore field
+     * added by the entity transformer. If the attach method already assigns the field,
+     * warns instead.
      */
     private fun transformCursor(ctClass: CtClass, outDir: File, classPool: ClassPool): Boolean {
         val attachCtMethod = ctClass.declaredMethods?.singleOrNull { it.name == ClassConst.cursorAttachEntityMethodName }
@@ -419,7 +421,7 @@ class ClassTransformer(private val debug: Boolean = false) {
 
             checkEntityIsInClassPool(classPool, signature)
 
-            val code = "\$1.${ClassConst.boxStoreFieldName} = \$0.boxStoreForEntities;"
+            val code = "\$1.${ClassConst.boxStoreFieldName} = \$0.${ClassConst.cursorBoxStoreFieldName};"
             attachCtMethod.insertAfter(code)
             if (debug) log("Writing transformed cursor '${ctClass.name}'")
             ctClass.writeFile(outDir.absolutePath)

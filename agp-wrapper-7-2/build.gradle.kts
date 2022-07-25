@@ -1,3 +1,7 @@
+val objectbox_java_version: String by rootProject.extra
+val junit_version: String by rootProject.extra
+val truth_version: String by rootProject.extra
+
 plugins {
     id("org.jetbrains.kotlin.jvm")
 }
@@ -12,9 +16,18 @@ java {
 dependencies {
     implementation(gradleApi())
     api(project(":objectbox-code-modifier"))
-    compileOnly("com.android.tools.build:gradle:7.2.0")
+    implementation("io.objectbox:objectbox-java:$objectbox_java_version")
+    val androidPluginVersion = "7.2.0"
+    compileOnly("com.android.tools.build:gradle-api:$androidPluginVersion")
     // https://asm.ow2.io/versions.html
-    implementation("org.ow2.asm:asm:9.3")
+    // See com.android.build.api.instrumentation.InstrumentationContext.getApiVersion
+    // for ASM API versions that need to be supported.
+    implementation("org.ow2.asm:asm-tree:9.3")
+
+    testImplementation(testFixtures(project(":objectbox-code-modifier")))
+    testImplementation("junit:junit:$junit_version")
+    testImplementation("com.google.truth:truth:$truth_version")
+    testImplementation("com.android.tools.build:gradle-api:$androidPluginVersion")
 }
 
 apply(from = rootProject.file("gradle/objectbox-publish.gradle"))
