@@ -1,26 +1,15 @@
 package io.objectbox.gradle
 
 import com.google.common.truth.Truth.assertThat
-import org.gradle.testkit.runner.BuildResult
-import org.gradle.testkit.runner.GradleRunner
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import java.io.File
 
-/**
- * Note: if these tests fail to run because dependencies are missing,
- * check if the build.gradle file needs to publish additional artifacts to test repository.
- */
 class IncrementalCompilationTest {
 
     @JvmField
     @Rule
     val testProjectDir: TemporaryFolder = TemporaryFolder.builder().assureDeletion().build()
-
-    private val gitlabUrl = System.getProperty("gitlabUrl")
-    private val gitlabTokenName = System.getProperty("gitlabTokenName")
-    private val gitlabToken =  System.getProperty("gitlabToken")
 
     /**
      * Tests that when changing entity compilation is incremental,
@@ -34,11 +23,11 @@ class IncrementalCompilationTest {
      */
     @Test
     fun incrementalAnnotationProcessor() {
-        projectSetup()
-        val sourceFile = testProjectDir.newFile("src/main/java/example/Example.java").apply {
-            writeText(
-                """
-                package example;
+        val gradleRunner = createRunner()
+        val sourceFile = gradleRunner.addSourceFile(
+            "Example.java",
+            """
+                package com.example;
 
                 import io.objectbox.annotation.Entity;
                 import io.objectbox.annotation.Id;
@@ -48,17 +37,16 @@ class IncrementalCompilationTest {
                     @Id public long id;
                 } 
                 """.trimIndent()
-            )
-        }
+        )
         // Compile 1st time.
-        with(compileJava()) {
+        with(gradleRunner.assemble()) {
             assertThat(output).contains(GRADLE_MSG_FULL_RECOMPILE_REQ_FIRST_BUILD)
         }
 
         // Add new property and all-properties constructor to class.
         sourceFile.writeText(
             """
-            package example;
+            package com.example;
 
             import io.objectbox.annotation.Entity;
             import io.objectbox.annotation.Id;
@@ -75,7 +63,7 @@ class IncrementalCompilationTest {
             """.trimIndent()
         )
         // Compile 2nd time.
-        with(compileJava()) {
+        with(gradleRunner.assemble()) {
             assertThat(output).doesNotContain(GRADLE_MSG_FULL_RECOMPILE_REQ)
             // Why 6 classes? Example.java + anonym. ID-Getter class, Example_.java,
             // ExampleCursor.java + anonym. Factory class, MyObjectBox.java.
@@ -89,10 +77,11 @@ class IncrementalCompilationTest {
      */
     @Test
     fun incrementalAnnotationProcessor_baseEntity() {
-        projectSetup()
-        testProjectDir.newFile("src/main/java/example/BaseExample.java").writeText(
+        val gradleRunner = createRunner()
+        gradleRunner.addSourceFile(
+            "BaseExample.java",
             """
-            package example;
+            package com.example;
             
             import io.objectbox.annotation.BaseEntity;
             import io.objectbox.annotation.Id;
@@ -103,10 +92,10 @@ class IncrementalCompilationTest {
             } 
             """.trimIndent()
         )
-        val sourceFile = testProjectDir.newFile("src/main/java/example/Example.java").apply {
-            writeText(
-                """
-                package example;
+        val sourceFile = gradleRunner.addSourceFile(
+            "Example.java",
+            """
+                package com.example;
 
                 import io.objectbox.annotation.Entity;
                 
@@ -114,17 +103,16 @@ class IncrementalCompilationTest {
                 public class Example extends BaseExample {
                 } 
                 """.trimIndent()
-            )
-        }
+        )
         // Compile 1st time.
-        with(compileJava()) {
+        with(gradleRunner.assemble()) {
             assertThat(output).contains(GRADLE_MSG_FULL_RECOMPILE_REQ_FIRST_BUILD)
         }
 
         // Add new property to class.
         sourceFile.writeText(
             """
-            package example;
+            package com.example;
 
             import io.objectbox.annotation.Entity;
             
@@ -135,7 +123,7 @@ class IncrementalCompilationTest {
             """.trimIndent()
         )
         // Compile 2nd time.
-        with(compileJava()) {
+        with(gradleRunner.assemble()) {
             assertThat(output).doesNotContain(GRADLE_MSG_FULL_RECOMPILE_REQ)
             // Why 6 classes? Example.java + anonym. ID-Getter class, Example_.java,
             // ExampleCursor.java + anonym. Factory class, MyObjectBox.java.
@@ -153,11 +141,11 @@ class IncrementalCompilationTest {
      */
     @Test
     fun incrementalAnnotationProcessor_baseEntityIndirect() {
-        projectSetup()
-
-        testProjectDir.newFile("src/main/java/example/BaseExample.java").writeText(
+        val gradleRunner = createRunner()
+        gradleRunner.addSourceFile(
+            "BaseExample.java",
             """
-            package example;
+            package com.example;
             
             import io.objectbox.annotation.BaseEntity;
             import io.objectbox.annotation.Id;
@@ -168,9 +156,10 @@ class IncrementalCompilationTest {
             } 
             """.trimIndent()
         )
-        testProjectDir.newFile("src/main/java/example/IntermediateExample.java").writeText(
+        gradleRunner.addSourceFile(
+            "IntermediateExample.java",
             """
-            package example;
+            package com.example;
 
             import io.objectbox.annotation.Entity;
             
@@ -178,10 +167,10 @@ class IncrementalCompilationTest {
             } 
             """.trimIndent()
         )
-        val sourceFile = testProjectDir.newFile("src/main/java/example/Example.java").apply {
-            writeText(
-                """
-                package example;
+        val sourceFile = gradleRunner.addSourceFile(
+            "Example.java",
+            """
+                package com.example;
 
                 import io.objectbox.annotation.Entity;
                 
@@ -189,17 +178,16 @@ class IncrementalCompilationTest {
                 public class Example extends IntermediateExample {
                 } 
                 """.trimIndent()
-            )
-        }
+        )
         // Compile 1st time.
-        with(compileJava()) {
+        with(gradleRunner.assemble()) {
             assertThat(output).contains(GRADLE_MSG_FULL_RECOMPILE_REQ_FIRST_BUILD)
         }
 
         // Add new property to class.
         sourceFile.writeText(
             """
-            package example;
+            package com.example;
 
             import io.objectbox.annotation.Entity;
             
@@ -210,7 +198,7 @@ class IncrementalCompilationTest {
             """.trimIndent()
         )
         // Compile 2nd time.
-        with(compileJava()) {
+        with(gradleRunner.assemble()) {
             assertThat(output).doesNotContain(GRADLE_MSG_FULL_RECOMPILE_REQ)
             // Why 6 classes? Example.java + anonym. ID-Getter class, Example_.java,
             // ExampleCursor.java + anonym. Factory class, MyObjectBox.java.
@@ -219,78 +207,9 @@ class IncrementalCompilationTest {
         }
     }
 
-    /**
-     * Converts all native file separators in the specified string to '/'.
-     */
-    private fun String.normaliseFileSeparators(): String = replace(File.separatorChar, '/')
-
-    private fun projectSetup(javaCompilerArgs: List<String> = emptyList()) {
-        testProjectDir.newFile("settings.gradle").writeText("rootProject.name = 'incap-project'")
-
-        val compilerArgs = javaCompilerArgs
-            .plus("-Aobjectbox.debug=true")
-            .joinToString(separator = "\",\"", prefix = "\"", postfix = "\"")
-
-        // Note: instead of getting artifacts of the modules in this project from internal repo,
-        // publish them to a directory in the build folder, then add that as repo below.
-        val testRepository = File("build/repository").absolutePath.normaliseFileSeparators()
-        val buildFile = testProjectDir.newFile("build.gradle")
-        buildFile.writeText(
-            """
-            plugins {
-                id 'java'
-                id 'io.objectbox'
-            }
-            
-            targetCompatibility = '1.8'
-            sourceCompatibility = '1.8'
-
-            repositories {
-                maven { url "$testRepository" }
-                mavenCentral()
-                maven {
-                    url "$gitlabUrl/api/v4/groups/objectbox/-/packages/maven"
-                    credentials(HttpHeaderCredentials) {
-                        name = "$gitlabTokenName"
-                        value = "$gitlabToken"
-                    }
-                    authentication {
-                        header(HttpHeaderAuthentication)
-                    }
-                }
-            }
-            
-            configurations.all {
-                // Projects are using snapshot dependencies that may update more often than 24 hours.
-                resolutionStrategy {
-                    cacheChangingModulesFor 0, 'seconds'
-                }
-            }
-            
-            // Enable ObjectBox plugin and processor debug output.
-            objectbox {
-                debug = true
-            }
-            tasks.withType(JavaCompile) {
-                options.compilerArgs += [ $compilerArgs ]
-            }
-            """.trimIndent()
-        )
-
-        testProjectDir.newFolder("src", "main", "java", "example")
-    }
-
-    private fun compileJava(): BuildResult {
-        val pluginClasspathResource = javaClass.classLoader.getResource("plugin-classpath.txt")
-            ?: throw IllegalStateException("Did not find plugin classpath resource, run `testClasses` build task.")
-
-        val pluginClasspath = pluginClasspathResource.readText().lines().map { File(it) }
-
-        return GradleRunner.create()
-            .withProjectDir(testProjectDir.root)
-            .withArguments("--info", "compileJava")
-            .withPluginClasspath(pluginClasspath)
-            .build()
+    private fun createRunner(): GradleTestRunner {
+        return GradleTestRunner(testProjectDir)
+            .apply { additionalPlugins += "java-library" }
     }
 
     companion object {
