@@ -31,8 +31,6 @@ import javassist.NotFoundException
 import javassist.bytecode.Descriptor
 import javassist.bytecode.Opcode
 import javassist.bytecode.SignatureAttribute
-import javassist.expr.ExprEditor
-import javassist.expr.FieldAccess
 import java.io.File
 import java.net.URLDecoder
 
@@ -396,16 +394,7 @@ class ClassTransformer(private val debug: Boolean = false) {
                 logWarning("${ctClass.name}.${ClassConst.cursorAttachEntityMethodName} body not empty")
             }
 
-            var assignsBoxStoreField = false
-            attachCtMethod.instrument(object : ExprEditor() {
-                override fun edit(f: FieldAccess?) {
-                    // Java: BoxStore field write access
-                    if (f?.fieldName == ClassConst.boxStoreFieldName && f.isWriter) {
-                        assignsBoxStoreField = true
-                    }
-                }
-            })
-            if (assignsBoxStoreField) {
+            if (attachCtMethod.assignsBoxStoreField()) {
                 log("${ctClass.name}.${ClassConst.cursorAttachEntityMethodName} assigns " +
                         "${ClassConst.boxStoreFieldName}, make sure to read https://docs.objectbox.io/relations#initialization-magic")
                 return false // just copy, change nothing

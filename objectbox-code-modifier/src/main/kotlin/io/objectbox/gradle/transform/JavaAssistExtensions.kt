@@ -18,6 +18,7 @@
 
 package io.objectbox.gradle.transform
 
+import javassist.CtMethod
 import javassist.Modifier
 import javassist.bytecode.AccessFlag
 import javassist.bytecode.AnnotationsAttribute
@@ -27,6 +28,8 @@ import javassist.bytecode.MethodInfo
 import javassist.bytecode.Opcode
 import javassist.bytecode.SignatureAttribute
 import javassist.bytecode.annotation.Annotation
+import javassist.expr.ExprEditor
+import javassist.expr.FieldAccess
 
 fun FieldInfo.exGetGenericTypeArguments(): Array<out SignatureAttribute.TypeArgument>? {
     val signatureAttr = getAttribute(SignatureAttribute.tag) as? SignatureAttribute ?: return null
@@ -54,6 +57,22 @@ fun FieldInfo.exGetAnnotation(name: String): Annotation? {
         annotation = annotationsAttribute?.getAnnotation(name)
     }
     return annotation
+}
+
+/**
+ * Returns true if the method contains at least one statement that writes [ClassConst.boxStoreFieldName].
+ */
+fun CtMethod.assignsBoxStoreField(): Boolean {
+    var assignsBoxStoreField = false
+    instrument(object : ExprEditor() {
+        override fun edit(f: FieldAccess?) {
+            // Java: BoxStore field write access
+            if (f?.fieldName == ClassConst.boxStoreFieldName && f.isWriter) {
+                assignsBoxStoreField = true
+            }
+        }
+    })
+    return assignsBoxStoreField
 }
 
 fun ClassFile.exGetAnnotation(name: String): Annotation? {
