@@ -23,6 +23,8 @@ import javassist.bytecode.AccessFlag
 import javassist.bytecode.AnnotationsAttribute
 import javassist.bytecode.ClassFile
 import javassist.bytecode.FieldInfo
+import javassist.bytecode.MethodInfo
+import javassist.bytecode.Opcode
 import javassist.bytecode.SignatureAttribute
 import javassist.bytecode.annotation.Annotation
 
@@ -62,4 +64,22 @@ fun ClassFile.exGetAnnotation(name: String): Annotation? {
         annotation = annotationsAttribute?.getAnnotation(name)
     }
     return annotation
+}
+
+fun ClassFile.getInitializedFields(methodInfo: MethodInfo): HashSet<String> {
+    val initializedFields = hashSetOf<String>()
+    val codeIterator = methodInfo.codeAttribute.iterator()
+    codeIterator.begin()
+    while (codeIterator.hasNext()) {
+        val opIndex = codeIterator.next()
+        val op = codeIterator.byteAt(opIndex)
+        if (op == Opcode.PUTFIELD) {
+            val fieldIndex = codeIterator.u16bitAt(opIndex + 1)
+            val fieldName = constPool.getFieldrefName(fieldIndex)
+            if (fieldName != null) {
+                initializedFields += fieldName
+            }
+        }
+    }
+    return initializedFields
 }

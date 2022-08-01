@@ -283,7 +283,7 @@ class ClassTransformer(private val debug: Boolean = false) {
 
             checkMakeParamCtClasses(context, constructor)
             context.stats.constructorsCheckedForTransform++
-            val initializedFields = getInitializedFields(ctClass, constructor)
+            val initializedFields = ctClass.classFile.getInitializedFields(constructor.methodInfo)
             for (field in relationFields) {
                 val fieldName = field.ctField.name
                 if (!initializedFields.contains(fieldName)) {
@@ -367,25 +367,6 @@ class ClassTransformer(private val debug: Boolean = false) {
             val name = descriptor.substring(charIndex, endIndex).replace('/', '.')
             Pair(name, endIndex + 1)
         } else Pair(null, charIndex + 1)
-    }
-
-    private fun getInitializedFields(ctClass: CtClass, constructor: CtConstructor): HashSet<String> {
-        val initializedFields = hashSetOf<String>()
-        val codeIterator = constructor.methodInfo.codeAttribute.iterator()
-        codeIterator.begin()
-        while (codeIterator.hasNext()) {
-            val opIndex = codeIterator.next()
-            val op = codeIterator.byteAt(opIndex)
-            if (op == Opcode.PUTFIELD) {
-                val fieldIndex = codeIterator.u16bitAt(opIndex + 1)
-                val constPool = ctClass.classFile.constPool
-                val fieldName = constPool.getFieldrefName(fieldIndex)
-                if (fieldName != null) {
-                    initializedFields += fieldName
-                }
-            }
-        }
-        return initializedFields
     }
 
     private fun transformCursors(context: Context) {
