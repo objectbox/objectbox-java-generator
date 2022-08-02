@@ -119,7 +119,8 @@ class ClassTransformer(private val debug: Boolean = false) {
     }
 
     /**
-     * Walks the inheritance chain and transforms the @Entity and all its @BaseEntity classes starting from the top.
+     * Walks up the inheritance chain and transforms the @Entity and all its @BaseEntity classes starting from the top.
+     * Checks that super classes of @Entity classes do not contain relations.
      */
     private fun transformEntityAndBases(context: Context, ctClassEntity: CtClass, probedClass: ProbedClass) {
         if (probedClass.superClass != null) {
@@ -172,6 +173,10 @@ class ClassTransformer(private val debug: Boolean = false) {
         makeCtClass(context, probedClass)
     }
 
+    /**
+     * Transforms the given [ctClass] to ensure a BoxStore field exists and looks for relation fields and makes sure
+     * they are initialized in constructors.
+     */
     private fun transformEntity(context: Context, ctClassEntity: CtClass, ctClass: CtClass, entityClass: ProbedClass): Boolean {
         val hasRelations = entityClass.hasRelation(context.entityTypes)
         if (debug) log("Checking to transform \"${ctClass.name}\" (has relations: $hasRelations)")
@@ -192,6 +197,9 @@ class ClassTransformer(private val debug: Boolean = false) {
         return changed
     }
 
+    /**
+     * If there is a BoxStore field, makes sure it's not private. If there is none, adds one.
+     */
     private fun checkBoxStoreField(ctClass: CtClass, context: Context, hasRelations: Boolean): Boolean {
         var changed = false
         var boxStoreField = ctClass.declaredFields.find { it.name == ClassConst.boxStoreFieldName }
@@ -267,6 +275,10 @@ class ClassTransformer(private val debug: Boolean = false) {
         return name
     }
 
+    /**
+     * Transforms constructors of [ctClass] that do not call other constructors to add initializers for relation fields,
+     * if there are none, yet. If there are [relationFields] already initialized, prints a warning.
+     */
     private fun transformConstructors(context: Context, ctClassEntity: CtClass, ctClass: CtClass,
                                       relationFields: List<RelationField>): Boolean {
         var changed = false
@@ -303,7 +315,7 @@ class ClassTransformer(private val debug: Boolean = false) {
         // Only print relation init warning once for each entity class.
         if (initializedRelationFields.isNotEmpty()) {
             val fieldNames = initializedRelationFields.joinToString()
-            log("In '${ctClass.name}' relation fields ($fieldNames) are initialized, make sure to read https://docs.objectbox.io/relations#initialization-magic")
+            log("In '${ctClass.name}' relation fields ($fieldNames) are initialized, make sure to read ${TextSnippet.URL_RELATIONS_INIT_MAGIC}")
         }
         return changed
     }
@@ -380,23 +392,28 @@ class ClassTransformer(private val debug: Boolean = false) {
         }
     }
 
+    /**
+     * Finds the attach method, checks its signature is as expected and it does not contain existing code. Then checks
+     * if the entity class does exist. Then transforms the attach method to add code assigning the BoxStore field
+     * added by the entity transformer.
+     */
     private fun transformCursor(ctClass: CtClass, outDir: File, classPool: ClassPool): Boolean {
         val attachCtMethod = ctClass.declaredMethods?.singleOrNull { it.name == ClassConst.cursorAttachEntityMethodName }
         if (attachCtMethod != null) {
             val signature = attachCtMethod.signature
             if (!signature.startsWith("(L") || !signature.endsWith(";)V") || signature.contains(',')) {
                 throw TransformException(
-                        "Bad signature for ${ctClass.name}.${ClassConst.cursorAttachEntityMethodName}: $signature")
+                        "${ctClass.name} The signature of ${ClassConst.cursorAttachEntityMethodName} is not as expected, but was '$signature'.")
             }
 
             val existingCode = attachCtMethod.methodInfo.codeAttribute.code
             if (existingCode.size != 1 || existingCode[0] != Opcode.RETURN.toByte()) {
-                logWarning("${ctClass.name}.${ClassConst.cursorAttachEntityMethodName} body not empty")
+                logWarning("${ctClass.name}.${ClassConst.cursorAttachEntityMethodName}  body expected to be empty, might lead to unexpected behavior.")
             }
 
             if (attachCtMethod.assignsBoxStoreField()) {
                 log("${ctClass.name}.${ClassConst.cursorAttachEntityMethodName} assigns " +
-                        "${ClassConst.boxStoreFieldName}, make sure to read https://docs.objectbox.io/relations#initialization-magic")
+                        "${ClassConst.boxStoreFieldName}, make sure to read ${TextSnippet.URL_RELATIONS_INIT_MAGIC}.")
                 return false // just copy, change nothing
             }
 
