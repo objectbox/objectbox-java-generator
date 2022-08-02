@@ -269,7 +269,7 @@ class IncrementalCompilationTest {
             
             // Enable ObjectBox plugin and processor debug output.
             objectbox {
-                debug true
+                debug = true
             }
             tasks.withType(JavaCompile) {
                 options.compilerArgs += [ $compilerArgs ]

@@ -29,10 +29,10 @@ import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.mockito.ArgumentMatchers
-import org.mockito.Mockito.`when`
 import org.mockito.Mockito.doReturn
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.spy
+import org.mockito.Mockito.`when`
 import java.io.File
 
 class BuildTrackerTest {
@@ -53,8 +53,8 @@ class BuildTrackerTest {
         val extensionContainer = mock(ExtensionContainer::class.java)
         `when`(project.extensions).thenReturn(extensionContainer)
 
-        val options = PluginOptions(project)
-        `when`(extensionContainer.create(ProjectEnv.Const.name, PluginOptions::class.java, project)).thenReturn(options)
+        val options = mock(ObjectBoxPluginExtension::class.java)
+        `when`(extensionContainer.create(ProjectEnv.Const.name, ObjectBoxPluginExtension::class.java)).thenReturn(options)
 
         val env = ProjectEnv(project)
         val toolName = "TestTool"

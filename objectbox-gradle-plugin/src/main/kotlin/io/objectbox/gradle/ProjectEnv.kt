@@ -34,10 +34,7 @@ class ProjectEnv(val project: Project) {
     }
 
     /** Note: Plugin extension, values only available after evaluation phase. */
-    val options: PluginOptions = project.extensions.create(Const.name, PluginOptions::class.java, project)
-    /** Note: Extension value, only available after evaluation phase. */
-    val debug: Boolean
-        get() = options.debug
+    val options: ObjectBoxPluginExtension = project.extensions.create(Const.name, ObjectBoxPluginExtension::class.java)
 
     // Note: can not use types as this project uses Android and Kotlin plugin API as compileOnly,
     // so the classes might be missing from projects that do not have the Android or Kotlin plugin on the classpath.
@@ -101,7 +98,7 @@ class ProjectEnv(val project: Project) {
      */
     fun logDebug(message: () -> String) {
         project.afterEvaluate {
-            if (debug) log(message())
+            if (options.debug.get()) log(message())
         }
     }
 }

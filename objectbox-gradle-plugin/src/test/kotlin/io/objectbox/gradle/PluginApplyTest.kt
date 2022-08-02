@@ -72,11 +72,11 @@ open class PluginApplyTest {
      */
     private fun Project.enableObjectBoxPluginDebugMode() {
         extensions.apply {
-            configure<PluginOptions>("objectbox") {
-                it.debug = true
+            configure<ObjectBoxPluginExtension>("objectbox") {
+                it.debug.set(true)
             }
         }
-        assertTrue(extensions.getByType(PluginOptions::class.java).debug)
+        assertTrue(extensions.getByType(ObjectBoxPluginExtension::class.java).debug.get())
     }
 
     @Test

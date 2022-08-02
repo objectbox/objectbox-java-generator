@@ -38,7 +38,7 @@ abstract class ObjectBoxTestClassesTransformTask : DefaultTask() {
     }
 
     internal class ConfigAction(
-        private val debug: Boolean,
+        private val debug: Property<Boolean>,
         private val outputDir: File,
         private val inputClasspath: FileCollection
     ) : Action<ObjectBoxTestClassesTransformTask> {

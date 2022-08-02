@@ -74,7 +74,7 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
                 // Cannot use afterEvaluate to register Android transform, thus our plugin must be applied after Android
                 ObjectBoxAndroidTransform.Registration.to(
                     project,
-                    env.options,
+                    env.options.debug,
                     env.hasKotlinAndroidPlugin || env.hasKotlinPlugin
                 )
             } else {
@@ -107,7 +107,7 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
             val transformTask = project.tasks.register(
                 taskName,
                 ObjectBoxJavaClassesTransformTask::class.java,
-                ObjectBoxJavaClassesTransformTask.ConfigAction(inputClasspath)
+                ObjectBoxJavaClassesTransformTask.ConfigAction(env.options.debug, inputClasspath)
             )
 
             // Verify classes and compileJava task exist, attach to lifecycle

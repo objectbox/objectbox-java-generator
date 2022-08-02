@@ -29,10 +29,10 @@ import com.android.build.gradle.LibraryExtension
 import com.android.build.gradle.api.BaseVariant
 import com.android.build.gradle.api.UnitTestVariant
 import io.objectbox.gradle.GradleBuildTracker
-import io.objectbox.gradle.PluginOptions
 import io.objectbox.logging.log
 import org.gradle.api.Project
 import org.gradle.api.file.ConfigurableFileCollection
+import org.gradle.api.provider.Property
 import org.gradle.api.tasks.testing.Test
 import org.jetbrains.kotlin.gradle.plugin.KotlinBasePluginWrapper
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
@@ -47,11 +47,11 @@ import java.util.*
  *
  * @see ClassTransformer
  */
-class ObjectBoxAndroidTransform(private val options: PluginOptions) : Transform() {
+class ObjectBoxAndroidTransform(private val debug: Property<Boolean>) : Transform() {
 
     object Registration {
-        fun to(project: Project, options: PluginOptions, hasKotlinPlugin: Boolean) {
-            val transform = ObjectBoxAndroidTransform(options)
+        fun to(project: Project, debug: Property<Boolean>, hasKotlinPlugin: Boolean) {
+            val transform = ObjectBoxAndroidTransform(debug)
 
             // For regular build and instrumentation (on mobile device) tests,
             // uses the Transform API for Android Plugin 7.1 and older.
@@ -67,16 +67,16 @@ class ObjectBoxAndroidTransform(private val options: PluginOptions) : Transform(
             // Note: see ProjectEnv.androidPluginIds which plugins are supported.
             when (androidExtension) {
                 is AppExtension -> androidExtension.applicationVariants.all {
-                    injectTransformTask(project, options, hasKotlinPlugin, it, it.unitTestVariant)
+                    injectTransformTask(project, debug, hasKotlinPlugin, it, it.unitTestVariant)
                 }
                 // Used for Android Instant App base and feature modules, but deprecated as of
                 // Android Plugin 3.4.0 (April 2019). Behaves similar to the library plugin.
                 // https://developer.android.com/topic/google-play-instant/feature-module-migration
                 is FeatureExtension -> androidExtension.featureVariants.all {
-                    injectTransformTask(project, options, hasKotlinPlugin, it, it.unitTestVariant)
+                    injectTransformTask(project, debug, hasKotlinPlugin, it, it.unitTestVariant)
                 }
                 is LibraryExtension -> androidExtension.libraryVariants.all {
-                    injectTransformTask(project, options, hasKotlinPlugin, it, it.unitTestVariant)
+                    injectTransformTask(project, debug, hasKotlinPlugin, it, it.unitTestVariant)
                 }
                 // Note: TestExtension is only used to create a separate instrumentation test module,
                 // it can not run local unit tests.
@@ -95,7 +95,7 @@ class ObjectBoxAndroidTransform(private val options: PluginOptions) : Transform(
          * (bug report to support unit tests at https://issuetracker.google.com/issues/37076369).
          */
         private fun injectTransformTask(
-            project: Project, options: PluginOptions, hasKotlinPlugin: Boolean,
+            project: Project, debug: Property<Boolean>, hasKotlinPlugin: Boolean,
             baseVariant: BaseVariant, unitTestVariant: UnitTestVariant
         ) {
             // Add compiled Java project sources, makes Java compile task a dependency.
@@ -122,7 +122,7 @@ class ObjectBoxAndroidTransform(private val options: PluginOptions) : Transform(
             val transformTask = project.tasks.register(
                 transformTaskName,
                 ObjectBoxTestClassesTransformTask::class.java,
-                ObjectBoxTestClassesTransformTask.ConfigAction(options.debug, outputDir, inputClasspath)
+                ObjectBoxTestClassesTransformTask.ConfigAction(debug, outputDir, inputClasspath)
             )
 
             // Configure the test classpath by appending the transform output file collection to the start of
@@ -169,6 +169,7 @@ class ObjectBoxAndroidTransform(private val options: PluginOptions) : Transform(
 
     override fun transform(info: TransformInvocation) {
         super.transform(info)
+        val debug = debug.get()
         try {
             val probedClasses = mutableListOf<ProbedClass>()
 
@@ -176,7 +177,7 @@ class ObjectBoxAndroidTransform(private val options: PluginOptions) : Transform(
             info.inputs.forEach { transformInput ->
                 // Look through directory inputs to transform or just copy.
                 transformInput.directoryInputs.forEach { directoryInput ->
-                    if (options.debug) log("Input directory: ${directoryInput.name} ${directoryInput.file}")
+                    if (debug) log("Input directory: ${directoryInput.name} ${directoryInput.file}")
                     // Output files to directory unique for this input directory.
                     val outDir = info.outputProvider.getContentLocation(
                         directoryInput.name,
@@ -184,7 +185,7 @@ class ObjectBoxAndroidTransform(private val options: PluginOptions) : Transform(
                         scopes,
                         Format.DIRECTORY
                     )
-                    if (options.debug) log("Output directory: $outDir")
+                    if (debug) log("Output directory: $outDir")
 
                     // TODO incremental: directoryInput.changedFiles
 
@@ -201,24 +202,24 @@ class ObjectBoxAndroidTransform(private val options: PluginOptions) : Transform(
                             copied += 1
                         }
                     }
-                    if (options.debug) log("Copied $copied files, will check $classes classes if transform required.")
+                    if (debug) log("Copied $copied files, will check $classes classes if transform required.")
                 }
 
                 // Not looking at class files in JARs, just copy them.
                 // It appears only Android Gradle Plugin 3.6.0 uses this to pass the R classes in a JAR.
                 // https://github.com/objectbox/objectbox-java/issues/817
                 transformInput.jarInputs.forEach { jarInput ->
-                    if (options.debug) log("Input JAR: ${jarInput.name} ${jarInput.file}")
+                    if (debug) log("Input JAR: ${jarInput.name} ${jarInput.file}")
                     // Note: TransformOutputProvider.getContentLocation(name, ...) returns the same file if all params
                     // match. Make sure name differs for each JAR to avoid overwriting an already copied JAR.
                     val outFileJar =
                         info.outputProvider.getContentLocation(jarInput.name, outputTypes, scopes, Format.JAR)
                     jarInput.file.copyTo(outFileJar, overwrite = true)
-                    if (options.debug) log("Output JAR: $outFileJar")
+                    if (debug) log("Output JAR: $outFileJar")
                 }
             }
 
-            ClassTransformer(options.debug).transformOrCopyClasses(probedClasses)
+            ClassTransformer(debug).transformOrCopyClasses(probedClasses)
 
         } catch (e: Throwable) {
             val buildTracker = GradleBuildTracker("Transformer")

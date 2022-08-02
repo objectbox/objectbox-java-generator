@@ -18,20 +18,22 @@
 
 package io.objectbox.gradle
 
-import org.gradle.api.Project
+import org.gradle.api.provider.Property
 
 /**
  * Gradle plugin extension, which collects options for the plugin. Separate from annotation processor options!
  *
- * NOTE Requirements: open because Gradle inherits from it, Project as constructor param.
+ * NOTE Requirements: abstract because Gradle inherits from it.
+ * https://docs.gradle.org/current/userguide/custom_plugins.html#sec:getting_input_from_the_build
  */
-open class PluginOptions(@Suppress("unused") val project: Project) {
+abstract class ObjectBoxPluginExtension {
 
     /** If detailed log output should be created. */
-    var debug: Boolean = false
+    abstract val debug: Property<Boolean>
 
-}
+    init {
+        @Suppress("LeakingThis") // Gradle docs ask to set it this way.
+        debug.convention(false)
+    }
 
-fun Project.getObjectBoxPluginOptions(): PluginOptions? {
-    return extensions.findByType(PluginOptions::class.java)
 }
