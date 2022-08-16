@@ -27,7 +27,6 @@ import io.objectbox.converter.PropertyConverter
 import io.objectbox.relation.RelationInfo
 import io.objectbox.relation.ToMany
 import io.objectbox.relation.ToOne
-import org.greenrobot.essentials.collections.LongHashSet
 
 
 class EntityEmptyConverter : PropertyConverter<List<EntityEmpty>, String> {
@@ -83,7 +82,7 @@ object EntityConverterAndToMany_ : EntityInfo<EntityConverterAndToMany>, EntityI
 }
 
 @Entity
-class EntityConverterAndToOne(val someExternalType: LongHashSet? = LongHashSet(8)) {
+class EntityConverterAndToOne(val someExternalType: Pair<String, String>? = Pair("A", "B")) {
     lateinit var entityEmpty: ToOne<EntityEmpty>
 
     @Convert(converter = TestConverter::class, dbType = String::class)

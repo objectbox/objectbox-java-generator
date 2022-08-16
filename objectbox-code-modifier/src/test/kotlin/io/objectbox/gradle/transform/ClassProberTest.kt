@@ -30,7 +30,7 @@ class ClassProberTest : AbstractTransformTest() {
 
     @Test
     fun testProbeNoEntity() {
-        assertFalse(probeClass(this.javaClass.kotlin).isEntity)
+        assertFalse(probeClass(TestCursor::class).isEntity)
     }
 
     @Test

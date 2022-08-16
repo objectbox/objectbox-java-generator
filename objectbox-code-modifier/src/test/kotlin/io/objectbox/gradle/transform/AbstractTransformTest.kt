@@ -27,8 +27,8 @@ import kotlin.reflect.KClass
 abstract class AbstractTransformTest {
     private val classDirs = arrayOf(
             // See also: https://docs.gradle.org/4.0/release-notes.html#location-of-classes-in-the-build-directory
-            "build/classes/kotlin/test",
-            "objectbox-gradle-plugin/build/classes/kotlin/test",
+            "build/classes/kotlin/testFixtures",
+            "objectbox-gradle-plugin/build/classes/kotlin/testFixtures",
     )
     private val classDir = classDirs.map(::File).first { it.exists() }
 

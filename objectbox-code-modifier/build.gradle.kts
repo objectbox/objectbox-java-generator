@@ -1,4 +1,6 @@
 plugins {
+    id("java-library")
+    id("java-test-fixtures")
     id("kotlin")
     id("kotlin-kapt")
     id("com.github.gmazzo.buildconfig")
@@ -35,6 +37,8 @@ dependencies {
     testImplementation("junit:junit:$junit_version")
     testImplementation("org.mockito:mockito-core:$mockito_version")
     testImplementation("com.google.truth:truth:$truth_version")
+
+    testFixturesImplementation("io.objectbox:objectbox-java:$objectbox_java_version")
 }
 
 buildConfig {
@@ -54,6 +58,11 @@ val sourcesJar by tasks.registering(Jar::class) {
     archiveClassifier.set("sources")
     from("README")
 }
+
+// Do not publish test fixtures.
+val javaComponent = components["java"] as AdhocComponentWithVariants
+javaComponent.withVariantsFromConfiguration(configurations["testFixturesApiElements"]) { skip() }
+javaComponent.withVariantsFromConfiguration(configurations["testFixturesRuntimeElements"]) { skip() }
 
 apply(from = rootProject.file("gradle/objectbox-publish.gradle"))
 // Set project-specific properties

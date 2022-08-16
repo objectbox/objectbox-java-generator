@@ -16,7 +16,7 @@
  * along with ObjectBox Build Tools.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-@file:Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS", "unused")
+@file:Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS", "unused", "UNUSED_PARAMETER")
 
 package io.objectbox.gradle.transform
 
@@ -30,7 +30,6 @@ import io.objectbox.internal.IdGetter
 import io.objectbox.relation.RelationInfo
 import io.objectbox.relation.ToMany
 import io.objectbox.relation.ToOne
-import org.junit.Rule
 
 
 @Entity
@@ -124,7 +123,7 @@ class EntityTransientList {
 
     lateinit var actualRelation: List<EntityEmpty>
 
-    @Rule
+    @Deprecated(message = "non-ObjectBox annotation")
     val dummyWithAlienAnnotation: Boolean = false
 }
 
@@ -151,7 +150,7 @@ object EntityMultipleCtors_ : EntityInfo<EntityMultipleCtors>, EntityInfoStub<En
 class TestCursor : Cursor<EntityBoxStoreField>(null, 0, null, null) {
     override fun getId(entity: EntityBoxStoreField): Long = throw NotImplementedError("Stub for testing")
     override fun put(entity: EntityBoxStoreField): Long = throw NotImplementedError("Stub for testing")
-    private fun attachEntity(@Suppress("UNUSED_PARAMETER") entity: EntityBoxStoreField) {}
+    private fun attachEntity(entity: EntityBoxStoreField) {}
 }
 
 class CursorExistingImplReads : Cursor<EntityBoxStoreField>(null, 0, null, null) {
