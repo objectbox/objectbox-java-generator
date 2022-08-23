@@ -128,19 +128,19 @@ class ClassTransformerTest : AbstractTransformTest() {
     }
 
     @Test
-    fun testTransformCursor() {
+    fun cursor_isTransformed() {
         val classes = listOf(TestCursor::class, EntityBoxStoreField::class)
         testTransformOrCopy(classes, 1, 1)
     }
 
     @Test
-    fun testTransformCursorExistingImplReads() {
+    fun cursorAttachReads_isTransformed() {
         val classes = listOf(CursorExistingImplReads::class, EntityBoxStoreField::class)
         testTransformOrCopy(classes, 1, 1)
     }
 
     @Test
-    fun testTransformCursorExistingImplWrites() {
+    fun cursorAttachWrites_notTransformed() {
         val classes = listOf(CursorExistingImplWrites::class, EntityBoxStoreField::class)
         testTransformOrCopy(classes, 0, 2)
     }
