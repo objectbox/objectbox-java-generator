@@ -31,3 +31,7 @@ open class PluginOptions(@Suppress("unused") val project: Project) {
     var debug: Boolean = false
 
 }
+
+fun Project.getObjectBoxPluginOptions(): PluginOptions? {
+    return extensions.findByType(PluginOptions::class.java)
+}

@@ -21,6 +21,7 @@ package io.objectbox.gradle
 import io.objectbox.GradlePluginBuildConfig
 import io.objectbox.logging.log
 import org.gradle.api.Project
+import org.gradle.api.plugins.JavaPlugin
 import java.util.*
 
 class ProjectEnv(val project: Project) {
@@ -38,14 +39,15 @@ class ProjectEnv(val project: Project) {
     val debug: Boolean
         get() = options.debug
 
-    val androidPluginIds = listOf("android", "android-library", /* Legacy Android Plugin */
-        "com.android.application", "com.android.library", /* Android Plugin */
-        "com.android.feature" /* Instant App Module */)
-    val hasAndroidPlugin = androidPluginIds.any { project.plugins.hasPlugin(it) }
-
+    // Note: can not use types as this project uses Android and Kotlin plugin API as compileOnly,
+    // so the classes might be missing from projects that do not have the Android or Kotlin plugin on the classpath.
+    // All Android plugins also apply the AndroidBasePlugin.
+    val hasAndroidPlugin = project.plugins.hasPlugin("com.android.base")
     val hasKotlinAndroidPlugin = project.plugins.hasPlugin("kotlin-android")
     val hasKotlinPlugin = project.plugins.hasPlugin("kotlin")
-    val hasJavaPlugin = project.plugins.hasPlugin("java")
+    // The Java Library and Java Application plugin,
+    // as well as the Kotlin JVM and Android plugin also apply the Java plugin.
+    val hasJavaPlugin = project.plugins.hasPlugin(JavaPlugin::class.java)
 
     val osName: String = System.getProperty("os.name")
     val is64Bit = System.getProperty("sun.arch.data.model") == "64"

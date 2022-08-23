@@ -19,21 +19,18 @@
 package io.objectbox.gradle
 
 import io.objectbox.gradle.transform.ObjectBoxAndroidTransform
+import io.objectbox.gradle.transform.ObjectBoxJavaClassesTransformTask
 import io.objectbox.gradle.transform.ObjectBoxJavaTransform
 import io.objectbox.gradle.transform.TransformException
 import io.objectbox.gradle.util.GradleCompat
-import io.objectbox.logging.log
 import org.gradle.api.Action
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.UnknownDomainObjectException
-import org.gradle.api.UnknownTaskException
 import org.gradle.api.artifacts.Dependency
 import org.gradle.api.plugins.InvalidPluginException
-import org.gradle.api.plugins.JavaPluginConvention
 import org.gradle.api.tasks.compile.JavaCompile
-import java.util.*
 
 /**
  * A Gradle plugin that depending on the other plugins/dependencies of a project it is applied to
@@ -53,14 +50,20 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
     private val buildTracker = GradleBuildTracker("GradlePlugin")
 
     override fun apply(project: Project) {
+        // Trigger Gradle version check.
+        GradleCompat.get()
+
         try {
             val env = ProjectEnv(project)
-            if (!(env.hasAndroidPlugin || env.hasJavaPlugin || env.hasKotlinPlugin)) {
+            // Note: do not check for just a Kotlin plugin. Currently, the Kotlin Android and Kotlin JVM
+            // plugins ensure the Java plugin is applied, but they might not in the future. However, the
+            // ObjectBox Java library requires Java support.
+            if (!(env.hasAndroidPlugin || env.hasJavaPlugin)) {
                 throw InvalidPluginException(
-                    "'$pluginId' expects one of the following plugins to be applied to the project:\n" +
-                            "\t* java\n" +
-                            "\t* kotlin\n" +
-                            "\t${env.androidPluginIds.joinToString("\n\t") { "* $it" }}"
+                    "'$pluginId' can only be applied to a project if one of the following is applied before:\n" +
+                            "\t* an Android plugin\n" +
+                            "\t* the Kotlin Android or JVM plugin\n" +
+                            "\t* the Java Library, Java Application or Java plugin\n"
                 )
             }
             addDependenciesAnnotationProcessor(env)
@@ -69,13 +72,11 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
             // ensure Android plugin API is available
             if (env.hasAndroidPlugin) {
                 // Cannot use afterEvaluate to register Android transform, thus our plugin must be applied after Android
-                if (ObjectBoxAndroidTransform.Registration.getAndroidExtensionClasses(project).isNotEmpty()) {
-                    ObjectBoxAndroidTransform.Registration.to(
-                        project,
-                        env.options,
-                        env.hasKotlinAndroidPlugin || env.hasKotlinPlugin
-                    )
-                }
+                ObjectBoxAndroidTransform.Registration.to(
+                    project,
+                    env.options,
+                    env.hasKotlinAndroidPlugin || env.hasKotlinPlugin
+                )
             } else {
                 // fall back to Gradle task
                 createPlainJavaTransformTask(env)
@@ -90,55 +91,37 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
     }
 
     private fun createPlainJavaTransformTask(env: ProjectEnv) {
-        // wait until after project evaluation so SourceSets defined in build configs are included
         val project = env.project
-        project.afterEvaluate { _ ->
-            val javaPlugin = project.convention.getPlugin(JavaPluginConvention::class.java)
-            javaPlugin.sourceSets.forEach { sourceSet ->
-                // name task based on SourceSet
-                val sourceSetName = sourceSet.name
-                val taskName =
-                    "objectboxJavaTransform" + if (sourceSetName != "main") {
-                        sourceSetName.replaceFirstChar { it.titlecase(Locale.getDefault()) }
-                    } else ""
+        val sourceSets = GradleCompat.get().getJavaPluginSourceSets(project)
+        // Use all so SourceSets defined in build configs available only after evaluation are included.
+        sourceSets.all { sourceSet ->
+            // name task based on SourceSet
+            val taskName = sourceSet.getTaskName("transform", "objectBoxClasses")
 
-                // use register to defer creation until use
-                val transformTask = GradleCompat.get().registerTask(project, taskName)
+            // Add compiled Java project sources, makes Java compile task a dependency.
+            val compileJavaTaskOutputDir = project.tasks.withType(JavaCompile::class.java)
+                .named(sourceSet.compileJavaTaskName).map { it.destinationDirectory }
+            val inputClasspath = project.files(compileJavaTaskOutputDir)
 
-                // verify classes and compileJava task exist, attach to lifecycle
-                // assumes that classes task depends on compileJava depends on compileKotlin
-                val classesTaskName = sourceSet.classesTaskName
-                try {
-                    GradleCompat.get().configureTask(project, sourceSet.classesTaskName) {
-                        it.dependsOn(transformTask)
-                    }
-                } catch (e: UnknownDomainObjectException) {
-                    throw RuntimeException("Could not find classes task '$classesTaskName'.", e)
+            // Use register to defer creation until use.
+            val transformTask = project.tasks.register(
+                taskName,
+                ObjectBoxJavaClassesTransformTask::class.java,
+                ObjectBoxJavaClassesTransformTask.ConfigAction(inputClasspath)
+            )
+
+            // Verify classes and compileJava task exist, attach to lifecycle
+            // assumes that classes task depends on compileJava depends on compileKotlin.
+            val classesTaskName = sourceSet.classesTaskName
+            try {
+                project.tasks.named(sourceSet.classesTaskName).configure {
+                    it.dependsOn(transformTask)
                 }
-
-                if (env.debug) log("Added $taskName task, depends on $classesTaskName task.")
-
-                val compileJavaTask = try {
-                    GradleCompat.get().getTask(project, sourceSet.compileJavaTaskName)
-                } catch (e: UnknownTaskException) {
-                    throw RuntimeException("Could not find compileJava task '${sourceSet.compileJavaTaskName}'.", e)
-                }
-
-                GradleCompat.get().configureTask(project, taskName) {
-                    it.group = "objectbox"
-                    it.description = "Transforms Java bytecode"
-
-                    it.mustRunAfter(compileJavaTask)
-
-                    it.doLast {
-                        // fine to get() compileJava task, no more need to defer its creation
-                        val compileJavaTaskOutputDir = GradleCompat.get()
-                            .getTask(project, JavaCompile::class.java, sourceSet.compileJavaTaskName)
-                            .destinationDirectory.get().asFile
-                        ObjectBoxJavaTransform(env.debug).transform(listOf(compileJavaTaskOutputDir))
-                    }
-                }
+            } catch (e: UnknownDomainObjectException) {
+                throw RuntimeException("Could not find classes task '$classesTaskName'.", e)
             }
+
+            env.logDebug { "Added $taskName task, depends on $classesTaskName task." }
         }
     }
 

@@ -20,6 +20,8 @@ package io.objectbox.gradle.transform
 
 import io.objectbox.gradle.GradleBuildTracker
 import io.objectbox.logging.log
+import io.objectbox.logging.logWarning
+import org.gradle.api.file.ConfigurableFileCollection
 import java.io.File
 
 /**
@@ -31,10 +33,19 @@ import java.io.File
  */
 class ObjectBoxJavaTransform(private val debug: Boolean) {
 
-    fun transform(byteCodeDirs: List<File>, outDir: File? = null, copyNonTransformed: Boolean = true) {
+    fun transform(compiledClasses: ConfigurableFileCollection, outDir: File?, copyNonTransformed: Boolean) {
         try {
-            val probedClasses = mutableListOf<ProbedClass>()
+            // Process classpath in reverse order to ensure output for first items overwrites output for last items.
+            val byteCodeDirs = compiledClasses.files.toList().reversed()
+            // Currently not modifying JAR files as there are not expected to be some,
+            // but instruct users to report if there are.
+            byteCodeDirs.forEach {
+                if (it.isFile && it.extension == "jar") {
+                    logWarning("Detected JAR file in transform classpath ($it), relations might not work, please report this to us.")
+                }
+            }
 
+            val probedClasses = mutableListOf<ProbedClass>()
             val classProber = ClassProber()
             byteCodeDirs.forEach { byteCodeDir ->
                 if (debug) log("Detected byte code dir ${byteCodeDir.path}")

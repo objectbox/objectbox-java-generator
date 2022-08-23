@@ -23,14 +23,9 @@ import com.android.build.api.transform.QualifiedContent
 import com.android.build.api.transform.Transform
 import com.android.build.api.transform.TransformInvocation
 import com.android.build.gradle.AppExtension
-import com.android.build.gradle.AppPlugin
 import com.android.build.gradle.BaseExtension
 import com.android.build.gradle.FeatureExtension
-import com.android.build.gradle.FeaturePlugin
 import com.android.build.gradle.LibraryExtension
-import com.android.build.gradle.LibraryPlugin
-import com.android.build.gradle.TestExtension
-import com.android.build.gradle.TestPlugin
 import com.android.build.gradle.api.BaseVariant
 import com.android.build.gradle.api.UnitTestVariant
 import io.objectbox.gradle.GradleBuildTracker
@@ -57,46 +52,37 @@ class ObjectBoxAndroidTransform(private val options: PluginOptions) : Transform(
     object Registration {
         fun to(project: Project, options: PluginOptions, hasKotlinPlugin: Boolean) {
             val transform = ObjectBoxAndroidTransform(options)
-            getAllExtensions(project).forEach { extension ->
-                // for regular build and instrumentation tests
-                extension.registerTransform(transform)
-                // for local unit tests
-                // a transform registered like above does only run when dexing is required (!= for local unit tests)
-                // so inject our own transform task before local unit tests are compiled
-                when (extension) {
-                    is AppExtension -> extension.applicationVariants.all {
-                        injectTransformTask(project, options, hasKotlinPlugin, it, it.unitTestVariant)
-                    }
-                    is LibraryExtension -> extension.libraryVariants.all {
-                        injectTransformTask(project, options, hasKotlinPlugin, it, it.unitTestVariant)
-                    }
-                    is FeatureExtension -> extension.featureVariants.all {
-                        injectTransformTask(project, options, hasKotlinPlugin, it, it.unitTestVariant)
-                    }
-                    is TestExtension -> extension.applicationVariants.all {
-                        injectTransformTask(project, options, hasKotlinPlugin, it, it.unitTestVariant)
-                    }
+
+            // For regular build and instrumentation (on mobile device) tests,
+            // uses the Transform API for Android Plugin 7.1 and older.
+            val androidExtension = project.extensions.findByType(BaseExtension::class.java)
+                ?: error("The Android Gradle plugin BaseExtension was not found.")
+            androidExtension.registerTransform(transform)
+
+            // For local (on dev machine) unit tests.
+            // A transform registered like above does only run when dexing is required
+            // (!= for local unit tests) so inject a custom transform task before local unit tests are compiled.
+            // Note: could use findByType(TestedExtension::class.java), however, then do not
+            // have access to compiled sources to add to transform task classpath.
+            // Note: see ProjectEnv.androidPluginIds which plugins are supported.
+            when (androidExtension) {
+                is AppExtension -> androidExtension.applicationVariants.all {
+                    injectTransformTask(project, options, hasKotlinPlugin, it, it.unitTestVariant)
                 }
+                // Used for Android Instant App base and feature modules, but deprecated as of
+                // Android Plugin 3.4.0 (April 2019). Behaves similar to the library plugin.
+                // https://developer.android.com/topic/google-play-instant/feature-module-migration
+                is FeatureExtension -> androidExtension.featureVariants.all {
+                    injectTransformTask(project, options, hasKotlinPlugin, it, it.unitTestVariant)
+                }
+                is LibraryExtension -> androidExtension.libraryVariants.all {
+                    injectTransformTask(project, options, hasKotlinPlugin, it, it.unitTestVariant)
+                }
+                // Note: TestExtension is only used to create a separate instrumentation test module,
+                // it can not run local unit tests.
+                // https://developer.android.com/studio/test/advanced-test-setup#use-separate-test-modules-for-instrumented-tests
+                // is TestExtension ->
             }
-        }
-
-        private fun getAllExtensions(project: Project): Set<BaseExtension> {
-            val exClasses = getAndroidExtensionClasses(project)
-            if (exClasses.isEmpty()) throw TransformException(
-                "No Android plugin found - please apply ObjectBox plugins after the Android plugin"
-            )
-            return exClasses.map { project.extensions.getByType(it) as BaseExtension }.toSet()
-        }
-
-        fun getAndroidExtensionClasses(project: Project): MutableList<Class<out BaseExtension>> {
-            // Should be only one plugin, but let's assume there can be a combination just in case...
-            val exClasses = mutableListOf<Class<out BaseExtension>>()
-            val plugins = project.plugins
-            if (plugins.hasPlugin(LibraryPlugin::class.java)) exClasses += LibraryExtension::class.java
-            if (plugins.hasPlugin(TestPlugin::class.java)) exClasses += TestExtension::class.java
-            if (plugins.hasPlugin(AppPlugin::class.java)) exClasses += AppExtension::class.java
-            if (plugins.hasPlugin(FeaturePlugin::class.java)) exClasses += FeatureExtension::class.java
-            return exClasses
         }
 
         /**
@@ -110,12 +96,8 @@ class ObjectBoxAndroidTransform(private val options: PluginOptions) : Transform(
          */
         private fun injectTransformTask(
             project: Project, options: PluginOptions, hasKotlinPlugin: Boolean,
-            baseVariant: BaseVariant, unitTestVariant: UnitTestVariant?
+            baseVariant: BaseVariant, unitTestVariant: UnitTestVariant
         ) {
-            if (unitTestVariant == null) {
-                return
-            }
-
             // Add compiled Java project sources, makes Java compile task a dependency.
             // Note: javaCompileProvider requires at least Android Gradle Plugin 3.3.0
             val inputClasspath = project.files(baseVariant.javaCompileProvider.map { it.destinationDirectory })

@@ -140,15 +140,15 @@ open class PluginApplyTest {
         sourceSetSuffix: String,
         classesTaskName: String
     ) {
-        // Created.
-        val transformTask = project.tasks.findByPath("objectboxJavaTransform$sourceSetSuffix")
+        // Is created.
+        val transformTask = project.tasks.findByPath("transform${sourceSetSuffix}ObjectBoxClasses")
         assertNotNull(transformTask)
 
-        // Must run after compile task.
+        // Depends on compile task of source set.
         assertEquals(1, transformTask!!
-            .mustRunAfter.getDependencies(transformTask).count { it.name == "compile${sourceSetSuffix}Java" })
+            .taskDependencies.getDependencies(transformTask).count { it.name == "compile${sourceSetSuffix}Java" })
 
-        // Classes task should depend on it.
+        // Classes task of source set should depend on it.
         val classesTask = project.tasks.getByName(classesTaskName)
         assertEquals(1, classesTask
             .taskDependencies.getDependencies(classesTask).count { it.name == transformTask.name })
