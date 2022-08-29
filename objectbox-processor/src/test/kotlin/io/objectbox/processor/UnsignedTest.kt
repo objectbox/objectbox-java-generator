@@ -1,7 +1,6 @@
 package io.objectbox.processor
 
 import com.google.common.truth.Truth.assertThat
-import com.google.testing.compile.CompilationSubject
 import com.google.testing.compile.JavaFileObjects
 import io.objectbox.model.PropertyFlags
 import org.junit.Test
@@ -29,18 +28,20 @@ class UnsignedTest : BaseProcessorTest() {
         // Assert generated MyObjectBox file.
         // Need stable model file + ids to verify sources match.
         TestEnvironment("unsigned.json").run {
-            val compilation = compile(listOf(javaFileObject))
-            CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
-            CompilationSubject.assertThat(compilation).generatedSourceFile("com.example.MyObjectBox").run {
-                isNotNull()
-                hasSourceEquivalentTo(JavaFileObjects.forResource("expected-source/MyObjectBox-unsigned.java"))
-            }
+            compile(listOf(javaFileObject))
+                .assertThatIt {
+                    succeededWithoutWarnings()
+                    generatedSourceFile("com.example.MyObjectBox").run {
+                        isNotNull()
+                        hasSourceEquivalentTo(JavaFileObjects.forResource("expected-source/MyObjectBox-unsigned.java"))
+                    }
+                }
         }
 
         // Assert model file, ensure it is re-created on each run.
         val environment = TestEnvironment("unsigned.json", useTemporaryModelFile = true)
-        val compilation = environment.compile(listOf(javaFileObject))
-        CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
+        environment.compile(listOf(javaFileObject))
+            .assertThatIt { succeededWithoutWarnings() }
 
         val model = environment.readModel()
         val entity = model.findEntity("Example", null)!!
@@ -64,13 +65,12 @@ class UnsignedTest : BaseProcessorTest() {
             JavaFileObjects.forSourceString("com.example.Example", it)
         }
 
-        val environment = TestEnvironment("not-generated.json", useTemporaryModelFile = true)
-
-        val compilation = environment.compile(listOf(javaFileObject))
-        CompilationSubject.assertThat(compilation).failed()
-        CompilationSubject.assertThat(compilation).hadErrorContaining(
-            "@Unsigned can not be used with @Id. ID properties are unsigned internally by default."
-        )
+        TestEnvironment("not-generated.json", useTemporaryModelFile = true)
+            .compile(listOf(javaFileObject))
+            .assertThatIt {
+                failed()
+                hadErrorContaining("@Unsigned can not be used with @Id. ID properties are unsigned internally by default.")
+            }
     }
 
     @Test
@@ -90,12 +90,11 @@ class UnsignedTest : BaseProcessorTest() {
             JavaFileObjects.forSourceString("com.example.Example", it)
         }
 
-        val environment = TestEnvironment("not-generated.json", useTemporaryModelFile = true)
-
-        val compilation = environment.compile(listOf(javaFileObject))
-        CompilationSubject.assertThat(compilation).failed()
-        CompilationSubject.assertThat(compilation).hadErrorContaining(
-            "@Unsigned is only supported for integer properties."
-        )
+        TestEnvironment("not-generated.json", useTemporaryModelFile = true)
+            .compile(listOf(javaFileObject))
+            .assertThatIt {
+                failed()
+                hadErrorContaining("@Unsigned is only supported for integer properties.")
+            }
     }
 }

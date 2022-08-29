@@ -1,7 +1,6 @@
 package io.objectbox.processor
 
 import com.google.common.truth.Truth.assertThat
-import com.google.testing.compile.CompilationSubject
 import com.google.testing.compile.JavaFileObjects
 import org.junit.Test
 
@@ -27,11 +26,11 @@ class IdTest : BaseProcessorTest() {
 
         val environment = TestEnvironment("not-generated.json", useTemporaryModelFile = true)
 
-        val compilation = environment.compile(listOf(sourceFile))
-        CompilationSubject.assertThat(compilation).failed()
-        CompilationSubject.assertThat(compilation).hadErrorContaining(
-            "No @Id property found for 'NoIdEntity', add @Id on a not-null long property."
-        )
+        environment.compile(listOf(sourceFile))
+            .assertThatIt {
+                failed()
+                hadErrorContaining("No @Id property found for 'NoIdEntity', add @Id on a not-null long property.")
+            }
         assertThat(environment.isModelFileExists()).isFalse()
     }
 
@@ -52,11 +51,11 @@ class IdTest : BaseProcessorTest() {
 
         val environment = TestEnvironment("not-generated.json", useTemporaryModelFile = true)
 
-        val compilation = environment.compile(listOf(sourceFile))
-        CompilationSubject.assertThat(compilation).failed()
-        CompilationSubject.assertThat(compilation).hadErrorContaining(
-            "An @Id property must be a not-null long."
-        )
+        environment.compile(listOf(sourceFile))
+            .assertThatIt {
+                failed()
+                hadErrorContaining("An @Id property must be a not-null long.")
+            }
         assertThat(environment.isModelFileExists()).isFalse()
     }
 
@@ -76,11 +75,11 @@ class IdTest : BaseProcessorTest() {
 
         val environment = TestEnvironment("not-generated.json", useTemporaryModelFile = true)
 
-        val compilation = environment.compile(listOf(sourceFile))
-        CompilationSubject.assertThat(compilation).failed()
-        CompilationSubject.assertThat(compilation).hadErrorContaining(
-            "An @Id property must not be private or have a not-private getter and setter."
-        )
+        environment.compile(listOf(sourceFile))
+            .assertThatIt {
+                failed()
+                hadErrorContaining("An @Id property must not be private or have a not-private getter and setter.")
+            }
         assertThat(environment.isModelFileExists()).isFalse()
     }
 

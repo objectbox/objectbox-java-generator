@@ -1,7 +1,6 @@
 package io.objectbox.processor
 
 import com.google.common.truth.Truth.assertThat
-import com.google.testing.compile.CompilationSubject
 import com.google.testing.compile.JavaFileObjects
 import io.objectbox.generator.model.PropertyType
 import org.junit.Test
@@ -29,8 +28,8 @@ class DefaultValueTest : BaseProcessorTest() {
 
         val environment = TestEnvironment("default-value-empty-string.json", useTemporaryModelFile = true)
 
-        val compilation = environment.compile(listOf(sourceFile))
-        CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
+        environment.compile(listOf(sourceFile))
+            .assertThatIt { succeededWithoutWarnings() }
 
         val stringProperty = environment.schema.entities[0].properties.find { it.dbName == "nonNullString" }!!
 
@@ -65,11 +64,11 @@ class DefaultValueTest : BaseProcessorTest() {
 
         val environment = TestEnvironment("default-value-not-empty-string.json", useTemporaryModelFile = true)
 
-        val compilation = environment.compile(listOf(sourceFile))
-        CompilationSubject.assertThat(compilation).failed()
-        CompilationSubject.assertThat(compilation).hadErrorContaining(
-            "Only @DefaultValue(\"\") is supported."
-        )
+        environment.compile(listOf(sourceFile))
+            .assertThatIt {
+                failed()
+                hadErrorContaining("Only @DefaultValue(\"\") is supported.")
+            }
         assertThat(environment.isModelFileExists()).isFalse()
     }
 
@@ -93,11 +92,11 @@ class DefaultValueTest : BaseProcessorTest() {
 
         val environment = TestEnvironment("default-value-prop-not-string.json", useTemporaryModelFile = true)
 
-        val compilation = environment.compile(listOf(sourceFile))
-        CompilationSubject.assertThat(compilation).failed()
-        CompilationSubject.assertThat(compilation).hadErrorContaining(
-            "For @DefaultValue(\"\") property must be String."
-        )
+        environment.compile(listOf(sourceFile))
+            .assertThatIt {
+                failed()
+                hadErrorContaining("For @DefaultValue(\"\") property must be String.")
+            }
         assertThat(environment.isModelFileExists()).isFalse()
     }
 
@@ -137,11 +136,11 @@ class DefaultValueTest : BaseProcessorTest() {
 
         val environment = TestEnvironment("default-value-convert.json", useTemporaryModelFile = true)
 
-        val compilation = environment.compile(listOf(sourceFile))
-        CompilationSubject.assertThat(compilation).failed()
-        CompilationSubject.assertThat(compilation).hadErrorContaining(
-            "Can not use both @Convert and @DefaultValue."
-        )
+        environment.compile(listOf(sourceFile))
+            .assertThatIt {
+                failed()
+                hadErrorContaining("Can not use both @Convert and @DefaultValue.")
+            }
         assertThat(environment.isModelFileExists()).isFalse()
     }
 

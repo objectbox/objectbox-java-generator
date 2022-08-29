@@ -1,7 +1,6 @@
 package io.objectbox.processor
 
 import com.google.common.truth.Truth.assertThat
-import com.google.testing.compile.CompilationSubject
 import com.google.testing.compile.JavaFileObjects
 import io.objectbox.model.PropertyFlags
 import org.junit.Test
@@ -59,8 +58,8 @@ class IdCompanionTest : BaseProcessorTest() {
     private fun assertIdCompanionDateNano(javaFileObject: JavaFileObject) {
         val environment = TestEnvironment("idcompanion-datenano.json", useTemporaryModelFile = true)
 
-        val compilation = environment.compile(listOf(javaFileObject))
-        CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
+        environment.compile(listOf(javaFileObject))
+            .assertThatIt { succeededWithoutWarnings() }
 
         // Assert model file.
         val model = environment.readModel()
@@ -93,9 +92,10 @@ class IdCompanionTest : BaseProcessorTest() {
 
         val environment = TestEnvironment("idcompanion-multiple.json", useTemporaryModelFile = true)
 
-        val compilation = environment.compile(listOf(javaFileObject))
-        CompilationSubject.assertThat(compilation)
-            .hadErrorContaining("'companion1' is already an @IdCompanion property, there can only be one.")
+        environment.compile(listOf(javaFileObject))
+            .assertThatIt {
+                hadErrorContaining("'companion1' is already an @IdCompanion property, there can only be one.")
+            }
     }
 
     @Test
@@ -117,9 +117,10 @@ class IdCompanionTest : BaseProcessorTest() {
 
         val environment = TestEnvironment("idcompanion-not-date.json", useTemporaryModelFile = true)
 
-        val compilation = environment.compile(listOf(javaFileObject))
-        CompilationSubject.assertThat(compilation)
-            .hadErrorContaining("@IdCompanion has to be of type Date or a long annotated with @Type(DateNano).")
+        environment.compile(listOf(javaFileObject))
+            .assertThatIt {
+                hadErrorContaining("@IdCompanion has to be of type Date or a long annotated with @Type(DateNano).")
+            }
     }
 
 }

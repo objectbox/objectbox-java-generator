@@ -20,7 +20,6 @@ package io.objectbox.processor
 
 import com.google.common.truth.Truth.assertThat
 import com.google.common.truth.Truth.assertWithMessage
-import com.google.testing.compile.CompilationSubject
 import com.google.testing.compile.JavaFileObjects
 import io.objectbox.generator.IdUid
 import io.objectbox.generator.model.PropertyType
@@ -66,21 +65,20 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
         // need stable model file + ids to verify sources match
         val environment = TestEnvironment("default.json")
 
-        val compilation = environment.compileDaoCompat(className, relatedClassName)
-        CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
-
-        // assert generated files source trees
-        compilation.assertGeneratedSourceMatches("MyObjectBox")
-        compilation.assertGeneratedSourceMatches("${className}_")
-        compilation.assertGeneratedSourceMatches("${className}Cursor")
+        environment.compileDaoCompat(className, relatedClassName)
+            .assertThatIt { succeededWithoutWarnings() }
+            // assert generated files source trees
+            .assertGeneratedSourceMatches("MyObjectBox")
+            .assertGeneratedSourceMatches("${className}_")
+            .assertGeneratedSourceMatches("${className}Cursor")
     }
 
     private fun testSchemaAndModel(className: String, relatedClassName: String) {
         // ensure mode file is re-created on each run
         val environment = TestEnvironment("default.json", useTemporaryModelFile = true)
 
-        val compilation = environment.compileDaoCompat(className, relatedClassName)
-        CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
+        environment.compileDaoCompat(className, relatedClassName)
+            .assertThatIt { succeededWithoutWarnings() }
 
         // assert schema
         val schema = environment.schema
@@ -316,15 +314,14 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
         // need stable model file + ids to verify sources match
         val environment = TestEnvironment("default.json", "io.objectbox.processor.custom")
 
-        val compilation = environment.compile(className, relatedClassName)
-        CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
-
-        // assert generated files source trees
-        // MyObjectBox package and imports should be different
-        compilation.assertGeneratedSourceMatches("io.objectbox.processor.custom.MyObjectBox", "MyObjectBox-custom.java")
-        // all other files should stay the same
-        compilation.assertGeneratedSourceMatches("${className}_")
-        compilation.assertGeneratedSourceMatches("${className}Cursor")
+        environment.compile(className, relatedClassName)
+            .assertThatIt { succeededWithoutWarnings() }
+            // assert generated files source trees
+            // MyObjectBox package and imports should be different
+            .assertGeneratedSourceMatches("io.objectbox.processor.custom.MyObjectBox", "MyObjectBox-custom.java")
+            // all other files should stay the same
+            .assertGeneratedSourceMatches("${className}_")
+            .assertGeneratedSourceMatches("${className}Cursor")
     }
 
     @Test
@@ -333,8 +330,8 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
 
         val environment = TestEnvironment("default-no-pkg.json", useTemporaryModelFile = true)
 
-        val compilation = environment.compile(className)
-        CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
+        environment.compile(className)
+            .assertThatIt { succeededWithoutWarnings() }
     }
 
     @Test
@@ -344,8 +341,8 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
 
         val environment = TestEnvironment("multiple-annotations.json")
 
-        val compilation = environment.compile(className)
-        CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
+        environment.compile(className)
+            .assertThatIt { succeededWithoutWarnings() }
 
         val entity = environment.schema.entities.single { it.className == className }
 
@@ -383,8 +380,8 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
         val environment = TestEnvironment("multiple-packages.json", useTemporaryModelFile = true)
 
         // add to compiler ordered by length of package (unsorted)
-        val compilation = environment.compile(entityTopLastPackageName, entityTopFirstPackageName, entitySubPackageName)
-        CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
+        environment.compile(entityTopLastPackageName, entityTopFirstPackageName, entitySubPackageName)
+            .assertThatIt { succeededWithoutWarnings() }
 
         val schema = environment.schema
         // "io.objectbox.processor.test" would actually be better (common parent package)
@@ -420,11 +417,9 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
         val environment = TestEnvironment("ctr-no-arg-missing.json", useTemporaryModelFile = true)
 
         environment.compile(listOf(noArgCtrMissing))
-            .also {
-                CompilationSubject.assertThat(it).failed()
-                CompilationSubject.assertThat(it).hadErrorContaining(
-                    "No-argument or all-properties constructor is required for entity class."
-                )
+            .assertThatIt {
+                failed()
+                hadErrorContaining("No-argument or all-properties constructor is required for entity class.")
             }
         assertThat(environment.isModelFileExists()).isFalse()
     }
@@ -463,7 +458,7 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
         val environment = TestEnvironment("ctr-all-props.json", useTemporaryModelFile = true)
 
         environment.compile(listOf(allPropertiesCtrOnly))
-            .also { CompilationSubject.assertThat(it).succeededWithoutWarnings() }
+            .assertThatIt { succeededWithoutWarnings() }
         assertThat(environment.isModelFileExists()).isTrue()
     }
 
@@ -476,8 +471,8 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
 
         val environment = TestEnvironment("to-one-all-args.json", useTemporaryModelFile = true)
 
-        val compilation = environment.compile(parentName, childName)
-        CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
+        environment.compile(parentName, childName)
+            .assertThatIt { succeededWithoutWarnings() }
 
         val schema = environment.schema
         val child = schema.entities.single { it.className == childName }
@@ -490,8 +485,8 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
 
         val environment = TestEnvironment("kotlin.json", useTemporaryModelFile = true)
 
-        val compilation = environment.compile(entityName)
-        CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
+        environment.compile(entityName)
+            .assertThatIt { succeededWithoutWarnings() }
 
         // assert schema
         val schema = environment.schema
@@ -543,8 +538,8 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
 
         val environment = TestEnvironment("name-conflict.json", useTemporaryModelFile = true)
 
-        val compilation = environment.compile(parentName, childName)
-        CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
+        environment.compile(parentName, childName)
+            .assertThatIt { succeededWithoutWarnings() }
     }
 
     @Test
@@ -563,11 +558,11 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
             JavaFileObjects.forSourceString("com.example.Example", it)
         }
 
-        val environment = TestEnvironment("reserved-boxstore.json", useTemporaryModelFile = true)
-
-        val compilation = environment.compile(listOf(entityWithBoxstoreProperty))
-        CompilationSubject.assertThat(compilation)
-            .hadErrorContaining("A property can not be named `__boxStore`. Adding a BoxStore field for relations? Annotate it with @Transient.")
+        TestEnvironment("reserved-boxstore.json", useTemporaryModelFile = true)
+            .compile(listOf(entityWithBoxstoreProperty))
+            .assertThatIt {
+                hadErrorContaining("A property can not be named `__boxStore`. Adding a BoxStore field for relations? Annotate it with @Transient.")
+            }
     }
 
     @Test
@@ -597,10 +592,10 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
             JavaFileObjects.forSourceString("com.example.duplicate.Example", it)
         }
 
-        val environment = TestEnvironment("getter-matching-return.json", useTemporaryModelFile = true)
-
-        val compilation = environment.compile(listOf(javaFileObjectOriginal, javaFileObjectDuplicate))
-        CompilationSubject.assertThat(compilation)
-            .hadErrorContaining("There is already an entity class 'Example': 'com.example.original.Example'.")
+        TestEnvironment("getter-matching-return.json", useTemporaryModelFile = true)
+            .compile(listOf(javaFileObjectOriginal, javaFileObjectDuplicate))
+            .assertThatIt {
+                hadErrorContaining("There is already an entity class 'Example': 'com.example.original.Example'.")
+            }
     }
 }

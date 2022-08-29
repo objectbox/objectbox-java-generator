@@ -1,7 +1,6 @@
 package io.objectbox.processor
 
 import com.google.common.truth.Truth
-import com.google.testing.compile.CompilationSubject
 import com.google.testing.compile.JavaFileObjects
 import org.junit.Test
 
@@ -35,8 +34,8 @@ class GetterTest : BaseProcessorTest() {
 
         val environment = TestEnvironment("getter-is.json", useTemporaryModelFile = true)
 
-        val compilation = environment.compile(listOf(javaFileObject))
-        CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
+        environment.compile(listOf(javaFileObject))
+            .assertThatIt { succeededWithoutWarnings() }
 
         val entity = environment.schema.entities[0]!!
         val property = entity.properties!!.find { it.propertyName == "isProperty" }!!
@@ -73,8 +72,8 @@ class GetterTest : BaseProcessorTest() {
 
         val environment = TestEnvironment("getter-matching-return.json", useTemporaryModelFile = true)
 
-        val compilation = environment.compile(listOf(javaFileObject))
-        CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
+        environment.compile(listOf(javaFileObject))
+            .assertThatIt { succeededWithoutWarnings() }
 
         val entity = environment.schema.entities[0]!!
         val property = entity.properties!!.find { it.propertyName == "isProperty" }!!

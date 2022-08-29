@@ -1,7 +1,6 @@
 package io.objectbox.processor
 
 import com.google.common.truth.Truth.assertThat
-import com.google.testing.compile.CompilationSubject
 import io.objectbox.generator.model.PropertyType
 import org.junit.Assert
 import org.junit.Test
@@ -25,8 +24,8 @@ class InheritanceTest : BaseProcessorTest() {
 
         val environment = TestEnvironment("inheritance.json")
 
-        val compilation = environment.compile(nameBase, nameNoBase, nameSub, nameSubSub, nameInterface)
-        CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
+        environment.compile(nameBase, nameNoBase, nameSub, nameSubSub, nameInterface)
+            .assertThatIt { succeededWithoutWarnings() }
 
         // assert schema
         val schema = environment.schema
@@ -101,8 +100,8 @@ class InheritanceTest : BaseProcessorTest() {
 
         val environment = TestEnvironment("inheritance-generic.json")
 
-        val compilation = environment.compile(nameBase, nameSub)
-        CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
+        environment.compile(nameBase, nameSub)
+            .assertThatIt { succeededWithoutWarnings() }
 
         // assert schema
         val schema = environment.schema
@@ -154,8 +153,8 @@ class InheritanceTest : BaseProcessorTest() {
 
         val environment = TestEnvironment("inheritance-entities.json")
 
-        val compilation = environment.compile(nameSuper, nameSub, nameInterface)
-        CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
+        environment.compile(nameSuper, nameSub, nameInterface)
+            .assertThatIt { succeededWithoutWarnings() }
 
         // assert schema
         val schema = environment.schema
@@ -223,11 +222,12 @@ class InheritanceTest : BaseProcessorTest() {
         val nameBase = "InheritanceBase"
         val nameSub = "InheritanceSubOverride"
 
-        val environment = TestEnvironment("inheritance-overridden.json", useTemporaryModelFile = true)
-
-        val compilation = environment.compile(nameBase, nameSub)
-        CompilationSubject.assertThat(compilation).failed()
-        CompilationSubject.assertThat(compilation).hadErrorContaining("Duplicate name \"overriddenString\"")
+        TestEnvironment("inheritance-overridden.json", useTemporaryModelFile = true)
+            .compile(nameBase, nameSub)
+            .assertThatIt {
+                failed()
+                hadErrorContaining("Duplicate name \"overriddenString\"")
+            }
     }
 
 }

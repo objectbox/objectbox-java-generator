@@ -1,7 +1,6 @@
 package io.objectbox.processor
 
 import com.google.common.truth.Truth
-import com.google.testing.compile.CompilationSubject
 import com.google.testing.compile.JavaFileObjects
 import io.objectbox.generator.model.PropertyType
 import org.junit.Test
@@ -50,8 +49,8 @@ class TypeTest : BaseProcessorTest() {
 
         val environment = TestEnvironment("type-custom-datenano.json", useTemporaryModelFile = true)
 
-        val compilation = environment.compile(listOf(entitySource))
-        CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
+        environment.compile(listOf(entitySource))
+            .assertThatIt { succeededWithoutWarnings() }
 
         // Assert schema.
         val schema = environment.schema
@@ -89,11 +88,11 @@ class TypeTest : BaseProcessorTest() {
             JavaFileObjects.forSourceString("com.example.Example", it)
         }
 
-        val environment = TestEnvironment("type-not-long.json", useTemporaryModelFile = true)
-
-        val compilation = environment.compile(listOf(javaFileObject))
-        CompilationSubject.assertThat(compilation)
-            .hadErrorContaining("@Type(DateNano) only supports properties with type Long")
+        TestEnvironment("type-not-long.json", useTemporaryModelFile = true)
+            .compile(listOf(javaFileObject))
+            .assertThatIt {
+                hadErrorContaining("@Type(DateNano) only supports properties with type Long")
+            }
     }
 
 }

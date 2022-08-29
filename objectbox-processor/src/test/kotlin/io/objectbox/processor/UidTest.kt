@@ -1,7 +1,6 @@
 package io.objectbox.processor
 
 import com.google.common.truth.Truth.assertThat
-import com.google.testing.compile.CompilationSubject
 import org.junit.Assert
 import org.junit.Test
 
@@ -20,8 +19,8 @@ class UidTest {
 
         val environment = TestEnvironment("uid.json")
 
-        val compilation = environment.compile(className)
-        CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
+        environment.compile(className)
+            .assertThatIt { succeededWithoutWarnings() }
 
         val entity = environment.schema.entities[0]
         assertThat(entity.modelUid).isEqualTo(2361091532752425885)
@@ -34,9 +33,11 @@ class UidTest {
     fun testUidEmpty() {
         val environment = TestEnvironment("uid.json")
         // Note: suggested UID added to newUidPool in model file.
-        val compilation = environment.compile("UidEmptyEntity", modelExpectedToChange = true)
-        CompilationSubject.assertThat(compilation).failed()
-        CompilationSubject.assertThat(compilation).hadErrorContaining("@Uid(2361091532752425885L)")
+        environment.compile("UidEmptyEntity", modelExpectedToChange = true)
+            .assertThatIt {
+                failed()
+                hadErrorContaining("@Uid(2361091532752425885L)")
+            }
     }
 
     @Test
@@ -45,8 +46,8 @@ class UidTest {
         val modelBefore = environment.readModel()
         Assert.assertEquals(1, modelBefore.newUidPool.size)
 
-        val compilation = environment.compile("UidNewEntity", modelExpectedToChange = true)
-        CompilationSubject.assertThat(compilation).succeeded()
+        environment.compile("UidNewEntity", modelExpectedToChange = true)
+            .assertThatIt { succeededWithoutWarnings() }
         val model = environment.readModel()
 
         val newUid = modelBefore.newUidPool.single()
@@ -58,11 +59,13 @@ class UidTest {
 
     @Test
     fun testPropertyUidEmpty() {
-        val environment = TestEnvironment("uid.json")
         // Note: suggested UID added to newUidPool in model file.
-        val compilation = environment.compile("UidPropertyEmptyEntity", modelExpectedToChange = true)
-        CompilationSubject.assertThat(compilation).failed()
-        CompilationSubject.assertThat(compilation).hadErrorContaining("@Uid(7287685531948841886L)")
+        TestEnvironment("uid.json")
+            .compile("UidPropertyEmptyEntity", modelExpectedToChange = true)
+            .assertThatIt {
+                failed()
+                hadErrorContaining("@Uid(7287685531948841886L)")
+            }
     }
 
     @Test
@@ -73,8 +76,8 @@ class UidTest {
         Assert.assertEquals(1, modelBefore.newUidPool.size)
         val entityBefore = modelBefore.findEntity("UidEntity", null)!!
 
-        val compilation = environment.compile(entityName, modelExpectedToChange = true)
-        CompilationSubject.assertThat(compilation).succeeded()
+        environment.compile(entityName, modelExpectedToChange = true)
+            .assertThatIt { succeededWithoutWarnings() }
         val model = environment.readModel()
         val entity = model.findEntity("UidEntity", null)!!
 
@@ -89,11 +92,13 @@ class UidTest {
 
     @Test
     fun testToOneUidEmpty() {
-        val environment = TestEnvironment("uid-relation.json")
         // Note: suggested UID added to newUidPool in model file.
-        val compilation = environment.compile("UidToOneEmptyEntity", modelExpectedToChange = true)
-        CompilationSubject.assertThat(compilation).failed()
-        CompilationSubject.assertThat(compilation).hadErrorContaining("@Uid(4055646088440538446L)")
+        TestEnvironment("uid-relation.json")
+            .compile("UidToOneEmptyEntity", modelExpectedToChange = true)
+            .assertThatIt {
+                failed()
+                hadErrorContaining("@Uid(4055646088440538446L)")
+            }
     }
 
     @Test
@@ -104,8 +109,8 @@ class UidTest {
         Assert.assertEquals(1, modelBefore.newUidPool.size)
         val entityBefore = modelBefore.findEntity("UidRelationNewEntity", null)!!
 
-        val compilation = environment.compile(entityName, modelExpectedToChange = true)
-        CompilationSubject.assertThat(compilation).succeeded()
+        environment.compile(entityName, modelExpectedToChange = true)
+            .assertThatIt { succeededWithoutWarnings() }
         val model = environment.readModel()
         val entity = model.findEntity("UidRelationNewEntity", null)!!
 
@@ -125,8 +130,8 @@ class UidTest {
         val modelBefore = environment.readModel()
         Assert.assertEquals(1, modelBefore.newUidPool.size)
 
-        val compilation = environment.compile(entityName, modelExpectedToChange = true)
-        CompilationSubject.assertThat(compilation).succeeded()
+        environment.compile(entityName, modelExpectedToChange = true)
+            .assertThatIt { succeededWithoutWarnings() }
         val model = environment.readModel()
         val entity = model.findEntity("UidRelationNewEntity", null)!!
 
@@ -141,10 +146,12 @@ class UidTest {
 
     @Test
     fun testToManyUidEmpty() {
-        val environment = TestEnvironment("uid-relation.json")
-        val compilation = environment.compile("UidToManyEmptyEntity", modelExpectedToChange = true)
-        CompilationSubject.assertThat(compilation).failed()
-        CompilationSubject.assertThat(compilation).hadErrorContaining("@Uid(823077930327936262L)")
+        TestEnvironment("uid-relation.json")
+            .compile("UidToManyEmptyEntity", modelExpectedToChange = true)
+            .assertThatIt {
+                failed()
+                hadErrorContaining("@Uid(823077930327936262L)")
+            }
     }
 
 }

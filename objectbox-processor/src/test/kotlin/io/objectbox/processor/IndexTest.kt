@@ -1,7 +1,6 @@
 package io.objectbox.processor
 
 import com.google.common.truth.Truth.assertWithMessage
-import com.google.testing.compile.CompilationSubject
 import io.objectbox.generator.model.PropertyType
 import io.objectbox.model.PropertyFlags
 import org.junit.Assert
@@ -19,8 +18,8 @@ class IndexTest : BaseProcessorTest() {
 
         val environment = TestEnvironment("index-auto-detect.json", useTemporaryModelFile = true)
 
-        val compilation = environment.compile(entity)
-        CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
+        environment.compile(entity)
+            .assertThatIt { succeededWithoutWarnings() }
 
         assertWithMessage("test files broken").that(environment.schema.entities).isNotEmpty()
         environment.schema.entities.forEach {
@@ -49,55 +48,58 @@ class IndexTest : BaseProcessorTest() {
     fun index_unsupportedProperties_failsWithError() {
         val entity = "IndexUnsupported"
 
-        val environment = TestEnvironment("index-unsupported.json", useTemporaryModelFile = true)
+        TestEnvironment("index-unsupported.json", useTemporaryModelFile = true)
+            .compile(entity)
+            .assertThatIt {
+                failed()
 
-        val compilation = environment.compile(entity)
-        CompilationSubject.assertThat(compilation).failed()
+                hadErrorContaining("@Id property is unique and indexed by default, remove @Index.")
 
-        CompilationSubject.assertThat(compilation).hadErrorContaining("@Id property is unique and indexed by default, remove @Index.")
+                hadErrorContaining("@Index can not be used with a ToOne relation, remove @Index.")
+                hadErrorContaining("@Index can not be used with a ToMany relation, remove @Index.")
+                hadErrorContaining("@Index can not be used with a List relation, remove @Index.")
 
-        CompilationSubject.assertThat(compilation).hadErrorContaining("@Index can not be used with a ToOne relation, remove @Index.")
-        CompilationSubject.assertThat(compilation).hadErrorContaining("@Index can not be used with a ToMany relation, remove @Index.")
-        CompilationSubject.assertThat(compilation).hadErrorContaining("@Index can not be used with a List relation, remove @Index.")
-
-        CompilationSubject.assertThat(compilation).hadErrorContaining("@Index is not supported for Float, remove @Index.")
-        CompilationSubject.assertThat(compilation).hadErrorContaining("@Index is not supported for Double, remove @Index.")
-        CompilationSubject.assertThat(compilation).hadErrorContaining("@Index is not supported for ByteArray, remove @Index.")
-        CompilationSubject.assertThat(compilation).hadErrorContaining("@Index is not supported for StringArray, remove @Index.")
+                hadErrorContaining("@Index is not supported for Float, remove @Index.")
+                hadErrorContaining("@Index is not supported for Double, remove @Index.")
+                hadErrorContaining("@Index is not supported for ByteArray, remove @Index.")
+                hadErrorContaining("@Index is not supported for StringArray, remove @Index.")
+            }
     }
 
     @Test
     fun index_hash_failsForUnsupportedTypes() {
         val entity = "IndexHashNotSupported"
 
-        val environment = TestEnvironment("index-hash-not.json", useTemporaryModelFile = true)
+        TestEnvironment("index-hash-not.json", useTemporaryModelFile = true)
+            .compile(entity)
+            .assertThatIt {
+                failed()
 
-        val compilation = environment.compile(entity)
-        CompilationSubject.assertThat(compilation).failed()
-
-        CompilationSubject.assertThat(compilation).hadErrorContaining("IndexType.HASH is not supported for ${PropertyType.Boolean}.")
-        CompilationSubject.assertThat(compilation).hadErrorContaining("IndexType.HASH is not supported for ${PropertyType.Int}.")
-        CompilationSubject.assertThat(compilation).hadErrorContaining("IndexType.HASH is not supported for ${PropertyType.Long}.")
-        CompilationSubject.assertThat(compilation).hadErrorContaining("IndexType.HASH is not supported for ${PropertyType.Byte}.")
-        CompilationSubject.assertThat(compilation).hadErrorContaining("IndexType.HASH is not supported for ${PropertyType.Char}.")
-        CompilationSubject.assertThat(compilation).hadErrorContaining("IndexType.HASH is not supported for ${PropertyType.Date}.")
+                hadErrorContaining("IndexType.HASH is not supported for ${PropertyType.Boolean}.")
+                hadErrorContaining("IndexType.HASH is not supported for ${PropertyType.Int}.")
+                hadErrorContaining("IndexType.HASH is not supported for ${PropertyType.Long}.")
+                hadErrorContaining("IndexType.HASH is not supported for ${PropertyType.Byte}.")
+                hadErrorContaining("IndexType.HASH is not supported for ${PropertyType.Char}.")
+                hadErrorContaining("IndexType.HASH is not supported for ${PropertyType.Date}.")
+            }
     }
 
     @Test
     fun index_hash64_failsForUnsupportedTypes() {
         val entity = "IndexHash64NotSupported"
 
-        val environment = TestEnvironment("index-hash64-not.json", useTemporaryModelFile = true)
+        TestEnvironment("index-hash64-not.json", useTemporaryModelFile = true)
+            .compile(entity)
+            .assertThatIt {
+                failed()
 
-        val compilation = environment.compile(entity)
-        CompilationSubject.assertThat(compilation).failed()
-
-        CompilationSubject.assertThat(compilation).hadErrorContaining("IndexType.HASH64 is not supported for ${PropertyType.Boolean}.")
-        CompilationSubject.assertThat(compilation).hadErrorContaining("IndexType.HASH64 is not supported for ${PropertyType.Int}.")
-        CompilationSubject.assertThat(compilation).hadErrorContaining("IndexType.HASH64 is not supported for ${PropertyType.Long}.")
-        CompilationSubject.assertThat(compilation).hadErrorContaining("IndexType.HASH64 is not supported for ${PropertyType.Byte}.")
-        CompilationSubject.assertThat(compilation).hadErrorContaining("IndexType.HASH64 is not supported for ${PropertyType.Char}.")
-        CompilationSubject.assertThat(compilation).hadErrorContaining("IndexType.HASH64 is not supported for ${PropertyType.Date}.")
+                hadErrorContaining("IndexType.HASH64 is not supported for ${PropertyType.Boolean}.")
+                hadErrorContaining("IndexType.HASH64 is not supported for ${PropertyType.Int}.")
+                hadErrorContaining("IndexType.HASH64 is not supported for ${PropertyType.Long}.")
+                hadErrorContaining("IndexType.HASH64 is not supported for ${PropertyType.Byte}.")
+                hadErrorContaining("IndexType.HASH64 is not supported for ${PropertyType.Char}.")
+                hadErrorContaining("IndexType.HASH64 is not supported for ${PropertyType.Date}.")
+            }
     }
 
     @Test
@@ -106,8 +108,8 @@ class IndexTest : BaseProcessorTest() {
 
         val environment = TestEnvironment("index-override.json", useTemporaryModelFile = true)
 
-        val compilation = environment.compile(entity)
-        CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
+        environment.compile(entity)
+            .assertThatIt { succeededWithoutWarnings() }
 
         assertWithMessage("test files broken").that(environment.schema.entities).isNotEmpty()
         environment.schema.entities.forEach {
@@ -141,10 +143,9 @@ class IndexTest : BaseProcessorTest() {
         // need stable model file + ids to verify sources match
         val environment = TestEnvironment("index-generated.json")
 
-        val compilation = environment.compile(entity)
-        CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
-
-        compilation.assertGeneratedSourceMatches(
+        environment.compile(entity)
+            .assertThatIt { succeededWithoutWarnings() }
+            .assertGeneratedSourceMatches(
             "io.objectbox.processor.test.MyObjectBox",
             "MyObjectBox-index.java"
         )

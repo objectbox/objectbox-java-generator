@@ -2,7 +2,6 @@ package io.objectbox.processor
 
 import com.google.common.truth.Truth.assertThat
 import com.google.common.truth.Truth.assertWithMessage
-import com.google.testing.compile.CompilationSubject
 import com.google.testing.compile.JavaFileObjects
 import org.junit.Test
 
@@ -15,8 +14,8 @@ class UniqueTest : BaseProcessorTest() {
 
         val environment = TestEnvironment("unique-creates-index.json", useTemporaryModelFile = true)
 
-        val compilation = environment.compile(entity)
-        CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
+        environment.compile(entity)
+            .assertThatIt { succeededWithoutWarnings() }
 
         assertWithMessage("test files broken").that(environment.schema.entities).isNotEmpty()
         environment.schema.entities.forEach {
@@ -45,18 +44,20 @@ class UniqueTest : BaseProcessorTest() {
 
         val environment = TestEnvironment("unique-unsupported.json", useTemporaryModelFile = true)
 
-        val compilation = environment.compile(entity)
-        CompilationSubject.assertThat(compilation).failed()
+        environment.compile(entity)
+            .assertThatIt {
+                failed()
 
-        CompilationSubject.assertThat(compilation).hadErrorContaining("@Id property is unique and indexed by default, remove @Unique.")
+                hadErrorContaining("@Id property is unique and indexed by default, remove @Unique.")
 
-        CompilationSubject.assertThat(compilation).hadErrorContaining("@Unique can not be used with a ToOne relation, remove @Unique.")
-        CompilationSubject.assertThat(compilation).hadErrorContaining("@Unique can not be used with a ToMany relation, remove @Unique.")
-        CompilationSubject.assertThat(compilation).hadErrorContaining("@Unique can not be used with a List relation, remove @Unique.")
+                hadErrorContaining("@Unique can not be used with a ToOne relation, remove @Unique.")
+                hadErrorContaining("@Unique can not be used with a ToMany relation, remove @Unique.")
+                hadErrorContaining("@Unique can not be used with a List relation, remove @Unique.")
 
-        CompilationSubject.assertThat(compilation).hadErrorContaining("@Unique is not supported for Float, remove @Unique.")
-        CompilationSubject.assertThat(compilation).hadErrorContaining("@Unique is not supported for Double, remove @Unique.")
-        CompilationSubject.assertThat(compilation).hadErrorContaining("@Unique is not supported for ByteArray, remove @Unique.")
+                hadErrorContaining("@Unique is not supported for Float, remove @Unique.")
+                hadErrorContaining("@Unique is not supported for Double, remove @Unique.")
+                hadErrorContaining("@Unique is not supported for ByteArray, remove @Unique.")
+            }
     }
 
     @Test
@@ -65,8 +66,8 @@ class UniqueTest : BaseProcessorTest() {
 
         val environment = TestEnvironment("unique-and-index.json", useTemporaryModelFile = true)
 
-        val compilation = environment.compile(entity)
-        CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
+        environment.compile(entity)
+            .assertThatIt { succeededWithoutWarnings() }
 
         assertWithMessage("test files broken").that(environment.schema.entities).isNotEmpty()
         environment.schema.entities.forEach {
@@ -121,11 +122,13 @@ class UniqueTest : BaseProcessorTest() {
 
         val environment = TestEnvironment("not-generated.json", useTemporaryModelFile = true)
 
-        val compilation = environment.compile(listOf(sourceFile))
-        CompilationSubject.assertThat(compilation).failed()
-        CompilationSubject.assertThat(compilation).hadErrorContaining(
-            "ConflictStrategy.REPLACE can only be used on a single property"
-        )
+        environment.compile(listOf(sourceFile))
+            .assertThatIt {
+                failed()
+                hadErrorContaining(
+                    "ConflictStrategy.REPLACE can only be used on a single property"
+                )
+            }
         assertThat(environment.isModelFileExists()).isFalse()
     }
 
@@ -136,12 +139,11 @@ class UniqueTest : BaseProcessorTest() {
         // need stable model file + ids to verify sources match
         val environment = TestEnvironment("unique-generated.json")
 
-        val compilation = environment.compile(entity)
-        CompilationSubject.assertThat(compilation).succeededWithoutWarnings()
-
-        compilation.assertGeneratedSourceMatches(
-            "io.objectbox.processor.test.MyObjectBox",
-            "MyObjectBox-unique.java"
-        )
+        environment.compile(entity)
+            .assertThatIt { succeededWithoutWarnings() }
+            .assertGeneratedSourceMatches(
+                "io.objectbox.processor.test.MyObjectBox",
+                "MyObjectBox-unique.java"
+            )
     }
 }
