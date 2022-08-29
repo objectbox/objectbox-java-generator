@@ -113,6 +113,7 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
                     assertThat(prop.dbName).isEqualTo("id")
                     assertPrimitiveType(prop, PropertyType.Long)
                 }
+
                 "simpleShortPrimitive" -> assertPrimitiveType(prop, PropertyType.Short)
                 "simpleShort" -> assertType(prop, PropertyType.Short, hasNonPrimitiveFlag = true)
                 "simpleIntPrimitive" -> assertPrimitiveType(prop, PropertyType.Int)
@@ -136,31 +137,43 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
                 "simpleStringList" -> assertType(prop, PropertyType.StringArray, hasNonPrimitiveFlag = true)
                 "transientField", "transientField2", "transientField3" ->
                     fail("Transient field should not be added to schema.")
+
                 "indexedProperty" -> {
                     assertType(prop, PropertyType.Int, hasNonPrimitiveFlag = true)
                     assertThat(prop.index).isEqualTo(index)
                     assertThat(prop).isEqualTo(indexProperty)
                 }
+
                 "namedProperty" -> {
                     assertThat(prop.dbName).isEqualTo("B")
                     assertType(prop, PropertyType.String)
                 }
+
                 "customType" -> {
                     assertThat(prop.customType).isEqualTo("io.objectbox.processor.test.SimpleEntity.SimpleEnum")
                     assertThat(prop.converter).isEqualTo("io.objectbox.processor.test.SimpleEntity.SimpleEnumConverter")
                     assertType(prop, PropertyType.Int, hasNonPrimitiveFlag = true)
                 }
+
                 "customTypes" -> {
                     assertThat(prop.customType).isEqualTo("java.util.List")
                     assertThat(prop.converter).isEqualTo("io.objectbox.processor.test.SimpleEntity.SimpleEnumListConverter")
                     assertType(prop, PropertyType.Int, hasNonPrimitiveFlag = true)
                 }
-                "dateNanoPrimitive" -> { assertPrimitiveType(prop, PropertyType.DateNano) }
-                "dateNano" -> { assertType(prop, PropertyType.DateNano, hasNonPrimitiveFlag = true) }
+
+                "dateNanoPrimitive" -> {
+                    assertPrimitiveType(prop, PropertyType.DateNano)
+                }
+
+                "dateNano" -> {
+                    assertType(prop, PropertyType.DateNano, hasNonPrimitiveFlag = true)
+                }
+
                 "idCompanion" -> {
                     assertThat(prop.isIdCompanion).isTrue()
                     assertType(prop, PropertyType.Date)
                 }
+
                 "stringFlexMap" -> {
                     prop.run {
                         assertThat(propertyType).isEqualTo(PropertyType.Flex)
@@ -172,6 +185,7 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
                         assertThat(customTypeClassName).isEqualTo("Map")
                     }
                 }
+
                 "flexProperty" -> {
                     prop.run {
                         assertThat(propertyType).isEqualTo(PropertyType.Flex)
@@ -183,12 +197,14 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
                         assertThat(customTypeClassName).isEqualTo("Object")
                     }
                 }
+
                 "toOneId" -> {
                     assertThat(prop.dbName).isEqualTo(prop.propertyName)
                     assertThat(prop.virtualTargetName).isEqualTo("toOne")
                     assertPrimitiveType(prop, PropertyType.RelationId)
                     // note: relations themselves are properly tested in RelationsTest
                 }
+
                 else -> fail("Found stray field '${prop.propertyName}' in schema.")
             }
         }
@@ -215,45 +231,45 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
 
         // assert model properties
         val modelPropertyNames = listOf(
-                "id",
-                "simpleShortPrimitive",
-                "simpleShort",
-                "simpleIntPrimitive",
-                "simpleInt",
-                "simpleLongPrimitive",
-                "simpleLong",
-                "simpleFloatPrimitive",
-                "simpleFloat",
-                "simpleDoublePrimitive",
-                "simpleDouble",
-                "simpleBooleanPrimitive",
-                "simpleBoolean",
-                "simpleBytePrimitive",
-                "simpleByte",
-                "simpleDate",
-                "simpleCharPrimitive",
-                "simpleChar",
-                "simpleString",
-                "simpleByteArray",
-                "simpleStringArray",
-                "simpleStringList",
-                "indexedProperty", // indexed
-                "B",
-                "customType",
-                "customTypes",
-                "dateNanoPrimitive",
-                "dateNano",
-                "idCompanion",
-                "stringFlexMap",
-                "flexProperty",
-                "toOneId" // last
+            "id",
+            "simpleShortPrimitive",
+            "simpleShort",
+            "simpleIntPrimitive",
+            "simpleInt",
+            "simpleLongPrimitive",
+            "simpleLong",
+            "simpleFloatPrimitive",
+            "simpleFloat",
+            "simpleDoublePrimitive",
+            "simpleDouble",
+            "simpleBooleanPrimitive",
+            "simpleBoolean",
+            "simpleBytePrimitive",
+            "simpleByte",
+            "simpleDate",
+            "simpleCharPrimitive",
+            "simpleChar",
+            "simpleString",
+            "simpleByteArray",
+            "simpleStringArray",
+            "simpleStringList",
+            "indexedProperty", // indexed
+            "B",
+            "customType",
+            "customTypes",
+            "dateNanoPrimitive",
+            "dateNano",
+            "idCompanion",
+            "stringFlexMap",
+            "flexProperty",
+            "toOneId" // last
         )
         val modelProperties = modelEntity.properties
         assertThat(modelProperties.size).isAtLeast(1)
 
         modelProperties
-                .filterNot { modelPropertyNames.contains(it.name) }
-                .forEach { fail("Found stray property '${it.name}' in model file.") }
+            .filterNot { modelPropertyNames.contains(it.name) }
+            .forEach { fail("Found stray property '${it.name}' in model file.") }
 
         modelPropertyNames.forEach { name ->
             val property = modelProperties.singleOrNull { it.name == name }
@@ -272,6 +288,7 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
                     assertThat(property.indexId).isNotNull()
                     assertThat(property.indexId).isNotEqualTo(IdUid())
                 }
+
                 "toOneId" -> {
                     // has valid IdUid
                     assertThat(property.indexId).isNotNull()
@@ -301,6 +318,7 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
                     assertThat(targetEntityIdUid).isNotEqualTo(IdUid())
                     assertThat(relation.targetId).isEqualTo(targetEntityIdUid)
                 }
+
                 else -> fail("Found stray relation '${relation.name}' in model file.")
             }
         }
@@ -356,15 +374,17 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
             when (property.propertyName) {
                 "id" -> {
                 }
+
                 "someString" -> {
                     assertThat(property.dbName).isEqualTo("A")
                     assertThat(property.index).isEqualTo(entity.indexes[0])
                     assertThat(property.modelId.uid).isEqualTo(167962951075785953)
                     assertThat(property.customType).isEqualTo("io.objectbox.processor.test.$className.SimpleEnum")
                     assertThat(property.converter)
-                            .isEqualTo("io.objectbox.processor.test.$className.SimpleEnumConverter")
+                        .isEqualTo("io.objectbox.processor.test.$className.SimpleEnumConverter")
                     assertType(property, PropertyType.String, hasNonPrimitiveFlag = true)
                 }
+
                 else -> fail("Found stray field '${property.propertyName}' in schema.")
             }
         }
@@ -509,6 +529,7 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
                     assertThat(prop.dbName).isEqualTo("id")
                     assertPrimitiveType(prop, PropertyType.Long)
                 }
+
                 "simpleShort" -> assertType(prop, PropertyType.Short, hasNonPrimitiveFlag = true)
                 "simpleInt" -> assertType(prop, PropertyType.Int, hasNonPrimitiveFlag = true)
                 "simpleLong" -> assertType(prop, PropertyType.Long, hasNonPrimitiveFlag = true)
@@ -523,6 +544,7 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
                     assertType(prop, PropertyType.String)
                     assertThat(prop.getterMethodName).isEqualTo("isAnything")
                 }
+
                 else -> fail("Found stray field '${prop.propertyName}' in schema.")
             }
         }

@@ -32,14 +32,15 @@ class IndexTest : BaseProcessorTest() {
 
                 // assert index has expected type
                 val expectedIndexFlag = if (prop.propertyType == PropertyType.String
-                        || prop.propertyType == PropertyType.ByteArray) {
+                    || prop.propertyType == PropertyType.ByteArray
+                ) {
                     PropertyFlags.INDEX_HASH // 2048
                 } else {
                     PropertyFlags.INDEXED // 8
                 }
                 assertWithMessage("${prop.propertyName} index type is wrong")
-                        .that(prop.index!!.indexFlags)
-                        .isEqualTo(expectedIndexFlag)
+                    .that(prop.index!!.indexFlags)
+                    .isEqualTo(expectedIndexFlag)
             }
         }
     }
@@ -243,8 +244,8 @@ class IndexTest : BaseProcessorTest() {
                     }
                 }
                 assertWithMessage("${prop.propertyName} index type is wrong")
-                        .that(prop.index!!.indexFlags)
-                        .isEqualTo(expectedIndexFlag)
+                    .that(prop.index!!.indexFlags)
+                    .isEqualTo(expectedIndexFlag)
             }
         }
     }
@@ -259,8 +260,8 @@ class IndexTest : BaseProcessorTest() {
         environment.compile(entity)
             .assertThatIt { succeededWithoutWarnings() }
             .assertGeneratedSourceMatches(
-            "io.objectbox.processor.test.MyObjectBox",
-            "MyObjectBox-index.java"
-        )
+                "io.objectbox.processor.test.MyObjectBox",
+                "MyObjectBox-index.java"
+            )
     }
 }

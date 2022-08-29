@@ -41,6 +41,7 @@ class InheritanceTest : BaseProcessorTest() {
                     assertThat(prop.isPrimaryKey).isTrue()
                     assertPrimitiveType(prop, PropertyType.Long)
                 }
+
                 "baseString" -> assertType(prop, PropertyType.String)
                 "subString" -> assertType(prop, PropertyType.String)
                 "overriddenString" -> assertType(prop, PropertyType.String)
@@ -57,6 +58,7 @@ class InheritanceTest : BaseProcessorTest() {
                     assertThat(prop.isPrimaryKey).isTrue()
                     assertPrimitiveType(prop, PropertyType.Long)
                 }
+
                 "baseString" -> assertType(prop, PropertyType.String)
                 "subString" -> assertType(prop, PropertyType.String)
                 "subSubString" -> assertType(prop, PropertyType.String)
@@ -74,14 +76,14 @@ class InheritanceTest : BaseProcessorTest() {
         val modelProperties = modelEntity!!.properties
         assertThat(modelProperties.size).isEqualTo(4)
         val modelPropertyNames = listOf(
-                "id",
-                "baseString",
-                "subString",
-                "overriddenString"
+            "id",
+            "baseString",
+            "subString",
+            "overriddenString"
         )
         modelProperties
-                .filterNot { modelPropertyNames.contains(it.name) }
-                .forEach { Assert.fail("Found stray property '${it.name}' in model file.") }
+            .filterNot { modelPropertyNames.contains(it.name) }
+            .forEach { Assert.fail("Found stray property '${it.name}' in model file.") }
 
         val modelEntity2 = model.findEntity(nameSubSub, null)
         assertThat(modelEntity2).isNotNull()
@@ -89,8 +91,8 @@ class InheritanceTest : BaseProcessorTest() {
         assertThat(modelProperties2.size).isEqualTo(5)
         val modelPropertyNames2 = modelPropertyNames.plus("subSubString")
         modelProperties2
-                .filterNot { modelPropertyNames2.contains(it.name) }
-                .forEach { Assert.fail("Found stray property '${it.name}' in model file.") }
+            .filterNot { modelPropertyNames2.contains(it.name) }
+            .forEach { Assert.fail("Found stray property '${it.name}' in model file.") }
     }
 
     @Test
@@ -119,6 +121,7 @@ class InheritanceTest : BaseProcessorTest() {
                     assertThat(prop.isPrimaryKey).isTrue()
                     assertPrimitiveType(prop, PropertyType.Long)
                 }
+
                 "baseString" -> assertType(prop, PropertyType.String)
                 "subString" -> assertType(prop, PropertyType.String)
                 else -> Assert.fail("Found stray field '${prop.propertyName}' in schema.")
@@ -133,13 +136,13 @@ class InheritanceTest : BaseProcessorTest() {
         val modelProperties = modelEntity!!.properties
         assertThat(modelProperties.size).isEqualTo(expectedNumberOfProperties)
         val modelPropertyNames = listOf(
-                "id",
-                "baseString",
-                "subString"
+            "id",
+            "baseString",
+            "subString"
         )
         modelProperties
-                .filterNot { modelPropertyNames.contains(it.name) }
-                .forEach { Assert.fail("Found stray property '${it.name}' in model file.") }
+            .filterNot { modelPropertyNames.contains(it.name) }
+            .forEach { Assert.fail("Found stray property '${it.name}' in model file.") }
     }
 
     /**
@@ -170,6 +173,7 @@ class InheritanceTest : BaseProcessorTest() {
                     assertThat(prop.isPrimaryKey).isTrue()
                     assertPrimitiveType(prop, PropertyType.Long)
                 }
+
                 "simpleString" -> assertType(prop, PropertyType.String)
                 else -> Assert.fail("Found stray field '${prop.propertyName}' in schema.")
             }
@@ -183,6 +187,7 @@ class InheritanceTest : BaseProcessorTest() {
                     assertThat(prop.isPrimaryKey).isTrue()
                     assertPrimitiveType(prop, PropertyType.Long)
                 }
+
                 "simpleString" -> assertType(prop, PropertyType.String)
                 "subString" -> assertType(prop, PropertyType.String)
                 else -> Assert.fail("Found stray field '${prop.propertyName}' in schema.")
@@ -197,12 +202,12 @@ class InheritanceTest : BaseProcessorTest() {
         val modelProperties = modelEntity!!.properties
         assertThat(modelProperties.size).isEqualTo(2)
         val modelPropertyNames = listOf(
-                "id",
-                "simpleString"
+            "id",
+            "simpleString"
         )
         modelProperties
-                .filterNot { modelPropertyNames.contains(it.name) }
-                .forEach { Assert.fail("Found stray property '${it.name}' in model file.") }
+            .filterNot { modelPropertyNames.contains(it.name) }
+            .forEach { Assert.fail("Found stray property '${it.name}' in model file.") }
 
         val modelEntity2 = model.findEntity(nameSub, null)
         assertThat(modelEntity2).isNotNull()
@@ -210,8 +215,8 @@ class InheritanceTest : BaseProcessorTest() {
         assertThat(modelProperties2.size).isEqualTo(3)
         val modelPropertyNames2 = modelPropertyNames.plus("subString")
         modelProperties2
-                .filterNot { modelPropertyNames2.contains(it.name) }
-                .forEach { Assert.fail("Found stray property '${it.name}' in model file.") }
+            .filterNot { modelPropertyNames2.contains(it.name) }
+            .forEach { Assert.fail("Found stray property '${it.name}' in model file.") }
     }
 
     /**

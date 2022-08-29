@@ -53,6 +53,7 @@ class RelationsTest : BaseProcessorTest() {
                     assertThat(prop.dbName).isEqualTo("id")
                     assertType(prop, PropertyType.Long, hasNonPrimitiveFlag = true)
                 }
+
                 "parentId" -> {
                     assertThat(prop.dbName).isEqualTo(prop.propertyName)
                     assertThat(prop.virtualTargetName).isNull()
@@ -61,6 +62,7 @@ class RelationsTest : BaseProcessorTest() {
                     assertThat(child.toOneRelations).hasSize(1)
                     assertToOneIndexAndRelation(child, parent, prop, toOneName = "parent", toOneFieldName = "parent")
                 }
+
                 else -> fail("Found stray property '${prop.propertyName}' in schema.")
             }
         }
@@ -101,18 +103,21 @@ class RelationsTest : BaseProcessorTest() {
                     assertThat(prop.dbName).isEqualTo("id")
                     assertType(prop, PropertyType.Long, hasNonPrimitiveFlag = true)
                 }
+
                 "parentId" -> {
                     assertThat(prop.dbName).isEqualTo(prop.propertyName)
                     assertThat(prop.virtualTargetName).isEqualTo("parent")
                     assertPrimitiveType(prop, PropertyType.RelationId)
                     assertToOneIndexAndRelation(child, parent, prop, toOneName = "parent")
                 }
+
                 "aParentId" -> {
                     assertThat(prop.dbName).isEqualTo(prop.propertyName)
 //                    assertThat(prop.virtualTargetName).isEqualTo("parentWithIdProperty")
                     assertPrimitiveType(prop, PropertyType.RelationId)
                     assertToOneIndexAndRelation(child, parent, prop, toOneName = "parentWithIdProperty")
                 }
+
                 else -> fail("Found stray property '${prop.propertyName}' in schema.")
             }
         }
@@ -141,6 +146,7 @@ class RelationsTest : BaseProcessorTest() {
                     assertThat(property.indexId).isNotNull()
                     assertThat(property.indexId).isNotEqualTo(IdUid())
                 }
+
                 else -> {
                     assertThat(property.indexId).isNull()
                 }
@@ -378,6 +384,7 @@ class RelationsTest : BaseProcessorTest() {
                     assertThat(toManyByBacklink.targetToMany).isNotNull()
                     assertThat(toManyByBacklink.targetToMany!!.name).isEqualTo("targets")
                 }
+
                 else -> fail("Found stray to-many relation '${toManyRelation.name}' in schema.")
             }
         }
@@ -422,6 +429,7 @@ class RelationsTest : BaseProcessorTest() {
                     assertThat((toManyRelation as ToManyByBacklink).targetToOne).isNull()
                     assertThat(toManyRelation.targetToMany).isNotNull()
                 }
+
                 else -> fail("Found stray incoming to-many relation '${toManyRelation.name}' in schema.")
             }
         }
@@ -514,7 +522,11 @@ class RelationsTest : BaseProcessorTest() {
                     assertPrimitiveType(prop, PropertyType.RelationId)
                     toOneTargetProperty = prop
                 }
-                "id", "targetOtherId" -> { /* just ensure they exist */ }
+
+                "id", "targetOtherId" -> {
+                    /* just ensure they exist */
+                }
+
                 else -> fail("Found stray property '${prop.propertyName}' in schema.")
             }
         }
@@ -533,6 +545,7 @@ class RelationsTest : BaseProcessorTest() {
                     assertThat(toManyByBacklink.targetToOne!!.idRefProperty).isEqualTo(toOneTargetProperty)
                     // generator takes care of populating sourceProperties if we do not set them, so do not assert here
                 }
+
                 "sourcesOther" -> {
                     assertThat(toManyRelation.sourceEntity).isEqualTo(target)
                     assertThat(toManyRelation.targetEntity).isEqualTo(source)
@@ -541,6 +554,7 @@ class RelationsTest : BaseProcessorTest() {
                     assertThat(toManyRelation.targetToOne).isNotNull()
                     assertThat(toManyRelation.targetToOne!!.name).isEqualTo("targetOther")
                 }
+
                 "sourcesMany" -> {
                     assertThat(toManyRelation.sourceEntity).isEqualTo(target)
                     assertThat(toManyRelation.targetEntity).isEqualTo(source)
@@ -550,6 +564,7 @@ class RelationsTest : BaseProcessorTest() {
                     assertThat(toManyByBacklink.targetToMany).isNotNull()
                     assertThat(toManyByBacklink.targetToMany!!.name).isEqualTo("targets")
                 }
+
                 else -> fail("Found stray to-many relation '${toManyRelation.name}' in schema.")
             }
         }
@@ -702,6 +717,7 @@ class RelationsTest : BaseProcessorTest() {
                     assertThat(prop.dbName).isEqualTo("id")
                     assertType(prop, PropertyType.Long, hasNonPrimitiveFlag = true)
                 }
+
                 else -> fail("Found stray property '${prop.propertyName}' in schema.")
             }
         }
@@ -716,6 +732,7 @@ class RelationsTest : BaseProcessorTest() {
                     assertThat(prop.dbName).isEqualTo("id")
                     assertType(prop, PropertyType.Long, hasNonPrimitiveFlag = true)
                 }
+
                 "${targetPropertyName}Id" -> {
                     assertThat(prop.dbName).isEqualTo(prop.propertyName)
                     assertThat(prop.virtualTargetName).isEqualTo(targetPropertyName)
@@ -725,6 +742,7 @@ class RelationsTest : BaseProcessorTest() {
                     assertToOneIndexAndRelation(child, parent, prop, toOneName = targetPropertyName)
                     assertToManyRelation(parent, child, prop)
                 }
+
                 else -> fail("Found stray property '${prop.propertyName}' in schema.")
             }
         }
@@ -741,17 +759,21 @@ class RelationsTest : BaseProcessorTest() {
                     assertThat(toMany.targetToOne!!.idRefProperty).isEqualTo(prop)
                     // generator takes care of populating sourceProperties if we do not set them, so do not assert here
                 }
+
                 "sourcesOther" -> {
                     assertThat(toManyRelation.sourceEntity).isEqualTo(parent)
                     assertThat(toManyRelation.targetEntity).isEqualTo(child)
                 }
+
                 else -> fail("Found stray toManyRelation '${toManyRelation.name}' in schema.")
             }
         }
     }
 
-    private fun assertToOneIndexAndRelation(child: Entity, parent: Entity, prop: Property, toOneName: String,
-                                            toOneFieldName: String = toOneName) {
+    private fun assertToOneIndexAndRelation(
+        child: Entity, parent: Entity, prop: Property, toOneName: String,
+        toOneFieldName: String = toOneName
+    ) {
         // assert index
         val indexesForProperty = child.indexes.filter { it.properties[0] == prop }
         assertThat(indexesForProperty).hasSize(1)
