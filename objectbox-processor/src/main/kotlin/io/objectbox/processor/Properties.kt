@@ -67,7 +67,8 @@ class Properties(
     private val messages: Messages,
     private val relations: Relations,
     private val entityModel: Entity,
-    entityElement: Element
+    entityElement: Element,
+    private val isSuperEntity: Boolean
 ) {
 
     private val typeHelper = TypeHelper(elementUtils, typeUtils)
@@ -107,7 +108,8 @@ class Properties(
 
         if (typeHelper.isToOne(field.asType())) {
             // ToOne<TARGET> property
-            errorIfIndexOrUniqueAnnotation(field, "ToOne")
+            checkNotSuperEntity(field)
+            checkNoIndexOrUniqueAnnotation(field, "ToOne")
             relations.parseToOne(entityModel, field)
         } else if (
             !field.hasAnnotation(Convert::class.java)
@@ -115,11 +117,13 @@ class Properties(
             && !typeHelper.isStringList(field.asType())
         ) {
             // List<TARGET> property, except List<String>
-            errorIfIndexOrUniqueAnnotation(field, "List")
+            checkNotSuperEntity(field)
+            checkNoIndexOrUniqueAnnotation(field, "List")
             relations.parseToMany(entityModel, field)
         } else if (typeHelper.isToMany(field.asType())) {
             // ToMany<TARGET> property
-            errorIfIndexOrUniqueAnnotation(field, "ToMany")
+            checkNotSuperEntity(field)
+            checkNoIndexOrUniqueAnnotation(field, "ToMany")
             relations.parseToMany(entityModel, field)
         } else {
             // regular property
@@ -127,7 +131,13 @@ class Properties(
         }
     }
 
-    private fun errorIfIndexOrUniqueAnnotation(field: VariableElement, relationType: String) {
+    private fun checkNotSuperEntity(field: VariableElement) {
+        if (isSuperEntity) {
+            messages.error("A super class of an @Entity must not have a relation.", field)
+        }
+    }
+
+    private fun checkNoIndexOrUniqueAnnotation(field: VariableElement, relationType: String) {
         val hasIndex = field.hasAnnotation(Index::class.java)
         if (hasIndex || field.hasAnnotation(Unique::class.java)) {
             val annotationName = if (hasIndex) "Index" else "Unique"

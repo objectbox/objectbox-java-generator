@@ -427,8 +427,10 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         // Reverse inheritance chain to parse properties starting with the super-most element in the chain
         // to ensure constructor param order is as expected: from super class to sub class,
         // then from first declared to last declared.
-        entityInheritanceChain.reversed().forEach { element ->
-            with(Properties(elementUtils, typeUtils, messages, relations, entityModel, element)) {
+        val entitiesSuperMostFirst = entityInheritanceChain.reversed()
+        entitiesSuperMostFirst.forEach { element ->
+            val isSuperEntity = entitiesSuperMostFirst.last() != element
+            with(Properties(elementUtils, typeUtils, messages, relations, entityModel, element, isSuperEntity)) {
                 parseFields()
                 entityModel.hasBoxStoreField =
                     entityModel.hasBoxStoreField || hasBoxStoreField() // Do not overwrite true.

@@ -105,8 +105,6 @@ class ObjectBoxAsmClassVisitor(
      * to initialize relation fields.
      */
     private fun transformEntity() {
-        // TODO Check super @Entity or @BaseEntity classes do not contain relations (likely not possible).
-
         val relationFields = fields.mapNotNull { field ->
             // Exclude:
             // - is transient,
