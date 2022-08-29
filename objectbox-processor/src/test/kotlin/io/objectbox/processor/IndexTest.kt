@@ -46,10 +46,45 @@ class IndexTest : BaseProcessorTest() {
 
     @Test
     fun index_unsupportedProperties_failsWithError() {
-        val entity = "IndexUnsupported"
-
         TestEnvironment("index-unsupported.json", useTemporaryModelFile = true)
-            .compile(entity)
+            .apply {
+                addSourceFile(
+                    fullyQualifiedName = "com.example.IndexUnsupported",
+                    source =
+                    """
+                    package com.example;
+            
+                    import io.objectbox.annotation.Entity;
+                    import io.objectbox.annotation.Id;
+                    import io.objectbox.annotation.Index;
+                    import io.objectbox.relation.ToOne;
+                    import io.objectbox.relation.ToMany;
+                    import java.util.Date;
+                    import java.util.List;
+            
+                    @Entity
+                    public class IndexUnsupported {
+                        @Id @Index long id;
+            
+                        @Index ToOne<IndexUnsupported> toOne;
+                        @Index ToMany<IndexUnsupported> toMany;
+                        @Index List<IndexUnsupported> toManyList;
+            
+                        // byte[], float or double do not support @Index
+                        @Index Float floatPropOrNull;
+                        @Index float floatProp;
+            
+                        @Index Double doublePropOrNull;
+                        @Index double doubleProp;
+            
+                        @Index byte[] byteArrayProp;
+            
+                        @Index String[] stringArrayProp;
+                    }
+                    """.trimIndent()
+                )
+            }
+            .compile()
             .assertThatIt {
                 failed()
 
@@ -68,10 +103,49 @@ class IndexTest : BaseProcessorTest() {
 
     @Test
     fun index_hash_failsForUnsupportedTypes() {
-        val entity = "IndexHashNotSupported"
-
         TestEnvironment("index-hash-not.json", useTemporaryModelFile = true)
-            .compile(entity)
+            .apply {
+                addSourceFile(
+                    fullyQualifiedName = "com.example.IndexHashNotSupported",
+                    source =
+                    """
+                    package com.example;
+
+                    import io.objectbox.annotation.Entity;
+                    import io.objectbox.annotation.Id;
+                    import io.objectbox.annotation.Index;
+                    import io.objectbox.annotation.IndexType;
+
+                    import java.util.Date;
+
+                    @Entity
+                    public class IndexHashNotSupported {
+
+                        @Id long id;
+
+                        // only String supports HASH, compare with https://docs.objectbox.io/advanced/custom-types
+                        @Index(type = IndexType.HASH) Boolean boolPropOrNull;
+                        @Index(type = IndexType.HASH) boolean boolProp;
+
+                        @Index(type = IndexType.HASH) Integer intPropOrNull;
+                        @Index(type = IndexType.HASH) int intProp;
+
+                        @Index(type = IndexType.HASH) Long longPropOrNull;
+                        @Index(type = IndexType.HASH) long longProp;
+
+                        @Index(type = IndexType.HASH) Byte bytePropOrNull;
+                        @Index(type = IndexType.HASH) byte byteProp;
+
+                        @Index(type = IndexType.HASH) Character charPropOrNull;
+                        @Index(type = IndexType.HASH) char charProp;
+
+                        @Index(type = IndexType.HASH) Date dateProp;
+
+                    }
+                    """.trimIndent()
+                )
+            }
+            .compile()
             .assertThatIt {
                 failed()
 
@@ -86,10 +160,49 @@ class IndexTest : BaseProcessorTest() {
 
     @Test
     fun index_hash64_failsForUnsupportedTypes() {
-        val entity = "IndexHash64NotSupported"
-
         TestEnvironment("index-hash64-not.json", useTemporaryModelFile = true)
-            .compile(entity)
+            .apply {
+                addSourceFile(
+                    fullyQualifiedName = "com.example.IndexHash64NotSupported",
+                    source =
+                    """
+                    package com.example;
+
+                    import io.objectbox.annotation.Entity;
+                    import io.objectbox.annotation.Id;
+                    import io.objectbox.annotation.Index;
+                    import io.objectbox.annotation.IndexType;
+
+                    import java.util.Date;
+
+                    @Entity
+                    public class IndexHash64NotSupported {
+
+                        @Id long id;
+
+                        // only String supports HASH64, compare with https://docs.objectbox.io/advanced/custom-types
+                        @Index(type = IndexType.HASH64) Boolean boolPropOrNull;
+                        @Index(type = IndexType.HASH64) boolean boolProp;
+
+                        @Index(type = IndexType.HASH64) Integer intPropOrNull;
+                        @Index(type = IndexType.HASH64) int intProp;
+
+                        @Index(type = IndexType.HASH64) Long longPropOrNull;
+                        @Index(type = IndexType.HASH64) long longProp;
+
+                        @Index(type = IndexType.HASH64) Byte bytePropOrNull;
+                        @Index(type = IndexType.HASH64) byte byteProp;
+
+                        @Index(type = IndexType.HASH64) Character charPropOrNull;
+                        @Index(type = IndexType.HASH64) char charProp;
+
+                        @Index(type = IndexType.HASH64) Date dateProp;
+
+                    }
+                    """.trimIndent()
+                )
+            }
+            .compile()
             .assertThatIt {
                 failed()
 

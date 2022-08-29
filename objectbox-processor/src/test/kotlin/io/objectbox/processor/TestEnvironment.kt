@@ -49,6 +49,8 @@ class TestEnvironment(
     val schema: Schema
         get() = processor.schema!!
 
+    private val javaFileObjects = mutableListOf<JavaFileObject>()
+
     init {
         val path = when {
             File(modelFilesPathModule).isDirectory -> modelFilesPathModule
@@ -68,6 +70,37 @@ class TestEnvironment(
             Files.deleteIfExists(File(tempFile).toPath())
             tempFile
         }
+    }
+
+    /**
+     * Use like:
+     * ```
+     * TestEnvironment("model.json")
+     *     .apply {
+     *         addSourceFile(
+     *             fullyQualifiedName = "com.example.Example",
+     *             source =
+     *             """
+     *             public class Example {}
+     *             """.trimIndent()
+     *         )
+     *     }
+     *     .compile()
+     *     .assertThatIt {
+     *     }
+     * ```
+     */
+    fun addSourceFile(fullyQualifiedName: String, source: String): JavaFileObject {
+        JavaFileObjects.forSourceString(fullyQualifiedName, source)
+            .let {
+                javaFileObjects.add(it)
+                return it
+            }
+    }
+
+    fun compile(modelExpectedToChange: Boolean = false): Compilation {
+        check(javaFileObjects.isNotEmpty())
+        return compile(javaFileObjects, modelExpectedToChange)
     }
 
     fun compile(vararg files: String, modelExpectedToChange: Boolean = false): Compilation {
