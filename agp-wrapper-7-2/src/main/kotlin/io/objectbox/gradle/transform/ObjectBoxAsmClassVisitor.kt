@@ -205,14 +205,22 @@ class ObjectBoxAsmClassVisitor(
     private fun transformConstructors(relationFields: List<RelationField>) {
         val initializedRelationFields = mutableSetOf<String>()
         for (methodNode in methods.filter { it.name == "<init>" }) {
-            // Skip constructors that call another (this) constructor to avoid initializing fields multiple times.
+            // Skip constructors that call another (this()) constructor to avoid initializing fields multiple times.
             // This would also overwrite potential changes to relation fields made in the called constructor.
-            val invokeSpecial = methodNode.instructions.find { it.opcode == Opcodes.INVOKESPECIAL } as MethodInsnNode
-            val callsThis = invokeSpecial.owner == name
-            if (callsThis) {
+            // Note: calling another constructor might not be the first INVOKESPECIAL op,
+            // Kotlin's synthetic constructors (to support default parameters) call "this" last.
+            val invokeSpecialThis = methodNode.instructions.find {
+                it.opcode == Opcodes.INVOKESPECIAL && (it as MethodInsnNode).owner == name
+            }
+            if (invokeSpecialThis != null) {
                 if (debug) log("$name Skip constructor ${methodNode.desc} calling another constructor.")
                 continue
             }
+
+            // Find the first INVOKESPECIAL op: as above skips constructors where INVOKESPECIAL calls another
+            // constructor (this() calls), assumes the first INVOKESPECIAL op of this constructor must be a
+            // "super()" call which initializes the object.
+            val invokeSpecialSuper = methodNode.instructions.find { it.opcode == Opcodes.INVOKESPECIAL }
 
             stats.constructorsCheckedForTransform++
             val initializedFields = methodNode.instructions.getInitializedFields()
@@ -246,8 +254,10 @@ class ObjectBoxAsmClassVisitor(
                         )
                         add(FieldInsnNode(Opcodes.PUTFIELD, name, relationFieldName, relationField.node.desc))
                     }
-                    // Insert right after super() call (== first invokespecial call).
-                    methodNode.instructions.insert(invokeSpecial, initializeRelationInstructions)
+                    // Insert after the first INVOKESPECIAL op to ensure "this" used above (ALOAD 0) is initialized
+                    // and any changes made to relation fields (e.g. add ToOne target) by the existing instructions
+                    // is not overwritten.
+                    methodNode.instructions.insert(invokeSpecialSuper, initializeRelationInstructions)
                     if (debug) log("$name, constructor ${methodNode.desc}: added initializer for $relationField.")
                     if (isManyRelation) stats.toManyInitializerAdded++ else stats.toOnesInitializerAdded++
                 }
