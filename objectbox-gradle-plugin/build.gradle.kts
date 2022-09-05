@@ -1,3 +1,6 @@
+import org.gradle.api.internal.classpath.ModuleRegistry
+import org.gradle.kotlin.dsl.support.serviceOf
+
 // https://docs.gradle.org/current/userguide/custom_plugins.html
 
 plugins {
@@ -10,6 +13,8 @@ java {
     sourceCompatibility = JavaVersion.VERSION_1_8
     targetCompatibility = JavaVersion.VERSION_1_8
 }
+
+val testPluginClasspath: Configuration by configurations.creating
 
 // For integration tests (TestKit): Write the plugin's classpath to a file to share with the tests.
 // https://docs.gradle.org/6.0/userguide/test_kit.html#sub:test-kit-classpath-injection
@@ -24,12 +29,18 @@ val createClasspathManifest by tasks.registering {
 
     doLast {
         outputDir.mkdirs()
-        file("$outputDir/plugin-classpath.txt").writeText(sourceSets.main.get().runtimeClasspath.joinToString("\n"))
+        // Adapted from PluginUnderTestMetadata task, make sure to prevent duplicates.
+        val pluginClasspath = sourceSets.main.get().runtimeClasspath.map { it.toString() }.toMutableSet()
+        pluginClasspath.addAll(project.files(testPluginClasspath).map { it.absolutePath })
+        file("$outputDir/plugin-classpath.txt").writeText(
+            pluginClasspath.joinToString("\n")
+        )
     }
 }
 
 val android_version: String by rootProject.extra
 val kotlin_version: String by rootProject.extra
+val javassist_version: String by rootProject.extra
 val objectbox_java_version: String by rootProject.extra
 val essentials_version: String by rootProject.extra
 val junit_version: String by rootProject.extra
@@ -41,28 +52,40 @@ val okioVersion: String by rootProject.extra
 dependencies {
     implementation(gradleApi())
     implementation(project(":objectbox-code-modifier"))
+    implementation(project(":agp-wrapper-3-3"))
+    implementation(project(":agp-wrapper-7-2"))
     compileOnly("com.android.tools.build:gradle:$android_version")
     compileOnly("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version")
     // Note: override kotlin-reflect version from com.android.tools.build:gradle to avoid mismatch with stdlib above.
     implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlin_version")
-    implementation("org.javassist:javassist:3.27.0-GA")
-
-    // For Transformer to resolve class dependencies to (real) ObjectBox classes
-    implementation("io.objectbox:objectbox-java:$objectbox_java_version")
-    implementation("io.objectbox:objectbox-java-api:$objectbox_java_version")
 
     testImplementation(gradleTestKit())
+    // For new Gradle TestKit tests (see GradleTestRunner).
     testRuntimeOnly(files(createClasspathManifest))
+    testPluginClasspath("com.android.tools.build:gradle:$android_version")
+    // For plugin apply tests and outdated TestKit tests (dir "test-gradle-projects").
+    testImplementation("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version")
+    testImplementation("com.android.tools.build:gradle:$android_version")
+    // Android Plugin 4.2.0 and higher require the BuildEventListenerFactory class,
+    // which Gradle does not include by default, so manually add it.
+    // https://github.com/gradle/gradle/issues/16774#issuecomment-853407822
+    // https://issuetracker.google.com/issues/193859160
+    testRuntimeOnly(
+        files(
+            serviceOf<ModuleRegistry>().getModule("gradle-tooling-api-builders")
+                .classpath.asFiles.first()
+        )
+    )
+
+    testImplementation("io.objectbox:objectbox-java:$objectbox_java_version")
     testImplementation("org.greenrobot:essentials:$essentials_version")
     testImplementation("junit:junit:$junit_version")
     testImplementation("org.mockito:mockito-core:$mockito_version")
     testImplementation("com.google.truth:truth:$truth_version")
     testImplementation("com.squareup.moshi:moshi:$moshi_version")
     testImplementation("com.squareup.okio:okio:$okioVersion")
-    // For plugin apply tests and outdated TestKit tests (dir "test-gradle-projects").
-    testImplementation("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version")
-    testImplementation("com.android.tools.build:gradle:$android_version")
+    testImplementation("org.javassist:javassist:$javassist_version")
 }
 
 val applies_ob_java_version: String by rootProject.extra

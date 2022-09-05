@@ -4,6 +4,7 @@ import com.google.common.truth.Truth.assertThat
 import io.objectbox.generator.model.PropertyType
 import org.junit.Assert
 import org.junit.Test
+import javax.tools.JavaFileObject
 
 
 /**
@@ -235,4 +236,139 @@ class InheritanceTest : BaseProcessorTest() {
             }
     }
 
+    @Test
+    fun baseEntity_containsRelations_errors() {
+        // ToOne
+        """
+        package com.example;
+        import io.objectbox.annotation.BaseEntity;
+        import io.objectbox.annotation.Id;
+        import io.objectbox.relation.ToOne;
+
+        @BaseEntity
+        public class Example {
+            @Id long id;
+            ToOne<Example> relation;
+        }
+        """.trimIndent().let {
+            assertSuperRelationError(it)
+        }
+
+        // Explicit ToMany
+        """
+        package com.example;
+        import io.objectbox.annotation.BaseEntity;
+        import io.objectbox.annotation.Id;
+        import io.objectbox.relation.ToMany;
+
+        @BaseEntity
+        public class Example {
+            @Id long id;
+            ToMany<Example> relation;
+        }
+        """.trimIndent().let {
+            assertSuperRelationError(it)
+        }
+
+        // Implicit ToMany
+        """
+        package com.example;
+        import io.objectbox.annotation.BaseEntity;
+        import io.objectbox.annotation.Id;
+        import java.util.List;
+
+        @BaseEntity
+        public class Example {
+            @Id long id;
+            List<Example> relation;
+        }
+        """.trimIndent().let {
+            assertSuperRelationError(it)
+        }
+    }
+
+    private fun assertSuperRelationError(source: String) {
+        val superEntity: JavaFileObject
+        TestEnvironment("super-relation-error.json", useTemporaryModelFile = true)
+            .apply {
+                superEntity = addSourceFile("com.example.Example", source)
+                addSourceFile(
+                    fullyQualifiedName = "com.example.ExampleImpl",
+                    source =
+                    """
+                    package com.example;
+                    import io.objectbox.annotation.Entity;
+                    import io.objectbox.annotation.Id;
+                    import io.objectbox.relation.ToOne;
+                    import io.objectbox.relation.ToMany;
+                    import java.util.List;
+                    
+                    @Entity
+                    public class ExampleImpl extends Example {
+                        public ToOne<Example> allowedToOne;
+                        public ToMany<Example> allowedToMany;
+                        public List<Example> allowedList;
+                    }
+                    """.trimIndent()
+                )
+            }
+            .compile()
+            .assertThatIt {
+                // Note: ensure error originates from super class, extending class has allowed relation.
+                hadErrorCount(1)
+                hadErrorContaining("A super class of an @Entity must not have a relation.")
+                    .inFile(superEntity)
+            }
+    }
+
+    @Test
+    fun superEntity_containsRelations_errors() {
+        // ToOne
+        """
+        package com.example;
+        import io.objectbox.annotation.Entity;
+        import io.objectbox.annotation.Id;
+        import io.objectbox.relation.ToOne;
+
+        @Entity
+        public class Example {
+            @Id long id;
+            ToOne<Example> relation;
+        }
+        """.trimIndent().let {
+            assertSuperRelationError(it)
+        }
+
+        // Explicit ToMany
+        """
+        package com.example;
+        import io.objectbox.annotation.Entity;
+        import io.objectbox.annotation.Id;
+        import io.objectbox.relation.ToMany;
+
+        @Entity
+        public class Example {
+            @Id long id;
+            ToMany<Example> relation;
+        }
+        """.trimIndent().let {
+            assertSuperRelationError(it)
+        }
+
+        // Implicit ToMany
+        """
+        package com.example;
+        import io.objectbox.annotation.Entity;
+        import io.objectbox.annotation.Id;
+        import java.util.List;
+
+        @Entity
+        public class Example {
+            @Id long id;
+            List<Example> relation;
+        }
+        """.trimIndent().let {
+            assertSuperRelationError(it)
+        }
+    }
 }

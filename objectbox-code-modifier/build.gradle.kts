@@ -1,4 +1,6 @@
 plugins {
+    id("java-library")
+    id("java-test-fixtures")
     id("kotlin")
     id("kotlin-kapt")
     id("com.github.gmazzo.buildconfig")
@@ -11,17 +13,20 @@ java {
 
 val kotlin_version: String by rootProject.extra
 val essentials_version: String by rootProject.extra
+val javassist_version: String by rootProject.extra
 val moshi_version: String by rootProject.extra
 val okioVersion: String by rootProject.extra
 val objectbox_java_version: String by rootProject.extra
 val junit_version: String by rootProject.extra
-val truth_version: String by rootProject.extra
 val mockito_version: String by rootProject.extra
+val truth_version: String by rootProject.extra
 
 dependencies {
+    implementation(gradleApi())
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version")
     implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlin_version")
     implementation("org.greenrobot:essentials:$essentials_version")
+    implementation("org.javassist:javassist:$javassist_version")
     implementation("com.squareup.moshi:moshi:$moshi_version")
     kapt("com.squareup.moshi:moshi-kotlin-codegen:$moshi_version")
     implementation("com.squareup.okio:okio:$okioVersion")
@@ -30,8 +35,10 @@ dependencies {
     implementation(project(":objectbox-generator"))
 
     testImplementation("junit:junit:$junit_version")
-    testImplementation("com.google.truth:truth:$truth_version")
     testImplementation("org.mockito:mockito-core:$mockito_version")
+    testImplementation("com.google.truth:truth:$truth_version")
+
+    testFixturesImplementation("io.objectbox:objectbox-java:$objectbox_java_version")
 }
 
 buildConfig {
@@ -51,6 +58,11 @@ val sourcesJar by tasks.registering(Jar::class) {
     archiveClassifier.set("sources")
     from("README")
 }
+
+// Do not publish test fixtures.
+val javaComponent = components["java"] as AdhocComponentWithVariants
+javaComponent.withVariantsFromConfiguration(configurations["testFixturesApiElements"]) { skip() }
+javaComponent.withVariantsFromConfiguration(configurations["testFixturesRuntimeElements"]) { skip() }
 
 apply(from = rootProject.file("gradle/objectbox-publish.gradle"))
 // Set project-specific properties
