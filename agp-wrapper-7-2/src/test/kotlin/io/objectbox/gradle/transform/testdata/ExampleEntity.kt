@@ -19,9 +19,16 @@ data class ExampleEntity(
     @Id var id: Long = 0,
     @Transient var transientProperty: ToOne<ExampleEntity>? = null,
     @ObxTransient var transientProperty2: ToMany<ExampleEntity>? = null,
+    // Note: add an object default value to create a synthetic constructor
+    // where an INVOKESPECIAL op occurs before the INVOKESPECIAL op initializing this.
     @Convert(converter = EntityEmptyConverter::class, dbType = String::class)
-    var convertProperty: List<EntityEmpty> = emptyList()
+    var convertProperty: List<EntityEmpty> = listOf(EntityEmpty())
 ) {
+
+    // Note: add a constructor initializing an object parameter to create
+    // an INVOKESPECIAL op that occurs before the INVOKESPECIAL op initializing this.
+    constructor() : this(convertProperty = listOf(EntityEmpty()))
+
     lateinit var toOneProperty: ToOne<ExampleEntity>
     val toManyProperty = ToMany(this, ExampleEntity_.toManyProperty)
     lateinit var toManyListProperty: MutableList<ExampleEntity>
