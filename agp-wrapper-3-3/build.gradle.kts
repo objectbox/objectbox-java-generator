@@ -1,4 +1,4 @@
-val kotlin_version: String by rootProject.extra
+val kotlinVersion: String by rootProject.extra
 
 plugins {
     id("org.jetbrains.kotlin.jvm")
@@ -16,8 +16,8 @@ dependencies {
     api(project(":objectbox-code-modifier"))
     compileOnly("com.android.tools.build:gradle:3.3.0")
     // Note: override kotlin-reflect version from com.android.tools.build:gradle to avoid mismatch with stdlib above.
-    implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlin_version")
-    compileOnly("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
+    compileOnly("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
 }
 
 apply(from = rootProject.file("gradle/objectbox-publish.gradle"))

@@ -11,17 +11,17 @@ buildscript {
     // Kotlin version must match the one embedded with Gradle (see output of `gradlew --version`)
     // to avoid conflicts when compiling our Gradle plugin. https://github.com/gradle/gradle/issues/16345
     // https://docs.gradle.org/7.5-rc-1/userguide/compatibility.html
-    val kotlin_version by extra("1.5.31") // Gradle 7.3.3
+    val kotlinVersion by extra("1.5.31") // Gradle 7.3.3
 
-    val android_version by extra("7.2.0") // See README for minimal supported version. http://google.github.io/android-gradle-dsl/javadoc/
-    val essentials_version by extra("3.1.0")
-    val javassist_version by extra("3.27.0-GA")
-    val junit_version by extra("4.13.2") // https://junit.org/junit4/
+    val androidVersion by extra("7.2.0") // See README for minimal supported version. http://google.github.io/android-gradle-dsl/javadoc/
+    val essentialsVersion by extra("3.1.0")
+    val javassistVersion by extra("3.27.0-GA")
+    val junitVersion by extra("4.13.2") // https://junit.org/junit4/
     // Note: truth 1.1.2 breaks Android plugin apply test.
-    val truth_version by extra("1.0") // https://github.com/google/truth/releases
-    val mockito_version by extra("3.8.0") // https://github.com/mockito/mockito/releases
+    val truthVersion by extra("1.0") // https://github.com/google/truth/releases
+    val mockitoVersion by extra("3.8.0") // https://github.com/mockito/mockito/releases
     // moshi 1.13.0+ requires Kotlin 1.6.0
-    val moshi_version by extra("1.12.0") // https://github.com/square/moshi/blob/master/CHANGELOG.md
+    val moshiVersion by extra("1.12.0") // https://github.com/square/moshi/blob/master/CHANGELOG.md
     // okio 3.1.0+ requires Kotlin 1.6.20
     val okioVersion by extra("3.0.0") // https://github.com/square/okio/blob/master/CHANGELOG.md
 
@@ -42,19 +42,19 @@ buildscript {
         "-dev-SNAPSHOT"
     }
 
-    val objectbox_plugin_version by extra(versionNumber + versionPostFix) // Artifact versions of this project.
-    val objectbox_java_version by extra(libsVersion) // Java library used by sub-projects.
-    val applies_ob_java_version by extra(libsVersion) // Java library added to projects applying the plugin.
-    val applies_ob_native_version by extra(libsVersion) // Native library added to projects applying the ObjectBoxGradlePlugin.
-    val applies_ob_native_sync_version by extra(libsSyncVersion) // Native library added to projects applying the ObjectBoxSyncGradlePlugin.
+    val objectboxPluginVersion by extra(versionNumber + versionPostFix) // Artifact versions of this project.
+    val objectboxJavaVersion by extra(libsVersion) // Java library used by sub-projects.
+    val appliesObxJavaVersion by extra(libsVersion) // Java library added to projects applying the plugin.
+    val appliesObxJniLibVersion by extra(libsVersion) // Native library added to projects applying the ObjectBoxGradlePlugin.
+    val appliesObxSyncJniLibVersion by extra(libsSyncVersion) // Native library added to projects applying the ObjectBoxSyncGradlePlugin.
 
-    println("version=$objectbox_plugin_version")
-    println("objectbox_java_version=$objectbox_java_version")
-    println("applies_ob_java_version=$applies_ob_java_version")
+    println("version=$objectboxPluginVersion")
+    println("objectboxJavaVersion=$objectboxJavaVersion")
+    println("appliesObxJavaVersion=$appliesObxJavaVersion")
     println("ObjectBoxGradlePlugin:")
-    println("  applies_ob_native_version=$applies_ob_native_version")
+    println("  appliesObxJniLibVersion=$appliesObxJniLibVersion")
     println("ObjectBoxSyncGradlePlugin:")
-    println("  applies_ob_native_sync_version=$applies_ob_native_sync_version\n")
+    println("  appliesObxSyncJniLibVersion=$appliesObxSyncJniLibVersion\n")
 
     // Internal Maven repo: used in all projects, printing info/warning only once here.
     val hasInternalObjectBoxRepo by extra(project.hasProperty("gitlabUrl"))
@@ -72,7 +72,7 @@ buildscript {
     }
 
     dependencies {
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
     }
 }
 
@@ -91,8 +91,8 @@ tasks.withType<com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
 
 allprojects {
     group = "io.objectbox"
-    val objectbox_plugin_version: String by rootProject.extra
-    version = objectbox_plugin_version
+    val objectboxPluginVersion: String by rootProject.extra
+    version = objectboxPluginVersion
 
     // Note: also update IncrementalCompilationTest.projectSetup as needed.
     repositories {

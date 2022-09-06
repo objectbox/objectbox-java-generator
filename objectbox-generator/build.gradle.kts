@@ -8,21 +8,21 @@ java {
     targetCompatibility = JavaVersion.VERSION_1_8
 }
 
-val kotlin_version: String by rootProject.extra
-val objectbox_java_version: String by rootProject.extra
-val essentials_version: String by rootProject.extra
-val junit_version: String by rootProject.extra
+val kotlinVersion: String by rootProject.extra
+val objectboxJavaVersion: String by rootProject.extra
+val essentialsVersion: String by rootProject.extra
+val junitVersion: String by rootProject.extra
 
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version")
-    implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlin_version")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
 
-    implementation("io.objectbox:objectbox-java:$objectbox_java_version")
+    implementation("io.objectbox:objectbox-java:$objectboxJavaVersion")
     // https://freemarker.apache.org/docs/app_versions.html
     implementation("org.freemarker:freemarker:2.3.31")
-    implementation("org.greenrobot:essentials:$essentials_version")
+    implementation("org.greenrobot:essentials:$essentialsVersion")
 
-    testImplementation("junit:junit:$junit_version")
+    testImplementation("junit:junit:$junitVersion")
 }
 
 tasks.test {

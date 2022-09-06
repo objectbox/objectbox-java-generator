@@ -38,15 +38,15 @@ val createClasspathManifest by tasks.registering {
     }
 }
 
-val android_version: String by rootProject.extra
-val kotlin_version: String by rootProject.extra
-val javassist_version: String by rootProject.extra
-val objectbox_java_version: String by rootProject.extra
-val essentials_version: String by rootProject.extra
-val junit_version: String by rootProject.extra
-val mockito_version: String by rootProject.extra
-val truth_version: String by rootProject.extra
-val moshi_version: String by rootProject.extra
+val androidVersion: String by rootProject.extra
+val kotlinVersion: String by rootProject.extra
+val javassistVersion: String by rootProject.extra
+val objectboxJavaVersion: String by rootProject.extra
+val essentialsVersion: String by rootProject.extra
+val junitVersion: String by rootProject.extra
+val mockitoVersion: String by rootProject.extra
+val truthVersion: String by rootProject.extra
+val moshiVersion: String by rootProject.extra
 val okioVersion: String by rootProject.extra
 
 dependencies {
@@ -54,19 +54,19 @@ dependencies {
     implementation(project(":objectbox-code-modifier"))
     implementation(project(":agp-wrapper-3-3"))
     implementation(project(":agp-wrapper-7-2"))
-    compileOnly("com.android.tools.build:gradle:$android_version")
-    compileOnly("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version")
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version")
+    compileOnly("com.android.tools.build:gradle:$androidVersion")
+    compileOnly("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion")
     // Note: override kotlin-reflect version from com.android.tools.build:gradle to avoid mismatch with stdlib above.
-    implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlin_version")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
 
     testImplementation(gradleTestKit())
     // For new Gradle TestKit tests (see GradleTestRunner).
     testRuntimeOnly(files(createClasspathManifest))
-    testPluginClasspath("com.android.tools.build:gradle:$android_version")
+    testPluginClasspath("com.android.tools.build:gradle:$androidVersion")
     // For plugin apply tests and outdated TestKit tests (dir "test-gradle-projects").
-    testImplementation("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version")
-    testImplementation("com.android.tools.build:gradle:$android_version")
+    testImplementation("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
+    testImplementation("com.android.tools.build:gradle:$androidVersion")
     // Android Plugin 4.2.0 and higher require the BuildEventListenerFactory class,
     // which Gradle does not include by default, so manually add it.
     // https://github.com/gradle/gradle/issues/16774#issuecomment-853407822
@@ -78,19 +78,19 @@ dependencies {
         )
     )
 
-    testImplementation("io.objectbox:objectbox-java:$objectbox_java_version")
-    testImplementation("org.greenrobot:essentials:$essentials_version")
-    testImplementation("junit:junit:$junit_version")
-    testImplementation("org.mockito:mockito-core:$mockito_version")
-    testImplementation("com.google.truth:truth:$truth_version")
-    testImplementation("com.squareup.moshi:moshi:$moshi_version")
+    testImplementation("io.objectbox:objectbox-java:$objectboxJavaVersion")
+    testImplementation("org.greenrobot:essentials:$essentialsVersion")
+    testImplementation("junit:junit:$junitVersion")
+    testImplementation("org.mockito:mockito-core:$mockitoVersion")
+    testImplementation("com.google.truth:truth:$truthVersion")
+    testImplementation("com.squareup.moshi:moshi:$moshiVersion")
     testImplementation("com.squareup.okio:okio:$okioVersion")
-    testImplementation("org.javassist:javassist:$javassist_version")
+    testImplementation("org.javassist:javassist:$javassistVersion")
 }
 
-val applies_ob_java_version: String by rootProject.extra
-val applies_ob_native_version: String by rootProject.extra
-val applies_ob_native_sync_version: String by rootProject.extra
+val appliesObxJavaVersion: String by rootProject.extra
+val appliesObxJniLibVersion: String by rootProject.extra
+val appliesObxSyncJniLibVersion: String by rootProject.extra
 
 buildConfig {
     // rename to avoid conflict with other build config files (modules use same root package)
@@ -99,9 +99,9 @@ buildConfig {
 
     buildConfigField("String", "VERSION", provider { "\"${project.version}\"" })
     // Versions of libraries to add to projects applying the plugin.
-    buildConfigField("String", "APPLIES_JAVA_VERSION", provider { "\"$applies_ob_java_version\"" })
-    buildConfigField("String", "APPLIES_NATIVE_VERSION", provider { "\"$applies_ob_native_version\"" })
-    buildConfigField("String", "APPLIES_NATIVE_SYNC_VERSION", provider { "\"$applies_ob_native_sync_version\"" })
+    buildConfigField("String", "APPLIES_JAVA_VERSION", provider { "\"$appliesObxJavaVersion\"" })
+    buildConfigField("String", "APPLIES_NATIVE_VERSION", provider { "\"$appliesObxJniLibVersion\"" })
+    buildConfigField("String", "APPLIES_NATIVE_SYNC_VERSION", provider { "\"$appliesObxSyncJniLibVersion\"" })
 }
 
 // For integration tests (TestKit): publish other modules to repository in build folder.

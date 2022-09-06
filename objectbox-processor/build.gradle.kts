@@ -8,19 +8,19 @@ java {
     targetCompatibility = JavaVersion.VERSION_1_8
 }
 
-val kotlin_version: String by rootProject.extra
-val objectbox_java_version: String by rootProject.extra
-val junit_version: String by rootProject.extra
-val truth_version: String by rootProject.extra
+val kotlinVersion: String by rootProject.extra
+val objectboxJavaVersion: String by rootProject.extra
+val junitVersion: String by rootProject.extra
+val truthVersion: String by rootProject.extra
 
 dependencies {
     implementation(project(":objectbox-code-modifier"))
     implementation(project(":objectbox-generator"))
 
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version")
-    implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlin_version")
-    implementation("io.objectbox:objectbox-java-api:$objectbox_java_version")
-    implementation("io.objectbox:objectbox-java:$objectbox_java_version")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
+    implementation("io.objectbox:objectbox-java-api:$objectboxJavaVersion")
+    implementation("io.objectbox:objectbox-java:$objectboxJavaVersion")
     // auto-service generates service configuration for annotation processor.
     val autoService = "1.0"
     compileOnly("com.google.auto.service:auto-service-annotations:$autoService")
@@ -35,11 +35,11 @@ dependencies {
     if (toolsJar != null) {
         testCompileOnly(files(toolsJar))
     }
-    testImplementation("junit:junit:$junit_version")
-    testImplementation("com.google.truth:truth:$truth_version")
+    testImplementation("junit:junit:$junitVersion")
+    testImplementation("com.google.truth:truth:$truthVersion")
     testImplementation("com.google.testing.compile:compile-testing:0.19")
     // generated files during test need objectbox dependencies to compile
-    testImplementation("io.objectbox:objectbox-java:$objectbox_java_version")
+    testImplementation("io.objectbox:objectbox-java:$objectboxJavaVersion")
 }
 
 val javadocJar by tasks.registering(Jar::class) {
