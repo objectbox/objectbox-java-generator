@@ -1,5 +1,5 @@
 # Default image for linux builds
-image: objectboxio/buildenv:21.11.11-centos7
+image: objectboxio/buildenv:22.9.3-android
 
 variables:
   # Disable the Gradle daemon. Gradle may run in a Docker container with a shared
