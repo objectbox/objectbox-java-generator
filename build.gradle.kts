@@ -15,7 +15,7 @@ buildscript {
 
     val androidVersion by extra("7.2.0") // See README for minimal supported version. http://google.github.io/android-gradle-dsl/javadoc/
     val essentialsVersion by extra("3.1.0")
-    val javassistVersion by extra("3.27.0-GA")
+    val javassistVersion by extra("3.29.1-GA")
     val junitVersion by extra("4.13.2") // https://junit.org/junit4/
     // Note: truth 1.1.2 breaks Android plugin apply test.
     val truthVersion by extra("1.0") // https://github.com/google/truth/releases
