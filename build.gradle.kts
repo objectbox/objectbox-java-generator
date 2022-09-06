@@ -17,8 +17,7 @@ buildscript {
     val essentialsVersion by extra("3.1.0")
     val javassistVersion by extra("3.29.1-GA")
     val junitVersion by extra("4.13.2") // https://junit.org/junit4/
-    // Note: truth 1.1.2 breaks Android plugin apply test.
-    val truthVersion by extra("1.0") // https://github.com/google/truth/releases
+    val truthVersion by extra("1.1.3") // https://github.com/google/truth/releases
     val mockitoVersion by extra("3.8.0") // https://github.com/mockito/mockito/releases
     // moshi 1.13.0+ requires Kotlin 1.6.0
     val moshiVersion by extra("1.12.0") // https://github.com/square/moshi/blob/master/CHANGELOG.md
