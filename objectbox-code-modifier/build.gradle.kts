@@ -4,6 +4,7 @@ plugins {
     id("kotlin")
     id("kotlin-kapt")
     id("com.github.gmazzo.buildconfig")
+    id("objectbox-publish")
 }
 
 java {
@@ -64,9 +65,8 @@ val javaComponent = components["java"] as AdhocComponentWithVariants
 javaComponent.withVariantsFromConfiguration(configurations["testFixturesApiElements"]) { skip() }
 javaComponent.withVariantsFromConfiguration(configurations["testFixturesRuntimeElements"]) { skip() }
 
-apply(from = rootProject.file("gradle/objectbox-publish.gradle"))
 // Set project-specific properties
-configure<PublishingExtension> {
+publishing {
     publications {
         getByName<MavenPublication>("mavenJava") {
             artifactId = "objectbox-code-modifier"

@@ -1,6 +1,7 @@
 plugins {
     id("java")
     id("kotlin")
+    id("objectbox-publish")
 }
 
 java {
@@ -57,9 +58,8 @@ val sourcesJar by tasks.registering(Jar::class) {
     from("README")
 }
 
-apply(from = rootProject.file("gradle/objectbox-publish.gradle"))
 // Set project-specific properties
-configure<PublishingExtension> {
+publishing {
     publications {
         getByName<MavenPublication>("mavenJava") {
             artifactId = "objectbox-generator"

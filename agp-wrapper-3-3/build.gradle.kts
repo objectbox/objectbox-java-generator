@@ -2,6 +2,7 @@ val kotlinVersion: String by rootProject.extra
 
 plugins {
     id("org.jetbrains.kotlin.jvm")
+    id("objectbox-publish")
 }
 
 java {
@@ -20,9 +21,8 @@ dependencies {
     compileOnly("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
 }
 
-apply(from = rootProject.file("gradle/objectbox-publish.gradle"))
 // Set project-specific properties
-configure<PublishingExtension> {
+publishing {
     publications {
         getByName<MavenPublication>("mavenJava") {
             artifactId = "agp-wrapper-3-3"

@@ -4,6 +4,7 @@ val truthVersion: String by rootProject.extra
 
 plugins {
     id("org.jetbrains.kotlin.jvm")
+    id("objectbox-publish")
 }
 
 java {
@@ -30,9 +31,8 @@ dependencies {
     testImplementation("com.android.tools.build:gradle-api:$androidPluginVersion")
 }
 
-apply(from = rootProject.file("gradle/objectbox-publish.gradle"))
 // Set project-specific properties
-configure<PublishingExtension> {
+publishing {
     publications {
         getByName<MavenPublication>("mavenJava") {
             artifactId = "agp-wrapper-7-2"
