@@ -15,7 +15,7 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinBasePluginWrapper
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.util.*
 
-class AndroidPlugin33 : AndroidPluginCompat() {
+open class AndroidPlugin33 : AndroidPluginCompat() {
 
     override fun registerTransform(project: Project, debug: Property<Boolean>, hasKotlinPlugin: Boolean) {
         // For regular build and instrumentation (on mobile device) tests,
@@ -113,4 +113,19 @@ class AndroidPlugin33 : AndroidPluginCompat() {
         inputClasspath.from(kotlinCompileTaskProvider.map { it.destinationDirectory })
     }
 
+    // Checked APIs exist up to Android Plugin 7.3.1.
+    override fun getFirstApplicationId(project: Project): String? {
+        return when (val androidExtension = project.extensions.findByType(BaseExtension::class.java)) {
+            is AppExtension -> androidExtension.applicationVariants.firstOrNull()?.applicationId
+            // FeatureExtension is deprecated as of Android Plugin 3.4.0 (April 2019) and was never tracked before,
+            // so continue to not track.
+            // is FeatureExtension -> androidExtension.featureVariants.firstOrNull()?.applicationId
+            is LibraryExtension -> androidExtension.libraryVariants.firstOrNull()?.applicationId
+            // Note: TestExtension is only used to create a separate instrumentation test module,
+            // it does not have an application ID.
+            // https://developer.android.com/studio/test/advanced-test-setup#use-separate-test-modules-for-instrumented-tests
+            // is TestExtension ->
+            else -> null
+        }
+    }
 }

@@ -18,14 +18,9 @@
 
 package io.objectbox.gradle
 
-import com.android.build.gradle.AppExtension
-import com.android.build.gradle.AppPlugin
-import com.android.build.gradle.LibraryExtension
-import com.android.build.gradle.LibraryPlugin
+import io.objectbox.gradle.util.AndroidCompat
 import io.objectbox.reporting.BasicBuildTracker
-import org.gradle.api.plugins.ExtensionContainer
 import java.util.*
-import kotlin.reflect.KClass
 
 /**
  * Track build errors and anonymous stats for Gradle projects.
@@ -70,25 +65,16 @@ open class GradleBuildTracker(toolName: String) : BasicBuildTracker(toolName) {
         return event.toString()
     }
 
-    // Allow stubbing for testing
-    // Use internal once fixed (Kotlin 1.1.4?)
-    // TODO how are flavors handled here?
+    /**
+     * Returns the application ID of the first found build variant.
+     */
+    // Open to allow mocking for testing.
     open fun androidAppId(env: ProjectEnv): String? {
         if (!env.hasAndroidPlugin) {
             return null // Android plugin API not available
         }
         val project = env.project
-        val appPlugin = project.plugins.find { it is AppPlugin }
-        if (appPlugin != null) {
-            val variants = project.extensions[AppExtension::class].applicationVariants
-            return variants.firstOrNull()?.applicationId
-        }
-        val libraryPlugin = project.plugins.find { it is LibraryPlugin }
-        if (libraryPlugin != null) {
-            val variants = project.extensions[LibraryExtension::class].libraryVariants
-            return variants.firstOrNull()?.applicationId
-        }
-        return null
+        return AndroidCompat.getPlugin(project).getFirstApplicationId(project)
     }
 
     private fun checkCI(): String? {
@@ -106,10 +92,6 @@ open class GradleBuildTracker(toolName: String) : BasicBuildTracker(toolName) {
             System.getenv("CI") != null -> "Other"
             else -> null
         }
-    }
-
-    private operator fun <T : Any> ExtensionContainer.get(type: KClass<T>): T {
-        return getByType(type.java)
     }
 
 }

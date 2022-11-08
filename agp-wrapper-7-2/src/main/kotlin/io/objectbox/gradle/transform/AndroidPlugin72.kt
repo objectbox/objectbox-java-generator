@@ -6,7 +6,7 @@ import com.android.build.api.variant.AndroidComponentsExtension
 import org.gradle.api.Project
 import org.gradle.api.provider.Property
 
-class AndroidPlugin72 : AndroidPluginCompat() {
+class AndroidPlugin72 : AndroidPlugin33() {
 
     override fun registerTransform(project: Project, debug: Property<Boolean>, hasKotlinPlugin: Boolean) {
         // For all builds and tests (on device, on dev machine),
