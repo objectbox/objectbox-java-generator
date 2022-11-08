@@ -5,6 +5,7 @@ import io.objectbox.gradle.GradleTestRunner
 import javassist.ClassPool
 import javassist.CtClass
 import javassist.bytecode.ClassFile
+import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.Rule
 import org.junit.Test
@@ -14,11 +15,28 @@ import java.io.File
 import java.lang.reflect.Modifier
 
 
-class AndroidTransformTest {
+/**
+ * Generic implementation of an Android Plugin transform test.
+ */
+abstract class AndroidPluginTransformTest {
 
     @JvmField
     @Rule
     val testProjectDir: TemporaryFolder = TemporaryFolder.builder().assureDeletion().build()
+
+    abstract val buildScriptAndroidBlock: String
+
+    abstract val androidManifest: String
+
+    open val additionalRunnerConfiguration: ((GradleRunner) -> Unit) = {
+        // Log build output to standard out, does not pollute logs as just using --stacktrace option.
+        it.forwardOutput()
+    }
+
+    /**
+     * From project root, the path to the directory where transformed classes are written to.
+     */
+    abstract val buildTransformDirectory: String
 
     @Test
     fun assemble_transformRuns() {
@@ -26,34 +44,11 @@ class AndroidTransformTest {
             .apply {
                 // Note: classpath for plugins configured in build script of this project (see GradleTestRunner.build).
                 additionalPlugins += "com.android.application"
-                additionalBlocks =
-                    """
-                    android {
-                        namespace 'com.example'
-                        compileSdkVersion 32
-                        defaultConfig {
-                            applicationId "com.example"
-                            minSdkVersion 21
-                            targetSdkVersion 32
-                        }
-                        compileOptions {
-                            sourceCompatibility JavaVersion.VERSION_1_8
-                            targetCompatibility JavaVersion.VERSION_1_8
-                        }
-                    }
-                    """.trimIndent()
+                additionalBlocks = buildScriptAndroidBlock
             }
 
         testProjectDir.newFile("src/main/AndroidManifest.xml").apply {
-            writeText(
-                """
-            <?xml version="1.0" encoding="utf-8"?>
-            <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-                <application>
-                </application>
-            </manifest>
-            """.trimIndent()
-            )
+            writeText(androidManifest)
         }
 
         gradleRunner.addSourceFile(
@@ -106,11 +101,10 @@ class AndroidTransformTest {
             """.trimIndent()
         )
 
-        val result = gradleRunner.assembleDebug()
+        val result = gradleRunner.build(listOf("--stacktrace", "assembleDebug"), additionalRunnerConfiguration)
         assertThat(result.task(":assembleDebug")!!.outcome).isEqualTo(TaskOutcome.SUCCESS)
 
-        // Note: For the legacy Android Plugin transform API (before 7.2) this was build/intermediates/transforms/ObjectBoxAndroidTransform/debug/0
-        val transformDir = File(testProjectDir.root, "build/intermediates/asm_instrumented_project_classes/debug")
+        val transformDir = File(testProjectDir.root, buildTransformDirectory)
 
         // Check entity is transformed.
         File(transformDir, "com/example/ExampleEntity.class").inputStream().use { fileInputStream ->
@@ -151,6 +145,5 @@ class AndroidTransformTest {
         }
 
     }
-
 
 }
