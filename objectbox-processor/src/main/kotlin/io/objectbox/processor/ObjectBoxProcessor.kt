@@ -355,7 +355,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         // even without a no-arg constructor.
         // https://github.com/objectbox/objectbox-java/issues/900
         if (!entityModel.hasAllArgsConstructor() && !entity.hasNoArgConstructor()) {
-            messages.error("No-argument or all-properties constructor is required for entity class.", entity)
+            messages.error("No-argument or all-properties constructor is required for @Entity class. https://docs.objectbox.io/getting-started#define-entity-classes", entity)
         }
     }
 

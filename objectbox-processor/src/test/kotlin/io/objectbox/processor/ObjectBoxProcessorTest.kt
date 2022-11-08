@@ -439,7 +439,7 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
         environment.compile(listOf(noArgCtrMissing))
             .assertThatIt {
                 failed()
-                hadErrorContaining("No-argument or all-properties constructor is required for entity class.")
+                hadErrorContaining("No-argument or all-properties constructor is required for @Entity class")
             }
         assertThat(environment.isModelFileExists()).isFalse()
     }
