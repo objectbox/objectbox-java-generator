@@ -1,13 +1,11 @@
 @file:Suppress("unused")
 
-package io.objectbox.gradle.transform.testdata
+package io.objectbox.gradle.transform
 
+import io.objectbox.EntityInfo
 import io.objectbox.annotation.Convert
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Id
-import io.objectbox.gradle.transform.EntityEmpty
-import io.objectbox.gradle.transform.EntityEmptyConverter
-import io.objectbox.gradle.transform.EntityInfoStub
 import io.objectbox.relation.RelationInfo
 import io.objectbox.relation.ToMany
 import io.objectbox.relation.ToOne
@@ -35,7 +33,7 @@ data class ExampleEntity(
 }
 
 @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
-object ExampleEntity_ : EntityInfoStub<ExampleEntity>() {
+object ExampleEntity_ : EntityInfo<ExampleEntity>, EntityInfoStub<ExampleEntity>() {
     @JvmField
     val toManyProperty = RelationInfo<ExampleEntity, ExampleEntity>(null, null, null, null)
 
