@@ -41,6 +41,21 @@ class ClassTransformerTest : AbstractTransformTest() {
     }
 
     @Test
+    fun entity_isTransformed() {
+        val classes = listOf(ExampleEntity::class, ExampleEntity_::class)
+        val (stats) = testTransformOrCopy(classes, 1, 1)
+        // Data class no-param constructor and special Kotlin constructor call other constructor,
+        // should not be transformed.
+        assertEquals(1, stats.constructorsCheckedForTransform)
+        assertEquals(1, stats.boxStoreFieldsAdded)
+        assertEquals(1, stats.toOnesFound)
+        assertEquals(2, stats.toManyFound)
+        assertEquals(1, stats.toOnesInitializerAdded)
+        // toManyProperty is already initialized, should only init toManyListProperty
+        assertEquals(1, stats.toManyInitializerAdded)
+    }
+
+    @Test
     fun testTransformEntity_toOne() {
         val classes = listOf(EntityToOne::class, EntityToOne_::class)
         val (stats) = testTransformOrCopy(classes, 1, 1)
