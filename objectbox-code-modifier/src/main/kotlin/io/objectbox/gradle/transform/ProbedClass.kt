@@ -43,7 +43,10 @@ data class ProbedClass(
         val isEntity: Boolean = false,
         val isEntityInfo: Boolean = false,
         val isBaseEntity: Boolean = false,
-        /** Fully qualified names (dot notation) of generic types in fields of List (non-transient only) */
+        /**
+         * Fully qualified names (dot notation) of type arguments of all (non-transient) List fields of this class.
+         * Used to find List fields that are relations, see [hasRelation].
+         */
         val listFieldTypes: List<String> = emptyList(),
         val hasToOneRef: Boolean = false,
         val hasToManyRef: Boolean = false,

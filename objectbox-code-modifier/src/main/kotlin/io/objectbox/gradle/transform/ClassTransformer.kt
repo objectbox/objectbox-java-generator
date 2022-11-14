@@ -217,33 +217,43 @@ class ClassTransformer(private val debug: Boolean = false) {
         return changed
     }
 
-    private fun findRelationFields(context: Context, ctClassEntity: CtClass, ctClass: CtClass,
-                                   fieldTypeDescriptor: String, relationType: String)
-            : MutableList<RelationField> {
+    /**
+     * Finds fields that are ObjectBox relations.
+     */
+    private fun findRelationFields(
+        context: Context, ctClassEntity: CtClass, ctClass: CtClass,
+        fieldTypeDescriptor: String, relationType: String
+    ): MutableList<RelationField> {
         val fields = mutableListOf<RelationField>()
         ctClass.declaredFields
-                .filter { it.fieldInfo.descriptor == fieldTypeDescriptor }
-                .forEach { field ->
-                    val targetClassType = field.fieldInfo.exGetSingleGenericTypeArgumentOrNull()
-                    if (ClassConst.listDescriptor == fieldTypeDescriptor) {
-                        // is List
-                        if (targetClassType == null
-                                || !context.entityTypes.contains(targetClassType.name)
-                                || Modifier.isTransient(field.modifiers)
-                                || field.fieldInfo.exGetAnnotation(ClassConst.transientAnnotationName) != null
-                                || field.fieldInfo.exGetAnnotation(ClassConst.convertAnnotationName) != null) {
-                            // exclude:
-                            // - no target entity
-                            // - does not hold the expected target entity,
-                            // - is transient
-                            // - is annotated with @Transient or @Convert
-                            // note: this detection should be in sync with ClassProber#extractAllListTypes
-                            return@forEach
-                        }
-                    }
-                    val name = findRelationNameInEntityInfo(context, ctClassEntity, field, relationType)
-                    fields += RelationField(field, name, relationType, targetClassType)
+            .forEach { field ->
+                // Note: this detection should match the properties the annotation processor detects.
+                // Note: this detection should be in sync with ClassProber#extractAllListTypes.
+                // Exclude if:
+                // - not ToOne/ToMany/List,
+                if (field.fieldInfo.descriptor != fieldTypeDescriptor) {
+                    return@forEach
                 }
+                // - is transient,
+                if (Modifier.isTransient(field.modifiers)) {
+                    return@forEach
+                }
+                // - is annotated with @Transient or @Convert
+                val hasTransientOrConvertAnnotation =
+                    field.fieldInfo.exGetAnnotation(ClassConst.transientAnnotationName) != null
+                            || field.fieldInfo.exGetAnnotation(ClassConst.convertAnnotationName) != null
+                if (hasTransientOrConvertAnnotation) {
+                    return@forEach
+                }
+                // - does not hold a known @Entity class.
+                val targetClassType = field.fieldInfo.exGetSingleGenericTypeArgumentOrNull()
+                if (targetClassType == null || !context.entityTypes.contains(targetClassType.name)) {
+                    return@forEach
+                }
+                // Otherwise found a relation field!
+                val name = findRelationNameInEntityInfo(context, ctClassEntity, field, relationType)
+                fields += RelationField(field, name, relationType, targetClassType)
+            }
         return fields
     }
 
