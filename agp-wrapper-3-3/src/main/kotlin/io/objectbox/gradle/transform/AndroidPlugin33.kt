@@ -13,7 +13,6 @@ import org.gradle.api.provider.Property
 import org.gradle.api.tasks.testing.Test
 import org.jetbrains.kotlin.gradle.plugin.KotlinBasePluginWrapper
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import java.util.*
 
 open class AndroidPlugin33 : AndroidPluginCompat() {
 
@@ -79,8 +78,7 @@ open class AndroidPlugin33 : AndroidPluginCompat() {
             }
         }
 
-        val unitTestVariantNameCapitalized = unitTestVariant.name
-            .replaceFirstChar { it.titlecase(Locale.getDefault()) }
+        val unitTestVariantNameCapitalized = unitTestVariant.name.capitalize()
         val transformTaskName = "objectboxTransform$unitTestVariantNameCapitalized"
         val outputDir = project.buildDir.resolve("intermediates/objectbox/${unitTestVariant.dirName}")
         // Use register to defer creation until use.
@@ -106,8 +104,7 @@ open class AndroidPlugin33 : AndroidPluginCompat() {
         variant: BaseVariant
     ) {
         // Using naming scheme promised by https://kotlinlang.org/docs/reference/using-gradle.html#compiler-options
-        val variantNameCapitalized = variant.name
-            .replaceFirstChar { it.titlecase(Locale.getDefault()) }
+        val variantNameCapitalized = variant.name.capitalize()
         val kotlinTaskName = "compile${variantNameCapitalized}Kotlin"
         val kotlinCompileTaskProvider = project.tasks.named(kotlinTaskName, KotlinCompile::class.java)
         inputClasspath.from(kotlinCompileTaskProvider.map { it.destinationDirectory })
