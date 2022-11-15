@@ -3,8 +3,19 @@ import org.gradle.kotlin.dsl.support.serviceOf
 
 // https://docs.gradle.org/current/userguide/custom_plugins.html
 
+val kotlinVersion: String by rootProject.extra
+val kotlinApiLevel: String by rootProject.extra
+val javassistVersion: String by rootProject.extra
+val objectboxJavaVersion: String by rootProject.extra
+val essentialsVersion: String by rootProject.extra
+val junitVersion: String by rootProject.extra
+val mockitoVersion: String by rootProject.extra
+val truthVersion: String by rootProject.extra
+val moshiVersion: String by rootProject.extra
+val okioVersion: String by rootProject.extra
+
 plugins {
-    id("kotlin")
+    kotlin("jvm")
     id("com.github.gmazzo.buildconfig")
     id("objectbox-publish")
 }
@@ -12,6 +23,13 @@ plugins {
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
     targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+    kotlinOptions {
+        // Match Kotlin language level used by minimum supported Gradle version, see root build script for details.
+        apiVersion = kotlinApiLevel
+    }
 }
 
 val testPluginClasspath: Configuration by configurations.creating
@@ -38,26 +56,16 @@ val createClasspathManifest by tasks.registering {
     }
 }
 
-val kotlinVersion: String by rootProject.extra
-val javassistVersion: String by rootProject.extra
-val objectboxJavaVersion: String by rootProject.extra
-val essentialsVersion: String by rootProject.extra
-val junitVersion: String by rootProject.extra
-val mockitoVersion: String by rootProject.extra
-val truthVersion: String by rootProject.extra
-val moshiVersion: String by rootProject.extra
-val okioVersion: String by rootProject.extra
-
 dependencies {
-    implementation(gradleApi())
     implementation(project(":objectbox-code-modifier"))
     implementation(project(":agp-wrapper-3-3"))
     implementation(project(":agp-wrapper-7-2"))
+
+    implementation(gradleApi())
+    // Note: Kotlin plugin adds kotlin-stdlib-jdk8 dependency.
+
     compileOnly("com.android.tools.build:gradle-api:7.2.0")
     compileOnly("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion")
-    // Note: override kotlin-reflect version from com.android.tools.build:gradle to avoid mismatch with stdlib above.
-    implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
 
     testImplementation(gradleTestKit())
     // For new Gradle TestKit tests (see GradleTestRunner).

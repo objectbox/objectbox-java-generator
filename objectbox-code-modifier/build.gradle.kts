@@ -1,18 +1,5 @@
-plugins {
-    id("java-library")
-    id("java-test-fixtures")
-    id("kotlin")
-    id("kotlin-kapt")
-    id("com.github.gmazzo.buildconfig")
-    id("objectbox-publish")
-}
-
-java {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
-}
-
 val kotlinVersion: String by rootProject.extra
+val kotlinApiLevel: String by rootProject.extra
 val essentialsVersion: String by rootProject.extra
 val javassistVersion: String by rootProject.extra
 val moshiVersion: String by rootProject.extra
@@ -22,10 +9,31 @@ val junitVersion: String by rootProject.extra
 val mockitoVersion: String by rootProject.extra
 val truthVersion: String by rootProject.extra
 
+plugins {
+    id("java-library")
+    id("java-test-fixtures")
+    kotlin("jvm")
+    kotlin("kapt")
+    id("com.github.gmazzo.buildconfig")
+    id("objectbox-publish")
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+    kotlinOptions {
+        // Match Kotlin language level used by minimum supported Gradle version, see root build script for details.
+        apiVersion = kotlinApiLevel
+    }
+}
+
 dependencies {
     implementation(gradleApi())
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion")
-    implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
+    // Note: Kotlin plugin adds kotlin-stdlib-jdk8 dependency.
+
     implementation("org.greenrobot:essentials:$essentialsVersion")
     implementation("org.javassist:javassist:$javassistVersion")
     implementation("com.squareup.moshi:moshi:$moshiVersion")
@@ -38,6 +46,7 @@ dependencies {
     testImplementation("junit:junit:$junitVersion")
     testImplementation("org.mockito:mockito-core:$mockitoVersion")
     testImplementation("com.google.truth:truth:$truthVersion")
+    testImplementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
 
     testFixturesImplementation("io.objectbox:objectbox-java:$objectboxJavaVersion")
 }
