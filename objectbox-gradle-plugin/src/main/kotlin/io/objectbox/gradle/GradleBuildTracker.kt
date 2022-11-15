@@ -88,7 +88,7 @@ open class GradleBuildTracker(toolName: String) : BasicBuildTracker(toolName) {
             // https://circleci.com/docs/1.0/environment-variables/
             System.getenv("CIRCLECI") != null -> "C"
             // https://documentation.codeship.com/pro/builds-and-configuration/steps/
-            System.getenv("CI_NAME")?.lowercase(Locale.ROOT) == "codeship" -> "CS"
+            System.getenv("CI_NAME")?.toLowerCase(Locale.ROOT) == "codeship" -> "CS"
             System.getenv("CI") != null -> "Other"
             else -> null
         }
