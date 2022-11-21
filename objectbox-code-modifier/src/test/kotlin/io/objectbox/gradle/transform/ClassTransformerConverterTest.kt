@@ -50,8 +50,8 @@ class ClassTransformerConverterTest : AbstractTransformTest() {
 
     @Test
     fun testTransformEntity_converterAndToMany_shouldTransformOnlyToMany() {
-        val classes = listOf(EntityConverterAndToMany::class, EntityConverterAndToMany_::class)
-        val (stats) = testTransformOrCopy(classes, 1, 1)
+        val classes = listOf(EntityConverterAndToMany::class, EntityConverterAndToMany_::class, EntityEmpty::class)
+        val (stats) = testTransformOrCopy(classes, 1, 2)
         Assert.assertEquals(1, stats.boxStoreFieldsAdded)
         Assert.assertEquals(0, stats.toOnesFound)
         Assert.assertEquals(1, stats.toManyFound)
@@ -60,8 +60,8 @@ class ClassTransformerConverterTest : AbstractTransformTest() {
 
     @Test
     fun testTransformEntity_converterAndToOne_shouldTransformOnlyToOne() {
-        val classes = listOf(EntityConverterAndToOne::class, EntityConverterAndToOne_::class)
-        val (stats) = testTransformOrCopy(classes, 1, 1)
+        val classes = listOf(EntityConverterAndToOne::class, EntityConverterAndToOne_::class, EntityEmpty::class)
+        val (stats) = testTransformOrCopy(classes, 1, 2)
         Assert.assertEquals(1, stats.boxStoreFieldsAdded)
         Assert.assertEquals(1, stats.toOnesFound)
         Assert.assertEquals(0, stats.toManyFound)

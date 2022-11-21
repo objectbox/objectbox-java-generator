@@ -102,7 +102,8 @@ class ClassProber {
                 // - no target entity,
                 // - is transient,
                 // - is annotated with @Transient or @Convert
-                // note: this detection should be in sync with ClassTransformer#findRelationFields
+                // Note: except for the focus on List this detection should be in sync
+                // with ClassTransformer#findRelationFields.
                 null
             } else {
                 targetClassType.name

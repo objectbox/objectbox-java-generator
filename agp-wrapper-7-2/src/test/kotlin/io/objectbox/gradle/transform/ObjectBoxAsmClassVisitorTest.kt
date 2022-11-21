@@ -4,7 +4,6 @@ import com.android.build.api.instrumentation.ClassContext
 import com.android.build.api.instrumentation.ClassData
 import com.google.common.truth.Truth.assertThat
 import io.objectbox.annotation.Entity
-import io.objectbox.gradle.transform.testdata.ExampleEntity
 import org.junit.Test
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.Opcodes
@@ -72,7 +71,6 @@ class ObjectBoxAsmClassVisitorTest {
     }
 
     private fun transformCursor(kClass: KClass<*>): ObjectBoxAsmClassVisitor {
-        val classFile = File("../objectbox-code-modifier/build/classes/kotlin/testFixtures", kClass.qualifiedName!!.replace(".", "/") + ".class")
         val classData = object : ClassData {
             override val classAnnotations: List<String> = emptyList()
             override val className: String = kClass::class.qualifiedName!!
@@ -86,15 +84,13 @@ class ObjectBoxAsmClassVisitorTest {
                 return null
             }
         }
-        return transform(classFile, classContext)
+        return transform(kClass, classContext)
     }
 
     private fun transform(kClass: KClass<*>, classContext: ClassContext): ObjectBoxAsmClassVisitor {
-        val classFile = File("build/classes/kotlin/test", kClass.qualifiedName!!.replace(".", "/") + ".class")
-        return transform(classFile, classContext)
-    }
-
-    private fun transform(classFile: File, classContext: ClassContext): ObjectBoxAsmClassVisitor {
+        // Test classes are provided via a Gradle test fixture of objectbox-code-modifier,
+        // look in the directory its files are compiled into.
+        val classFile = File("../objectbox-code-modifier/build/classes/kotlin/testFixtures", kClass.qualifiedName!!.replace(".", "/") + ".class")
         val classReader = ClassReader(classFile.inputStream())
         val transformer = ObjectBoxAsmClassVisitor(Opcodes.ASM9, null, classContext, true)
         classReader.accept(transformer, 0)

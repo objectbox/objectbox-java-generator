@@ -50,6 +50,8 @@ class EntitySub_ : EntityInfo<EntitySub>, EntityInfoStub<EntitySub>() {
     val entityEmptyToOne = RelationInfo<EntitySub, EntityEmpty>(null, null, null, null)
     @JvmField
     val entityEmptyToMany = RelationInfo<EntitySub, EntityEmpty>(null, null, null, null)
+    @JvmField
+    val entityEmptyList = RelationInfo<EntitySub, EntityEmpty>(null, null, null, null)
 }
 
 class EntitySubCursor : Cursor<EntitySub>(null, 0, null, null) {
