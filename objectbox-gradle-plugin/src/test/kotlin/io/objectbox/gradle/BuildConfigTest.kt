@@ -22,9 +22,9 @@ class BuildConfigTest {
     @Test
     fun write() {
         val folder = temporaryFolder.newFolder("build")
-        ObjectBoxBuildConfig("/example/dir", "flavor").writeInto(folder)
-
         val file = ObjectBoxBuildConfig.buildFile(folder)
+        ObjectBoxBuildConfig("/example/dir", "flavor").writeInto(file)
+
         assertTrue(file.exists())
         assertTrue(file.isFile)
 

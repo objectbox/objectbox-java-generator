@@ -38,7 +38,6 @@ val createClasspathManifest by tasks.registering {
     }
 }
 
-val androidVersion: String by rootProject.extra
 val kotlinVersion: String by rootProject.extra
 val javassistVersion: String by rootProject.extra
 val objectboxJavaVersion: String by rootProject.extra
@@ -54,7 +53,7 @@ dependencies {
     implementation(project(":objectbox-code-modifier"))
     implementation(project(":agp-wrapper-3-3"))
     implementation(project(":agp-wrapper-7-2"))
-    compileOnly("com.android.tools.build:gradle:$androidVersion")
+    compileOnly("com.android.tools.build:gradle-api:7.2.0")
     compileOnly("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion")
     // Note: override kotlin-reflect version from com.android.tools.build:gradle to avoid mismatch with stdlib above.
@@ -63,10 +62,11 @@ dependencies {
     testImplementation(gradleTestKit())
     // For new Gradle TestKit tests (see GradleTestRunner).
     testRuntimeOnly(files(createClasspathManifest))
-    testPluginClasspath("com.android.tools.build:gradle:$androidVersion")
+    val testedAndroidPluginVersion = "7.2.0"
+    testPluginClasspath("com.android.tools.build:gradle:$testedAndroidPluginVersion")
     // For plugin apply tests and outdated TestKit tests (dir "test-gradle-projects").
     testImplementation("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
-    testImplementation("com.android.tools.build:gradle:$androidVersion")
+    testImplementation("com.android.tools.build:gradle:$testedAndroidPluginVersion")
     // Android Plugin 4.2.0 and higher require the BuildEventListenerFactory class,
     // which Gradle does not include by default, so manually add it.
     // https://github.com/gradle/gradle/issues/16774#issuecomment-853407822

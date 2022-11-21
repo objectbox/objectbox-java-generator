@@ -13,5 +13,5 @@ All are published as Maven artifacts (see `gradle` folder). See the company Wiki
 
 ## Requirements for projects applying the plugin
 
-- Gradle `6.1`
-- Android Plugin `3.3.0`
+- Gradle `6.1` (see [GradleCompat](objectbox-gradle-plugin/src/main/kotlin/io/objectbox/gradle/util/GradleCompat.kt)).
+- Android Plugin `3.3.0` (see [AndroidCompat](objectbox-gradle-plugin/src/main/kotlin/io/objectbox/gradle/util/AndroidCompat.kt)).

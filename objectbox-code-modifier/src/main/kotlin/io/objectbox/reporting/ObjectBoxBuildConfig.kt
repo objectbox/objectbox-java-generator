@@ -22,16 +22,22 @@ import com.squareup.moshi.JsonClass
 import com.squareup.moshi.JsonWriter
 import com.squareup.moshi.Moshi
 import okio.Buffer
-import okio.Okio
 import okio.sink
 import java.io.File
 
 @JsonClass(generateAdapter = true)
-class ObjectBoxBuildConfig(val projectDir: String, val flavor: String? = null) {
+class ObjectBoxBuildConfig(
+    val projectDir: String,
+    val flavor: String? = null
+) {
     companion object {
         const val FILE_NAME = "objectbox-build-config.json"
 
+        /**
+         * Returns a file in the given directory, ensures the directory exists.
+         */
         fun buildFile(outputDir: File): File {
+            if (!outputDir.exists()) outputDir.mkdirs()
             return File(outputDir, FILE_NAME)
         }
     }
@@ -39,10 +45,9 @@ class ObjectBoxBuildConfig(val projectDir: String, val flavor: String? = null) {
     val timeStarted = System.currentTimeMillis()
 
     /**
-     * Writes this class as JSON into a file inside the given directory.
-     * The file is named [FILE_NAME].
+     * Writes this class as JSON into the given file. Create the file with [buildFile].
      */
-    fun writeInto(folder: File) {
+    fun writeInto(buildConfigFile: File) {
         val adapter = ObjectBoxBuildConfigJsonAdapter(Moshi.Builder().build())
         val buffer = Buffer()
         val jsonWriter = JsonWriter.of(buffer)
@@ -50,7 +55,7 @@ class ObjectBoxBuildConfig(val projectDir: String, val flavor: String? = null) {
 
         adapter.toJson(jsonWriter, this)
 
-        buildFile(folder).sink().use {
+        buildConfigFile.sink().use {
             buffer.readAll(it)
         }
     }

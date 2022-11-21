@@ -13,7 +13,6 @@ buildscript {
     // https://docs.gradle.org/7.5-rc-1/userguide/compatibility.html
     val kotlinVersion by extra("1.5.31") // Gradle 7.3.3
 
-    val androidVersion by extra("7.2.0") // See README for minimal supported version. http://google.github.io/android-gradle-dsl/javadoc/
     val essentialsVersion by extra("3.1.0")
     val javassistVersion by extra("3.29.1-GA")
     val junitVersion by extra("4.13.2") // https://junit.org/junit4/
