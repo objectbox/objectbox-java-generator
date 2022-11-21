@@ -12,7 +12,10 @@ java {
 
 val objectboxJavaVersion: String by rootProject.extra
 val essentialsVersion: String by rootProject.extra
+val moshiVersion: String by rootProject.extra
+val okioVersion: String by rootProject.extra
 val junitVersion: String by rootProject.extra
+val truthVersion: String by rootProject.extra
 
 dependencies {
     // Note: Kotlin plugin adds kotlin-stdlib-jdk8 dependency.
@@ -21,8 +24,12 @@ dependencies {
     // https://freemarker.apache.org/docs/app_versions.html
     implementation("org.freemarker:freemarker:2.3.31")
     implementation("org.greenrobot:essentials:$essentialsVersion")
+    implementation("com.squareup.moshi:moshi:$moshiVersion")
+    kapt("com.squareup.moshi:moshi-kotlin-codegen:$moshiVersion")
+    implementation("com.squareup.okio:okio:$okioVersion")
 
     testImplementation("junit:junit:$junitVersion")
+    testImplementation("com.google.truth:truth:$truthVersion")
 }
 
 tasks.test {

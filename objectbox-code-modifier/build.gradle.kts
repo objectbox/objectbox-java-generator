@@ -41,7 +41,6 @@ dependencies {
     implementation("com.squareup.okio:okio:$okioVersion")
 
     implementation("io.objectbox:objectbox-java:$objectboxJavaVersion")
-    implementation(project(":objectbox-generator"))
 
     testImplementation("junit:junit:$junitVersion")
     testImplementation("org.mockito:mockito-core:$mockitoVersion")
