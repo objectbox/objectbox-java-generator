@@ -32,10 +32,10 @@ buildscript {
     val junitVersion by extra("4.13.2") // https://junit.org/junit4/
     val truthVersion by extra("1.1.3") // https://github.com/google/truth/releases
     val mockitoVersion by extra("4.7.0") // https://github.com/mockito/mockito/releases
-    // moshi 1.13.0+ requires Kotlin 1.6.0
+    // moshi 1.13.0+ requires Kotlin 1.6
     val moshiVersion by extra("1.12.0") // https://github.com/square/moshi/blob/master/CHANGELOG.md
-    // okio 3.1.0+ requires Kotlin 1.6.20
-    val okioVersion by extra("3.0.0") // https://github.com/square/okio/blob/master/CHANGELOG.md
+    // okio 3.0.0+ requires Kotlin 1.5
+    val okioVersion by extra("2.10.0") // https://github.com/square/okio/blob/master/CHANGELOG.md
 
     // Typically, only edit those two:
     val versionNumber = "3.4.1" // Without "-SNAPSHOT", e.g. "2.5.0" or "2.4.0-RC".
