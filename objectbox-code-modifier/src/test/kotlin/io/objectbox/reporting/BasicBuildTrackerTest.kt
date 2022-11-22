@@ -1,6 +1,7 @@
 package io.objectbox.reporting
 
 import com.google.common.truth.Truth.assertThat
+import io.objectbox.reporting.BasicBuildTracker.Event
 import org.junit.Test
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.never
@@ -14,10 +15,9 @@ class BasicBuildTrackerTest {
     fun sendTestEvent() {
         // See sendEvent docs: 1 = success
         // Check Mixpanel Live View, the event should show up shortly after this has run.
-        assertThat(
-            BasicBuildTracker("BasicBuildTrackerTest")
-                .sendEventImpl("Test Event", "\"test\":\"success\"", false)
-        ).isEqualTo("1")
+        val tracker = BasicBuildTracker("BasicBuildTrackerTest")
+        val event = tracker.eventData("Test Event", "\"test\":\"success\"", false)
+        assertThat(tracker.sendEventImpl(event)).isEqualTo("1")
     }
 
     /**
@@ -36,14 +36,12 @@ class BasicBuildTrackerTest {
             assertThat(tracker.isAnalyticsDisabled).isFalse()
         }
 
-        // Check disabling prevents sending of events.
+        // Check disabling prevents sending of events, but as much code as possible runs.
         val trackerMock = mock(BasicBuildTracker::class.java)
+        `when`(trackerMock.toolName).thenReturn("BasicBuildTrackerTest")
         `when`(trackerMock.isAnalyticsDisabled).thenReturn(true)
         trackerMock.sendEvent("Test Event", "\"test\":\"success\"", false)
-        verify(trackerMock, never()).sendEventImpl("", "", false)
-        assertThat(trackerMock.shouldSendBuildEvent()).isFalse()
-
-
+        verify(trackerMock, never()).sendEventImpl(Event(""))
     }
 
 }

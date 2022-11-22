@@ -20,6 +20,7 @@ package io.objectbox.gradle
 
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
+import io.objectbox.reporting.BasicBuildTracker.Event
 import org.gradle.api.Project
 import org.gradle.api.logging.Logger
 import org.gradle.api.plugins.ExtensionContainer
@@ -98,10 +99,10 @@ class BuildTrackerTest {
         assertEquals("java.lang.RuntimeException", properties["ExClass2"])
     }
 
-    private fun parseJsonAndAssertBasics(eventData: String, expectedEvent:String): Map<String, Any> {
+    private fun parseJsonAndAssertBasics(event: Event, expectedEvent:String): Map<String, Any> {
         val parameterizedType = Types.newParameterizedType(Map::class.java, String::class.java, Any::class.java)
         val adapter = Moshi.Builder().build().adapter<Map<String, Any>>(parameterizedType)
-        val json = adapter.fromJson(eventData)
+        val json = adapter.fromJson(event.json)
 
         assertEquals(expectedEvent, json!!["event"])
         @Suppress("UNCHECKED_CAST")
