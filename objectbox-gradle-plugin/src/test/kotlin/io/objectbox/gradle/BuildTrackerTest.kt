@@ -25,6 +25,7 @@ import org.gradle.api.Project
 import org.gradle.api.logging.Logger
 import org.gradle.api.plugins.ExtensionContainer
 import org.gradle.api.plugins.PluginContainer
+import org.gradle.util.GradleVersion
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
@@ -71,6 +72,7 @@ class BuildTrackerTest {
         assertEquals(analytics.hashBase64WithoutPadding(aid), properties["AAID"])
         assertEquals(toolName, properties["Tool"])
         assertEquals(ProjectEnv.Const.pluginVersion, properties["Version"])
+        assertEquals(GradleVersion.current().version, properties["Gradle"])
 
         val analytics2 = spy(GradleBuildTracker(toolName))
         assertEquals(distinctId, analytics2.uniqueIdentifier())

@@ -20,6 +20,7 @@ package io.objectbox.gradle
 
 import io.objectbox.gradle.util.AndroidCompat
 import io.objectbox.reporting.BasicBuildTracker
+import org.gradle.util.GradleVersion
 import java.util.*
 
 /**
@@ -61,7 +62,11 @@ open class GradleBuildTracker(toolName: String) : BasicBuildTracker(toolName) {
         event.key("Kotlin").value(hasKotlinPlugin.toString()).comma()
         event.key("Java").value(env.hasJavaPlugin.toString()).comma()
         event.key("Version").value(ProjectEnv.Const.pluginVersion).comma()
-        event.key("Target").value(if (env.hasAndroidPlugin) "Android" else "Other")
+        event.key("Target").value(if (env.hasAndroidPlugin) "Android" else "Other").comma()
+        if (env.hasAndroidPlugin) {
+            event.key("AGP").value(AndroidCompat.getPluginVersion(env.project)).comma()
+        }
+        event.key("Gradle").value(GradleVersion.current().version)
         return event.toString()
     }
 
