@@ -1,6 +1,7 @@
 package io.objectbox.gradle
 
 import com.google.common.truth.Truth.assertThat
+import org.gradle.testkit.runner.BuildResult
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -210,6 +211,11 @@ class IncrementalCompilationTest {
     private fun createRunner(): GradleTestRunner {
         return GradleTestRunner(testProjectDir)
             .apply { additionalPlugins += "java-library" }
+    }
+
+    private fun GradleTestRunner.assemble(): BuildResult {
+        // Need info output for incremental status messages.
+        return build(listOf("--info", "assemble"))
     }
 
     companion object {

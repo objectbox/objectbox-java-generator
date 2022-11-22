@@ -22,7 +22,7 @@ class GradleTestRunner(
 
     private val gitlabUrl = System.getProperty("gitlabUrl")
     private val gitlabTokenName = System.getProperty("gitlabTokenName")
-    private val gitlabToken =  System.getProperty("gitlabToken")
+    private val gitlabToken = System.getProperty("gitlabToken")
 
     private var buildFile: File? = null
 
@@ -99,7 +99,10 @@ class GradleTestRunner(
         )
     }
 
-    private fun build(task: String): BuildResult {
+    fun build(
+        args: List<String>,
+        additionalRunnerConfiguration: ((GradleRunner) -> Unit)? = null
+    ): BuildResult {
         writeBuildFile()
 
         val pluginClasspathResource = javaClass.classLoader.getResource("plugin-classpath.txt")
@@ -107,19 +110,12 @@ class GradleTestRunner(
 
         val pluginClasspath = pluginClasspathResource.readText().lines().map { File(it) }
 
-        return GradleRunner.create()
+        val runner = GradleRunner.create()
             .withProjectDir(testProjectDir.root)
-            .withArguments("--info", task)
+            .withArguments(args)
             .withPluginClasspath(pluginClasspath)
-            .build()
-    }
-
-    fun assemble(): BuildResult {
-        return build("assemble")
-    }
-
-    fun assembleDebug(): BuildResult {
-        return build("assembleDebug")
+        additionalRunnerConfiguration?.invoke(runner)
+        return runner.build()
     }
 
     /**
