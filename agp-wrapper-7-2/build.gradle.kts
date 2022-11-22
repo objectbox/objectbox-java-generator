@@ -1,9 +1,10 @@
+val kotlinApiLevel: String by rootProject.extra
 val objectboxJavaVersion: String by rootProject.extra
 val junitVersion: String by rootProject.extra
 val truthVersion: String by rootProject.extra
 
 plugins {
-    id("org.jetbrains.kotlin.jvm")
+    kotlin("jvm")
     id("objectbox-publish")
 }
 
@@ -14,10 +15,20 @@ java {
     withSourcesJar()
 }
 
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+    kotlinOptions {
+        // Match Kotlin language level used by minimum supported Gradle version, see root build script for details.
+        apiVersion = kotlinApiLevel
+    }
+}
+
 dependencies {
-    implementation(gradleApi())
     api(project(":objectbox-code-modifier"))
     implementation(project(":agp-wrapper-3-3"))
+
+    implementation(gradleApi())
+    // Note: Kotlin plugin adds kotlin-stdlib-jdk8 dependency.
+
     implementation("io.objectbox:objectbox-java:$objectboxJavaVersion")
     val androidPluginVersion = "7.2.0"
     compileOnly("com.android.tools.build:gradle:$androidPluginVersion")

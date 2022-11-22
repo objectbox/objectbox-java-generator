@@ -1,7 +1,8 @@
 val kotlinVersion: String by rootProject.extra
+val kotlinApiLevel: String by rootProject.extra
 
 plugins {
-    id("org.jetbrains.kotlin.jvm")
+    kotlin("jvm")
     id("objectbox-publish")
 }
 
@@ -12,12 +13,25 @@ java {
     withSourcesJar()
 }
 
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+    kotlinOptions {
+        // Match Kotlin language level used by minimum supported Gradle version, see root build script for details.
+        apiVersion = kotlinApiLevel
+    }
+}
+
 dependencies {
-    implementation(gradleApi())
     api(project(":objectbox-code-modifier"))
-    compileOnly("com.android.tools.build:gradle:3.3.0")
-    // Note: override kotlin-reflect version from com.android.tools.build:gradle to avoid mismatch with stdlib above.
-    implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
+
+    implementation(gradleApi())
+    // Note: Kotlin plugin adds kotlin-stdlib-jdk8 dependency.
+
+    compileOnly("com.android.tools.build:gradle:3.3.0") {
+        // Exclude transient kotlin-reflect to avoid conflicts with this projects version.
+        exclude(group = "org.jetbrains.kotlin", module = "kotlin-reflect")
+        // Exclude builder dependency as it bundles the Kotlin library and this only needs the plugin APIs.
+        exclude(group = "com.android.tools.build", module = "builder")
+    }
     compileOnly("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
 }
 

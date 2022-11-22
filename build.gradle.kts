@@ -8,20 +8,34 @@ plugins {
 }
 
 buildscript {
-    // Kotlin version must match the one embedded with Gradle (see output of `gradlew --version`)
-    // to avoid conflicts when compiling our Gradle plugin. https://github.com/gradle/gradle/issues/16345
-    // https://docs.gradle.org/7.5-rc-1/userguide/compatibility.html
-    val kotlinVersion by extra("1.5.31") // Gradle 7.3.3
+    // Note: Gradle runs plugins at the Kotlin language level that Gradle version supports using the Kotlin library it
+    // embeds, regardless of what Kotlin library the plugin depends on.
+    // https://github.com/gradle/gradle/issues/16345#issuecomment-931437640
+    // https://docs.gradle.org/current/userguide/compatibility.html
+    // To ensure compatibility, all plugin projects (so excluding the annotation processor and generator) set a Kotlin
+    // API level to avoid using Kotlin APIs not supported when run by Gradle. Note that dependencies also must not
+    // use newer Kotlin APIs!
+
+    // To remain compatible with new Gradle versions, this project should aim to compile with a Gradle version
+    // using the highest supported Kotlin language level to detect Kotlin API incompatibilities (e.g. removal of
+    // deprecated functions). So far only major Gradle releases have changed the Kotlin language level.
+    // Set kotlinVersion to the Kotlin version embedded by the Gradle version used to compile this project (needs to
+    // be the exact version to avoid conflicts):
+    // https://docs.gradle.org/current/userguide/compatibility.html or see output of `gradlew --version`
+    val kotlinVersion by extra("1.5.31") // Embedded by Gradle 7.3.3 used to compile this
+    // To remain compatible with the lowest supported version of Gradle (see GradleCompat), set kotlinApiLevel to
+    // the Kotlin language level supported by that version: https://docs.gradle.org/current/userguide/compatibility.html
+    val kotlinApiLevel by extra("1.3") // Minimum supported Gradle 6.1 uses Kotlin language level 1.3
 
     val essentialsVersion by extra("3.1.0")
     val javassistVersion by extra("3.29.1-GA")
     val junitVersion by extra("4.13.2") // https://junit.org/junit4/
     val truthVersion by extra("1.1.3") // https://github.com/google/truth/releases
     val mockitoVersion by extra("4.7.0") // https://github.com/mockito/mockito/releases
-    // moshi 1.13.0+ requires Kotlin 1.6.0
+    // moshi 1.13.0+ requires Kotlin 1.6
     val moshiVersion by extra("1.12.0") // https://github.com/square/moshi/blob/master/CHANGELOG.md
-    // okio 3.1.0+ requires Kotlin 1.6.20
-    val okioVersion by extra("3.0.0") // https://github.com/square/okio/blob/master/CHANGELOG.md
+    // okio 3.0.0+ requires Kotlin 1.5
+    val okioVersion by extra("2.10.0") // https://github.com/square/okio/blob/master/CHANGELOG.md
 
     // Typically, only edit those two:
     val versionNumber = "3.4.1" // Without "-SNAPSHOT", e.g. "2.5.0" or "2.4.0-RC".

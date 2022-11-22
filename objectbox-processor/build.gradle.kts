@@ -1,6 +1,6 @@
 plugins {
     id("java")
-    id("kotlin")
+    kotlin("jvm")
     id("objectbox-publish")
 }
 
@@ -9,7 +9,6 @@ java {
     targetCompatibility = JavaVersion.VERSION_1_8
 }
 
-val kotlinVersion: String by rootProject.extra
 val objectboxJavaVersion: String by rootProject.extra
 val junitVersion: String by rootProject.extra
 val truthVersion: String by rootProject.extra
@@ -18,8 +17,8 @@ dependencies {
     implementation(project(":objectbox-code-modifier"))
     implementation(project(":objectbox-generator"))
 
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion")
-    implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
+    // Note: Kotlin plugin adds kotlin-stdlib-jdk8 dependency.
+
     implementation("io.objectbox:objectbox-java-api:$objectboxJavaVersion")
     implementation("io.objectbox:objectbox-java:$objectboxJavaVersion")
     // auto-service generates service configuration for annotation processor.

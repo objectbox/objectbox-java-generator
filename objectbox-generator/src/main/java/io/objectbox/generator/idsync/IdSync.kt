@@ -26,7 +26,6 @@ import com.squareup.moshi.ToJson
 import io.objectbox.generator.IdUid
 import io.objectbox.generator.model.Schema
 import io.objectbox.generator.model.ToManyStandalone
-import io.objectbox.logging.log
 import io.objectbox.model.EntityFlags
 import okio.Buffer
 import okio.buffer
@@ -624,6 +623,15 @@ class IdSync(private val jsonFile: File = File("objectmodel.json")) {
     fun get(property: io.objectbox.generator.model.Property): Property {
         return propertiesBySchemaProperty[property] ?:
                 throw IllegalStateException("No ID model property available for schema property ${property.propertyName}")
+    }
+
+    /**
+     * Creates a Gradle log message pre-fixed with "`[ObjectBox]`".
+     */
+    private fun log(message: String) {
+        // Gradle collects standard output as log message with level QUIET (visible by default).
+        // https://docs.gradle.org/current/userguide/logging.html
+        println("[ObjectBox] $message")
     }
 
 }

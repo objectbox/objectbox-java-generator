@@ -1,6 +1,7 @@
 plugins {
     id("java")
-    id("kotlin")
+    kotlin("jvm")
+    kotlin("kapt")
     id("objectbox-publish")
 }
 
@@ -9,21 +10,26 @@ java {
     targetCompatibility = JavaVersion.VERSION_1_8
 }
 
-val kotlinVersion: String by rootProject.extra
 val objectboxJavaVersion: String by rootProject.extra
 val essentialsVersion: String by rootProject.extra
+val moshiVersion: String by rootProject.extra
+val okioVersion: String by rootProject.extra
 val junitVersion: String by rootProject.extra
+val truthVersion: String by rootProject.extra
 
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion")
-    implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
+    // Note: Kotlin plugin adds kotlin-stdlib-jdk8 dependency.
 
     implementation("io.objectbox:objectbox-java:$objectboxJavaVersion")
     // https://freemarker.apache.org/docs/app_versions.html
     implementation("org.freemarker:freemarker:2.3.31")
     implementation("org.greenrobot:essentials:$essentialsVersion")
+    implementation("com.squareup.moshi:moshi:$moshiVersion")
+    kapt("com.squareup.moshi:moshi-kotlin-codegen:$moshiVersion")
+    implementation("com.squareup.okio:okio:$okioVersion")
 
     testImplementation("junit:junit:$junitVersion")
+    testImplementation("com.google.truth:truth:$truthVersion")
 }
 
 tasks.test {
