@@ -147,7 +147,7 @@ dependencies {
     val agp34Version = "3.4.3"
     testPluginClasspathAgp34("com.android.tools.build:gradle:$agp34Version")
     agp34TestRuntimeOnly(files(testPluginClasspathAgp34File))
-    val agp72Version = "7.2.0"
+    val agp72Version = "7.2.2"
     testPluginClasspathAgp72("com.android.tools.build:gradle:$agp72Version")
     agp72TestRuntimeOnly(files(testPluginClasspathAgp72File))
     

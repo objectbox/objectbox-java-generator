@@ -30,7 +30,7 @@ dependencies {
     // Note: Kotlin plugin adds kotlin-stdlib-jdk8 dependency.
 
     implementation("io.objectbox:objectbox-java:$objectboxJavaVersion")
-    val androidPluginVersion = "7.2.0"
+    val androidPluginVersion = "7.2.2"
     compileOnly("com.android.tools.build:gradle:$androidPluginVersion")
     compileOnly("com.android.tools.build:gradle-api:$androidPluginVersion")
     // https://asm.ow2.io/versions.html
