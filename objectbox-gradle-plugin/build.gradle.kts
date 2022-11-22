@@ -132,7 +132,7 @@ val (testPluginClasspathAgp72, testPluginClasspathAgp72File) = createPluginClass
 
 dependencies {
     implementation(project(":objectbox-code-modifier"))
-    implementation(project(":agp-wrapper-3-3"))
+    implementation(project(":agp-wrapper-3-4"))
     implementation(project(":agp-wrapper-7-2"))
 
     implementation(gradleApi())

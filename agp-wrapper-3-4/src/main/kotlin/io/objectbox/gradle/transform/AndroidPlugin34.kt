@@ -14,7 +14,7 @@ import org.gradle.api.tasks.testing.Test
 import org.jetbrains.kotlin.gradle.plugin.KotlinBasePluginWrapper
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-open class AndroidPlugin33 : AndroidPluginCompat() {
+open class AndroidPlugin34 : AndroidPluginCompat() {
 
     override fun registerTransform(project: Project, debug: Property<Boolean>, hasKotlinPlugin: Boolean) {
         // For regular build and instrumentation (on mobile device) tests,

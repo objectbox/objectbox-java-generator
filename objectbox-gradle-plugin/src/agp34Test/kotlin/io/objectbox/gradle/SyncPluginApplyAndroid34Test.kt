@@ -1,7 +1,7 @@
 package io.objectbox.gradle
 
 import com.google.common.truth.Truth.assertThat
-import io.objectbox.gradle.transform.AndroidPlugin33
+import io.objectbox.gradle.transform.AndroidPlugin34
 import io.objectbox.gradle.util.AndroidCompat
 import org.gradle.api.Project
 
@@ -14,7 +14,7 @@ class SyncPluginApplyAndroid34Test : SyncPluginApplyAndroidTest() {
 
     override fun assertAndroidCompat(project: Project) {
         assertThat(AndroidCompat.getPlugin(project))
-            .isInstanceOf(AndroidPlugin33::class.java)
+            .isInstanceOf(AndroidPlugin34::class.java)
     }
 
 }
