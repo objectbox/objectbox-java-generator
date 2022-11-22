@@ -24,13 +24,13 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach 
 
 dependencies {
     api(project(":objectbox-code-modifier"))
-    implementation(project(":agp-wrapper-3-3"))
+    implementation(project(":agp-wrapper-3-4"))
 
     implementation(gradleApi())
     // Note: Kotlin plugin adds kotlin-stdlib-jdk8 dependency.
 
     implementation("io.objectbox:objectbox-java:$objectboxJavaVersion")
-    val androidPluginVersion = "7.2.0"
+    val androidPluginVersion = "7.2.2"
     compileOnly("com.android.tools.build:gradle:$androidPluginVersion")
     compileOnly("com.android.tools.build:gradle-api:$androidPluginVersion")
     // https://asm.ow2.io/versions.html
@@ -51,7 +51,7 @@ publishing {
             artifactId = "agp-wrapper-7-2"
             from(components["java"])
             pom {
-                name.set("ObjectBox AGP Wrapper 7.2.0")
+                name.set("ObjectBox AGP Wrapper 7.2")
                 description.set("Android Gradle Plugin Wrapper for ObjectBox")
             }
         }

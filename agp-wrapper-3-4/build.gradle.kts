@@ -26,11 +26,9 @@ dependencies {
     implementation(gradleApi())
     // Note: Kotlin plugin adds kotlin-stdlib-jdk8 dependency.
 
-    compileOnly("com.android.tools.build:gradle:3.3.0") {
+    compileOnly("com.android.tools.build:gradle:3.4.3") {
         // Exclude transient kotlin-reflect to avoid conflicts with this projects version.
         exclude(group = "org.jetbrains.kotlin", module = "kotlin-reflect")
-        // Exclude builder dependency as it bundles the Kotlin library and this only needs the plugin APIs.
-        exclude(group = "com.android.tools.build", module = "builder")
     }
     compileOnly("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
 }
@@ -39,10 +37,10 @@ dependencies {
 publishing {
     publications {
         getByName<MavenPublication>("mavenJava") {
-            artifactId = "agp-wrapper-3-3"
+            artifactId = "agp-wrapper-3-4"
             from(components["java"])
             pom {
-                name.set("ObjectBox AGP Wrapper 3.3.0")
+                name.set("ObjectBox AGP Wrapper 3.4")
                 description.set("Android Gradle Plugin Wrapper for ObjectBox")
             }
         }

@@ -132,7 +132,7 @@ val (testPluginClasspathAgp72, testPluginClasspathAgp72File) = createPluginClass
 
 dependencies {
     implementation(project(":objectbox-code-modifier"))
-    implementation(project(":agp-wrapper-3-3"))
+    implementation(project(":agp-wrapper-3-4"))
     implementation(project(":agp-wrapper-7-2"))
 
     implementation(gradleApi())
@@ -147,7 +147,7 @@ dependencies {
     val agp34Version = "3.4.3"
     testPluginClasspathAgp34("com.android.tools.build:gradle:$agp34Version")
     agp34TestRuntimeOnly(files(testPluginClasspathAgp34File))
-    val agp72Version = "7.2.0"
+    val agp72Version = "7.2.2"
     testPluginClasspathAgp72("com.android.tools.build:gradle:$agp72Version")
     agp72TestRuntimeOnly(files(testPluginClasspathAgp72File))
     
