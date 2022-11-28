@@ -1,8 +1,8 @@
 package io.objectbox.reporting
 
 import com.google.common.truth.Truth.assertThat
-import io.objectbox.reporting.BasicBuildTracker.Event
 import org.junit.Test
+import org.mockito.Mockito
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
@@ -36,7 +36,10 @@ class BasicBuildTrackerTest {
         `when`(trackerMock.toolName).thenReturn("BasicBuildTrackerTest")
         `when`(trackerMock.isAnalyticsDisabled).thenReturn(true)
         trackerMock.sendEvent("Test Event", "\"test\":\"success\"", false)
-        verify(trackerMock, never()).sendEventImpl(Event(""))
+        verify(trackerMock, never()).sendEventImpl(any(BasicBuildTracker.Event::class.java))
     }
+
+    // The Mockito.any(Class) return type declaration is nullable breaking Kotlin checks, wrap in non-null type to fix.
+    private fun <T> any(type: Class<T>): T = Mockito.any(type)
 
 }
