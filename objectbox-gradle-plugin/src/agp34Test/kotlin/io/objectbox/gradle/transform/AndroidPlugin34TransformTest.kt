@@ -38,7 +38,9 @@ class AndroidPlugin34TransformTest : AndroidPluginTransformTest() {
     // Test with the oldest supported version of Gradle (see GradleCompat),
     // also Android Plugin 3.4 does not support Gradle 7.
     override val additionalRunnerConfiguration: ((GradleRunner) -> Unit) = {
-        it.forwardOutput()
+        // Do not forward output, many warning messages due to using outdated Android plugin.
+        // Enable this when testing to diagnose Gradle task output.
+        // it.forwardOutput()
         it.withGradleVersion("6.1.1")
     }
 
