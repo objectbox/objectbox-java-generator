@@ -1,7 +1,9 @@
-package io.objectbox.gradle.transform
+package io.objectbox.gradle
 
 import com.google.common.truth.Truth.assertThat
-import io.objectbox.gradle.GradleTestRunner
+import io.objectbox.gradle.transform.ClassConst
+import io.objectbox.gradle.transform.assignsBoxStoreField
+import io.objectbox.gradle.transform.getInitializedFields
 import javassist.ClassPool
 import javassist.CtClass
 import javassist.bytecode.ClassFile
@@ -16,9 +18,9 @@ import java.lang.reflect.Modifier
 
 
 /**
- * Generic implementation of an Android Plugin transform test.
+ * Generic implementation to test the plugin with an Android project.
  */
-abstract class AndroidPluginTransformTest {
+abstract class AndroidProjectPluginTest {
 
     @JvmField
     @Rule
@@ -33,13 +35,16 @@ abstract class AndroidPluginTransformTest {
         it.forwardOutput()
     }
 
+    abstract val androidPluginVersion: String
+    abstract val gradleVersion: String
+
     /**
      * From project root, the path to the directory where transformed classes are written to.
      */
     abstract val buildTransformDirectory: String
 
     @Test
-    fun assemble_transformRuns() {
+    fun assemble() {
         val gradleRunner = GradleTestRunner(testProjectDir)
             .apply {
                 // Note: classpath for plugins configured in build script of this project (see GradleTestRunner.build).
@@ -104,6 +109,17 @@ abstract class AndroidPluginTransformTest {
         val result = gradleRunner.build(listOf("--stacktrace", "assembleDebug"), additionalRunnerConfiguration)
         assertThat(result.task(":assembleDebug")!!.outcome).isEqualTo(TaskOutcome.SUCCESS)
 
+        // Assert build tracker.
+        @Suppress("RegExpRedundantEscape")
+        val buildTrackerLog = "\\[ObjectBox\\] Analytics disabled, would have sent event: .*".toRegex()
+            .find(result.output)?.value
+        assertThat(buildTrackerLog).contains("\"event\": \"Build\"")
+        assertThat(buildTrackerLog).contains("\"Tool\": \"GradlePlugin\"")
+        assertThat(buildTrackerLog).contains("\"Target\": \"Android\"")
+        assertThat(buildTrackerLog).contains("\"AGP\": \"$androidPluginVersion\"")
+        assertThat(buildTrackerLog).contains("\"Gradle\": \"$gradleVersion\"")
+
+        // Assert transform output.
         val transformDir = File(testProjectDir.root, buildTransformDirectory)
 
         // Check entity is transformed.
