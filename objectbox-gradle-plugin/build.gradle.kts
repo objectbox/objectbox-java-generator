@@ -69,6 +69,9 @@ fun createTestKitTestTask(name: String, description: String, sourceSet: SourceSe
 
         testClassesDirs = sourceSet.output.classesDirs
         classpath = sourceSet.runtimeClasspath
+
+        // Android project tests print to Standard out.
+        testLogging.showStandardStreams = true
     }
     configureTestTaskForTestKit(testTask)
     // Run test task as part of the check task.
