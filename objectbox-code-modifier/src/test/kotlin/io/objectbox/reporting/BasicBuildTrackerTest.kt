@@ -27,14 +27,9 @@ class BasicBuildTrackerTest {
     @Test
     fun disableAnalyticsFlag() {
         val tracker = BasicBuildTracker("BasicBuildTrackerTest")
-        // Check analytics is disabled on CI.
-        val isCI = System.getenv("CI") == "true"
-        if (isCI) {
-            assertThat(tracker.isAnalyticsDisabled).isTrue()
-        } else {
-            // Check analytics is enabled by default.
-            assertThat(tracker.isAnalyticsDisabled).isFalse()
-        }
+        // Check that analytics is disabled for tests.
+        // If this test fails, check Gradle scripts correctly turn off analytics for tests.
+        assertThat(tracker.isAnalyticsDisabled).isTrue()
 
         // Check disabling prevents sending of events, but as much code as possible runs.
         val trackerMock = mock(BasicBuildTracker::class.java)

@@ -17,6 +17,7 @@ plugins {
     kotlin("jvm")
     id("com.github.gmazzo.buildconfig")
     id("objectbox-publish")
+    id("objectbox-disable-analytics")
 }
 
 java {

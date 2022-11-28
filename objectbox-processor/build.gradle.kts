@@ -2,6 +2,7 @@ plugins {
     id("java")
     kotlin("jvm")
     id("objectbox-publish")
+    id("objectbox-disable-analytics")
 }
 
 java {
