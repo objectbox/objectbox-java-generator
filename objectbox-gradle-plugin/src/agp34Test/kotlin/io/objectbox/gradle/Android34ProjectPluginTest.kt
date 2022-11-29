@@ -1,6 +1,7 @@
 package io.objectbox.gradle
 
 import org.gradle.testkit.runner.GradleRunner
+import org.intellij.lang.annotations.Language
 
 
 /**
@@ -9,6 +10,7 @@ import org.gradle.testkit.runner.GradleRunner
  */
 class Android34ProjectPluginTest : AndroidProjectPluginTest() {
 
+    @Language("Groovy")
     override val buildScriptAndroidBlock =
         """
         android {
@@ -25,6 +27,7 @@ class Android34ProjectPluginTest : AndroidProjectPluginTest() {
         }
         """.trimIndent()
 
+    @Language("XML")
     override val androidManifest =
         """
         <?xml version="1.0" encoding="utf-8"?>

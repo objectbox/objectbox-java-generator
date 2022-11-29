@@ -1,6 +1,7 @@
 package io.objectbox.gradle
 
 import org.gradle.util.GradleVersion
+import org.intellij.lang.annotations.Language
 
 
 /**
@@ -10,6 +11,7 @@ import org.gradle.util.GradleVersion
 class Android72ProjectPluginTest : AndroidProjectPluginTest() {
 
     // Uses the android.namespace property instead of setting package name in AndroidManifest.xml.
+    @Language("Groovy")
     override val buildScriptAndroidBlock =
         """
         android {
@@ -27,6 +29,7 @@ class Android72ProjectPluginTest : AndroidProjectPluginTest() {
         }
         """.trimIndent()
 
+    @Language("XML")
     override val androidManifest =
         """
         <?xml version="1.0" encoding="utf-8"?>

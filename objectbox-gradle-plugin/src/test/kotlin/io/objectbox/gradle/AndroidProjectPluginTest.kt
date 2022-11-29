@@ -9,6 +9,7 @@ import javassist.CtClass
 import javassist.bytecode.ClassFile
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
+import org.intellij.lang.annotations.Language
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -56,11 +57,11 @@ abstract class AndroidProjectPluginTest {
             writeText(androidManifest)
         }
 
-        gradleRunner.addSourceFile(
-            "ExampleEntity.java",
+        @Language("Java")
+        val exampleEntitySource =
             """
             package com.example;
-
+            
             import io.objectbox.annotation.Convert;
             import io.objectbox.annotation.Entity;
             import io.objectbox.annotation.Id;
@@ -84,7 +85,7 @@ abstract class AndroidProjectPluginTest {
                 public List<ExampleEntity> convertProperty;
                 
                 public ExampleEntity(String log) {
-                    toManyProperty = new ToMany(this, ExampleEntity_.toManyProperty);
+                    toManyProperty = new ToMany<>(this, ExampleEntity_.toManyProperty);
                     System.out.println(log);
                 }
                 
@@ -104,7 +105,8 @@ abstract class AndroidProjectPluginTest {
                 }
             } 
             """.trimIndent()
-        )
+
+        gradleRunner.addSourceFile("ExampleEntity.java", exampleEntitySource)
 
         val result = gradleRunner.build(listOf("--stacktrace", "assembleDebug"), additionalRunnerConfiguration)
         assertThat(result.task(":assembleDebug")!!.outcome).isEqualTo(TaskOutcome.SUCCESS)

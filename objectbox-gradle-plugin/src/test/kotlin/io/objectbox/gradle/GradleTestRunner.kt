@@ -2,6 +2,7 @@ package io.objectbox.gradle
 
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
+import org.intellij.lang.annotations.Language
 import org.junit.rules.TemporaryFolder
 import java.io.File
 
@@ -49,7 +50,9 @@ class GradleTestRunner(
         buildFile?.delete() // Might change in between builds.
         val buildFile = testProjectDir.newFile("build.gradle")
             .also { buildFile = it }
-        buildFile.writeText(
+
+        @Language("Groovy")
+        val buildScript =
             """
             $buildscriptBlock                
                 
@@ -62,7 +65,7 @@ class GradleTestRunner(
                 sourceCompatibility = JavaVersion.VERSION_1_8
                 targetCompatibility = JavaVersion.VERSION_1_8
             }
-
+            
             repositories {
                 maven { url "$testRepository" }
                 mavenCentral()
@@ -96,7 +99,8 @@ class GradleTestRunner(
                 options.compilerArgs += [ $compilerArgs ]
             }
             """.trimIndent()
-        )
+
+        buildFile.writeText(buildScript)
     }
 
     fun build(
