@@ -1,13 +1,13 @@
-package io.objectbox.gradle.transform
+package io.objectbox.gradle
 
 import org.gradle.testkit.runner.GradleRunner
 
 
 /**
- * Tests Transform API using Android Plugin 3.4.
+ * Tests assembling an Android project using Android Plugin 3.4.
  * Notably uses the legacy Transform API.
  */
-class AndroidPlugin34TransformTest : AndroidPluginTransformTest() {
+class Android34ProjectPluginTest : AndroidProjectPluginTest() {
 
     override val buildScriptAndroidBlock =
         """
@@ -37,10 +37,16 @@ class AndroidPlugin34TransformTest : AndroidPluginTransformTest() {
 
     // Test with the oldest supported version of Gradle (see GradleCompat),
     // also Android Plugin 3.4 does not support Gradle 7.
+    private val gradleVersionImpl = "6.1.1"
     override val additionalRunnerConfiguration: ((GradleRunner) -> Unit) = {
-        it.forwardOutput()
-        it.withGradleVersion("6.1.1")
+        // Do not forward output, many warning messages due to using outdated Android plugin.
+        // Enable this when testing to diagnose Gradle task output.
+        // it.forwardOutput()
+        it.withGradleVersion(gradleVersionImpl)
     }
+
+    override val androidPluginVersion: String = "pre-7.0"
+    override val gradleVersion: String = gradleVersionImpl
 
     override val buildTransformDirectory =
         "build/intermediates/transforms/ObjectBoxAndroidTransform/debug/0"

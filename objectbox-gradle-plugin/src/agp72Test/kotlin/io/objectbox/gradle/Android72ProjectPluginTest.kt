@@ -1,11 +1,13 @@
-package io.objectbox.gradle.transform
+package io.objectbox.gradle
+
+import org.gradle.util.GradleVersion
 
 
 /**
- * Tests Transform API using Android Plugin 7.2.
+ * Tests assembling an Android project using Android Plugin 7.2.
  * Notably uses the new ASM based Transform API.
  */
-class AndroidPlugin72TransformTest : AndroidPluginTransformTest() {
+class Android72ProjectPluginTest : AndroidProjectPluginTest() {
 
     // Uses the android.namespace property instead of setting package name in AndroidManifest.xml.
     override val buildScriptAndroidBlock =
@@ -33,6 +35,9 @@ class AndroidPlugin72TransformTest : AndroidPluginTransformTest() {
             </application>
         </manifest>
         """.trimIndent()
+
+    override val androidPluginVersion: String = "7.2.2"
+    override val gradleVersion: String = GradleVersion.current().version
 
     // New ASM based transformers output to a different path.
     override val buildTransformDirectory =

@@ -33,7 +33,10 @@ import java.util.*
  * Track build errors for non-Gradle modules.
  */
 // Non-final for easier mocking
-open class BasicBuildTracker(private val toolName: String) {
+open class BasicBuildTracker(
+    // open and public for testing purposes only.
+    open val toolName: String
+) {
     private companion object {
         /**
          * If this environment variable contains a value of "true" no events are sent,
@@ -72,12 +75,14 @@ open class BasicBuildTracker(private val toolName: String) {
      * older than 24 hours. If so updates the time stamp to the current time.
      */
     fun shouldSendBuildEvent(): Boolean {
-        if (isAnalyticsDisabled) {
-            return false
-        }
         val timeProperty: String? = buildPropertiesFile.properties.getProperty(PROPERTIES_KEY_LAST_DAY_BUILD_SENT)
         val timestamp = timeProperty?.toLongOrNull()
-        return if (timestamp == null || timestamp < System.currentTimeMillis() - 24 * HOUR_IN_MILLIS) {
+        return if (
+            timestamp == null || timestamp < System.currentTimeMillis() - 24 * HOUR_IN_MILLIS || isAnalyticsDisabled
+        ) {
+            if (isAnalyticsDisabled) {
+                println("[ObjectBox] Analytics disabled, skip sent within last day check.")
+            }
             // set last sent to current time
             buildPropertiesFile.properties[PROPERTIES_KEY_LAST_DAY_BUILD_SENT] = System.currentTimeMillis().toString()
             buildPropertiesFile.write()
@@ -91,9 +96,6 @@ open class BasicBuildTracker(private val toolName: String) {
      * Increments the build counter. To reset the counter see [getAndResetBuildCount].
      */
     fun countBuild() {
-        if (isAnalyticsDisabled) {
-            return
-        }
         val countProperty: String? = buildPropertiesFile.properties.getProperty(PROPERTIES_KEY_BUILD_COUNT)
         val buildCount = countProperty?.toIntOrNull()
         val newBuildCount = if (buildCount == null || buildCount < 0) {
@@ -150,18 +152,20 @@ open class BasicBuildTracker(private val toolName: String) {
     }
 
     fun sendEvent(eventName: String, eventProperties: String, sendUniqueId: Boolean = true) {
-        if (isAnalyticsDisabled) {
-            return
-        }
         if (sendUniqueId && buildPropertiesFile.hasNoFile) {
             return // can not save state (e.g. unique ID) so do not send events
         }
-        // Note: never run this in a thread! Code is executed as part of a Gradle build, so if run in a thread it may
-        // run on a totally different classpath with e.g. Kotlin API missing or not run at all.
-        // https://github.com/objectbox/objectbox-java/issues/946
-        // Might be able to use incubating Gradle Worker API (since 5.6) for callers from an explicit Gradle task
-        // (e.g. trackBuild), but most callers do not have access to Gradle API (e.g. processor, transformer).
-        sendEventImpl(eventName, eventProperties, sendUniqueId)
+        val event = eventData(eventName, eventProperties, sendUniqueId)
+        if (isAnalyticsDisabled) {
+            println("[ObjectBox] Analytics disabled, would have sent event: $event")
+        } else {
+            // Note: never run this in a thread! Code is executed as part of a Gradle build, so if run in a thread it may
+            // run on a totally different classpath with e.g. Kotlin API missing or not run at all.
+            // https://github.com/objectbox/objectbox-java/issues/946
+            // Might be able to use incubating Gradle Worker API (since 5.6) for callers from an explicit Gradle task
+            // (e.g. trackBuild), but most callers do not have access to Gradle API (e.g. processor, transformer).
+            sendEventImpl(event)
+        }
     }
 
     /**
@@ -171,9 +175,7 @@ open class BasicBuildTracker(private val toolName: String) {
      *
      * Returns 0 if one or more data objects in the body are invalid.
      */
-    open fun sendEventImpl(eventName: String, eventProperties: String, sendUniqueId: Boolean): String? {
-        val event = eventData(eventName, eventProperties, sendUniqueId)
-
+    open fun sendEventImpl(event: Event): String? {
         // https://developer.mixpanel.com/reference/events#track-event
         try {
             val url = URL(BASE_URL)
@@ -194,8 +196,12 @@ open class BasicBuildTracker(private val toolName: String) {
         return null
     }
 
+    data class Event(val json: String) {
+        override fun toString(): String = json
+    }
+
     // public for tests in another module
-    fun eventData(eventName: String, properties: String, addUniqueId: Boolean): String {
+    fun eventData(eventName: String, properties: String, addUniqueId: Boolean): Event {
         // https://developer.mixpanel.com/docs/data-model#anatomy-of-an-event
         val event = StringBuilder()
         event.append("{")
@@ -220,7 +226,7 @@ open class BasicBuildTracker(private val toolName: String) {
         event.append(properties)
 
         event.append("}").append("}")
-        return event.toString()
+        return Event(event.toString())
     }
 
     protected open fun version(): String? = CodeModifierBuildConfig.VERSION
@@ -303,6 +309,6 @@ open class BasicBuildTracker(private val toolName: String) {
     }
 
     private fun encodeBase64WithoutPadding(valueBytesBigEndian: ByteArray?) =
-            Base64.getEncoder().encodeToString(valueBytesBigEndian).removeSuffix("=").removeSuffix("=")
+        Base64.getEncoder().encodeToString(valueBytesBigEndian).removeSuffix("=").removeSuffix("=")
 
 }
