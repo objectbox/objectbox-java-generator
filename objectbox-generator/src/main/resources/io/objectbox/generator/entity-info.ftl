@@ -137,7 +137,7 @@ property.converter??>, ${property.converterClassName}.class, ${property.customTy
             new RelationInfo<>(${toOne.sourceEntity.className}_.__INSTANCE,<#--
     --> ${toOne.targetEntity.className}_.__INSTANCE,<#--
     --> ${toOne.idRefPropertyName},<#--
-    --> new ToOneGetter<${toOne.sourceEntity.className}>() {
+    --> new ToOneGetter<${toOne.sourceEntity.className}, ${toOne.targetEntity.className}>() {
                 @Override
                 public ToOne<${toOne.targetEntity.className}> getToOne(${toOne.sourceEntity.className} entity) {
                     return entity.${toOne.toOneValueExpression};
@@ -150,7 +150,7 @@ property.converter??>, ${property.converterClassName}.class, ${property.customTy
     public static final RelationInfo<${toMany.sourceEntity.className}, ${toMany.targetEntity.className}> ${toMany.name} =<#--
      --> new RelationInfo<>(${toMany.sourceEntity.className}_.__INSTANCE,<#--
      --> ${toMany.targetEntity.className}_.__INSTANCE,
-            new ToManyGetter<${toMany.sourceEntity.className}>() {
+            new ToManyGetter<${toMany.sourceEntity.className}, ${toMany.targetEntity.className}>() {
                 @Override
                 public List<${toMany.targetEntity.className}> getToMany(${toMany.sourceEntity.className} entity) {
                     return entity.${toMany.valueExpression};
@@ -158,12 +158,12 @@ property.converter??>, ${property.converterClassName}.class, ${property.customTy
             },
             <#-- Instead of checking if instance is ToManyByBacklink, use Freemarker to check for properties that only it has. -->
             <#if toMany.targetToOne??>${toMany.targetEntity.className}_.${toMany.targetToOne.idRefPropertyName},
-            new ToOneGetter<${toMany.targetEntity.className}>() {
+            new ToOneGetter<${toMany.targetEntity.className}, ${toMany.sourceEntity.className}>() {
                 @Override
                 public ToOne<${toMany.sourceEntity.className}> getToOne(${toMany.targetEntity.className} entity) {
                     return entity.${toMany.targetToOne.toOneValueExpression};
                 }
-            }<#else><#if toMany.targetToMany??>new ToManyGetter<${toMany.targetEntity.className}>() {
+            }<#else><#if toMany.targetToMany??>new ToManyGetter<${toMany.targetEntity.className}, ${toMany.sourceEntity.className}>() {
                 @Override
                 public List<${toMany.sourceEntity.className}> getToMany(${toMany.targetEntity.className} entity) {
                     return entity.${toMany.targetToMany.valueExpression};

@@ -44,6 +44,7 @@ public final class ToOneChildCursor extends Cursor<ToOneChild> {
      *
      * @return The ID of the object within its box.
      */
+    @SuppressWarnings({"rawtypes", "unchecked"})
     @Override
     public long put(ToOneChild entity) {
         ToOne<ToOneParent> parent = entity.parent;

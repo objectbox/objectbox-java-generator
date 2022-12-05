@@ -226,7 +226,7 @@ public final class SimpleEntity_ implements EntityInfo<SimpleEntity> {
 
     /** To-one relation "toOne" to target entity "IdEntity". */
     public static final RelationInfo<SimpleEntity, IdEntity> toOne =
-            new RelationInfo<>(SimpleEntity_.__INSTANCE, IdEntity_.__INSTANCE, toOneId, new ToOneGetter<SimpleEntity>() {
+            new RelationInfo<>(SimpleEntity_.__INSTANCE, IdEntity_.__INSTANCE, toOneId, new ToOneGetter<SimpleEntity, IdEntity>() {
                 @Override
                 public ToOne<IdEntity> getToOne(SimpleEntity entity) {
                     return entity.toOne;
@@ -235,7 +235,7 @@ public final class SimpleEntity_ implements EntityInfo<SimpleEntity> {
 
     /** To-many relation "toMany" to target entity "IdEntity". */
     public static final RelationInfo<SimpleEntity, IdEntity> toMany = new RelationInfo<>(SimpleEntity_.__INSTANCE, IdEntity_.__INSTANCE,
-            new ToManyGetter<SimpleEntity>() {
+            new ToManyGetter<SimpleEntity, IdEntity>() {
                 @Override
                 public List<IdEntity> getToMany(SimpleEntity entity) {
                     return entity.toMany;

@@ -85,6 +85,7 @@ public final class SimpleEntityCursor extends Cursor<SimpleEntity> {
      *
      * @return The ID of the object within its box.
      */
+    @SuppressWarnings({"rawtypes", "unchecked"})
     @Override
     public long put(SimpleEntity entity) {
         ToOne<IdEntity> toOne = entity.toOne;

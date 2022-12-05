@@ -40,6 +40,7 @@ public final class RelationChildCursor extends Cursor<RelationChild> {
      *
      * @return The ID of the object within its box.
      */
+    @SuppressWarnings({"rawtypes", "unchecked"})
     @Override
     public long put(RelationChild entity) {
         ToOne<RelationParent> parent = entity.parent;

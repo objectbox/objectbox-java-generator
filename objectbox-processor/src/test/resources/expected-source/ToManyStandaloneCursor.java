@@ -40,6 +40,7 @@ public final class ToManyStandaloneCursor extends Cursor<ToManyStandalone> {
      *
      * @return The ID of the object within its box.
      */
+    @SuppressWarnings({"rawtypes", "unchecked"})
     @Override
     public long put(ToManyStandalone entity) {
         Long id = entity.id;

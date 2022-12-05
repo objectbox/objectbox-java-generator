@@ -72,6 +72,7 @@ public final class ${entity.classNameDao} extends Cursor<${entity.className}> {
      *
      * @return The ID of the object within its box.
      */
+    @SuppressWarnings({"rawtypes", "unchecked"}) <#-- Custom types currently referenced as raw types (e.g. List instead of List<String>). -->
     @Override
     public long put(${entity.className} entity) {
 <#list entity.toOneRelations as toOne>

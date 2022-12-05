@@ -40,6 +40,7 @@ public final class BacklinkToOneTargetCursor extends Cursor<BacklinkToOneTarget>
      *
      * @return The ID of the object within its box.
      */
+    @SuppressWarnings({"rawtypes", "unchecked"})
     @Override
     public long put(BacklinkToOneTarget entity) {
         Long id = entity.id;

@@ -98,7 +98,7 @@ public final class RelationChild_ implements EntityInfo<RelationChild> {
 
     /** To-one relation "parent" to target entity "RelationParent". */
     public static final RelationInfo<RelationChild, RelationParent> parent =
-            new RelationInfo<>(RelationChild_.__INSTANCE, RelationParent_.__INSTANCE, parentId, new ToOneGetter<RelationChild>() {
+            new RelationInfo<>(RelationChild_.__INSTANCE, RelationParent_.__INSTANCE, parentId, new ToOneGetter<RelationChild, RelationParent>() {
                 @Override
                 public ToOne<RelationParent> getToOne(RelationChild entity) {
                     return entity.parent;
