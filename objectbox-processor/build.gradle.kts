@@ -39,6 +39,8 @@ dependencies {
     }
     testImplementation("junit:junit:$junitVersion")
     testImplementation("com.google.truth:truth:$truthVersion")
+    // https://github.com/google/compile-testing/releases
+    // compile-testing 0.20.0+ requires auto-value 1.10 which requires Kotlin 1.7 binary code.
     testImplementation("com.google.testing.compile:compile-testing:0.19")
     // generated files during test need objectbox dependencies to compile
     testImplementation("io.objectbox:objectbox-java:$objectboxJavaVersion")
