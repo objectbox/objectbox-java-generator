@@ -19,12 +19,13 @@
 package io.objectbox.generator.model;
 
 /**
- * Currently available types for properties.
- *
- * @author Markus
+ * Currently available types for properties in the Java generator.
+ * <p>
+ * Based on {@link io.objectbox.model.PropertyType}.
  */
 public enum PropertyType {
 
+    // Ordered like in io.objectbox.model.PropertyType
     Boolean(true),
     Byte(true),
     Short(true),
@@ -34,14 +35,14 @@ public enum PropertyType {
     Float(true),
     Double(true),
     String(false),
-    ByteArray(false),
-    StringArray(false),
     Date(false),
+    /** A long representing a ObjectBox to-one relation. */
+    RelationId(true),
     DateNano(true),
     /** Property containing flexible data, e.g. a map with string keys backed by FlexBuffers, stored as byte array. */
     Flex(false),
-    /** a long representing a ObjectBox to-one relation */
-    RelationId(true);
+    ByteArray(false),
+    StringArray(false);
 
     private final boolean scalar;
 
@@ -49,7 +50,7 @@ public enum PropertyType {
         this.scalar = scalar;
     }
 
-    /** True if the type can be prepresented using a scalar (primitive type). */
+    /** True if the type can be represented using a scalar (primitive type). */
     public boolean isScalar() {
         return scalar;
     }

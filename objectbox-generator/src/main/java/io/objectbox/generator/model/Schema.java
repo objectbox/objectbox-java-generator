@@ -73,14 +73,15 @@ public class Schema {
 
     private void initTypeMappings() {
         propertyTypeMapping = new EnumMap<>(PropertyType.class);
+        // Ordered like in io.objectbox.model.PropertyType
         propertyTypeMapping.put(PropertyType.Boolean, new Mapping(
                 io.objectbox.model.PropertyType.Bool, "Bool", "Boolean", "boolean"));
         propertyTypeMapping.put(PropertyType.Byte, new Mapping(
                 io.objectbox.model.PropertyType.Byte, "Byte", "Byte", "byte"));
-        propertyTypeMapping.put(PropertyType.Char, new Mapping(
-                io.objectbox.model.PropertyType.Char, "Char", "Character", "char"));
         propertyTypeMapping.put(PropertyType.Short, new Mapping(
                 io.objectbox.model.PropertyType.Short, "Short", "Short", "short"));
+        propertyTypeMapping.put(PropertyType.Char, new Mapping(
+                io.objectbox.model.PropertyType.Char, "Char", "Character", "char"));
         propertyTypeMapping.put(PropertyType.Int, new Mapping(
                 io.objectbox.model.PropertyType.Int, "Int", "Integer", "int"));
         propertyTypeMapping.put(PropertyType.Long, new Mapping(
@@ -91,18 +92,18 @@ public class Schema {
                 io.objectbox.model.PropertyType.Double, "Double", "Double", "double"));
         propertyTypeMapping.put(PropertyType.String, new Mapping(
                 io.objectbox.model.PropertyType.String, "String", "String", "String"));
-        propertyTypeMapping.put(PropertyType.ByteArray, new Mapping(
-                io.objectbox.model.PropertyType.ByteVector, "ByteVector", "byte[]", "byte[]"));
-        propertyTypeMapping.put(PropertyType.StringArray, new Mapping(
-                io.objectbox.model.PropertyType.StringVector, "StringVector", "java.util.List<String>", "String[]"));
         propertyTypeMapping.put(PropertyType.Date, new Mapping(
                 io.objectbox.model.PropertyType.Date, "Date", "java.util.Date", "java.util.Date"));
+        propertyTypeMapping.put(PropertyType.RelationId, new Mapping(
+                io.objectbox.model.PropertyType.Relation, "Relation", "Long", "long"));
         propertyTypeMapping.put(PropertyType.DateNano, new Mapping(
                 io.objectbox.model.PropertyType.DateNano, "DateNano", "Long", "long"));
         propertyTypeMapping.put(PropertyType.Flex, new Mapping(
                 io.objectbox.model.PropertyType.Flex, "Flex", "byte[]", "byte[]"));
-        propertyTypeMapping.put(PropertyType.RelationId, new Mapping(
-                io.objectbox.model.PropertyType.Relation, "Relation", "Long", "long"));
+        propertyTypeMapping.put(PropertyType.ByteArray, new Mapping(
+                io.objectbox.model.PropertyType.ByteVector, "ByteVector", "byte[]", "byte[]"));
+        propertyTypeMapping.put(PropertyType.StringArray, new Mapping(
+                io.objectbox.model.PropertyType.StringVector, "StringVector", "java.util.List<String>", "String[]"));
     }
 
     /**
