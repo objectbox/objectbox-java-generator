@@ -1,6 +1,7 @@
 package io.objectbox.processor
 
-import com.google.common.truth.Truth
+import com.google.common.truth.Truth.assertThat
+import com.google.common.truth.Truth.assertWithMessage
 import io.objectbox.generator.IdUid
 import io.objectbox.generator.model.PropertyType
 import io.objectbox.model.PropertyFlags
@@ -38,35 +39,35 @@ class SimpleEntityTest : BaseProcessorTest() {
 
         // assert schema
         val schema = envFresh.schema
-        Truth.assertThat(schema).isNotNull()
-        Truth.assertThat(schema.version).isEqualTo(1)
-        Truth.assertThat(schema.defaultJavaPackage).isEqualTo("io.objectbox.processor.test")
-        Truth.assertThat(schema.entities).hasSize(2) /* SimpleEntity and IdEntity */
+        assertThat(schema).isNotNull()
+        assertThat(schema.version).isEqualTo(1)
+        assertThat(schema.defaultJavaPackage).isEqualTo("io.objectbox.processor.test")
+        assertThat(schema.entities).hasSize(2) /* SimpleEntity and IdEntity */
 
         // assert entity
         val schemaEntity = schema.entities[0]
-        Truth.assertThat(schemaEntity.className).isEqualTo(className)
+        assertThat(schemaEntity.className).isEqualTo(className)
         val dbName = "A"
-        Truth.assertThat(schemaEntity.dbName).isEqualTo(dbName)
-        Truth.assertThat(schemaEntity.hasAllArgsConstructor()).isFalse()
+        assertThat(schemaEntity.dbName).isEqualTo(dbName)
+        assertThat(schemaEntity.hasAllArgsConstructor()).isFalse()
 
         // assert index
-        Truth.assertThat(schemaEntity.indexes).hasSize(2) /* @Index and ToOne */
+        assertThat(schemaEntity.indexes).hasSize(2) /* @Index and ToOne */
         val index = schemaEntity.indexes[0]
-        Truth.assertThat(index.isUnique).isFalse()
-        Truth.assertThat(index.indexFlags).isEqualTo(PropertyFlags.INDEXED)
-        Truth.assertThat(index.properties).hasSize(1)
+        assertThat(index.isUnique).isFalse()
+        assertThat(index.indexFlags).isEqualTo(PropertyFlags.INDEXED)
+        assertThat(index.properties).hasSize(1)
         val indexProperty = index.properties[0]
 
         // assert properties
-        Truth.assertThat(schemaEntity.properties.size).isAtLeast(1)
+        assertThat(schemaEntity.properties.size).isAtLeast(1)
         val schemaProperties = schemaEntity.properties
         for (prop in schemaProperties) {
             when (prop.propertyName) {
                 "id" -> {
-                    Truth.assertThat(prop.isPrimaryKey).isTrue()
-                    Truth.assertThat(prop.isIdAssignable).isTrue()
-                    Truth.assertThat(prop.dbName).isEqualTo("id")
+                    assertThat(prop.isPrimaryKey).isTrue()
+                    assertThat(prop.isIdAssignable).isTrue()
+                    assertThat(prop.dbName).isEqualTo("id")
                     assertPrimitiveType(prop, PropertyType.Long)
                 }
 
@@ -96,24 +97,24 @@ class SimpleEntityTest : BaseProcessorTest() {
 
                 "indexedProperty" -> {
                     assertType(prop, PropertyType.Int, hasNonPrimitiveFlag = true)
-                    Truth.assertThat(prop.index).isEqualTo(index)
-                    Truth.assertThat(prop).isEqualTo(indexProperty)
+                    assertThat(prop.index).isEqualTo(index)
+                    assertThat(prop).isEqualTo(indexProperty)
                 }
 
                 "namedProperty" -> {
-                    Truth.assertThat(prop.dbName).isEqualTo("B")
+                    assertThat(prop.dbName).isEqualTo("B")
                     assertType(prop, PropertyType.String)
                 }
 
                 "customType" -> {
-                    Truth.assertThat(prop.customType).isEqualTo("io.objectbox.processor.test.SimpleEntity.SimpleEnum")
-                    Truth.assertThat(prop.converter).isEqualTo("io.objectbox.processor.test.SimpleEntity.SimpleEnumConverter")
+                    assertThat(prop.customType).isEqualTo("io.objectbox.processor.test.SimpleEntity.SimpleEnum")
+                    assertThat(prop.converter).isEqualTo("io.objectbox.processor.test.SimpleEntity.SimpleEnumConverter")
                     assertType(prop, PropertyType.Int, hasNonPrimitiveFlag = true)
                 }
 
                 "customTypes" -> {
-                    Truth.assertThat(prop.customType).isEqualTo("java.util.List")
-                    Truth.assertThat(prop.converter).isEqualTo("io.objectbox.processor.test.SimpleEntity.SimpleEnumListConverter")
+                    assertThat(prop.customType).isEqualTo("java.util.List")
+                    assertThat(prop.converter).isEqualTo("io.objectbox.processor.test.SimpleEntity.SimpleEnumListConverter")
                     assertType(prop, PropertyType.Int, hasNonPrimitiveFlag = true)
                 }
 
@@ -126,37 +127,37 @@ class SimpleEntityTest : BaseProcessorTest() {
                 }
 
                 "idCompanion" -> {
-                    Truth.assertThat(prop.isIdCompanion).isTrue()
+                    assertThat(prop.isIdCompanion).isTrue()
                     assertType(prop, PropertyType.Date)
                 }
 
                 "stringFlexMap" -> {
                     prop.run {
-                        Truth.assertThat(propertyType).isEqualTo(PropertyType.Flex)
+                        assertThat(propertyType).isEqualTo(PropertyType.Flex)
 
-                        Truth.assertThat(converter).isEqualTo("io.objectbox.converter.StringFlexMapConverter")
-                        Truth.assertThat(converterClassName).isEqualTo("StringFlexMapConverter")
+                        assertThat(converter).isEqualTo("io.objectbox.converter.StringFlexMapConverter")
+                        assertThat(converterClassName).isEqualTo("StringFlexMapConverter")
 
-                        Truth.assertThat(customType).isEqualTo("java.util.Map")
-                        Truth.assertThat(customTypeClassName).isEqualTo("Map")
+                        assertThat(customType).isEqualTo("java.util.Map")
+                        assertThat(customTypeClassName).isEqualTo("Map")
                     }
                 }
 
                 "flexProperty" -> {
                     prop.run {
-                        Truth.assertThat(propertyType).isEqualTo(PropertyType.Flex)
+                        assertThat(propertyType).isEqualTo(PropertyType.Flex)
 
-                        Truth.assertThat(converter).isEqualTo("io.objectbox.converter.FlexObjectConverter")
-                        Truth.assertThat(converterClassName).isEqualTo("FlexObjectConverter")
+                        assertThat(converter).isEqualTo("io.objectbox.converter.FlexObjectConverter")
+                        assertThat(converterClassName).isEqualTo("FlexObjectConverter")
 
-                        Truth.assertThat(customType).isEqualTo("java.lang.Object")
-                        Truth.assertThat(customTypeClassName).isEqualTo("Object")
+                        assertThat(customType).isEqualTo("java.lang.Object")
+                        assertThat(customTypeClassName).isEqualTo("Object")
                     }
                 }
 
                 "toOneId" -> {
-                    Truth.assertThat(prop.dbName).isEqualTo(prop.propertyName)
-                    Truth.assertThat(prop.virtualTargetName).isEqualTo("toOne")
+                    assertThat(prop.dbName).isEqualTo(prop.propertyName)
+                    assertThat(prop.virtualTargetName).isEqualTo("toOne")
                     assertPrimitiveType(prop, PropertyType.RelationId)
                     // note: relations themselves are properly tested in RelationsTest
                 }
@@ -167,23 +168,23 @@ class SimpleEntityTest : BaseProcessorTest() {
 
         // assert model
         val model = envFresh.readModel()
-        Truth.assertThat(model.lastEntityId).isNotNull()
-        Truth.assertThat(model.lastEntityId).isNotEqualTo(IdUid())
-        Truth.assertThat(model.lastEntityId).isEqualTo(schema.lastEntityId)
-        Truth.assertThat(model.lastIndexId).isNotNull()
-        Truth.assertThat(model.lastIndexId).isNotEqualTo(IdUid())
-        Truth.assertThat(model.lastIndexId).isEqualTo(schema.lastIndexId)
+        assertThat(model.lastEntityId).isNotNull()
+        assertThat(model.lastEntityId).isNotEqualTo(IdUid())
+        assertThat(model.lastEntityId).isEqualTo(schema.lastEntityId)
+        assertThat(model.lastIndexId).isNotNull()
+        assertThat(model.lastIndexId).isNotEqualTo(IdUid())
+        assertThat(model.lastIndexId).isEqualTo(schema.lastIndexId)
 
         // assert model entity
         val modelEntity = model.findEntity(dbName, null)
-        Truth.assertThat(modelEntity).isNotNull()
-        Truth.assertThat(modelEntity!!.id).isNotNull()
-        Truth.assertThat(modelEntity.id).isNotEqualTo(IdUid())
-        Truth.assertThat(modelEntity.id.id).isEqualTo(schemaEntity.modelId)
-        Truth.assertThat(modelEntity.id.uid).isEqualTo(schemaEntity.modelUid)
-        Truth.assertThat(modelEntity.lastPropertyId).isNotNull()
-        Truth.assertThat(modelEntity.lastPropertyId).isNotEqualTo(IdUid())
-        Truth.assertThat(modelEntity.lastPropertyId).isEqualTo(schemaEntity.lastPropertyId)
+        assertThat(modelEntity).isNotNull()
+        assertThat(modelEntity!!.id).isNotNull()
+        assertThat(modelEntity.id).isNotEqualTo(IdUid())
+        assertThat(modelEntity.id.id).isEqualTo(schemaEntity.modelId)
+        assertThat(modelEntity.id.uid).isEqualTo(schemaEntity.modelUid)
+        assertThat(modelEntity.lastPropertyId).isNotNull()
+        assertThat(modelEntity.lastPropertyId).isNotEqualTo(IdUid())
+        assertThat(modelEntity.lastPropertyId).isEqualTo(schemaEntity.lastPropertyId)
 
         // assert model properties
         val modelPropertyNames = listOf(
@@ -221,7 +222,7 @@ class SimpleEntityTest : BaseProcessorTest() {
             "toOneId" // last
         )
         val modelProperties = modelEntity.properties
-        Truth.assertThat(modelProperties.size).isAtLeast(1)
+        assertThat(modelProperties.size).isAtLeast(1)
 
         modelProperties
             .filterNot { modelPropertyNames.contains(it.name) }
@@ -229,50 +230,50 @@ class SimpleEntityTest : BaseProcessorTest() {
 
         modelPropertyNames.forEach { name ->
             val property = modelProperties.singleOrNull { it.name == name }
-            Truth.assertWithMessage("Property '$name' not in model file").that(property).isNotNull()
-            Truth.assertWithMessage("Property '$name' has no id").that(property!!.id).isNotNull()
-            Truth.assertWithMessage("Property '$name' id:uid is 0:0").that(property.id).isNotEqualTo(IdUid())
+            assertWithMessage("Property '$name' not in model file").that(property).isNotNull()
+            assertWithMessage("Property '$name' has no id").that(property!!.id).isNotNull()
+            assertWithMessage("Property '$name' id:uid is 0:0").that(property.id).isNotEqualTo(IdUid())
 
             // Assert model property type and flags match schema.
             val schemaProperty = schemaProperties.find { it.dbName == name }!!
-            Truth.assertThat(property.type).isEqualTo(schemaProperty.dbTypeId)
-            Truth.assertThat(property.flags).isEqualTo(schemaProperty.propertyFlagsForModelFile)
+            assertThat(property.type).isEqualTo(schemaProperty.dbTypeId)
+            assertThat(property.flags).isEqualTo(schemaProperty.propertyFlagsForModelFile)
             // Additional asserts for specific properties.
             when (name) {
                 "indexedProperty" -> {
                     // has valid IdUid
-                    Truth.assertThat(property.indexId).isNotNull()
-                    Truth.assertThat(property.indexId).isNotEqualTo(IdUid())
+                    assertThat(property.indexId).isNotNull()
+                    assertThat(property.indexId).isNotEqualTo(IdUid())
                 }
 
                 "toOneId" -> {
                     // has valid IdUid
-                    Truth.assertThat(property.indexId).isNotNull()
-                    Truth.assertThat(property.indexId).isNotEqualTo(IdUid())
+                    assertThat(property.indexId).isNotNull()
+                    assertThat(property.indexId).isNotEqualTo(IdUid())
 
-                    Truth.assertThat(property.relationTarget).isEqualTo(schemaProperty.targetEntity.dbName)
+                    assertThat(property.relationTarget).isEqualTo(schemaProperty.targetEntity.dbName)
 
                     // is last index
-                    Truth.assertThat(property.indexId).isEqualTo(model.lastIndexId)
+                    assertThat(property.indexId).isEqualTo(model.lastIndexId)
 
                     // is last property
-                    Truth.assertThat(property.id).isEqualTo(modelEntity.lastPropertyId)
+                    assertThat(property.id).isEqualTo(modelEntity.lastPropertyId)
                 }
             }
         }
 
         // assert standalone relation
         val relations = modelEntity.relations!!
-        Truth.assertThat(relations).isNotEmpty()
+        assertThat(relations).isNotEmpty()
         for (relation in relations) {
             when (relation.name) {
                 "toMany" -> {
-                    Truth.assertThat(relation.id).isNotNull()
-                    Truth.assertThat(relation.id).isNotEqualTo(IdUid())
-                    Truth.assertThat(relation.targetId).isNotNull()
+                    assertThat(relation.id).isNotNull()
+                    assertThat(relation.id).isNotEqualTo(IdUid())
+                    assertThat(relation.targetId).isNotNull()
                     val targetEntityIdUid = model.findEntity(relatedClassName, null)!!.id
-                    Truth.assertThat(targetEntityIdUid).isNotEqualTo(IdUid())
-                    Truth.assertThat(relation.targetId).isEqualTo(targetEntityIdUid)
+                    assertThat(targetEntityIdUid).isNotEqualTo(IdUid())
+                    assertThat(relation.targetId).isEqualTo(targetEntityIdUid)
                 }
 
                 else -> Assert.fail("Found stray relation '${relation.name}' in model file.")
