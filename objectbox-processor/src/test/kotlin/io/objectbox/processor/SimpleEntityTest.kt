@@ -155,6 +155,13 @@ class SimpleEntityTest : BaseProcessorTest() {
                     }
                 }
 
+                "shortArray" -> assertType(prop, PropertyType.ShortArray)
+                "charArray" -> assertType(prop, PropertyType.CharArray)
+                "intArray" -> assertType(prop, PropertyType.IntArray)
+                "longArray" -> assertType(prop, PropertyType.LongArray)
+                "floatArray" -> assertType(prop, PropertyType.FloatArray)
+                "doubleArray" -> assertType(prop, PropertyType.DoubleArray)
+
                 "toOneId" -> {
                     assertThat(prop.dbName).isEqualTo(prop.propertyName)
                     assertThat(prop.virtualTargetName).isEqualTo("toOne")
@@ -219,6 +226,12 @@ class SimpleEntityTest : BaseProcessorTest() {
             "idCompanion",
             "stringFlexMap",
             "flexProperty",
+            "shortArray",
+            "charArray",
+            "intArray",
+            "longArray",
+            "floatArray",
+            "doubleArray",
             "toOneId" // last
         )
         val modelProperties = modelEntity.properties
