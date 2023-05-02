@@ -27,7 +27,8 @@ dependencies {
     compileOnly("com.google.auto.service:auto-service-annotations:$autoService")
     annotationProcessor("com.google.auto.service:auto-service:$autoService")
     // incap generates the META-INF descriptor required to enable incremental annotation processing with Gradle.
-    val incap = "0.3"
+    // https://github.com/tbroyer/gradle-incap-helper/releases
+    val incap = "1.0.0"
     implementation("net.ltgt.gradle.incap:incap:$incap")
     annotationProcessor("net.ltgt.gradle.incap:incap-processor:$incap")
 
@@ -38,6 +39,8 @@ dependencies {
     }
     testImplementation("junit:junit:$junitVersion")
     testImplementation("com.google.truth:truth:$truthVersion")
+    // https://github.com/google/compile-testing/releases
+    // compile-testing 0.20.0+ requires auto-value 1.10 which requires Kotlin 1.7 binary code.
     testImplementation("com.google.testing.compile:compile-testing:0.19")
     // generated files during test need objectbox dependencies to compile
     testImplementation("io.objectbox:objectbox-java:$objectboxJavaVersion")

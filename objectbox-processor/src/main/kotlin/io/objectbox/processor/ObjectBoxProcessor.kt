@@ -195,7 +195,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
             BasicBuildTracker("Processor").trackFatal("Processing failed", e)
             throw e
         }
-        return false
+        return false // Always return false to allow other processors to handle annotations this supports.
     }
 
     private fun findAndParse(env: RoundEnvironment) {

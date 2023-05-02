@@ -1,10 +1,10 @@
 plugins {
     // https://github.com/ben-manes/gradle-versions-plugin/releases
-    id("com.github.ben-manes.versions") version "0.42.0"
+    id("com.github.ben-manes.versions") version "0.46.0"
     // https://github.com/gradle-nexus/publish-plugin/releases
-    id("io.github.gradle-nexus.publish-plugin") version "1.1.0"
+    id("io.github.gradle-nexus.publish-plugin") version "1.3.0"
     // https://github.com/gmazzo/gradle-buildconfig-plugin/releases
-    id("com.github.gmazzo.buildconfig") version "3.1.0" apply false // code-modifier, gradle-plugin
+    id("com.github.gmazzo.buildconfig") version "4.0.3" apply false // code-modifier, gradle-plugin
 }
 
 buildscript {
@@ -28,10 +28,10 @@ buildscript {
     val kotlinApiLevel by extra("1.3") // Minimum supported Gradle 6.1 uses Kotlin language level 1.3
 
     val essentialsVersion by extra("3.1.0")
-    val javassistVersion by extra("3.29.1-GA")
+    val javassistVersion by extra("3.29.2-GA")
     val junitVersion by extra("4.13.2") // https://junit.org/junit4/
     val truthVersion by extra("1.1.3") // https://github.com/google/truth/releases
-    val mockitoVersion by extra("4.7.0") // https://github.com/mockito/mockito/releases
+    val mockitoVersion by extra("5.3.1") // https://github.com/mockito/mockito/releases
     // moshi 1.13.0+ requires Kotlin 1.6
     val moshiVersion by extra("1.12.0") // https://github.com/square/moshi/blob/master/CHANGELOG.md
     // okio 3.0.0+ requires Kotlin 1.5
