@@ -1,6 +1,6 @@
 plugins {
     // https://github.com/ben-manes/gradle-versions-plugin/releases
-    id("com.github.ben-manes.versions") version "0.42.0"
+    id("com.github.ben-manes.versions") version "0.46.0"
     // https://github.com/gradle-nexus/publish-plugin/releases
     id("io.github.gradle-nexus.publish-plugin") version "1.1.0"
     // https://github.com/gmazzo/gradle-buildconfig-plugin/releases
