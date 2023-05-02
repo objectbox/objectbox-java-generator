@@ -22,7 +22,7 @@ dependencies {
 
     implementation("io.objectbox:objectbox-java:$objectboxJavaVersion")
     // https://freemarker.apache.org/docs/app_versions.html
-    implementation("org.freemarker:freemarker:2.3.31")
+    implementation("org.freemarker:freemarker:2.3.32")
     implementation("org.greenrobot:essentials:$essentialsVersion")
     implementation("com.squareup.moshi:moshi:$moshiVersion")
     kapt("com.squareup.moshi:moshi-kotlin-codegen:$moshiVersion")
