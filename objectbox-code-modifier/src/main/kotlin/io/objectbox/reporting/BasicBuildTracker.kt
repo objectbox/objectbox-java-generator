@@ -202,7 +202,7 @@ open class BasicBuildTracker(
 
     // public for tests in another module
     fun eventData(eventName: String, properties: String, addUniqueId: Boolean): Event {
-        // https://developer.mixpanel.com/docs/data-model#anatomy-of-an-event
+        // https://developer.mixpanel.com/docs/data-structure-deep-dive#anatomy-of-an-event
         val event = StringBuilder()
         event.append("{")
         event.key("event").value(eventName).comma()
