@@ -17,3 +17,7 @@ All are published as Maven artifacts (see `gradle` folder). See the company Wiki
 - Android Plugin `3.4` (see [AndroidCompat](objectbox-gradle-plugin/src/main/kotlin/io/objectbox/gradle/util/AndroidCompat.kt)).
 
 Note: In our examples project, there is a `lowest-supported-tools` branch that uses these.
+
+## Development
+
+This project is known to build with JDK 11.
