@@ -25,10 +25,13 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.fail
 import org.junit.Test
 
-class ObjectBoxProcessorTest : BaseProcessorTest() {
+/**
+ * Tests some common functionality and some special cases for `@Entity` classes.
+ */
+class BasicsTest : BaseProcessorTest() {
 
     @Test
-    fun testSelectPackage() {
+    fun selectPackage() {
         assertEquals("", ObjectBoxProcessor.selectPackage(listOf("")))
         assertEquals("a", ObjectBoxProcessor.selectPackage(listOf("a")))
         assertEquals("a", ObjectBoxProcessor.selectPackage(listOf("a", "b")))
@@ -59,7 +62,7 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
     }
 
     @Test
-    fun testMultipleAnnotations() {
+    fun entity_multipleAnnotations() {
         // test multiple (non-conflicting) annotations on a single property
         val className = "MultipleEntity"
 
@@ -97,7 +100,7 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
     }
 
     @Test
-    fun testMultiplePackages() {
+    fun entity_multiplePackages() {
         // tests if entities are in multiple packages, code is generated in the highest, lexicographically first package
         val entityTopFirstPackageName = "MultiPackageTopFirst"
         val entityTopLastPackageName = "MultiPackageTopLast"
@@ -189,7 +192,7 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
     }
 
     @Test
-    fun testAllArgsConstructor() {
+    fun constructor_customAndVirtualTypes() {
         // tests if constructor with param for virtual property (to-one target id) and custom type is recognized
         // implicitly tests if all-args-constructor check can handle virtual and custom type properties
         val parentName = "ToOneParent"
@@ -205,8 +208,11 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
         assertThat(child.hasAllArgsConstructor()).isTrue()
     }
 
+    /**
+     * Tests with a source file based on a decompiled Kotlin class.
+     */
     @Test
-    fun testKotlinByteCode() {
+    fun entity_kotlin() {
         val entityName = "SimpleKotlinEntity"
 
         val environment = TestEnvironment("kotlin.json", useTemporaryModelFile = true)
@@ -260,7 +266,7 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
      * Tests if using an entity named like the io.objectbox.Property class works.
      */
     @Test
-    fun entityNameConflictWithObjectBoxClass() {
+    fun entity_nameConflictWithObjectBoxClass() {
         val parentName = "NameConflict"
         val childName = "Property" // <-- named like ObjectBox class io.objectbox.Property imported in generated classes
 
@@ -271,7 +277,7 @@ class ObjectBoxProcessorTest : BaseProcessorTest() {
     }
 
     @Test
-    fun entityWithReservedBoxstoreProperty_errors() {
+    fun entity_withReservedBoxstoreProperty_errors() {
         val entityWithBoxstoreProperty = """
         package com.example;
         import io.objectbox.annotation.Entity;
