@@ -4,7 +4,7 @@ plugins {
     // https://github.com/gradle-nexus/publish-plugin/releases
     id("io.github.gradle-nexus.publish-plugin") version "1.1.0"
     // https://github.com/gmazzo/gradle-buildconfig-plugin/releases
-    id("com.github.gmazzo.buildconfig") version "3.1.0" apply false // code-modifier, gradle-plugin
+    id("com.github.gmazzo.buildconfig") version "4.0.3" apply false // code-modifier, gradle-plugin
 }
 
 buildscript {
