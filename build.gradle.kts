@@ -28,7 +28,7 @@ buildscript {
     val kotlinApiLevel by extra("1.3") // Minimum supported Gradle 6.1 uses Kotlin language level 1.3
 
     val essentialsVersion by extra("3.1.0")
-    val javassistVersion by extra("3.29.1-GA")
+    val javassistVersion by extra("3.29.2-GA")
     val junitVersion by extra("4.13.2") // https://junit.org/junit4/
     val truthVersion by extra("1.1.3") // https://github.com/google/truth/releases
     val mockitoVersion by extra("4.7.0") // https://github.com/mockito/mockito/releases
