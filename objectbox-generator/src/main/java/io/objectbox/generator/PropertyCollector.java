@@ -36,7 +36,6 @@ class PropertyCollector {
     private final static String BR_INDENT_EX = "\n" + INDENT_EX;
     private final static String SEP_BR = ',' + BR_INDENT_EX;
 
-    private final Entity entity;
     /**
      * Contains all properties of the entity by type.
      */
@@ -44,7 +43,6 @@ class PropertyCollector {
     private final Property idProperty;
 
     public PropertyCollector(Entity entity) {
-        this.entity = entity;
         propertiesByType = Multimap.create();
         for (Property property : entity.getProperties()) {
             if (!property.isPrimaryKey()) {
@@ -310,7 +308,4 @@ class PropertyCollector {
         return "entity." + property.getSetValueExpression(value);
     }
 
-    private String nameCapFirst(Property property) {
-        return TextUtil.capFirst(property.getPropertyName());
-    }
 }
