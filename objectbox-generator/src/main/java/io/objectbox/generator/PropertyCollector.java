@@ -296,16 +296,12 @@ class PropertyCollector {
 
         all.append(call);
         if (last) {
-            all.append(INDENT).append(setValue(idProperty, "__assignedId")).append(";\n");
+            all.append(INDENT).append("entity.").append(idProperty.getSetValueExpression("__assignedId")).append(";\n");
         }
     }
 
     private String getValue(Property property) {
         return "entity." + property.getValueExpression();
-    }
-
-    private String setValue(Property property, String value) {
-        return "entity." + property.getSetValueExpression(value);
     }
 
 }
