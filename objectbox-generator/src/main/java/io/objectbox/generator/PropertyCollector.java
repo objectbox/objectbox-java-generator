@@ -26,6 +26,10 @@ import io.objectbox.generator.model.Entity;
 import io.objectbox.generator.model.Property;
 import io.objectbox.generator.model.PropertyType;
 
+/**
+ * Builds code string to efficiently collect the properties of an entity.
+ * The generated code string contains collect method calls matching those in {@link io.objectbox.Cursor}.
+ */
 class PropertyCollector {
     private final static String INDENT = "        ";
     private final static String INDENT_EX = "                ";
@@ -33,6 +37,9 @@ class PropertyCollector {
     private final static String SEP_BR = ',' + BR_INDENT_EX;
 
     private final Entity entity;
+    /**
+     * Contains all properties of the entity by type.
+     */
     private final Multimap<PropertyType, Property> propertiesByType;
     private final Property idProperty;
 
@@ -181,11 +188,18 @@ class PropertyCollector {
         }
     }
 
+    /**
+     * Based on the {@code type} appends code strings to {@code preCall} (null handling for nullable property)
+     * and {@code sb} (adds ID and value collect call parameters).
+     * <p>
+     * If no property with the given type is found, tries to find a property with a compatible type (e.g. instead of
+     * Long a RelationId). If none is found, appends a zero/null value.
+     */
     private StringBuilder appendProperty(StringBuilder preCall, StringBuilder sb, PropertyType type, boolean isScalar) {
         // TODO improve null values -> don't pass them
         List<Property> properties = propertiesByType.get(type);
         if (properties == null || properties.isEmpty()) {
-            // No match, check if we have a another fitting type instead available
+            // No property with exactly this type found, look for a compatible type to pass to the collect call.
             if (type == PropertyType.Long) {
                 return appendProperty(preCall, sb, PropertyType.RelationId, isScalar);
             } else if (type == PropertyType.RelationId) {
@@ -206,7 +220,8 @@ class PropertyCollector {
                 return appendProperty(preCall, sb, PropertyType.Flex, isScalar);
             }
 
-            // All smaller types checked, nothing found
+            // All compatible types checked, append a zero/null value
+            // (and let property get added with the next collect call).
             if (isScalar) {
                 sb.append("0, 0");
             } else {
@@ -218,6 +233,7 @@ class PropertyCollector {
             String propertyId = "__ID_" + name;
             String propertyIdLocal = "__id" + property.getOrdinal();
             if (!property.isTypeNotNull()) {
+                // Nullable type: if null pass zero ID and zero/null value instead.
                 preCall.append(INDENT).append(property.getJavaTypeInEntity()).append(' ').append(name)
                         .append(" = ").append(getValue(property)).append(";\n");
                 preCall.append(INDENT).append("int ").append(propertyIdLocal).append(" = ").append(name)
@@ -230,6 +246,7 @@ class PropertyCollector {
                     sb.append(property.getDatabaseValueExpression(name));
                 }
             } else {
+                // Not null type
                 sb.append(propertyId).append(", ").append("entity.");
                 if (property.isVirtual()) {
                     // TODO this is hard-coded for to-ones, not really a generic "virtual property"
