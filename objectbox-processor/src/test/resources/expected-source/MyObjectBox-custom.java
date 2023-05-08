@@ -40,7 +40,7 @@ public class MyObjectBox {
 
     private static void buildEntitySimpleEntity(ModelBuilder modelBuilder) {
         EntityBuilder entityBuilder = modelBuilder.entity("A");
-        entityBuilder.id(1, 4858050548069557694L).lastPropertyId(32, 4612611183471672203L);
+        entityBuilder.id(1, 4858050548069557694L).lastPropertyId(38, 6410324640289798251L);
         entityBuilder.flags(io.objectbox.model.EntityFlags.USE_NO_ARG_CONSTRUCTOR);
 
         entityBuilder.property("id", PropertyType.Long).id(1, 8303367770402050741L)
@@ -89,6 +89,12 @@ public class MyObjectBox {
                 .flags(PropertyFlags.ID_COMPANION);
         entityBuilder.property("stringFlexMap", PropertyType.Flex).id(31, 553518482816470515L);
         entityBuilder.property("flexProperty", PropertyType.Flex).id(32, 4612611183471672203L);
+        entityBuilder.property("shortArray", PropertyType.ShortVector).id(33, 1725775029481425568L);
+        entityBuilder.property("charArray", PropertyType.CharVector).id(34, 4774093004605044306L);
+        entityBuilder.property("intArray", PropertyType.IntVector).id(35, 6776589142355880307L);
+        entityBuilder.property("longArray", PropertyType.LongVector).id(36, 9006144140894927873L);
+        entityBuilder.property("floatArray", PropertyType.FloatVector).id(37, 289592308738182865L);
+        entityBuilder.property("doubleArray", PropertyType.DoubleVector).id(38, 6410324640289798251L);
         entityBuilder.property("toOneId", "IdEntity", "toOne", PropertyType.Relation).id(25, 8807838229280449251L)
                 .flags(PropertyFlags.VIRTUAL | PropertyFlags.INDEXED | PropertyFlags.INDEX_PARTIAL_SKIP_ZERO).indexId(2, 6174264050444102923L);
 
