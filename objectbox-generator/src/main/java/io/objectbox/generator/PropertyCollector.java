@@ -197,8 +197,7 @@ class PropertyCollector {
         List<Property> properties = propertiesByType.get(PropertyType.StringArray);
         Property nextProperty = properties.get(0);
         appendProperty(preCall, sb, PropertyType.StringArray, false).append(");\n\n");
-        // Using non-primitive flag to differentiate String array from String list
-        if (nextProperty.isNonPrimitiveFlag()) {
+        if (nextProperty.isList()) {
             return "StringList";
         } else {
             return "StringArray";
