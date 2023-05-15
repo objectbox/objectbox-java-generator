@@ -102,6 +102,18 @@ public class Schema {
                 io.objectbox.model.PropertyType.Flex, "Flex", "byte[]", "byte[]"));
         propertyTypeMapping.put(PropertyType.ByteArray, new Mapping(
                 io.objectbox.model.PropertyType.ByteVector, "ByteVector", "byte[]", "byte[]"));
+        propertyTypeMapping.put(PropertyType.ShortArray, new Mapping(
+                io.objectbox.model.PropertyType.ShortVector, "ShortVector", "short[]", "short[]"));
+        propertyTypeMapping.put(PropertyType.CharArray, new Mapping(
+                io.objectbox.model.PropertyType.CharVector, "CharVector", "char[]", "char[]"));
+        propertyTypeMapping.put(PropertyType.IntArray, new Mapping(
+                io.objectbox.model.PropertyType.IntVector, "IntVector", "int[]", "int[]"));
+        propertyTypeMapping.put(PropertyType.LongArray, new Mapping(
+                io.objectbox.model.PropertyType.LongVector, "LongVector", "long[]", "long[]"));
+        propertyTypeMapping.put(PropertyType.FloatArray, new Mapping(
+                io.objectbox.model.PropertyType.FloatVector, "FloatVector", "float[]", "float[]"));
+        propertyTypeMapping.put(PropertyType.DoubleArray, new Mapping(
+                io.objectbox.model.PropertyType.DoubleVector, "DoubleVector", "double[]", "double[]"));
         propertyTypeMapping.put(PropertyType.StringArray, new Mapping(
                 io.objectbox.model.PropertyType.StringVector, "StringVector", "java.util.List<String>", "String[]"));
     }

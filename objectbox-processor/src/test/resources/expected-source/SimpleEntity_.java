@@ -135,8 +135,26 @@ public final class SimpleEntity_ implements EntityInfo<SimpleEntity> {
     public final static io.objectbox.Property<SimpleEntity> flexProperty =
             new io.objectbox.Property<>(__INSTANCE, 30, 32, byte[].class, "flexProperty", false, "flexProperty", FlexObjectConverter.class, Object.class);
 
+    public final static io.objectbox.Property<SimpleEntity> shortArray =
+            new io.objectbox.Property<>(__INSTANCE, 31, 33, short[].class, "shortArray");
+
+    public final static io.objectbox.Property<SimpleEntity> charArray =
+            new io.objectbox.Property<>(__INSTANCE, 32, 34, char[].class, "charArray");
+
+    public final static io.objectbox.Property<SimpleEntity> intArray =
+            new io.objectbox.Property<>(__INSTANCE, 33, 35, int[].class, "intArray");
+
+    public final static io.objectbox.Property<SimpleEntity> longArray =
+            new io.objectbox.Property<>(__INSTANCE, 34, 36, long[].class, "longArray");
+
+    public final static io.objectbox.Property<SimpleEntity> floatArray =
+            new io.objectbox.Property<>(__INSTANCE, 35, 37, float[].class, "floatArray");
+
+    public final static io.objectbox.Property<SimpleEntity> doubleArray =
+            new io.objectbox.Property<>(__INSTANCE, 36, 38, double[].class, "doubleArray");
+
     public final static io.objectbox.Property<SimpleEntity> toOneId =
-            new io.objectbox.Property<>(__INSTANCE, 31, 25, long.class, "toOneId", true);
+            new io.objectbox.Property<>(__INSTANCE, 37, 25, long.class, "toOneId", true);
 
     @SuppressWarnings("unchecked")
     public final static io.objectbox.Property<SimpleEntity>[] __ALL_PROPERTIES = new io.objectbox.Property[]{
@@ -171,6 +189,12 @@ public final class SimpleEntity_ implements EntityInfo<SimpleEntity> {
             idCompanion,
             stringFlexMap,
             flexProperty,
+            shortArray,
+            charArray,
+            intArray,
+            longArray,
+            floatArray,
+            doubleArray,
             toOneId
     };
 

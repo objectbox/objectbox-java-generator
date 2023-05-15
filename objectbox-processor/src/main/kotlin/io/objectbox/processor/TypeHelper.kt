@@ -185,6 +185,24 @@ class TypeHelper(
             if (arrayComponentType.kind == TypeKind.BYTE) {
                 return PropertyType.ByteArray
             }
+            if (arrayComponentType.kind == TypeKind.SHORT) {
+                return PropertyType.ShortArray
+            }
+            if (arrayComponentType.kind == TypeKind.CHAR) {
+                return PropertyType.CharArray
+            }
+            if (arrayComponentType.kind == TypeKind.INT) {
+                return PropertyType.IntArray
+            }
+            if (arrayComponentType.kind == TypeKind.LONG) {
+                return PropertyType.LongArray
+            }
+            if (arrayComponentType.kind == TypeKind.FLOAT) {
+                return PropertyType.FloatArray
+            }
+            if (arrayComponentType.kind == TypeKind.DOUBLE) {
+                return PropertyType.DoubleArray
+            }
             if (arrayComponentType.isSameTypeAs(typeString)) {
                 return PropertyType.StringArray
             }

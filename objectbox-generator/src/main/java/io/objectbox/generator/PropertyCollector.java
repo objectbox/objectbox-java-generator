@@ -56,6 +56,13 @@ class PropertyCollector {
         }
     }
 
+    /**
+     * Has at least one property of given type.
+     */
+    private boolean hasPropertyOf(PropertyType type) {
+        return propertiesByType.countElements(type) > 0;
+    }
+
     String createPropertyCollector() {
         StringBuilder preCall = new StringBuilder();
         StringBuilder properties = new StringBuilder();
@@ -65,7 +72,6 @@ class PropertyCollector {
         int previousPropertyCount = propertiesByType.countElements();
         boolean last = previousPropertyCount == 0;
         while (first || !last) {
-            String collectSignature;
             int countByteArrays = propertiesByType.countElements(PropertyType.ByteArray) +
                     propertiesByType.countElements(PropertyType.Flex);
             int countScalarsNonFP = countScalarsNonFP();
@@ -73,8 +79,21 @@ class PropertyCollector {
             int countDoubles = propertiesByType.countElements(PropertyType.Double);
             int maxCountFP = Math.max(countFloats, countDoubles);
             int countStrings = propertiesByType.countElements(PropertyType.String);
-            int countStringArrays = propertiesByType.countElements(PropertyType.StringArray);
-            if (countStringArrays > 0) {
+
+            String collectSignature;
+            if (hasPropertyOf(PropertyType.ShortArray)) {
+                collectSignature = appendPropertyScalarArray(properties, preCall, PropertyType.ShortArray);
+            } else if (hasPropertyOf(PropertyType.CharArray)) {
+                collectSignature = appendPropertyScalarArray(properties, preCall, PropertyType.CharArray);
+            } else if (hasPropertyOf(PropertyType.IntArray)) {
+                collectSignature = appendPropertyScalarArray(properties, preCall, PropertyType.IntArray);
+            } else if (hasPropertyOf(PropertyType.LongArray)) {
+                collectSignature = appendPropertyScalarArray(properties, preCall, PropertyType.LongArray);
+            } else if (hasPropertyOf(PropertyType.FloatArray)) {
+                collectSignature = appendPropertyScalarArray(properties, preCall, PropertyType.FloatArray);
+            } else if (hasPropertyOf(PropertyType.DoubleArray)) {
+                collectSignature = appendPropertyScalarArray(properties, preCall, PropertyType.DoubleArray);
+            } else if (hasPropertyOf(PropertyType.StringArray)) {
                 collectSignature = appendPropertyStringArrayOrList(properties, preCall);
             } else if (countStrings > 3 || countByteArrays > 1) {
                 // If there are more non-primitive properties than we can process with one call, we must first collect
@@ -184,6 +203,15 @@ class PropertyCollector {
         } else {
             return "StringArray";
         }
+    }
+
+    /**
+     * Appends collect call for a single scalar array property.
+     */
+    private String appendPropertyScalarArray(StringBuilder properties, StringBuilder preCall,
+            PropertyType propertyType) {
+        appendProperty(preCall, properties, propertyType, false).append(");\n\n");
+        return propertyType.name();
     }
 
     /**

@@ -91,6 +91,13 @@ public class SimpleEntity {
     Map<String, Object> stringFlexMap;
     Object flexProperty;
 
+    short[] shortArray;
+    char[] charArray;
+    int[] intArray;
+    long[] longArray;
+    float[] floatArray;
+    double[] doubleArray;
+
     public boolean isSimpleBooleanPrimitive() {
         return simpleBooleanPrimitive;
     }

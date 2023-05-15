@@ -79,6 +79,12 @@ class IndexTest : BaseProcessorTest() {
                         @Index double doubleProp;
             
                         @Index byte[] byteArrayProp;
+                        @Index short[] shortArrayProp;
+                        @Index char[] charArrayProp;
+                        @Index int[] intArrayProp;
+                        @Index long[] longArrayProp;
+                        @Index float[] floatArrayProp;
+                        @Index double[] doubleArrayProp;
             
                         @Index String[] stringArrayProp;
                     }
@@ -97,7 +103,15 @@ class IndexTest : BaseProcessorTest() {
 
                 hadErrorContaining("@Index is not supported for Float, remove @Index.")
                 hadErrorContaining("@Index is not supported for Double, remove @Index.")
+
                 hadErrorContaining("@Index is not supported for ByteArray, remove @Index.")
+                hadErrorContaining("@Index is not supported for ShortArray, remove @Index.")
+                hadErrorContaining("@Index is not supported for CharArray, remove @Index.")
+                hadErrorContaining("@Index is not supported for IntArray, remove @Index.")
+                hadErrorContaining("@Index is not supported for LongArray, remove @Index.")
+                hadErrorContaining("@Index is not supported for FloatArray, remove @Index.")
+                hadErrorContaining("@Index is not supported for DoubleArray, remove @Index.")
+
                 hadErrorContaining("@Index is not supported for StringArray, remove @Index.")
             }
     }

@@ -42,6 +42,12 @@ public enum PropertyType {
     /** Property containing flexible data, e.g. a map with string keys backed by FlexBuffers, stored as byte array. */
     Flex(false),
     ByteArray(false),
+    ShortArray(false),
+    CharArray(false),
+    IntArray(false),
+    LongArray(false),
+    FloatArray(false),
+    DoubleArray(false),
     StringArray(false);
 
     private final boolean scalar;
