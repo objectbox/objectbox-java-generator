@@ -263,16 +263,20 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
         ) {
             env.logDebug { "Detected native dependency, not auto-adding one." }
         } else {
-            // Note: there are no Sync variants for Windows and Mac, yet.
-            val nativeVersion = ProjectEnv.Const.nativeVersionToApply
-            when {
-                env.isLinux64 -> project.addDep(
-                    config,
-                    "io.objectbox:${getLibWithSyncVariantPrefix()}-linux:${getLibWithSyncVariantVersion()}"
-                )
-                env.isWindows64 -> project.addDep(config, "io.objectbox:objectbox-windows:$nativeVersion")
-                env.isMac64 -> project.addDep(config, "io.objectbox:objectbox-macos:$nativeVersion")
-                else -> env.logInfo("Could not set up native dependency for ${env.osName}")
+            // Note: -armv7 and -arm64 variants of the Linux library are not added automatically,
+            // users are expected to do so themselves if needed.
+            val suffix = when {
+                env.isLinux64 -> "linux"
+                env.isWindows64 -> "windows"
+                env.isMac64 -> "macos"
+                else -> null
+            }
+            if (suffix != null) {
+                val prefix = getLibWithSyncVariantPrefix()
+                val version = getLibWithSyncVariantVersion()
+                project.addDep(config, "io.objectbox:$prefix-$suffix:$version")
+            } else {
+                env.logInfo("Could not set up native dependency for ${env.osName}")
             }
         }
     }
