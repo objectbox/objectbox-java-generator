@@ -183,14 +183,14 @@ open class PluginApplyJavaTest : PluginApplyTest() {
     }
 
     private fun assertProcessorDependency(apDeps: DependencySet) {
-        assertEquals(1, apDeps.count {
+        assertEquals("objectbox-processor dependency not found", 1, apDeps.count {
             it.group == "io.objectbox" && it.name == "objectbox-processor"
                     && it.version == ProjectEnv.Const.pluginVersion
         })
     }
 
     private fun assertJavaDependency(compileDeps: DependencySet) {
-        assertEquals(1, compileDeps.count {
+        assertEquals("objectbox-java dependency not found", 1, compileDeps.count {
             it.group == "io.objectbox" && it.name == "objectbox-java"
                     && it.version == ProjectEnv.Const.javaVersionToApply
         })
@@ -198,7 +198,7 @@ open class PluginApplyJavaTest : PluginApplyTest() {
 
     open fun assertNativeDependency(compileDeps: DependencySet) {
         // Note: there are no Sync variants for Windows and Mac, yet.
-        assertEquals(1, compileDeps.count {
+        assertEquals("JNI lib dependency not found", 1, compileDeps.count {
             it.group == "io.objectbox"
                     && ((it.name == "$expectedLibWithSyncVariantPrefix-linux" && it.version == expectedLibWithSyncVariantVersion)
                     || ((it.name == "objectbox-windows" || it.name == "objectbox-macos") && it.version == expectedNativeLibVersion))

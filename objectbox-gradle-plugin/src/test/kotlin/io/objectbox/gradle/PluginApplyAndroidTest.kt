@@ -82,7 +82,7 @@ abstract class PluginApplyAndroidTest : PluginApplyTest() {
     }
 
     private fun assertProcessorDependency(apDeps: DependencySet) {
-        assertEquals(1, apDeps.count {
+        assertEquals("objectbox-processor dependency not found", 1, apDeps.count {
             it.group == "io.objectbox" && it.name == "objectbox-processor"
                     && it.version == ProjectEnv.Const.pluginVersion
         })
@@ -90,7 +90,7 @@ abstract class PluginApplyAndroidTest : PluginApplyTest() {
 
     open fun assertNativeDependency(compileDeps: DependencySet) {
         // Note: there are no Sync variants for Windows and Mac, yet.
-        assertEquals(1, compileDeps.count {
+        assertEquals("JNI lib dependency not found", 1, compileDeps.count {
             it.group == "io.objectbox"
                     && ((it.name == "$expectedLibWithSyncVariantPrefix-linux" && it.version == expectedLibWithSyncVariantVersion)
                     || ((it.name == "objectbox-windows" || it.name == "objectbox-macos") && it.version == expectedNativeLibVersion))
@@ -98,7 +98,7 @@ abstract class PluginApplyAndroidTest : PluginApplyTest() {
     }
 
     open fun assertAndroidDependency(deps: DependencySet) {
-        assertEquals(1, deps.count {
+        assertEquals("Android lib dependency not found", 1, deps.count {
             it.group == "io.objectbox" && it.name == "$expectedLibWithSyncVariantPrefix-android"
                     && it.version == expectedLibWithSyncVariantVersion
         })
