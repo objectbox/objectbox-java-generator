@@ -75,18 +75,20 @@ class TestEnvironment(
     /**
      * Use like:
      * ```
+     * @Language("Java")
+     * val source =
+     *     """
+     *     package com.example;
+     *
+     *     public class Example {}
+     *     """.trimIndent()
      * TestEnvironment("model.json")
      *     .apply {
-     *         addSourceFile(
-     *             fullyQualifiedName = "com.example.Example",
-     *             source =
-     *             """
-     *             public class Example {}
-     *             """.trimIndent()
-     *         )
+     *         addSourceFile("com.example.Example", source)
      *     }
      *     .compile()
      *     .assertThatIt {
+     *         succeededWithoutWarnings() // or other assertions
      *     }
      * ```
      */

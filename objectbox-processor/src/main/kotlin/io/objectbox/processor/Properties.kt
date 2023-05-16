@@ -400,6 +400,10 @@ class Properties(
         if (!isPrimitive && (propertyDbType.isScalar || typeHelper.isStringList(typeMirror))) {
             propertyBuilder.nonPrimitiveFlag()
         }
+        // For String vectors, indicate if the Java type is a List (or otherwise an array).
+        if (propertyType == PropertyType.StringArray && typeHelper.isStringList(typeMirror)) {
+            propertyBuilder.isList()
+        }
         // Only Java primitive types can never be null
         if (isPrimitive) propertyBuilder.typeNotNull()
 

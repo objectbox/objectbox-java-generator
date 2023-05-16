@@ -6,6 +6,28 @@ import com.google.testing.compile.JavaFileObjectSubject
 import com.google.testing.compile.JavaFileObjects
 
 
+/**
+ * Asserts the given class exists and the source tree matches the given one.
+ *
+ * Use like:
+ * ```kotlin
+ * @Language("Java")
+ * val source =
+ *     """
+ *     package com.example;
+ *
+ *     public class Example {}
+ *     """.trimIndent()
+ * generatedSourceFileMatches("com.example.Example", source)
+ * ```
+ */
+fun CompilationSubject.generatedSourceFileMatches(fullyQualifiedName: String, source: String) {
+    generatedSourceFile(fullyQualifiedName).also {
+        it.isNotNull()
+        it.hasSourceEquivalentTo(JavaFileObjects.forSourceString(fullyQualifiedName, source))
+    }
+}
+
 fun Compilation.generatedSourceFileOrFail(qualifiedName: String): JavaFileObjectSubject {
     val generatedFile = CompilationSubject
         .assertThat(this)

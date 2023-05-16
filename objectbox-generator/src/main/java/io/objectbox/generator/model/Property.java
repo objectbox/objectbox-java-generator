@@ -98,9 +98,7 @@ public class Property implements HasParsedElement {
         }
 
         /**
-         * Use to explicitly flag property as non-primitive.
-         * Currently, only to indicate wrapper types are used for scalar properties,
-         * when using custom types or String list is used instead of String array.
+         * See {@link Property#isNonPrimitiveFlag()}.
          */
         public PropertyBuilder nonPrimitiveFlag() {
             if (!property.propertyType.isScalar()
@@ -109,6 +107,17 @@ public class Property implements HasParsedElement {
                 throw new ModelRuntimeException("Type is already non-primitive");
             }
             property.isNonPrimitiveFlag = true;
+            return this;
+        }
+
+        /**
+         * See {@link Property#isList()}.
+         */
+        public PropertyBuilder isList() {
+            if (property.propertyType != PropertyType.StringArray) {
+                throw new ModelRuntimeException("Setting isList currently only supported for StringArray properties.");
+            }
+            property.isList = true;
             return this;
         }
 
@@ -193,6 +202,7 @@ public class Property implements HasParsedElement {
     private boolean isTypeNotNull;
     private boolean isNotNullFlag;
     private boolean isNonPrimitiveFlag;
+    private boolean isList;
     private boolean isUnsigned;
     private boolean idAssignable;
     private boolean fieldAccessible;
@@ -307,10 +317,24 @@ public class Property implements HasParsedElement {
     /**
      * If {@link PropertyFlags#NON_PRIMITIVE_TYPE} should be set on this property.
      * <p>
+     * This will indicate to the database that either
+     * <li>a wrapper type should be used for a scalar property (e.g. Long instead of long),</li>
+     * <li>a custom type is used, or</li>
+     * <li>List&lt;String&gt; should be used instead of String[] when creating an instance of the property.</li>
+     * <p>
      * Note: use {@link #isTypeNotNull()} instead to check if the property value can be null.
      */
     public boolean isNonPrimitiveFlag() {
         return isNonPrimitiveFlag;
+    }
+
+    /**
+     * For a vector property, if it is a {@link java.util.List} or an array.
+     * <p>
+     * Currently only supported for {@link PropertyType#StringArray}.
+     */
+    public boolean isList() {
+        return isList;
     }
 
     /**
@@ -488,7 +512,7 @@ public class Property implements HasParsedElement {
         // Note: in Property-Type mapping String array is stored as the not null type, String list as the nullable type.
         if (isTypeNotNull()
                 || customType != null
-                || (propertyType == PropertyType.StringArray && !isNonPrimitiveFlag())) {
+                || (propertyType == PropertyType.StringArray && !isList())) {
             javaType = schema.mapToJavaTypeNotNull(propertyType);
         } else {
             javaType = schema.mapToJavaTypeNullable(propertyType);
