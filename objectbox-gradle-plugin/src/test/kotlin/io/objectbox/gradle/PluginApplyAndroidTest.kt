@@ -89,11 +89,12 @@ abstract class PluginApplyAndroidTest : PluginApplyTest() {
     }
 
     open fun assertNativeDependency(compileDeps: DependencySet) {
-        // Note: there are no Sync variants for Windows and Mac, yet.
         assertEquals("JNI lib dependency not found", 1, compileDeps.count {
             it.group == "io.objectbox"
-                    && ((it.name == "$expectedLibWithSyncVariantPrefix-linux" && it.version == expectedLibWithSyncVariantVersion)
-                    || ((it.name == "objectbox-windows" || it.name == "objectbox-macos") && it.version == expectedNativeLibVersion))
+                    && (it.name == "$expectedLibWithSyncVariantPrefix-linux"
+                    || it.name == "$expectedLibWithSyncVariantPrefix-windows"
+                    || it.name == "$expectedLibWithSyncVariantPrefix-macos")
+                    && it.version == expectedLibWithSyncVariantVersion
         })
     }
 
