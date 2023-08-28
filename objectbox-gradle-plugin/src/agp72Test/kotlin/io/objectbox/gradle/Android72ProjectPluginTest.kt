@@ -1,6 +1,6 @@
 package io.objectbox.gradle
 
-import org.gradle.util.GradleVersion
+import org.gradle.testkit.runner.GradleRunner
 import org.intellij.lang.annotations.Language
 
 
@@ -39,8 +39,17 @@ class Android72ProjectPluginTest : AndroidProjectPluginTest() {
         </manifest>
         """.trimIndent()
 
+    // Android Plugin 7.2 does not support Gradle 8.
+    private val gradleVersionImpl = "7.3.3"
+    override val additionalRunnerConfiguration: ((GradleRunner) -> Unit) = {
+        // Do not forward output, many warning messages due to using outdated Android plugin.
+        // Enable this when testing to diagnose Gradle task output.
+        // it.forwardOutput()
+        it.withGradleVersion(gradleVersionImpl)
+    }
+
     override val androidPluginVersion: String = "7.2.2"
-    override val gradleVersion: String = GradleVersion.current().version
+    override val gradleVersion: String = gradleVersionImpl
 
     // New ASM based transformers output to a different path.
     override val buildTransformDirectory =
