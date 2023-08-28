@@ -139,13 +139,13 @@ configureTestTaskForTestKit(tasks.test)
 // Test Android Plugin with
 // - the lowest supported version and
 // - with the latest API implemented (in the future might add tests for all API levels supported).
-val (agp34TestImplementation, agp34TestRuntimeOnly) =
-    createTestKitSourceSet("agp34", "Runs Android Plugin 3.4 integration tests.")
+val (agp41TestImplementation, agp41TestRuntimeOnly) =
+    createTestKitSourceSet("agp41", "Runs Android Plugin 4.1 integration tests.")
 val (agp72TestImplementation, agp72TestRuntimeOnly) =
     createTestKitSourceSet("agp72", "Runs Android Plugin 7.2 integration tests.")
 
 val (testPluginClasspath, testPluginClasspathFile) = createPluginClasspathFile()
-val (testPluginClasspathAgp34, testPluginClasspathAgp34File) = createPluginClasspathFile("agp34")
+val (testPluginClasspathagp41, testPluginClasspathagp41File) = createPluginClasspathFile("agp41")
 val (testPluginClasspathAgp72, testPluginClasspathAgp72File) = createPluginClasspathFile("agp72")
 
 dependencies {
@@ -162,16 +162,16 @@ dependencies {
     testImplementation(gradleTestKit())
     // For new Gradle TestKit tests (see GradleTestRunner).
     testRuntimeOnly(files(testPluginClasspathFile))
-    val agp34Version = "3.4.3"
-    testPluginClasspathAgp34("com.android.tools.build:gradle:$agp34Version")
-    agp34TestRuntimeOnly(files(testPluginClasspathAgp34File))
+    val agp41Version = "4.1.3"
+    testPluginClasspathagp41("com.android.tools.build:gradle:$agp41Version")
+    agp41TestRuntimeOnly(files(testPluginClasspathagp41File))
     val agp72Version = "7.2.2"
     testPluginClasspathAgp72("com.android.tools.build:gradle:$agp72Version")
     agp72TestRuntimeOnly(files(testPluginClasspathAgp72File))
 
     // For plugin apply tests and outdated TestKit tests (dir "test-gradle-projects").
     testImplementation("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
-    agp34TestRuntimeOnly("com.android.tools.build:gradle:$agp34Version")
+    agp41TestRuntimeOnly("com.android.tools.build:gradle:$agp41Version")
     agp72TestRuntimeOnly("com.android.tools.build:gradle:$agp72Version")
     // Android Plugin 4.2.0 and higher require the BuildEventListenerFactory class,
     // which Gradle does not include by default, so manually add it.
