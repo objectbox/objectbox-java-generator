@@ -14,11 +14,11 @@ class Android41ProjectPluginTest : AndroidProjectPluginTest() {
     override val buildScriptAndroidBlock =
         """
         android {
-            compileSdkVersion 32
+            compileSdkVersion 33
             defaultConfig {
                 applicationId "com.example"
                 minSdkVersion 21
-                targetSdkVersion 32
+                targetSdkVersion 33
             }
             compileOptions {
                 sourceCompatibility JavaVersion.VERSION_1_8
