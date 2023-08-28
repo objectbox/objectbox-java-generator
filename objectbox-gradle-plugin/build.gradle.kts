@@ -1,4 +1,5 @@
 import org.gradle.kotlin.dsl.support.serviceOf
+import java.util.*
 
 // https://docs.gradle.org/current/userguide/custom_plugins.html
 
@@ -86,8 +87,9 @@ fun createTestKitTestTask(name: String, description: String, sourceSet: SourceSe
  */
 // https://docs.gradle.org/6.0/userguide/test_kit.html#sub:test-kit-classpath-injection
 fun createPluginClasspathFile(suffix: String = ""): PluginClassPathFile {
-    val configuration = configurations.create("testPluginClasspath${suffix.capitalize()}")
-    val createPluginClasspathFileTask = tasks.register("testPluginClasspath${suffix.capitalize()}File") {
+    val suffixCapitalized = suffix.replaceFirstChar { it.titlecase(Locale.getDefault()) }
+    val configuration = configurations.create("testPluginClasspath${suffixCapitalized}")
+    val createPluginClasspathFileTask = tasks.register("testPluginClasspath${suffixCapitalized}File") {
         description = "Creates classpath manifest for the plugin."
         group = "verification"
 
@@ -154,7 +156,7 @@ dependencies {
     val agp72Version = "7.2.2"
     testPluginClasspathAgp72("com.android.tools.build:gradle:$agp72Version")
     agp72TestRuntimeOnly(files(testPluginClasspathAgp72File))
-    
+
     // For plugin apply tests and outdated TestKit tests (dir "test-gradle-projects").
     testImplementation("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
     agp34TestRuntimeOnly("com.android.tools.build:gradle:$agp34Version")
