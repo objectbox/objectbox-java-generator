@@ -1,3 +1,7 @@
+
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
+
 plugins {
     id("java")
     kotlin("jvm")
@@ -5,9 +9,22 @@ plugins {
     id("objectbox-disable-analytics")
 }
 
+// Tests require JDK 11, so set toolchain to 11 but still only allow and compile Java 8 code.
+// https://docs.gradle.org/current/userguide/building_java_projects.html#sec:java_cross_compilation
 java {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(11))
+    }
+}
+
+tasks.withType<JavaCompile>().configureEach {
+    options.release.set(8)
+}
+
+tasks.withType<KotlinJvmCompile>().configureEach {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_1_8)
+    }
 }
 
 val objectboxJavaVersion: String by rootProject.extra
