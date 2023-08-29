@@ -1,14 +1,14 @@
 package io.objectbox.gradle
 
-import org.gradle.testkit.runner.GradleRunner
+import org.gradle.util.GradleVersion
 import org.intellij.lang.annotations.Language
 
 
 /**
- * Tests assembling an Android project using Android Plugin 7.2.
+ * Tests assembling an Android project using Android Plugin 7.3.
  * Notably uses the new ASM based Transform API.
  */
-class Android72ProjectPluginTest : AndroidProjectPluginTest() {
+class Android73ProjectPluginTest : AndroidProjectPluginTest() {
 
     // Uses the android.namespace property instead of setting package name in AndroidManifest.xml.
     @Language("Groovy")
@@ -39,17 +39,8 @@ class Android72ProjectPluginTest : AndroidProjectPluginTest() {
         </manifest>
         """.trimIndent()
 
-    // Android Plugin 7.2 does not support Gradle 8.
-    private val gradleVersionImpl = "7.3.3"
-    override val additionalRunnerConfiguration: ((GradleRunner) -> Unit) = {
-        // Do not forward output, many warning messages due to using outdated Android plugin.
-        // Enable this when testing to diagnose Gradle task output.
-        // it.forwardOutput()
-        it.withGradleVersion(gradleVersionImpl)
-    }
-
-    override val androidPluginVersion: String = "7.2.2"
-    override val gradleVersion: String = gradleVersionImpl
+    override val androidPluginVersion: String = "7.3.0"
+    override val gradleVersion: String = GradleVersion.current().version
 
     // New ASM based transformers output to a different path.
     override val buildTransformDirectory =
