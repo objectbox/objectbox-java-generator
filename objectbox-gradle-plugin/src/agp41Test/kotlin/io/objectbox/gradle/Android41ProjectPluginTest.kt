@@ -38,13 +38,12 @@ class Android41ProjectPluginTest : AndroidProjectPluginTest() {
         </manifest>
         """.trimIndent()
 
-    // Test with the oldest supported version of Gradle (see GradleCompat),
-    // but Android Plugin 4.1 requires Gradle 6.5.
-    private val gradleVersionImpl = "6.5.1"
+    // Test with the oldest supported version of Gradle (see GradleCompat, Android Plugin 4.1 would only need 6.5).
+    private val gradleVersionImpl = "7.0.2"
     override val additionalRunnerConfiguration: ((GradleRunner) -> Unit) = {
         // Do not forward output, many warning messages due to using outdated Android plugin.
         // Enable this when testing to diagnose Gradle task output.
-//        it.forwardOutput()
+        // it.forwardOutput()
         it.withGradleVersion(gradleVersionImpl)
     }
 

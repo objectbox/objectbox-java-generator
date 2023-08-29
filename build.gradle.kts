@@ -25,7 +25,7 @@ buildscript {
     val kotlinVersion by extra("1.8.20") // Embedded by Gradle 8.2.1 used to compile this
     // To remain compatible with the lowest supported version of Gradle (see GradleCompat), set kotlinApiLevel to
     // the Kotlin language level supported by that version: https://docs.gradle.org/current/userguide/compatibility.html
-    val kotlinApiLevel by extra("1.3") // Minimum supported Gradle 6.1 uses Kotlin language level 1.3
+    val kotlinApiLevel by extra("1.4") // Minimum supported Gradle 7.0 bundles Kotlin 1.4
 
     val essentialsVersion by extra("3.1.0")
     val javassistVersion by extra("3.29.2-GA")

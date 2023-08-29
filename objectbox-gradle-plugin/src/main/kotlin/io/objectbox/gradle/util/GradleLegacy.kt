@@ -7,7 +7,7 @@ import org.gradle.api.tasks.SourceSetContainer
 open class GradleLegacy : GradleCompat() {
 
     override fun getJavaPluginSourceSets(project: Project): SourceSetContainer {
-        // Replaced by JavaPluginExtension, see Gradle71. Scheduled for removal in Gradle 8.0.
+        // Replaced by JavaPluginExtension, see Gradle71. Scheduled for removal in Gradle 9.0.
         @Suppress("DEPRECATION")
         return project.convention.getPlugin(JavaPluginConvention::class.java).sourceSets
     }

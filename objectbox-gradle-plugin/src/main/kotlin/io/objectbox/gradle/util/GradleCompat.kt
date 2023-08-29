@@ -13,13 +13,15 @@ abstract class GradleCompat {
             GradleVersion.current() >= GradleVersion.version("7.1") -> {
                 Gradle71()
             }
-            // Using destinationDirectory API (not through this) which requires 6.1.
+            // Using moshi 1.13.0+ which contains a multi-release JAR which contains Java 16 byte code.
+            // Gradle does not support multi-release JARs until 7.6.2 https://github.com/gradle/gradle/issues/24390,
+            // however, Java 16 is already supported since Gradle 7.0, so just require 7.0.
             // Keep up-to-date with README.
-            GradleVersion.current() >= GradleVersion.version("6.1") -> {
+            GradleVersion.current() >= GradleVersion.version("7.0") -> {
                 GradleLegacy()
             }
             else -> {
-                error("Gradle 6.1 or newer is required.")
+                error("Gradle 7.0 or newer is required.")
             }
         }
 
