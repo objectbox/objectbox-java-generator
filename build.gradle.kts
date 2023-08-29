@@ -31,7 +31,8 @@ buildscript {
     val javassistVersion by extra("3.29.2-GA")
     val junitVersion by extra("4.13.2") // https://junit.org/junit4/
     val truthVersion by extra("1.1.3") // https://github.com/google/truth/releases
-    val mockitoVersion by extra("5.3.1") // https://github.com/mockito/mockito/releases
+    // mockito 5.0.0+ requires JDK 11
+    val mockitoVersion by extra("4.11.0") // https://github.com/mockito/mockito/releases
     val moshiVersion by extra("1.15.0") // https://github.com/square/moshi/blob/master/CHANGELOG.md
     // okio 3.0.0+ requires Kotlin 1.5
     val okioVersion by extra("2.10.0") // https://github.com/square/okio/blob/master/CHANGELOG.md
