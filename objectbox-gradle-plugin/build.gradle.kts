@@ -1,4 +1,9 @@
+
 import org.gradle.kotlin.dsl.support.serviceOf
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
+import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
+import java.util.*
 
 // https://docs.gradle.org/current/userguide/custom_plugins.html
 
@@ -20,15 +25,23 @@ plugins {
     id("objectbox-disable-analytics")
 }
 
+// Android Plugin 7 tests require JDK 11, so set toolchain to 11 but still only allow and compile Java 8 code.
+// https://docs.gradle.org/current/userguide/building_java_projects.html#sec:java_cross_compilation
 java {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(11))
+    }
 }
 
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
-    kotlinOptions {
+tasks.withType<JavaCompile>().configureEach {
+    options.release.set(8)
+}
+
+tasks.withType<KotlinJvmCompile>().configureEach {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_1_8)
         // Match Kotlin language level used by minimum supported Gradle version, see root build script for details.
-        apiVersion = kotlinApiLevel
+        apiVersion.set(KotlinVersion.fromVersion(kotlinApiLevel))
     }
 }
 
@@ -86,8 +99,9 @@ fun createTestKitTestTask(name: String, description: String, sourceSet: SourceSe
  */
 // https://docs.gradle.org/6.0/userguide/test_kit.html#sub:test-kit-classpath-injection
 fun createPluginClasspathFile(suffix: String = ""): PluginClassPathFile {
-    val configuration = configurations.create("testPluginClasspath${suffix.capitalize()}")
-    val createPluginClasspathFileTask = tasks.register("testPluginClasspath${suffix.capitalize()}File") {
+    val suffixCapitalized = suffix.replaceFirstChar { it.titlecase(Locale.getDefault()) }
+    val configuration = configurations.create("testPluginClasspath${suffixCapitalized}")
+    val createPluginClasspathFileTask = tasks.register("testPluginClasspath${suffixCapitalized}File") {
         description = "Creates classpath manifest for the plugin."
         group = "verification"
 
@@ -125,14 +139,14 @@ configureTestTaskForTestKit(tasks.test)
 // Test Android Plugin with
 // - the lowest supported version and
 // - with the latest API implemented (in the future might add tests for all API levels supported).
-val (agp34TestImplementation, agp34TestRuntimeOnly) =
-    createTestKitSourceSet("agp34", "Runs Android Plugin 3.4 integration tests.")
-val (agp72TestImplementation, agp72TestRuntimeOnly) =
-    createTestKitSourceSet("agp72", "Runs Android Plugin 7.2 integration tests.")
+val (agp41TestImplementation, agp41TestRuntimeOnly) =
+    createTestKitSourceSet("agp41", "Runs Android Plugin 4.1 integration tests.")
+val (agp73TestImplementation, agp73TestRuntimeOnly) =
+    createTestKitSourceSet("agp73", "Runs Android Plugin 7.3 integration tests.")
 
 val (testPluginClasspath, testPluginClasspathFile) = createPluginClasspathFile()
-val (testPluginClasspathAgp34, testPluginClasspathAgp34File) = createPluginClasspathFile("agp34")
-val (testPluginClasspathAgp72, testPluginClasspathAgp72File) = createPluginClasspathFile("agp72")
+val (testPluginClasspathagp41, testPluginClasspathagp41File) = createPluginClasspathFile("agp41")
+val (testPluginClasspathagp73, testPluginClasspathagp73File) = createPluginClasspathFile("agp73")
 
 dependencies {
     implementation(project(":objectbox-code-modifier"))
@@ -148,22 +162,24 @@ dependencies {
     testImplementation(gradleTestKit())
     // For new Gradle TestKit tests (see GradleTestRunner).
     testRuntimeOnly(files(testPluginClasspathFile))
-    val agp34Version = "3.4.3"
-    testPluginClasspathAgp34("com.android.tools.build:gradle:$agp34Version")
-    agp34TestRuntimeOnly(files(testPluginClasspathAgp34File))
-    val agp72Version = "7.2.2"
-    testPluginClasspathAgp72("com.android.tools.build:gradle:$agp72Version")
-    agp72TestRuntimeOnly(files(testPluginClasspathAgp72File))
-    
+    val agp41Version = "4.1.3"
+    testPluginClasspathagp41("com.android.tools.build:gradle:$agp41Version")
+    agp41TestRuntimeOnly(files(testPluginClasspathagp41File))
+    // Note: not testing with 7.4.0 as it ships Gradle metadata requiring Java 11 which would require a more complicated
+    // testing setup. 7.3.0 also supports Gradle 8.
+    val agp73Version = "7.3.0"
+    testPluginClasspathagp73("com.android.tools.build:gradle:$agp73Version")
+    agp73TestRuntimeOnly(files(testPluginClasspathagp73File))
+
     // For plugin apply tests and outdated TestKit tests (dir "test-gradle-projects").
     testImplementation("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
-    agp34TestRuntimeOnly("com.android.tools.build:gradle:$agp34Version")
-    agp72TestRuntimeOnly("com.android.tools.build:gradle:$agp72Version")
+    agp41TestRuntimeOnly("com.android.tools.build:gradle:$agp41Version")
+    agp73TestRuntimeOnly("com.android.tools.build:gradle:$agp73Version")
     // Android Plugin 4.2.0 and higher require the BuildEventListenerFactory class,
     // which Gradle does not include by default, so manually add it.
     // https://github.com/gradle/gradle/issues/16774#issuecomment-853407822
     // https://issuetracker.google.com/issues/193859160
-    agp72TestRuntimeOnly(
+    agp73TestRuntimeOnly(
         files(
             serviceOf<org.gradle.api.internal.classpath.ModuleRegistry>().getModule("gradle-tooling-api-builders")
                 .classpath.asFiles.first()

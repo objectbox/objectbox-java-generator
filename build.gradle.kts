@@ -22,18 +22,18 @@ buildscript {
     // Set kotlinVersion to the Kotlin version embedded by the Gradle version used to compile this project (needs to
     // be the exact version to avoid conflicts):
     // https://docs.gradle.org/current/userguide/compatibility.html or see output of `gradlew --version`
-    val kotlinVersion by extra("1.5.31") // Embedded by Gradle 7.3.3 used to compile this
+    val kotlinVersion by extra("1.8.20") // Embedded by Gradle 8.2.1 used to compile this
     // To remain compatible with the lowest supported version of Gradle (see GradleCompat), set kotlinApiLevel to
     // the Kotlin language level supported by that version: https://docs.gradle.org/current/userguide/compatibility.html
-    val kotlinApiLevel by extra("1.3") // Minimum supported Gradle 6.1 uses Kotlin language level 1.3
+    val kotlinApiLevel by extra("1.4") // Minimum supported Gradle 7.0 bundles Kotlin 1.4
 
     val essentialsVersion by extra("3.1.0")
     val javassistVersion by extra("3.29.2-GA")
     val junitVersion by extra("4.13.2") // https://junit.org/junit4/
     val truthVersion by extra("1.1.3") // https://github.com/google/truth/releases
-    val mockitoVersion by extra("5.3.1") // https://github.com/mockito/mockito/releases
-    // moshi 1.13.0+ requires Kotlin 1.6
-    val moshiVersion by extra("1.12.0") // https://github.com/square/moshi/blob/master/CHANGELOG.md
+    // mockito 5.0.0+ requires JDK 11
+    val mockitoVersion by extra("4.11.0") // https://github.com/mockito/mockito/releases
+    val moshiVersion by extra("1.15.0") // https://github.com/square/moshi/blob/master/CHANGELOG.md
     // okio 3.0.0+ requires Kotlin 1.5
     val okioVersion by extra("2.10.0") // https://github.com/square/okio/blob/master/CHANGELOG.md
 
@@ -89,7 +89,7 @@ buildscript {
 }
 
 fun isNonStable(version: String): Boolean {
-    val stableKeyword = listOf("RELEASE", "FINAL", "GA").any { version.toUpperCase().contains(it) }
+    val stableKeyword = listOf("RELEASE", "FINAL", "GA").any { version.uppercase().contains(it) }
     val regex = "^[0-9,.v-]+(-r)?$".toRegex()
     val isStable = stableKeyword || regex.matches(version)
     return isStable.not()
@@ -144,7 +144,7 @@ tasks.wrapper {
 // Plugin to publish to Central https://github.com/gradle-nexus/publish-plugin/
 // This plugin ensures a separate, named staging repo is created for each build when publishing.
 nexusPublishing {
-    repositories {
+    this.repositories {
         sonatype {
             // Staging profile ID for io.objectbox is 1c4c69cbbab380
             // Get via https://oss.sonatype.org/service/local/staging/profiles

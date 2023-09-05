@@ -8,9 +8,9 @@ import org.gradle.api.Project
 
 /**
  * Tests applying [ObjectBoxGradlePlugin] configures a Java or Kotlin Android Gradle project as expected.
- * Tests with Android Plugin 7.2.
+ * Tests with Android Plugin 7.3.
  */
-class PluginApplyAndroid72Test : PluginApplyAndroidTest() {
+class PluginApplyAndroid73Test : PluginApplyAndroidTest() {
 
     override fun assertAndroidCompat(project: Project) {
         assertThat(AndroidCompat.getPlugin(project))

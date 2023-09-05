@@ -13,8 +13,9 @@ All are published as Maven artifacts (see `gradle` folder). See the company Wiki
 
 ## Requirements for projects applying the plugin
 
-- Gradle `6.1` (see [GradleCompat](objectbox-gradle-plugin/src/main/kotlin/io/objectbox/gradle/util/GradleCompat.kt)).
-- Android Plugin `3.4` (see [AndroidCompat](objectbox-gradle-plugin/src/main/kotlin/io/objectbox/gradle/util/AndroidCompat.kt)).
+- Gradle `7.0` (see [GradleCompat](objectbox-gradle-plugin/src/main/kotlin/io/objectbox/gradle/util/GradleCompat.kt)).
+- Android Plugin `4.1` (see [AndroidCompat](objectbox-gradle-plugin/src/main/kotlin/io/objectbox/gradle/util/AndroidCompat.kt)).
+- JDK 8
 
 Note: In our examples project, there is a `lowest-supported-tools` branch that uses these.
 

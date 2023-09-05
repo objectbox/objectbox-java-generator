@@ -5,10 +5,10 @@ import org.intellij.lang.annotations.Language
 
 
 /**
- * Tests assembling an Android project using Android Plugin 7.2.
+ * Tests assembling an Android project using Android Plugin 7.3.
  * Notably uses the new ASM based Transform API.
  */
-class Android72ProjectPluginTest : AndroidProjectPluginTest() {
+class Android73ProjectPluginTest : AndroidProjectPluginTest() {
 
     // Uses the android.namespace property instead of setting package name in AndroidManifest.xml.
     @Language("Groovy")
@@ -16,11 +16,11 @@ class Android72ProjectPluginTest : AndroidProjectPluginTest() {
         """
         android {
             namespace 'com.example'
-            compileSdkVersion 32
+            compileSdkVersion 33
             defaultConfig {
                 applicationId "com.example"
                 minSdkVersion 21
-                targetSdkVersion 32
+                targetSdkVersion 33
             }
             compileOptions {
                 sourceCompatibility JavaVersion.VERSION_1_8
@@ -39,7 +39,7 @@ class Android72ProjectPluginTest : AndroidProjectPluginTest() {
         </manifest>
         """.trimIndent()
 
-    override val androidPluginVersion: String = "7.2.2"
+    override val androidPluginVersion: String = "7.3.0"
     override val gradleVersion: String = GradleVersion.current().version
 
     // New ASM based transformers output to a different path.

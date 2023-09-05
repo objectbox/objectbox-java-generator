@@ -5,20 +5,20 @@ import org.intellij.lang.annotations.Language
 
 
 /**
- * Tests assembling an Android project using Android Plugin 3.4.
+ * Tests assembling an Android project using Android Plugin 4.1.
  * Notably uses the legacy Transform API.
  */
-class Android34ProjectPluginTest : AndroidProjectPluginTest() {
+class Android41ProjectPluginTest : AndroidProjectPluginTest() {
 
     @Language("Groovy")
     override val buildScriptAndroidBlock =
         """
         android {
-            compileSdkVersion 32
+            compileSdkVersion 33
             defaultConfig {
                 applicationId "com.example"
                 minSdkVersion 21
-                targetSdkVersion 32
+                targetSdkVersion 33
             }
             compileOptions {
                 sourceCompatibility JavaVersion.VERSION_1_8
@@ -38,9 +38,8 @@ class Android34ProjectPluginTest : AndroidProjectPluginTest() {
         </manifest>
         """.trimIndent()
 
-    // Test with the oldest supported version of Gradle (see GradleCompat),
-    // also Android Plugin 3.4 does not support Gradle 7.
-    private val gradleVersionImpl = "6.1.1"
+    // Test with the oldest supported version of Gradle (see GradleCompat, Android Plugin 4.1 would only need 6.5).
+    private val gradleVersionImpl = "7.0.2"
     override val additionalRunnerConfiguration: ((GradleRunner) -> Unit) = {
         // Do not forward output, many warning messages due to using outdated Android plugin.
         // Enable this when testing to diagnose Gradle task output.
@@ -52,6 +51,6 @@ class Android34ProjectPluginTest : AndroidProjectPluginTest() {
     override val gradleVersion: String = gradleVersionImpl
 
     override val buildTransformDirectory =
-        "build/intermediates/transforms/ObjectBoxAndroidTransform/debug/0"
+        "build/intermediates/transforms/ObjectBoxAndroidTransform/debug/1"
 
 }
