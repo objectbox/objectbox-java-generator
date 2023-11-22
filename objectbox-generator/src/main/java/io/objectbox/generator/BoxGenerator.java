@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2018 ObjectBox Ltd.
+ * Copyright (C) 2017-2023 ObjectBox Ltd.
  *
  * This file is part of ObjectBox Build Tools.
  *
@@ -53,7 +53,7 @@ public class BoxGenerator {
 
     public BoxGenerator() throws IOException {
         log("ObjectBox Generator");
-        log("Copyright 2017-2022 ObjectBox Ltd, objectbox.io. Licensed under GPL V3.");
+        log("Copyright 2017-2023 ObjectBox Ltd, objectbox.io. Licensed under GPL V3.");
         log("This program comes with ABSOLUTELY NO WARRANTY");
 
         Configuration config = getConfiguration(MYOBJECTBOX_FTL);
