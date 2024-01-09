@@ -45,7 +45,7 @@ tasks.test {
 tasks.javadoc {
     isFailOnError = false
     title = "ObjectBox Generator $version API"
-    (options as StandardJavadocDocletOptions).bottom = /*"Available under the GPLv3 - */"<i>Copyright 2017-2023 <a href=\"https://objectbox.io/\">ObjectBox Ltd</a>. All Rights Reserved.</i>"
+    (options as StandardJavadocDocletOptions).bottom = /*"Available under the GPLv3 - */"<i>Copyright 2017-2024 <a href=\"https://objectbox.io/\">ObjectBox Ltd</a>. All Rights Reserved.</i>"
     doLast {
         copy {
             from("../javadoc-style/")
