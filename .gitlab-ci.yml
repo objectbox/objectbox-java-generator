@@ -25,13 +25,14 @@ stages:
   before_script:
     # Print Gradle and JVM version info
     - ./gradlew -version
+    # Add token for build tracker
+    - ./scripts/set-analysis-token.sh $JAVA_ANALYSIS_TOKENFILE
 
 # Template for tests
 .tests:
   extends: .common
   stage: test
   script:
-    - ./scripts/set-analysis-token.sh $JAVA_ANALYSIS_TOKEN
     - ./gradlew $GITLAB_REPO_ARGS $VERSION_ARGS clean check
   artifacts:
     when: always
@@ -51,7 +52,6 @@ upload-to-internal:linux:
   stage: upload-to-internal
   tags: [ docker, x64 ]
   script:
-    - ./scripts/set-analysis-token.sh $JAVA_ANALYSIS_TOKEN
     - ./gradlew $GITLAB_REPO_ARGS $VERSION_ARGS publishMavenJavaPublicationToGitLabRepository
 
 upload-to-central:linux:
@@ -61,7 +61,6 @@ upload-to-central:linux:
   only:
     - publish
   script:
-    - ./scripts/set-analysis-token.sh $JAVA_ANALYSIS_TOKEN
     - ./gradlew $GITLAB_REPO_ARGS $VERSION_ARGS $CENTRAL_REPO_ARGS publishMavenJavaPublicationToSonatypeRepository closeAndReleaseSonatypeStagingRepository
     - echo "Published successfully to Central - check https://repo1.maven.org/maven2/io/objectbox/ in a few minutes."
   before_script:

@@ -18,6 +18,10 @@
 
 package io.objectbox.reporting
 
+import com.google.crypto.tink.Aead
+import com.google.crypto.tink.InsecureSecretKeyAccess
+import com.google.crypto.tink.TinkProtoKeysetFormat
+import com.google.crypto.tink.aead.AeadConfig
 import com.squareup.moshi.JsonWriter
 import io.objectbox.CodeModifierBuildConfig
 import okio.Buffer
@@ -28,6 +32,7 @@ import java.net.HttpURLConnection
 import java.net.URL
 import java.security.SecureRandom
 import java.util.*
+
 
 /**
  * Track build errors for non-Gradle modules.
@@ -55,9 +60,10 @@ open class BasicBuildTracker(
         // For all but the NoBuildProperties event a unique ID is generated and set,
         // so no point in setting the ip param (is better for privacy anyhow).
         const val BASE_URL = "https://api.mixpanel.com/track#live-event"
-        // Note: the Gradle build script contains the checkAnalysisToken task that expects this token value.
-        // So update the task if changing or moving this value.
-        const val TOKEN = "REPLACE_WITH_TOKEN"
+        // Note: the Gradle build script contains the checkAnalysisToken task that expects this file name.
+        // So update the task if changing it.
+        const val TOKEN_FILE = "analysis-token.txt"
+        val TOKEN_EMPTY_ASSOCIATED_DATA = ByteArray(0)
         const val TIMEOUT_READ = 15000
         const val TIMEOUT_CONNECT = 20000
     }
@@ -153,12 +159,43 @@ open class BasicBuildTracker(
         sendEvent("Stats", event.toString())
     }
 
+    fun getToken(): String? {
+        try {
+            javaClass.classLoader.getResourceAsStream(TOKEN_FILE)?.use {
+                val lines = it.bufferedReader().readLines()
+                if (lines.size >= 2) {
+                    return deobfuscateToken(lines[0], lines[1])
+                }
+            }
+        } catch (ignore: Exception) {
+            // Ignore
+        }
+        return null
+    }
+
+    /**
+     * Takes a Base64 encoded keyset and obfuscated token and returns the decrypted token.
+     */
+    fun deobfuscateToken(serializedKeysetBase64: String, obfuscatedTokenBase64: String): String {
+        val obfuscatedToken = Base64.getDecoder().decode(obfuscatedTokenBase64)
+        val serializedKeyset = Base64.getDecoder().decode(serializedKeysetBase64)
+
+        AeadConfig.register()
+
+        val handle = TinkProtoKeysetFormat.parseKeyset(serializedKeyset, InsecureSecretKeyAccess.get())
+        val aead = handle.getPrimitive(Aead::class.java)
+
+        return aead.decrypt(obfuscatedToken, TOKEN_EMPTY_ASSOCIATED_DATA).toString(charset = Charsets.UTF_8)
+    }
+
     fun sendEvent(eventName: String, eventProperties: String, sendUniqueId: Boolean = true) {
         if (sendUniqueId && buildPropertiesFile.hasNoFile) {
             return // can not save state (e.g. unique ID) so do not send events
         }
-        val event = eventData(eventName, eventProperties, sendUniqueId)
-        if (isAnalyticsDisabled) {
+        // Only get token if enabled to prevent leaking it in log message below
+        val token: String? = if (isAnalyticsDisabled) null else getToken()
+        val event = eventData(eventName, eventProperties, sendUniqueId, token)
+        if (token.isNullOrEmpty()) {
             println("[ObjectBox] Analytics disabled, would have sent event: $event")
         } else {
             // Note: never run this in a thread! Code is executed as part of a Gradle build, so if run in a thread it may
@@ -203,14 +240,16 @@ open class BasicBuildTracker(
     }
 
     // public for tests in another module
-    fun eventData(eventName: String, properties: String, addUniqueId: Boolean): Event {
+    fun eventData(eventName: String, properties: String, addUniqueId: Boolean, token: String?): Event {
         // https://developer.mixpanel.com/docs/data-structure-deep-dive#anatomy-of-an-event
         val event = StringBuilder()
         event.append("{")
         event.key("event").value(eventName).comma()
         event.key("properties").append("{")
 
-        event.key("token").value(TOKEN).comma()
+        if (token != null) {
+            event.key("token").value(token).comma()
+        }
         if (addUniqueId) {
             event.key("distinct_id").value(uniqueIdentifier()).comma()
         }
