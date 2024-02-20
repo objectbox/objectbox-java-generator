@@ -93,3 +93,22 @@ publishing {
         }
     }
 }
+
+// Ensure Analysis token is set before publishing a Maven artifact
+val checkAnalysisToken by tasks.registering {
+    doLast {
+        val sourceFile = project.file("src/main/kotlin/io/objectbox/reporting/BasicBuildTracker.kt").readText()
+        val hasTokenConstant = sourceFile.contains("const val TOKEN =")
+        if (!hasTokenConstant) {
+            throw GradleException("BasicBuildTracker does not contain TOKEN constant, does this task need updating?")
+        }
+        val hasTokenPlaceholder = sourceFile.contains("REPLACE_WITH_TOKEN")
+        if (hasTokenPlaceholder) {
+            throw GradleException("BasicBuildTracker TOKEN not set, but trying to publish. Did set-analysis-token.sh run?")
+        }
+        println("Valid BasicBuildTracker TOKEN found, proceeding with publishing")
+    }
+}
+tasks.withType<AbstractPublishToMaven>().configureEach {
+    dependsOn(checkAnalysisToken)
+}

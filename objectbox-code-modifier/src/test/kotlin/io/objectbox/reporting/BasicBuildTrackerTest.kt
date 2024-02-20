@@ -1,6 +1,7 @@
 package io.objectbox.reporting
 
 import com.google.common.truth.Truth.assertThat
+import org.junit.Assume.assumeTrue
 import org.junit.Test
 import org.mockito.Mockito
 import org.mockito.Mockito.mock
@@ -13,6 +14,11 @@ class BasicBuildTrackerTest {
 
     @Test
     fun sendTestEvent() {
+        // Skip if token is not set
+        // Note: the below test will also succeed with an invalid token, only an empty token will fail it
+        @Suppress("KotlinConstantConditions")
+        assumeTrue("BasicBuildTracker.TOKEN not set", "REPLACE_WITH_TOKEN" != BasicBuildTracker.TOKEN)
+
         // See sendEvent docs: 1 = success
         // Check Mixpanel Live View, the event should show up shortly after this has run.
         val tracker = BasicBuildTracker("BasicBuildTrackerTest")

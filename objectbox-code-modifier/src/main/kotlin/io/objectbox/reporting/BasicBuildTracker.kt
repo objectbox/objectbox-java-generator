@@ -37,7 +37,7 @@ open class BasicBuildTracker(
     // open and public for testing purposes only.
     open val toolName: String
 ) {
-    private companion object {
+    companion object {
         /**
          * If this environment variable contains a value of "true" no events are sent,
          * this is useful to prevent many events being sent by CI builds.
@@ -55,6 +55,8 @@ open class BasicBuildTracker(
         // For all but the NoBuildProperties event a unique ID is generated and set,
         // so no point in setting the ip param (is better for privacy anyhow).
         const val BASE_URL = "https://api.mixpanel.com/track#live-event"
+        // Note: the Gradle build script contains the checkAnalysisToken task that expects this token value.
+        // So update the task if changing or moving this value.
         const val TOKEN = "REPLACE_WITH_TOKEN"
         const val TIMEOUT_READ = 15000
         const val TIMEOUT_CONNECT = 20000
