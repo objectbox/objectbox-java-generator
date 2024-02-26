@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2022 ObjectBox Ltd.
+ * Copyright (C) 2018-2024 ObjectBox Ltd.
  *
  * This file is part of ObjectBox Build Tools.
  *
