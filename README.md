@@ -1,4 +1,4 @@
-<p align="center"><img width="466" src="./images/objectbox-logo.png" alt="ObjectBox"></p>
+<p align="center"><picture><img width="466" src="./images/objectbox-logo.png" alt="ObjectBox"></picture></p>
 
 # ObjectBox Gradle Plugin
                             
