@@ -19,28 +19,68 @@
 package io.objectbox.reporting
 
 import com.google.common.truth.Truth.assertThat
-import org.junit.Assume.assumeTrue
+import com.google.crypto.tink.Aead
+import com.google.crypto.tink.InsecureSecretKeyAccess
+import com.google.crypto.tink.KeysetHandle
+import com.google.crypto.tink.TinkProtoKeysetFormat
+import com.google.crypto.tink.aead.AeadConfig
+import com.google.crypto.tink.aead.PredefinedAeadParameters
+import org.junit.Assume.assumeNotNull
+import org.junit.Ignore
 import org.junit.Test
 import org.mockito.Mockito
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
+import java.util.*
 
 
 class BasicBuildTrackerTest {
 
+    /**
+     * Create analysis-token.txt file.
+     *
+     * Obtain the project token from MixPanel project settings,
+     * insert below, then manually run this test.
+     */
+    @Ignore("Set token and run manually to create token file contents")
+    @Test
+    fun obfuscateToken() {
+        val token = "REPLACE_WITH_TOKEN"
+
+        val obfuscatedToken = obfuscateToken(token)
+        val keyset = obfuscatedToken.serializedKeysetBase64
+        val obfuscatedTokenBase64 = obfuscatedToken.obfuscatedTokenBase64
+        println("Store this in src/main/resources/${BasicBuildTracker.TOKEN_FILE}:");
+        println("$keyset\n$obfuscatedTokenBase64");
+
+        val decryptedToken = BasicBuildTracker("BasicBuildTrackerTest").deobfuscateToken(keyset, obfuscatedTokenBase64)
+        assertThat(decryptedToken).isEqualTo(token)
+    }
+
+    /**
+     * To run this test locally, create an analysis-token.txt file as suggested by the [obfuscateToken] test and
+     * store the expected token in the `JAVA_ANALYSIS_TOKEN` environment variable.
+     *
+     * For CI, the token file is created using /scripts/set-analysis-token.sh (see .gitlab-ci.yml).
+     */
     @Test
     fun sendTestEvent() {
-        // Skip if token is not set
-        // Note: the below test will also succeed with an invalid token, only an empty token will fail it
-        @Suppress("KotlinConstantConditions")
-        assumeTrue("BasicBuildTracker.TOKEN not set", "REPLACE_WITH_TOKEN" != BasicBuildTracker.TOKEN)
+        val expectedToken = System.getenv("JAVA_ANALYSIS_TOKEN")
+        assumeNotNull(expectedToken) // Skip if expected token not set
+        val tracker = BasicBuildTracker("BasicBuildTrackerTest")
+        val token = tracker.getToken()
+        assumeNotNull(token) // Skip if no token file available
+
+        // Note: the below test would also succeed with an invalid token, but Mixpanel will ignore the event
+        // (only a null/empty token will fail it).
+        assertThat(token).isEqualTo(expectedToken)
 
         // See sendEvent docs: 1 = success
         // Check Mixpanel Live View, the event should show up shortly after this has run.
-        val tracker = BasicBuildTracker("BasicBuildTrackerTest")
-        val event = tracker.eventData("Test Event", "\"test\":\"success\"", false)
+        val event = tracker.eventData("Test Event", "\"test\":\"success\"", false, token)
+        // Note: Bypassing the isAnalyticsDisabled check
         assertThat(tracker.sendEventImpl(event)).isEqualTo("1")
     }
 
@@ -66,4 +106,24 @@ class BasicBuildTrackerTest {
     // The Mockito.any(Class) return type declaration is nullable breaking Kotlin checks, wrap in non-null type to fix.
     private fun <T> any(type: Class<T>): T = Mockito.any(type)
 
+    data class ObfuscatedTokenInfo(
+        val obfuscatedTokenBase64: String,
+        val serializedKeysetBase64: String
+    )
+
+    private fun obfuscateToken(@Suppress("SameParameterValue") token: String): ObfuscatedTokenInfo {
+        AeadConfig.register()
+
+        val handle = KeysetHandle.generateNew(PredefinedAeadParameters.CHACHA20_POLY1305)
+        val serializedKeyset = TinkProtoKeysetFormat.serializeKeyset(handle, InsecureSecretKeyAccess.get())
+
+        val aead = handle.getPrimitive(Aead::class.java)
+
+        val message = token.encodeToByteArray()
+        val ciphertext = aead.encrypt(message, BasicBuildTracker.TOKEN_EMPTY_ASSOCIATED_DATA)
+
+        val serializedKeysetBase64 = Base64.getEncoder().encodeToString(serializedKeyset)
+        val obfuscatedTokenBase64 = Base64.getEncoder().encodeToString(ciphertext)
+        return ObfuscatedTokenInfo(obfuscatedTokenBase64, serializedKeysetBase64)
+    }
 }

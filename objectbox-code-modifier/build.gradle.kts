@@ -44,6 +44,7 @@ dependencies {
     implementation("com.squareup.moshi:moshi:$moshiVersion")
     kapt("com.squareup.moshi:moshi-kotlin-codegen:$moshiVersion")
     implementation("com.squareup.okio:okio:$okioVersion")
+    implementation("com.google.crypto.tink:tink:1.12.0")
 
     implementation("io.objectbox:objectbox-java:$objectboxJavaVersion")
 
@@ -97,16 +98,12 @@ publishing {
 // Ensure Analysis token is set before publishing a Maven artifact
 val checkAnalysisToken by tasks.registering {
     doLast {
-        val sourceFile = project.file("src/main/kotlin/io/objectbox/reporting/BasicBuildTracker.kt").readText()
-        val hasTokenConstant = sourceFile.contains("const val TOKEN =")
-        if (!hasTokenConstant) {
-            throw GradleException("BasicBuildTracker does not contain TOKEN constant, does this task need updating?")
+        val sourceFile = project.file("src/main/resources/analysis-token.txt")
+        // Should have at least 2 lines: key info and obfuscated token
+        if (!sourceFile.exists() || sourceFile.readLines().size < 2) {
+            throw GradleException("Analysis: analysis-token.txt not found or empty, but trying to publish. See BasicBuildTrackerTest.kt on how to create one.")
         }
-        val hasTokenPlaceholder = sourceFile.contains("REPLACE_WITH_TOKEN")
-        if (hasTokenPlaceholder) {
-            throw GradleException("BasicBuildTracker TOKEN not set, but trying to publish. Did set-analysis-token.sh run?")
-        }
-        println("Valid BasicBuildTracker TOKEN found, proceeding with publishing")
+        println("Analysis: analysis-token.txt found, proceeding with publishing")
     }
 }
 tasks.withType<AbstractPublishToMaven>().configureEach {

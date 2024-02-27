@@ -56,7 +56,9 @@ class BuildTrackerTest {
         `when`(project.extensions).thenReturn(extensionContainer)
 
         val options = mock(ObjectBoxPluginExtension::class.java)
-        `when`(extensionContainer.create(ProjectEnv.Const.name, ObjectBoxPluginExtension::class.java)).thenReturn(options)
+        `when`(extensionContainer.create(ProjectEnv.Const.name, ObjectBoxPluginExtension::class.java)).thenReturn(
+            options
+        )
 
         val env = ProjectEnv(project)
         val toolName = "TestTool"
@@ -64,8 +66,9 @@ class BuildTrackerTest {
         val aid = "my.test.app"
         doReturn(aid).`when`(analytics).androidAppId(env)
 
-        val eventData = analytics.eventData("Build", analytics.buildEventProperties(env), true)
+        val eventData = analytics.eventData("Build", analytics.buildEventProperties(env), true, "dummy")
         val json = parseJsonAndAssertBasics(eventData, "Build")
+
         @Suppress("UNCHECKED_CAST")
         val properties = json["properties"] as Map<String, Any>
         val distinctId = properties["distinct_id"] as String
@@ -82,9 +85,11 @@ class BuildTrackerTest {
     fun testErrorEventData() {
         val analytics = spy(GradleBuildTracker(toolName))
         val cause = RuntimeException("Banana")
-        val eventData = analytics.eventData("Error", analytics.errorProperties("Boo", Exception("Bad", cause)), true)
+        val eventData =
+            analytics.eventData("Error", analytics.errorProperties("Boo", Exception("Bad", cause)), true, "dummy")
 
         val json = parseJsonAndAssertBasics(eventData, "Error")
+
         @Suppress("UNCHECKED_CAST")
         val properties = json["properties"] as Map<String, Any>
 
@@ -101,7 +106,7 @@ class BuildTrackerTest {
         assertEquals("java.lang.RuntimeException", properties["ExClass2"])
     }
 
-    private fun parseJsonAndAssertBasics(event: Event, expectedEvent:String): Map<String, Any> {
+    private fun parseJsonAndAssertBasics(event: Event, expectedEvent: String): Map<String, Any> {
         val parameterizedType = Types.newParameterizedType(Map::class.java, String::class.java, Any::class.java)
         val adapter = Moshi.Builder().build().adapter<Map<String, Any>>(parameterizedType)
         val json = adapter.fromJson(event.json)
