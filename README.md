@@ -1,27 +1,30 @@
-# ObjectBox Gradle Plugin
+<p align="center"><img width="466" src="https://raw.githubusercontent.com/objectbox/objectbox-java-generator/main/objectbox-logo.png" alt="ObjectBox"></p>
 
-This is a collection of Gradle projects:
+# ObjectBox Gradle Plugin
+                            
+The ObjectBox Gradle Plugin makes using ObjectBox easy in a JVM or Android project written in Java or Kotlin, 
+and is free and open source. See the [documentation on how to get started](https://docs.objectbox.io/getting-started).
+
+## Minimum requirements to apply the plugin
+
+- Gradle `7.0` (see [GradleCompat](objectbox-gradle-plugin/src/main/kotlin/io/objectbox/gradle/util/GradleCompat.kt))
+- Android Plugin `4.1` (see [AndroidCompat](objectbox-gradle-plugin/src/main/kotlin/io/objectbox/gradle/util/AndroidCompat.kt))
+- JDK 8
+
+## Development
+
+This project is known to build with JDK 17.
+
+This repository contains a collection of Gradle subprojects:
 - `objectbox-gradle-plugin` provides the actual Gradle plugins (`io.objectbox` and `io.objectbox.sync`),
 - `objectbox-processor` provides an annotation processor,
 - `objectbox-generator` provides a source code generator used by the annotation processor,
 - `objectbox-code-modifier` provides model file ("IdSync") generation used by the annotation processor,
   and byte-code transformers for Android and Java projects.
-  - Multiple `agp-wrapper-x-y` projects provide a compatibility layer for specific versions 
-  of the Android Plugin API, currently for byte-code transforms only.
+  - Multiple `agp-wrapper-x-y` projects provide a compatibility layer for specific versions
+    of the Android Plugin API, currently for byte-code transforms only.
 
-All are published as Maven artifacts (see `gradle` folder). See the company Wiki for the release process.
-
-## Requirements for projects applying the plugin
-
-- Gradle `7.0` (see [GradleCompat](objectbox-gradle-plugin/src/main/kotlin/io/objectbox/gradle/util/GradleCompat.kt)).
-- Android Plugin `4.1` (see [AndroidCompat](objectbox-gradle-plugin/src/main/kotlin/io/objectbox/gradle/util/AndroidCompat.kt)).
-- JDK 8
-
-Note: In our examples project, there is a `lowest-supported-tools` branch that uses these.
-
-## Development
-
-This project is known to build with JDK 11.
+All are published as Maven artifacts (see `gradle` folder).
                                                 
 ### Adding a new property type
 
