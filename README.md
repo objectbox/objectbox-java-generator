@@ -60,4 +60,6 @@ This is a checklist on how to add support for a new property type:
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 Note that this license applies to the code in this repository only.
+The build tools in this repository are not distributed with your application.
+So their copyleft license has no impact on how you distribute your application.
 See our website on details about all [licenses for ObjectBox components](https://objectbox.io/faq/#license-pricing).
