@@ -61,16 +61,16 @@ publishing {
                 }
                 issueManagement {
                     system.set("GitHub Issues")
-                    url.set("https://github.com/objectbox/objectbox-java/issues")
+                    url.set("https://github.com/objectbox/objectbox-java-generator/issues")
                 }
                 organization {
                     name.set("ObjectBox Ltd.")
                     url.set("https://objectbox.io")
                 }
                 scm {
-                    connection.set("scm:git@github.com:objectbox/objectbox-java.git")
-                    developerConnection.set("scm:git@github.com:objectbox/objectbox-java.git")
-                    url.set("https://github.com/objectbox/objectbox-java")
+                    connection.set("scm:git@github.com:objectbox/objectbox-java-generator.git")
+                    developerConnection.set("scm:git@github.com:objectbox/objectbox-java-generator.git")
+                    url.set("https://github.com/objectbox/objectbox-java-generator")
                 }
             }
         }
