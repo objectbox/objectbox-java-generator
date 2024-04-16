@@ -9,6 +9,7 @@ java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(8))
     }
+    withJavadocJar()
 }
 
 val objectboxJavaVersion: String by rootProject.extra
@@ -42,24 +43,6 @@ tasks.test {
     }
 }
 
-tasks.javadoc {
-    isFailOnError = false
-    title = "ObjectBox Generator $version API"
-    (options as StandardJavadocDocletOptions).bottom = /*"Available under the GPLv3 - */"<i>Copyright 2017-2024 <a href=\"https://objectbox.io/\">ObjectBox Ltd</a>. All Rights Reserved.</i>"
-    doLast {
-        copy {
-            from("../javadoc-style/")
-            into("build/docs/javadoc/")
-        }
-    }
-}
-
-val javadocJar by tasks.registering(Jar::class) {
-    dependsOn(tasks.javadoc)
-    archiveClassifier.set("javadoc")
-    from("build/docs/javadoc")
-}
-
 val sourcesJar by tasks.registering(Jar::class) {
     archiveClassifier.set("sources")
     from("README")
@@ -72,7 +55,6 @@ publishing {
             artifactId = "objectbox-generator"
             from(components["java"])
             artifact(sourcesJar)
-            artifact(javadocJar)
             pom {
                 name.set("ObjectBox Generator")
                 description.set("Code generator for ObjectBox, the superfast NoSQL database for Objects")

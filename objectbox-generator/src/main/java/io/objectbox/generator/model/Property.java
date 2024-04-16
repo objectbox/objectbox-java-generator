@@ -318,9 +318,11 @@ public class Property implements HasParsedElement {
      * If {@link PropertyFlags#NON_PRIMITIVE_TYPE} should be set on this property.
      * <p>
      * This will indicate to the database that either
+     * <ul>
      * <li>a wrapper type should be used for a scalar property (e.g. Long instead of long),</li>
      * <li>a custom type is used, or</li>
      * <li>List&lt;String&gt; should be used instead of String[] when creating an instance of the property.</li>
+     * </ul>
      * <p>
      * Note: use {@link #isTypeNotNull()} instead to check if the property value can be null.
      */
