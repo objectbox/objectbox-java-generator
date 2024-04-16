@@ -5,13 +5,6 @@ plugins {
     id("signing")
 }
 
-// Make javadoc task errors not break the build.
-if (JavaVersion.current().isJava8Compatible) {
-    tasks.withType<Javadoc> {
-        isFailOnError = false
-    }
-}
-
 publishing {
     repositories {
         maven {
