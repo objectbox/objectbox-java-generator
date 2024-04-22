@@ -22,6 +22,7 @@ import io.objectbox.annotation.ConflictStrategy
 import io.objectbox.annotation.Convert
 import io.objectbox.annotation.DatabaseType
 import io.objectbox.annotation.DefaultValue
+import io.objectbox.annotation.HnswIndex
 import io.objectbox.annotation.Id
 import io.objectbox.annotation.IdCompanion
 import io.objectbox.annotation.Index
@@ -237,8 +238,13 @@ class Properties(
             }
         }
 
-        // @Index
+        // @Index, @Unique
         parseIndexAndUniqueAnnotations(field, propertyBuilder, hasIdAnnotation)
+
+        // @HnswIndex
+        // Note: using other index annotations on FloatArray currently
+        // errors, so no need to integrate with regular index processing.
+        parseHnswIndexAnnotation(field, propertyBuilder)
 
         // @Uid
         val uidAnnotation = field.getAnnotation(Uid::class.java)
@@ -247,6 +253,19 @@ class Properties(
             // Note: UID values 0 and -1 are special: print current value and fail later
             val uid = if (uidAnnotation.value == 0L) -1 else uidAnnotation.value
             propertyBuilder.modelId(IdUid(0, uid))
+        }
+    }
+
+    private fun parseHnswIndexAnnotation(field: VariableElement, propertyBuilder: Property.PropertyBuilder) {
+        val hnswIndexAnnotation = field.getAnnotation(HnswIndex::class.java) ?: return
+        val propertyType = propertyBuilder.property.propertyType
+        if (propertyType != PropertyType.FloatArray) {
+            messages.error("@HnswIndex is only supported for float vector properties.")
+        }
+        try {
+            propertyBuilder.hnswParams(hnswIndexAnnotation)
+        } catch (e: ModelException) {
+            messages.error(e.message!!, field)
         }
     }
 

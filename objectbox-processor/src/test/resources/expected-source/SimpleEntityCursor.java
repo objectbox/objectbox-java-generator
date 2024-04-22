@@ -75,6 +75,7 @@ public final class SimpleEntityCursor extends Cursor<SimpleEntity> {
     private final static int __ID_longArray = SimpleEntity_.longArray.id;
     private final static int __ID_floatArray = SimpleEntity_.floatArray.id;
     private final static int __ID_doubleArray = SimpleEntity_.doubleArray.id;
+    private final static int __ID_floatArrayHnsw = SimpleEntity_.floatArrayHnsw.id;
     private final static int __ID_toOneId = SimpleEntity_.toOneId.id;
 
     public SimpleEntityCursor(io.objectbox.Transaction tx, long cursor, BoxStore boxStore) {
@@ -132,6 +133,12 @@ public final class SimpleEntityCursor extends Cursor<SimpleEntity> {
 
         collectFloatArray(cursor, 0, 0,
                 __id35, floatArray);
+
+        float[] floatArrayHnsw = entity.floatArrayHnsw;
+        int __id37 = floatArrayHnsw != null ? __ID_floatArrayHnsw : 0;
+
+        collectFloatArray(cursor, 0, 0,
+                __id37, floatArrayHnsw);
 
         double[] doubleArray = entity.doubleArray;
         int __id36 = doubleArray != null ? __ID_doubleArray : 0;

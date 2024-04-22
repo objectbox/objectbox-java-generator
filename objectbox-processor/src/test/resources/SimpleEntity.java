@@ -8,6 +8,9 @@ import java.util.Map;
 import io.objectbox.annotation.Convert;
 import io.objectbox.annotation.DatabaseType;
 import io.objectbox.annotation.Entity;
+import io.objectbox.annotation.HnswDistanceType;
+import io.objectbox.annotation.HnswFlags;
+import io.objectbox.annotation.HnswIndex;
 import io.objectbox.annotation.Id;
 import io.objectbox.annotation.IdCompanion;
 import io.objectbox.annotation.Index;
@@ -97,6 +100,21 @@ public class SimpleEntity {
     long[] longArray;
     float[] floatArray;
     double[] doubleArray;
+
+    @HnswIndex(
+            dimensions = 2,
+            neighborsPerNode = 30,
+            indexingSearchCount = 100,
+            flags = @HnswFlags(
+                    debugLogs = true,
+                    debugLogsDetailed = true,
+                    vectorCacheSimdPaddingOff = true,
+                    reparationLimitCandidates = true),
+            distanceType = HnswDistanceType.EUCLIDEAN,
+            reparationBacklinkProbability = 0.95F,
+            vectorCacheHintSizeKB = 2097152
+    )
+    float[] floatArrayHnsw;
 
     public boolean isSimpleBooleanPrimitive() {
         return simpleBooleanPrimitive;

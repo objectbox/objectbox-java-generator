@@ -23,6 +23,7 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import io.objectbox.annotation.HnswIndex;
 import io.objectbox.generator.IdUid;
 import io.objectbox.generator.TextUtil;
 import io.objectbox.model.PropertyFlags;
@@ -148,6 +149,19 @@ public class Property implements HasParsedElement {
             return this;
         }
 
+        /**
+         * Sets HNSW index parameters, implicitly creates an {@link #index()}.
+         *
+         * @param annotation to extract parameters from.
+         * @return this builder.
+         * @throws ModelException if invalid parameters are set.
+         */
+        public PropertyBuilder hnswParams(HnswIndex annotation) throws ModelException {
+            index();
+            property.hnswParams = HnswParams.fromAnnotation(annotation);
+            return this;
+        }
+
         public PropertyBuilder customType(String customType, String converter) {
             property.customType = customType;
             property.customTypeClassName = TextUtil.getClassnameFromFullyQualified(customType);
@@ -231,6 +245,9 @@ public class Property implements HasParsedElement {
      * Initialized in 2nd pass
      */
     private Index index;
+
+    @Nullable
+    private HnswParams hnswParams;
 
     public Property(Schema schema, Entity entity, PropertyType propertyType, String propertyName) {
         this.schema = schema;
@@ -481,6 +498,23 @@ public class Property implements HasParsedElement {
             builder.append(".getTime()");
         }
         return builder.toString();
+    }
+
+    @Nullable
+    public HnswParams getHnswParams() {
+        return hnswParams;
+    }
+
+    public boolean hasHnswParams() {
+        return getHnswParams() != null;
+    }
+
+    /**
+     * @return see {@link HnswParams#getExpression()}.
+     */
+    public String getHnswParamsExpression() {
+        final HnswParams hnswParams = getHnswParams();
+        return (hnswParams != null) ? hnswParams.getExpression() : "";
     }
 
     public Entity getEntity() {

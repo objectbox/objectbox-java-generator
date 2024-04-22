@@ -23,7 +23,7 @@ package io.objectbox.generator.model;
  */
 public class ModelException extends Exception {
 
-    ModelException(String message) {
+    public ModelException(String message) {
         super(message);
     }
 }
