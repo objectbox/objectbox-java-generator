@@ -115,6 +115,9 @@ fun VectorDistanceType.toExpression(): String? {
     return when (this) {
         VectorDistanceType.DEFAULT -> null
         VectorDistanceType.EUCLIDEAN -> "HnswDistanceType.Euclidean"
+        VectorDistanceType.COSINE -> "HnswDistanceType.Cosine"
+        VectorDistanceType.DOT_PRODUCT -> "HnswDistanceType.DotProduct"
+        VectorDistanceType.DOT_PRODUCT_NON_NORMALIZED -> "HnswDistanceType.DotProductNonNormalized"
     }
 }
 
