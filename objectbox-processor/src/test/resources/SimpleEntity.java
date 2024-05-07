@@ -8,7 +8,6 @@ import java.util.Map;
 import io.objectbox.annotation.Convert;
 import io.objectbox.annotation.DatabaseType;
 import io.objectbox.annotation.Entity;
-import io.objectbox.annotation.HnswDistanceType;
 import io.objectbox.annotation.HnswFlags;
 import io.objectbox.annotation.HnswIndex;
 import io.objectbox.annotation.Id;
@@ -18,6 +17,7 @@ import io.objectbox.annotation.NameInDb;
 import io.objectbox.annotation.Transient;
 import io.objectbox.annotation.Type;
 import io.objectbox.annotation.Uid;
+import io.objectbox.annotation.VectorDistanceType;
 import io.objectbox.converter.PropertyConverter;
 import io.objectbox.relation.ToMany;
 import io.objectbox.relation.ToOne;
@@ -110,7 +110,7 @@ public class SimpleEntity {
                     debugLogsDetailed = true,
                     vectorCacheSimdPaddingOff = true,
                     reparationLimitCandidates = true),
-            distanceType = HnswDistanceType.EUCLIDEAN,
+            distanceType = VectorDistanceType.EUCLIDEAN,
             reparationBacklinkProbability = 0.95F,
             vectorCacheHintSizeKB = 2097152
     )

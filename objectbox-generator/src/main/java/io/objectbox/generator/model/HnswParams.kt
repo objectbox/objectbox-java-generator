@@ -19,9 +19,9 @@
 package io.objectbox.generator.model
 
 import io.objectbox.ModelBuilder
-import io.objectbox.annotation.HnswDistanceType
 import io.objectbox.annotation.HnswFlags
 import io.objectbox.annotation.HnswIndex
+import io.objectbox.annotation.VectorDistanceType
 
 
 /**
@@ -111,10 +111,10 @@ data class HnswParams(
 /**
  * Maps to string representation of [io.objectbox.model.HnswDistanceType] to use with code generation.
  */
-fun HnswDistanceType.toExpression(): String? {
+fun VectorDistanceType.toExpression(): String? {
     return when (this) {
-        HnswDistanceType.DEFAULT -> null
-        HnswDistanceType.EUCLIDEAN -> "HnswDistanceType.Euclidean"
+        VectorDistanceType.DEFAULT -> null
+        VectorDistanceType.EUCLIDEAN -> "HnswDistanceType.Euclidean"
     }
 }
 

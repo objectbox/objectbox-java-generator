@@ -161,7 +161,7 @@ class HnswIndexTest : BaseProcessorTest() {
             import io.objectbox.annotation.Id;
             import io.objectbox.annotation.HnswIndex;
             import io.objectbox.annotation.HnswFlags;
-            import io.objectbox.annotation.HnswDistanceType;
+            import io.objectbox.annotation.VectorDistanceType;
             
             @Entity
             public class City {
@@ -176,7 +176,7 @@ class HnswIndexTest : BaseProcessorTest() {
                                 debugLogsDetailed = true,
                                 vectorCacheSimdPaddingOff = true,
                                 reparationLimitCandidates = true),
-                        distanceType = HnswDistanceType.EUCLIDEAN,
+                        distanceType = VectorDistanceType.EUCLIDEAN,
                         reparationBacklinkProbability = 0.95F,
                         vectorCacheHintSizeKB = 2097152
                 )
