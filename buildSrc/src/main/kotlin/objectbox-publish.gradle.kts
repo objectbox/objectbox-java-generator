@@ -5,13 +5,6 @@ plugins {
     id("signing")
 }
 
-// Make javadoc task errors not break the build.
-if (JavaVersion.current().isJava8Compatible) {
-    tasks.withType<Javadoc> {
-        isFailOnError = false
-    }
-}
-
 publishing {
     repositories {
         maven {
@@ -48,8 +41,8 @@ publishing {
                 url.set("https://objectbox.io")
                 licenses {
                     license {
-                        name.set("GNU General Public License, Version 3")
-                        url.set("https://www.gnu.org/licenses/gpl.txt")
+                        name.set("GNU Affero General Public License, Version 3")
+                        url.set("https://www.gnu.org/licenses/agpl-3.0.html")
                         distribution.set("repo")
                     }
                 }

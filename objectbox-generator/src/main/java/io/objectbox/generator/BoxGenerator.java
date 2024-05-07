@@ -1,19 +1,19 @@
 /*
+ * ObjectBox Build Tools
  * Copyright (C) 2017-2024 ObjectBox Ltd.
  *
- * This file is part of ObjectBox Build Tools.
- *
- * ObjectBox Build Tools is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * ObjectBox Build Tools is distributed in the hope that it will be useful,
+ *
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with ObjectBox Build Tools.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package io.objectbox.generator;
@@ -53,7 +53,7 @@ public class BoxGenerator {
 
     public BoxGenerator() throws IOException {
         log("ObjectBox Generator");
-        log("Copyright 2017-2024 ObjectBox Ltd, objectbox.io. Licensed under GPL V3.");
+        log("Copyright 2017-2024 ObjectBox Ltd, objectbox.io. Licensed under GNU Affero General Public License, Version 3.");
         log("This program comes with ABSOLUTELY NO WARRANTY");
 
         Configuration config = getConfiguration(MYOBJECTBOX_FTL);
