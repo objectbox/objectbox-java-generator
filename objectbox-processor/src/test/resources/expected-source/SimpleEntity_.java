@@ -153,8 +153,11 @@ public final class SimpleEntity_ implements EntityInfo<SimpleEntity> {
     public final static io.objectbox.Property<SimpleEntity> doubleArray =
             new io.objectbox.Property<>(__INSTANCE, 36, 38, double[].class, "doubleArray");
 
+    public final static io.objectbox.Property<SimpleEntity> floatArrayHnsw =
+            new io.objectbox.Property<>(__INSTANCE, 37, 39, float[].class, "floatArrayHnsw");
+
     public final static io.objectbox.Property<SimpleEntity> toOneId =
-            new io.objectbox.Property<>(__INSTANCE, 37, 25, long.class, "toOneId", true);
+            new io.objectbox.Property<>(__INSTANCE, 38, 25, long.class, "toOneId", true);
 
     @SuppressWarnings("unchecked")
     public final static io.objectbox.Property<SimpleEntity>[] __ALL_PROPERTIES = new io.objectbox.Property[]{
@@ -195,6 +198,7 @@ public final class SimpleEntity_ implements EntityInfo<SimpleEntity> {
             longArray,
             floatArray,
             doubleArray,
+            floatArrayHnsw,
             toOneId
     };
 

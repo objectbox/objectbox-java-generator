@@ -4,6 +4,8 @@ import io.objectbox.BoxStore;
 import io.objectbox.BoxStoreBuilder;
 import io.objectbox.ModelBuilder;
 import io.objectbox.ModelBuilder.EntityBuilder;
+import io.objectbox.model.HnswDistanceType;
+import io.objectbox.model.HnswFlags;
 import io.objectbox.model.PropertyFlags;
 import io.objectbox.model.PropertyType;
 import io.objectbox.processor.test.IdEntity;
@@ -29,7 +31,7 @@ public class MyObjectBox {
     private static byte[] getModel() {
         ModelBuilder modelBuilder = new ModelBuilder();
         modelBuilder.lastEntityId(2, 7806468668391521694L);
-        modelBuilder.lastIndexId(2, 6174264050444102923L);
+        modelBuilder.lastIndexId(3, 4603777245389737989L);
         modelBuilder.lastRelationId(1, 1588763188636253926L);
 
         buildEntitySimpleEntity(modelBuilder);
@@ -40,7 +42,7 @@ public class MyObjectBox {
 
     private static void buildEntitySimpleEntity(ModelBuilder modelBuilder) {
         EntityBuilder entityBuilder = modelBuilder.entity("A");
-        entityBuilder.id(1, 4858050548069557694L).lastPropertyId(38, 6410324640289798251L);
+        entityBuilder.id(1, 4858050548069557694L).lastPropertyId(39, 8513602819579966935L);
         entityBuilder.flags(io.objectbox.model.EntityFlags.USE_NO_ARG_CONSTRUCTOR);
 
         entityBuilder.property("id", PropertyType.Long).id(1, 8303367770402050741L)
@@ -95,6 +97,9 @@ public class MyObjectBox {
         entityBuilder.property("longArray", PropertyType.LongVector).id(36, 9006144140894927873L);
         entityBuilder.property("floatArray", PropertyType.FloatVector).id(37, 289592308738182865L);
         entityBuilder.property("doubleArray", PropertyType.DoubleVector).id(38, 6410324640289798251L);
+        entityBuilder.property("floatArrayHnsw", PropertyType.FloatVector).id(39, 8513602819579966935L)
+                .flags(PropertyFlags.INDEXED).indexId(3, 4603777245389737989L)
+                .hnswParams(2, 30L, 100L, HnswFlags.DebugLogs | HnswFlags.DebugLogsDetailed | HnswFlags.VectorCacheSimdPaddingOff | HnswFlags.ReparationLimitCandidates, HnswDistanceType.Euclidean, 0.95F, 2097152L);
         entityBuilder.property("toOneId", "IdEntity", "toOne", PropertyType.Relation).id(25, 8807838229280449251L)
                 .flags(PropertyFlags.VIRTUAL | PropertyFlags.INDEXED | PropertyFlags.INDEX_PARTIAL_SKIP_ZERO).indexId(2, 6174264050444102923L);
 

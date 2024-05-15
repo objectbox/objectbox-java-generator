@@ -31,6 +31,7 @@ import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateNotFoundException;
 import io.objectbox.generator.model.Entity;
+import io.objectbox.generator.model.Property;
 import io.objectbox.generator.model.Schema;
 import io.objectbox.generator.model.ToManyBase;
 import io.objectbox.generator.model.ToOne;
@@ -144,6 +145,11 @@ public class BoxGenerator {
         imports.add("io.objectbox.ModelBuilder.EntityBuilder");
         imports.add("io.objectbox.model.PropertyFlags");
         imports.add("io.objectbox.model.PropertyType");
+        // Most projects won't use HNSW params, so only import classes if necessary
+        if (hasHnswParams(schema)) {
+            imports.add("io.objectbox.model.HnswFlags");
+            imports.add("io.objectbox.model.HnswDistanceType");
+        }
 
         for (Entity entity : schema.getEntities()) {
             String javaPackage = entity.getJavaPackage();
@@ -160,6 +166,21 @@ public class BoxGenerator {
         Map<String, Object> extras = new HashMap<>();
         extras.put("imports", imports);
         return extras;
+    }
+
+    /**
+     * Returns if at least one property has HNSW params.
+     *
+     * @param schema the schema to search.
+     * @return {@code true} if at least one property with HNSW params exists.
+     */
+    private boolean hasHnswParams(Schema schema) {
+        for (Entity entity : schema.getEntities()) {
+            for (Property property : entity.getProperties()) {
+                if (property.hasHnswParams()) return true;
+            }
+        }
+        return false;
     }
 
     /**

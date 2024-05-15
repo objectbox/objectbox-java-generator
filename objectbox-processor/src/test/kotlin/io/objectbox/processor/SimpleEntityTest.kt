@@ -70,7 +70,7 @@ class SimpleEntityTest : BaseProcessorTest() {
         assertThat(schemaEntity.hasAllArgsConstructor()).isFalse()
 
         // assert index
-        assertThat(schemaEntity.indexes).hasSize(2) /* @Index and ToOne */
+        assertThat(schemaEntity.indexes).hasSize(3) /* @Index, @HnswIndex and ToOne */
         val index = schemaEntity.indexes[0]
         assertThat(index.isUnique).isFalse()
         assertThat(index.indexFlags).isEqualTo(PropertyFlags.INDEXED)
@@ -180,6 +180,8 @@ class SimpleEntityTest : BaseProcessorTest() {
                 "floatArray" -> assertType(prop, PropertyType.FloatArray)
                 "doubleArray" -> assertType(prop, PropertyType.DoubleArray)
 
+                "floatArrayHnsw" -> assertType(prop, PropertyType.FloatArray)
+
                 "toOneId" -> {
                     assertThat(prop.dbName).isEqualTo(prop.propertyName)
                     assertThat(prop.virtualTargetName).isEqualTo("toOne")
@@ -250,6 +252,7 @@ class SimpleEntityTest : BaseProcessorTest() {
             "longArray",
             "floatArray",
             "doubleArray",
+            "floatArrayHnsw",
             "toOneId" // last
         )
         val modelProperties = modelEntity.properties
