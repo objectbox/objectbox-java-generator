@@ -51,6 +51,10 @@ upload-to-internal:linux:
   extends: .common
   stage: upload-to-internal
   tags: [ docker, x64 ]
+  except:
+    - main # Do not upload duplicate release artifacts
+    - pipelines # Do not upload artifacts if triggered by upstream project to save on disk space
+    - tags # Only upload artifacts from branches
   script:
     - ./gradlew $GITLAB_REPO_ARGS $VERSION_ARGS publishMavenJavaPublicationToGitLabRepository
 
