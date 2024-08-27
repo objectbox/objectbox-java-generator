@@ -77,6 +77,14 @@ buildscript {
         println("WARNING: gitlabUrl missing from gradle.properties.")
     }
 
+    // To avoid duplicate release artifacts on the internal repository,
+    // prevent uploading from branches other than publish, and main (for which uploading is turned off).
+    val isCI = System.getenv("CI") == "true"
+    val branchOrTag = System.getenv("CI_COMMIT_REF_NAME")
+    if (isCI && isRelease && !("publish" == branchOrTag || "main" == branchOrTag)) {
+        throw GradleException("isRelease = true is only allowed on branch publish or main")
+    }
+
     repositories {
         mavenCentral()
         google()
