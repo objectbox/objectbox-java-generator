@@ -38,8 +38,8 @@ buildscript {
     val okioVersion by extra("2.10.0") // https://github.com/square/okio/blob/master/CHANGELOG.md
 
     // Typically, only edit those two:
-    val versionNumber = "4.0.3" // Without "-SNAPSHOT", e.g. "2.5.0" or "2.4.0-RC".
-    val isRelease = true       // Set to true for releasing to ignore versionPostFix to avoid e.g. "-dev" versions.
+    val versionNumber = "4.0.4" // Without "-SNAPSHOT", e.g. "2.5.0" or "2.4.0-RC".
+    val isRelease = false       // Set to true for releasing to ignore versionPostFix to avoid e.g. "-dev" versions.
 
     val libsRelease = isRelease  // e.g. diverge if plugin is still SNAPSHOT, but libs are already final
     val libsVersion = versionNumber + (if (libsRelease) "" else "-dev-SNAPSHOT")
