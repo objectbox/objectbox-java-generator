@@ -145,7 +145,11 @@ public class BoxGenerator {
         imports.add("io.objectbox.ModelBuilder.EntityBuilder");
         imports.add("io.objectbox.model.PropertyFlags");
         imports.add("io.objectbox.model.PropertyType");
-        // Most projects won't use HNSW params, so only import classes if necessary
+        // External types are optional, so only import classes if necessary
+        if (hasExternalTypes(schema)) {
+            imports.add("io.objectbox.model.ExternalPropertyType");
+        }
+        // HNSW params are optional, so only import classes if necessary
         if (hasHnswParams(schema)) {
             imports.add("io.objectbox.model.HnswFlags");
             imports.add("io.objectbox.model.HnswDistanceType");
@@ -166,6 +170,22 @@ public class BoxGenerator {
         Map<String, Object> extras = new HashMap<>();
         extras.put("imports", imports);
         return extras;
+    }
+
+    /**
+     * Returns if at least one property has an external type.
+     *
+     * @param schema the schema to search.
+     * @return {@code true} if at least one property with a non-null
+     * {@link Property#getExternalTypeExpression()} exists.
+     */
+    private boolean hasExternalTypes(Schema schema) {
+        for (Entity entity : schema.getEntities()) {
+            for (Property property : entity.getProperties()) {
+                if (property.getExternalTypeExpression() != null) return true;
+            }
+        }
+        return false;
     }
 
     /**

@@ -88,6 +88,9 @@ public class MyObjectBox {
                 .flags(${propertyFlags?join(" | ")})</#if><#--
         --><#if property.index?? && (property.index.maxValueLength > 0)>.indexMaxValueLength(${property.index.maxValueLength?c})</#if><#--
         --><#if property.modelIndexId??>.indexId(${property.modelIndexId.id?c}, ${property.modelIndexId.uid?c}L)</#if><#--
+        --><#if property.externalTypeExpression??>
+
+                ${property.externalTypeExpression}</#if><#--
         --><#if property.hasHnswParams()>
 
                 ${property.hnswParamsExpression}</#if>;
