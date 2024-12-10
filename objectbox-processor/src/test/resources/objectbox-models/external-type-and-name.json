@@ -5,8 +5,9 @@
   "entities": [
     {
       "id": "1:4896842459897431834",
-      "lastPropertyId": "3:638742813187624182",
+      "lastPropertyId": "2:2181682461243454295",
       "name": "MongoEntity",
+      "externalName": "obx-test-external-entity",
       "properties": [
         {
           "id": "1:3717607777155461882",
@@ -16,23 +17,26 @@
         },
         {
           "id": "2:2181682461243454295",
-          "name": "mongoId",
+          "name": "externalId",
           "type": 23,
-          "externalType": 123
-        },
-        {
-          "id": "3:638742813187624182",
-          "name": "uuid",
-          "type": 23,
+          "externalName": "obx-test-external-property",
           "externalType": 102
         }
       ],
-      "relations": []
+      "relations": [
+        {
+          "id": "1:2631459366490152667",
+          "name": "externalIds",
+          "externalName": "obx-test-external-tomany",
+          "externalType": 118,
+          "targetId": "1:4896842459897431834"
+        }
+      ]
     }
   ],
   "lastEntityId": "1:4896842459897431834",
   "lastIndexId": "0:0",
-  "lastRelationId": "3:4330998623803761847",
+  "lastRelationId": "1:2631459366490152667",
   "lastSequenceId": "0:0",
   "modelVersion": 5,
   "modelVersionParserMinimum": 5,
