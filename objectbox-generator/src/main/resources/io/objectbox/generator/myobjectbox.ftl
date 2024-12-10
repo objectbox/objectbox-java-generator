@@ -92,12 +92,14 @@ public class MyObjectBox {
 
                 ${property.hnswParamsExpression}</#if>;
     </#list>
+    <#if entity.toManyRelations?size != 0>
 
     <#list entity.toManyRelations as toMany>
         <#if toMany.modelId??>
         entityBuilder.relation("${toMany.dbName}", ${toMany.modelId.id?c}, ${toMany.modelId.uid?c}L, ${toMany.targetEntity.modelId?c}, ${toMany.targetEntity.modelUid?c}L);
         </#if>
     </#list>
+    </#if>
 
         entityBuilder.entityDone();
     }
