@@ -1,6 +1,6 @@
 /*
  * ObjectBox Build Tools
- * Copyright (C) 2024 ObjectBox Ltd.
+ * Copyright (C) 2024-2025 ObjectBox Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -18,7 +18,6 @@
 
 package io.objectbox.generator.model
 
-import io.objectbox.ModelBuilder
 import io.objectbox.annotation.HnswFlags
 import io.objectbox.annotation.HnswIndex
 import io.objectbox.annotation.VectorDistanceType
@@ -38,7 +37,7 @@ data class HnswParams(
 ) {
 
     /**
-     * Returns a code string for calling [ModelBuilder.PropertyBuilder.hnswParams] with parameters of this.
+     * Returns a code string for calling [io.objectbox.ModelBuilder.PropertyBuilder.hnswParams] with parameters of this.
      */
     fun getExpression(): String {
         return buildString {
