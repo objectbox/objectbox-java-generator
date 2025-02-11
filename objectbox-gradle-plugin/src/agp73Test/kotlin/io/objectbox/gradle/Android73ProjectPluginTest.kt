@@ -1,6 +1,6 @@
 /*
  * ObjectBox Build Tools
- * Copyright (C) 2022-2024 ObjectBox Ltd.
+ * Copyright (C) 2022-2025 ObjectBox Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -20,12 +20,14 @@ package io.objectbox.gradle
 
 import org.gradle.util.GradleVersion
 import org.intellij.lang.annotations.Language
+import org.junit.Ignore
 
 
 /**
  * Tests assembling an Android project using Android Plugin 7.3.
  * Notably uses the new ASM based Transform API.
  */
+@Ignore("objectbox-android is no longer compatible, this needs updates, see objectbox-java#215")
 class Android73ProjectPluginTest : AndroidProjectPluginTest() {
 
     // Uses the android.namespace property instead of setting package name in AndroidManifest.xml.

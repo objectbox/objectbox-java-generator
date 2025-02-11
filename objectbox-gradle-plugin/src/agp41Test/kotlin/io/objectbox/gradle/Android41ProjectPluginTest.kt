@@ -1,6 +1,6 @@
 /*
  * ObjectBox Build Tools
- * Copyright (C) 2022-2024 ObjectBox Ltd.
+ * Copyright (C) 2022-2025 ObjectBox Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -20,12 +20,14 @@ package io.objectbox.gradle
 
 import org.gradle.testkit.runner.GradleRunner
 import org.intellij.lang.annotations.Language
+import org.junit.Ignore
 
 
 /**
  * Tests assembling an Android project using Android Plugin 4.1.
  * Notably uses the legacy Transform API.
  */
+@Ignore("objectbox-android is no longer compatible, this needs updates, see objectbox-java#215")
 class Android41ProjectPluginTest : AndroidProjectPluginTest() {
 
     @Language("Groovy")
