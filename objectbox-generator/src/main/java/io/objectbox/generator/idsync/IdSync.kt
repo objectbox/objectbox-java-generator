@@ -471,6 +471,7 @@ class IdSync(private val jsonFile: File = File("objectmodel.json")) {
         val relation = Relation(
             name = name,
             id = sourceId.clone(),
+            externalType = schemaRelation.externalTypeId?.toInt(),
             // issue: schemaRelation.targetEntity might not have modelId or modelUid set by now
             targetId = IdUid(schemaRelation.targetEntity.modelId, schemaRelation.targetEntity.modelUid)
         )

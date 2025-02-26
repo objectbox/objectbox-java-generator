@@ -1,6 +1,6 @@
 /*
  * ObjectBox Build Tools
- * Copyright (C) 2017-2024 ObjectBox Ltd.
+ * Copyright (C) 2017-2025 ObjectBox Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -19,11 +19,13 @@
 package io.objectbox.processor
 
 import io.objectbox.annotation.Backlink
+import io.objectbox.annotation.ExternalType
 import io.objectbox.annotation.NameInDb
 import io.objectbox.annotation.TargetIdProperty
 import io.objectbox.annotation.Uid
 import io.objectbox.generator.IdUid
 import io.objectbox.generator.model.Entity
+import io.objectbox.generator.model.ExternalPropertyTypeMapper
 import io.objectbox.generator.model.ModelException
 import io.objectbox.generator.model.PropertyType
 import io.objectbox.generator.model.Schema
@@ -90,12 +92,18 @@ class Relations(private val messages: Messages) {
                 isFieldAccessible = isFieldAccessible
             )
         } else {
+            // Note: for a standalone ToMany only vector based external types are allowed, but leaving checks to the
+            // database to not duplicate them here.
+            val externalType = field.getAnnotation(ExternalType::class.java)?.value
+
             ToManyStandalone(
                 name = field.simpleName.toString(),
                 dbName = nameInDb,
                 targetEntityName = targetEntityName,
                 isFieldAccessible = isFieldAccessible,
-                uid = uid.let { if (it == 0L) -1L else it }
+                uid = uid.let { if (it == 0L) -1L else it },
+                externalTypeId = externalType?.let { ExternalPropertyTypeMapper.toId(it) },
+                externalTypeExpression = externalType?.let { ExternalPropertyTypeMapper.toExpression(it) }
             )
         }
 

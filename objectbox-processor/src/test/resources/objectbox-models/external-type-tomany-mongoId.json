@@ -4,35 +4,36 @@
   "_note3": "If you have VCS merge conflicts, you must resolve them according to ObjectBox docs.",
   "entities": [
     {
-      "id": "1:4896842459897431834",
-      "lastPropertyId": "3:638742813187624182",
+      "id": "1:7367374710730783876",
+      "lastPropertyId": "1:4812746380227816069",
       "name": "MongoEntity",
       "properties": [
         {
-          "id": "1:3717607777155461882",
+          "id": "1:4812746380227816069",
           "name": "id",
           "type": 6,
           "flags": 1
-        },
-        {
-          "id": "2:2181682461243454295",
-          "name": "mongoId",
-          "type": 23,
-          "externalType": 123
-        },
-        {
-          "id": "3:638742813187624182",
-          "name": "uuid",
-          "type": 23,
-          "externalType": 102
         }
       ],
-      "relations": []
+      "relations": [
+        {
+          "id": "1:6965793985203435547",
+          "name": "mongoIdEntities",
+          "externalType": 124,
+          "targetId": "1:7367374710730783876"
+        },
+        {
+          "id": "2:7702572643150505707",
+          "name": "uuidEntities",
+          "externalType": 118,
+          "targetId": "1:7367374710730783876"
+        }
+      ]
     }
   ],
-  "lastEntityId": "1:4896842459897431834",
+  "lastEntityId": "1:7367374710730783876",
   "lastIndexId": "0:0",
-  "lastRelationId": "3:4330998623803761847",
+  "lastRelationId": "2:7702572643150505707",
   "lastSequenceId": "0:0",
   "modelVersion": 5,
   "modelVersionParserMinimum": 5,

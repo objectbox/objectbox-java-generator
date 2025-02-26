@@ -1,6 +1,6 @@
 /*
  * ObjectBox Build Tools
- * Copyright (C) 2017-2024 ObjectBox Ltd.
+ * Copyright (C) 2017-2025 ObjectBox Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -34,6 +34,7 @@ import io.objectbox.generator.model.Entity;
 import io.objectbox.generator.model.Property;
 import io.objectbox.generator.model.Schema;
 import io.objectbox.generator.model.ToManyBase;
+import io.objectbox.generator.model.ToManyStandalone;
 import io.objectbox.generator.model.ToOne;
 
 /**
@@ -173,16 +174,21 @@ public class BoxGenerator {
     }
 
     /**
-     * Returns if at least one property has an external type.
+     * Returns if at least one property or standalone to-many relation has an external type.
      *
      * @param schema the schema to search.
-     * @return {@code true} if at least one property with a non-null
-     * {@link Property#getExternalTypeExpression()} exists.
+     * @return {@code true} if at least one property or standalone to-many relation with a non-null
+     * {@link Property#getExternalTypeExpression()} or {@link ToManyStandalone#getExternalTypeExpression()} exists.
      */
     private boolean hasExternalTypes(Schema schema) {
         for (Entity entity : schema.getEntities()) {
             for (Property property : entity.getProperties()) {
                 if (property.getExternalTypeExpression() != null) return true;
+            }
+            for (ToManyBase toManyBase : entity.getToManyRelations()) {
+                if (toManyBase instanceof ToManyStandalone) {
+                    if (((ToManyStandalone) toManyBase).getExternalTypeExpression() != null) return true;
+                }
             }
         }
         return false;

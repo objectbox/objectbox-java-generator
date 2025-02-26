@@ -108,5 +108,6 @@ data class Property(
 data class Relation(
     override val id: IdUid = IdUid(),
     val name: String,
+    val externalType: Int?,
     val targetId: IdUid?
 ) : HasIdUid

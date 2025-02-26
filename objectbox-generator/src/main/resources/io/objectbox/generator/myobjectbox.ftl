@@ -95,11 +95,16 @@ public class MyObjectBox {
 
                 ${property.hnswParamsExpression}</#if>;
     </#list>
+    <#-- Standalone ToMany relations (see condition which filters below) -->
     <#if entity.toManyRelations?size != 0>
 
     <#list entity.toManyRelations as toMany>
+        <#-- Filter by ToManyStandalone (only it has a modelId getter) -->
         <#if toMany.modelId??>
-        entityBuilder.relation("${toMany.dbName}", ${toMany.modelId.id?c}, ${toMany.modelId.uid?c}L, ${toMany.targetEntity.modelId?c}, ${toMany.targetEntity.modelUid?c}L);
+        entityBuilder.relation("${toMany.dbName}", ${toMany.modelId.id?c}, ${toMany.modelId.uid?c}L, ${toMany.targetEntity.modelId?c}, ${toMany.targetEntity.modelUid?c}L)<#--
+        --><#if toMany.externalTypeExpression??>
+
+                ${toMany.externalTypeExpression}</#if>;
         </#if>
     </#list>
     </#if>
