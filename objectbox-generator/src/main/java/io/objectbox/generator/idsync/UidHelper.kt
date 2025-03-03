@@ -1,6 +1,6 @@
 /*
  * ObjectBox Build Tools
- * Copyright (C) 2017-2024 ObjectBox Ltd.
+ * Copyright (C) 2017-2025 ObjectBox Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -27,7 +27,7 @@ import java.security.SecureRandom
  */
 // Note: make it independent from the (real) ID, it will be necessary to change ID after git conflicts.
 class UidHelper(
-        private val existingUids: MutableSet<Long> = HashSet()
+    private val existingUids: MutableSet<Long> = HashSet()
 ) {
     // Use SecureRandom to better avoid conflicts when IDs are assigned in diverging git branches
     private val random = SecureRandom()
@@ -36,14 +36,14 @@ class UidHelper(
         existingUids.forEach { verify(it) }
     }
 
-    fun addExistingId(id: Long ) {
+    fun addExistingId(id: Long) {
         verify(id)
-        if(!existingUids.add(id)) {
+        if (!existingUids.add(id)) {
             throw IdSyncException("Duplicate UID $id")
         }
     }
 
-    fun addExistingIds(ids: Collection<Long> ) {
+    fun addExistingIds(ids: Collection<Long>) {
         ids.forEach { addExistingId(it) }
     }
 
@@ -51,7 +51,7 @@ class UidHelper(
      * Creates random long where lowest byte is Murmur3F hash of upper bytes.
      */
     fun create(): Long {
-        var newId:Long
+        var newId: Long
         do {
             val randomPart = (1 + random.nextLong()) and 0x7FFFFFFFFFFFFF00
             val murmur = Murmur3F()

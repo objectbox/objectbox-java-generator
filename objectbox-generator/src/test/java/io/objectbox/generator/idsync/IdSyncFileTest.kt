@@ -1,6 +1,6 @@
 /*
  * ObjectBox Build Tools
- * Copyright (C) 2017-2024 ObjectBox Ltd.
+ * Copyright (C) 2017-2025 ObjectBox Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -79,14 +79,14 @@ class IdSyncFileTest {
     fun testBadFiles() {
         val badFiles = dir.listFiles().filter { it.name != "all-ok.json" && !it.name.startsWith("future-version") }
         val expectedMessages = mapOf(
-                "duplicate-entity-id.json" to "Duplicate ID 1 for entity Note",
-                "duplicate-entity-uid.json" to "Duplicate UID 4858050548069557694",
-                "duplicate-property-id.json" to "Duplicate ID 1 for property Note.integerProperty",
-                "duplicate-property-uid.json" to "Duplicate UID 8303367770402050741",
-                "mismatching-last-entity-id.json" to
-                        "Entity Note ID 1:4858050548069557694 does not match UID of lastEntityId 1:893473467320234874",
-                "mismatching-last-property-id.json" to
-                        "Property Note.integerProperty ID 4:8044051146334126065 does not match UID of lastPropertyId 4:8303367770402050741"
+            "duplicate-entity-id.json" to "Duplicate ID 1 for entity Note",
+            "duplicate-entity-uid.json" to "Duplicate UID 4858050548069557694",
+            "duplicate-property-id.json" to "Duplicate ID 1 for property Note.integerProperty",
+            "duplicate-property-uid.json" to "Duplicate UID 8303367770402050741",
+            "mismatching-last-entity-id.json" to
+                    "Entity Note ID 1:4858050548069557694 does not match UID of lastEntityId 1:893473467320234874",
+            "mismatching-last-property-id.json" to
+                    "Property Note.integerProperty ID 4:8044051146334126065 does not match UID of lastPropertyId 4:8303367770402050741"
         )
         assertTrue(badFiles.isNotEmpty())
         for (file in badFiles) {

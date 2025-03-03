@@ -1,6 +1,6 @@
 /*
  * ObjectBox Build Tools
- * Copyright (C) 2017-2024 ObjectBox Ltd.
+ * Copyright (C) 2017-2025 ObjectBox Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -476,6 +476,7 @@ public class Entity implements HasParsedElement {
 
     /**
      * Based on this entities attributes computes required {@link EntityFlags}.
+     *
      * @see #getEntityFlags()
      * @see #getEntityFlagsForModelFile()
      * @see #getEntityFlagsNames()

@@ -1,6 +1,6 @@
 /*
  * ObjectBox Build Tools
- * Copyright (C) 2017-2024 ObjectBox Ltd.
+ * Copyright (C) 2017-2025 ObjectBox Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -51,7 +51,8 @@ public class GeneratorOutput {
         this.outDirFile = outDirFile;
     }
 
-    protected Writer createWriter(String javaPackage, String fileOrJavaClassName, String fileExtension) throws IOException {
+    protected Writer createWriter(String javaPackage, String fileOrJavaClassName,
+            String fileExtension) throws IOException {
         if (outDirFile != null) {
             return new FileWriter(getFileOrNull(javaPackage, fileOrJavaClassName, fileExtension));
         } else if (filer != null && ".java".equals(fileExtension)) {

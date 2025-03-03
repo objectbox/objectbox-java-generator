@@ -1,6 +1,6 @@
 /*
  * ObjectBox Build Tools
- * Copyright (C) 2017-2024 ObjectBox Ltd.
+ * Copyright (C) 2017-2025 ObjectBox Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -18,9 +18,11 @@
 
 package io.objectbox.generator.idsync
 
-open class IdSyncException(message: String? = null, cause: Throwable?=null) : RuntimeException(message, cause)
+open class IdSyncException(message: String? = null, cause: Throwable? = null) : RuntimeException(message, cause)
 
-class IdSyncPrintUidException(uidTarget:String, currentUid: Long, val randomNewUid: Long):
-        IdSyncException("UID operations for $uidTarget: " +
+class IdSyncPrintUidException(uidTarget: String, currentUid: Long, val randomNewUid: Long) :
+    IdSyncException(
+        "UID operations for $uidTarget: " +
                 "[Rename] apply the current UID using @Uid(${currentUid}L) - " +
-                "[Change/reset] apply a new UID using @Uid(${randomNewUid}L)")
+                "[Change/reset] apply a new UID using @Uid(${randomNewUid}L)"
+    )

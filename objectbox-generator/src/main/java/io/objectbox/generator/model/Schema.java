@@ -1,6 +1,6 @@
 /*
  * ObjectBox Build Tools
- * Copyright (C) 2017-2024 ObjectBox Ltd.
+ * Copyright (C) 2017-2025 ObjectBox Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -63,6 +63,7 @@ public class Schema {
         final String dbType;
         final String javaTypeNullable;
         final String javaTypeNotNull;
+
         Mapping(short dbTypeId, String dbType, String javaTypeNullable, String javaTypeNotNull) {
             this.dbType = dbType;
             this.dbTypeId = dbTypeId;
