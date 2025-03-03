@@ -76,10 +76,20 @@ upload-to-central:linux:
 trigger-integ-tests:
   stage: triggers
   except:
-    - schedules # Do not trigger when run on schedule, integ tests have own schedule.
+    - schedules # Do not trigger when run on schedule, integ tests have own schedule
   inherit:
     variables: false
-  allow_failure: true # Branch might not exist, yet, in integ test project.
+  allow_failure: true # Branch might not exist in triggered project
   trigger:
     project: objectbox/objectbox-integration-test
+    branch: $CI_COMMIT_BRANCH
+
+# Why? The Maven plugin uses ObjectBoxJavaTransform from objectbox-code-modifier of this project
+trigger-maven-plugin:
+  stage: triggers
+  inherit:
+    variables: false
+  allow_failure: true # Branch might not exist in triggered project
+  trigger:
+    project: objectbox/objectbox-maven-plugin
     branch: $CI_COMMIT_BRANCH

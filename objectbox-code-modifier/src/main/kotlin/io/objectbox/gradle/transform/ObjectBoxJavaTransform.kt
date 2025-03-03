@@ -1,6 +1,6 @@
 /*
  * ObjectBox Build Tools
- * Copyright (C) 2017-2024 ObjectBox Ltd.
+ * Copyright (C) 2017-2025 ObjectBox Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -28,6 +28,8 @@ import java.io.File
  * Transforms class (byte code) files from multiple directories,
  * overwriting the original class files if no output directory is given.
  *
+ * NOTE: This class is also used by the ObjectBox Maven plugin.
+ *
  * See ObjectBoxAndroidTransform in AGP 3.3 module.
  * @see ClassTransformer
  */
@@ -45,25 +47,32 @@ class ObjectBoxJavaTransform(private val debug: Boolean) {
                 }
             }
 
-            val probedClasses = mutableListOf<ProbedClass>()
-            val classProber = ClassProber()
-            byteCodeDirs.forEach { byteCodeDir ->
-                if (debug) log("Detected byte code dir ${byteCodeDir.path}")
-                byteCodeDir.walk().filter { it.isFile }.forEach { file ->
-                    if (file.name.endsWith(".class")) {
-                        // If no out directory is given, overwrite original files with transformed files: so outDir == byteCodeDir
-                        probedClasses += classProber.probeClass(file, outDir ?: byteCodeDir)
-                    }
-                }
-            }
-
-            ClassTransformer(debug).transformOrCopyClasses(probedClasses, copyNonTransformed)
+            transform(byteCodeDirs, outDir, copyNonTransformed)
         } catch (e: Throwable) {
             val buildTracker = BasicBuildTracker("Transformer")
             if (e is TransformException) buildTracker.trackError("Transform failed", e)
             else buildTracker.trackFatal("Transform failed", e)
             throw e
         }
+    }
+
+    /**
+     * NOTE: This method is used by the ObjectBox Maven plugin.
+     */
+    fun transform(byteCodeDirs: List<File>, outDir: File?, copyNonTransformed: Boolean) {
+        val probedClasses = mutableListOf<ProbedClass>()
+        val classProber = ClassProber()
+        byteCodeDirs.forEach { byteCodeDir ->
+            if (debug) log("Detected byte code dir ${byteCodeDir.path}")
+            byteCodeDir.walk().filter { it.isFile }.forEach { file ->
+                if (file.name.endsWith(".class")) {
+                    // If no out directory is given, overwrite original files with transformed files: so outDir == byteCodeDir
+                    probedClasses += classProber.probeClass(file, outDir ?: byteCodeDir)
+                }
+            }
+        }
+
+        ClassTransformer(debug).transformOrCopyClasses(probedClasses, copyNonTransformed)
     }
 
 }
