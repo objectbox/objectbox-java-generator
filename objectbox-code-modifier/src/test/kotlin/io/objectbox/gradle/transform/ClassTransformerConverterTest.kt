@@ -1,6 +1,6 @@
 /*
  * ObjectBox Build Tools
- * Copyright (C) 2017-2024 ObjectBox Ltd.
+ * Copyright (C) 2017-2025 ObjectBox Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -28,7 +28,8 @@ class ClassTransformerConverterTest : AbstractTransformTest() {
     fun testTransformEntity_converter_shouldNotTransform() {
         val classes = listOf(
             EntityConverterList::class,
-                EntityEmpty::class, EntityEmptyConverter::class)
+            EntityEmpty::class, EntityEmptyConverter::class
+        )
         val (stats) = testTransformOrCopy(classes, 0, 3)
         Assert.assertEquals(0, stats.boxStoreFieldsAdded)
         Assert.assertEquals(0, stats.toOnesFound)
@@ -40,7 +41,8 @@ class ClassTransformerConverterTest : AbstractTransformTest() {
     fun testTransformEntity_converterAndList_shouldTransformOnlyList() {
         val classes = listOf(
             EntityConverterListAndList::class, EntityConverterListAndList_::class,
-                EntityEmpty::class, EntityEmptyConverter::class)
+            EntityEmpty::class, EntityEmptyConverter::class
+        )
         val (stats) = testTransformOrCopy(classes, 1, 3)
         Assert.assertEquals(1, stats.boxStoreFieldsAdded)
         Assert.assertEquals(0, stats.toOnesFound)

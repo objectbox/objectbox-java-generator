@@ -1,6 +1,6 @@
 /*
  * ObjectBox Build Tools
- * Copyright (C) 2017-2024 ObjectBox Ltd.
+ * Copyright (C) 2017-2025 ObjectBox Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -26,9 +26,9 @@ import kotlin.reflect.KClass
 
 abstract class AbstractTransformTest {
     private val classDirs = arrayOf(
-            // See also: https://docs.gradle.org/4.0/release-notes.html#location-of-classes-in-the-build-directory
-            "build/classes/kotlin/testFixtures",
-            "objectbox-gradle-plugin/build/classes/kotlin/testFixtures",
+        // See also: https://docs.gradle.org/4.0/release-notes.html#location-of-classes-in-the-build-directory
+        "build/classes/kotlin/testFixtures",
+        "objectbox-gradle-plugin/build/classes/kotlin/testFixtures",
     )
     private val classDir = classDirs.map(::File).first { it.exists() }
 
@@ -47,8 +47,8 @@ abstract class AbstractTransformTest {
         return prober.probeClass(file, outDir)
     }
 
-    fun testTransformOrCopy(kClass: KClass<*>, expectedTransformed: Int, expectedCopied: Int)
-            = testTransformOrCopy(listOf(kClass), expectedTransformed, expectedCopied)
+    fun testTransformOrCopy(kClass: KClass<*>, expectedTransformed: Int, expectedCopied: Int) =
+        testTransformOrCopy(listOf(kClass), expectedTransformed, expectedCopied)
 
     fun testTransformOrCopy(kClasses: List<KClass<*>>, expectedTransformed: Int, expectedCopied: Int)
             : Pair<ClassTransformerStats, List<File>> {

@@ -1,6 +1,6 @@
 /*
  * ObjectBox Build Tools
- * Copyright (C) 2017-2024 ObjectBox Ltd.
+ * Copyright (C) 2017-2025 ObjectBox Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -47,8 +47,13 @@ class ClassProber {
 
                 // Cursor class
                 if (!classFile.isAbstract && ClassConst.cursorClass == classFile.superclass) {
-                    return ProbedClass(outDir = outDir, file = file,
-                            name = name, javaPackage = javaPackage, isCursor = true)
+                    return ProbedClass(
+                        outDir = outDir,
+                        file = file,
+                        name = name,
+                        javaPackage = javaPackage,
+                        isCursor = true
+                    )
                 }
 
                 // @Entity or @BaseEntity class
@@ -58,29 +63,29 @@ class ClassProber {
                 if (isEntity || isBaseEntity) {
                     @Suppress("UNCHECKED_CAST") val fields = classFile.fields as List<FieldInfo>
                     return ProbedClass(
-                            outDir = outDir,
-                            file = file,
-                            name = name,
-                            superClass = classFile.superclass,
-                            javaPackage = javaPackage,
-                            isEntity = isEntity,
-                            isBaseEntity = !isEntity,
-                            listFieldTypes = extractAllListTypes(fields),
-                            hasBoxStoreField = fields.any { it.name == ClassConst.boxStoreFieldName },
-                            hasToOneRef = hasClassRef(classFile, ClassConst.toOne, ClassConst.toOneDescriptor),
-                            hasToManyRef = hasClassRef(classFile, ClassConst.toMany, ClassConst.toManyDescriptor),
-                            interfaces = if (isEntity) classFile.interfaces.toList() else listOf()
-                    )
-                }
-
-                // non-@BaseEntity entity super class, EntityInfo class, any other class
-                return ProbedClass(
                         outDir = outDir,
                         file = file,
                         name = name,
                         superClass = classFile.superclass,
                         javaPackage = javaPackage,
-                        isEntityInfo = classFile.interfaces.any { it == ClassConst.entityInfo }
+                        isEntity = isEntity,
+                        isBaseEntity = !isEntity,
+                        listFieldTypes = extractAllListTypes(fields),
+                        hasBoxStoreField = fields.any { it.name == ClassConst.boxStoreFieldName },
+                        hasToOneRef = hasClassRef(classFile, ClassConst.toOne, ClassConst.toOneDescriptor),
+                        hasToManyRef = hasClassRef(classFile, ClassConst.toMany, ClassConst.toManyDescriptor),
+                        interfaces = if (isEntity) classFile.interfaces.toList() else listOf()
+                    )
+                }
+
+                // non-@BaseEntity entity super class, EntityInfo class, any other class
+                return ProbedClass(
+                    outDir = outDir,
+                    file = file,
+                    name = name,
+                    superClass = classFile.superclass,
+                    javaPackage = javaPackage,
+                    isEntityInfo = classFile.interfaces.any { it == ClassConst.entityInfo }
                 )
             }
         } catch (e: Exception) {
@@ -93,10 +98,11 @@ class ClassProber {
         return fields.mapNotNull {
             val targetClassType = it.exGetSingleGenericTypeArgumentOrNull()
             if (ClassConst.listDescriptor != it.descriptor
-                    || targetClassType == null
-                    || it.exIsTransient()
-                    || it.exGetAnnotation(ClassConst.transientAnnotationName) != null
-                    || it.exGetAnnotation(ClassConst.convertAnnotationName) != null) {
+                || targetClassType == null
+                || it.exIsTransient()
+                || it.exGetAnnotation(ClassConst.transientAnnotationName) != null
+                || it.exGetAnnotation(ClassConst.convertAnnotationName) != null
+            ) {
                 // exclude:
                 // - not List,
                 // - no target entity,

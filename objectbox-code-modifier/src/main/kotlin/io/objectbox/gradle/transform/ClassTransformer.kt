@@ -1,6 +1,6 @@
 /*
  * ObjectBox Build Tools
- * Copyright (C) 2017-2024 ObjectBox Ltd.
+ * Copyright (C) 2017-2025 ObjectBox Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -64,10 +64,11 @@ class ClassTransformer(private val debug: Boolean = false) {
         fun wasTransformed(probedClass: ProbedClass) = transformedClasses.contains(probedClass)
     }
 
-    private class RelationField(val ctField: CtField,
-                                val relationName: String,
-                                val relationType: String,
-                                val targetTypeSignature: SignatureAttribute.ClassType?
+    private class RelationField(
+        val ctField: CtField,
+        val relationName: String,
+        val relationType: String,
+        val targetTypeSignature: SignatureAttribute.ClassType?
     )
 
     fun transformOrCopyClasses(
@@ -133,9 +134,12 @@ class ClassTransformer(private val debug: Boolean = false) {
         if (ctClass != null) {
             // relations in entity super classes are (currently) not supported, see #104
             if (ctClass != ctClassEntity && probedClass.hasRelation(context.entityTypes)
-                    && (probedClass.isEntity || probedClass.isBaseEntity)) {
-                throw TransformException("Relations in an entity super class are not supported, but " +
-                        "'${ctClass.name}' is super of entity '${ctClassEntity.name}' and has relations")
+                && (probedClass.isEntity || probedClass.isBaseEntity)
+            ) {
+                throw TransformException(
+                    "Relations in an entity super class are not supported, but " +
+                            "'${ctClass.name}' is super of entity '${ctClassEntity.name}' and has relations"
+                )
             }
 
             if (ctClass == ctClassEntity || probedClass.isBaseEntity) {
@@ -177,15 +181,23 @@ class ClassTransformer(private val debug: Boolean = false) {
      * Transforms the given [ctClass] to ensure a BoxStore field exists and looks for relation fields and makes sure
      * they are initialized in constructors.
      */
-    private fun transformEntity(context: Context, ctClassEntity: CtClass, ctClass: CtClass, entityClass: ProbedClass): Boolean {
+    private fun transformEntity(
+        context: Context,
+        ctClassEntity: CtClass,
+        ctClass: CtClass,
+        entityClass: ProbedClass
+    ): Boolean {
         val hasRelations = entityClass.hasRelation(context.entityTypes)
         if (debug) log("Checking to transform \"${ctClass.name}\" (has relations: $hasRelations)")
         var changed = checkBoxStoreField(ctClass, context, hasRelations)
         if (hasRelations) {
-            val toOneFields = findRelationFields(context, ctClassEntity, ctClass, ClassConst.toOneDescriptor, ClassConst.toOne)
+            val toOneFields =
+                findRelationFields(context, ctClassEntity, ctClass, ClassConst.toOneDescriptor, ClassConst.toOne)
             context.stats.toOnesFound += toOneFields.size
-            val toManyFields = findRelationFields(context, ctClassEntity, ctClass, ClassConst.toManyDescriptor, ClassConst.toMany)
-            val listToEntityFields = findRelationFields(context, ctClassEntity, ctClass, ClassConst.listDescriptor, ClassConst.toMany)
+            val toManyFields =
+                findRelationFields(context, ctClassEntity, ctClass, ClassConst.toManyDescriptor, ClassConst.toMany)
+            val listToEntityFields =
+                findRelationFields(context, ctClassEntity, ctClass, ClassConst.listDescriptor, ClassConst.toMany)
             toManyFields += listToEntityFields
             context.stats.toManyFound += toManyFields.size
             if (transformConstructors(context, ctClassEntity, ctClass, toOneFields + toManyFields)) changed = true
@@ -263,8 +275,10 @@ class ClassTransformer(private val debug: Boolean = false) {
         val entityInfoCtClass = try {
             context.classPool.get(entityInfoClassName)
         } catch (e: NotFoundException) {
-            throw TransformException("Could not find generated class \"$entityInfoClassName\", " +
-                    "please ensure that ObjectBox class generation runs properly before")
+            throw TransformException(
+                "Could not find generated class \"$entityInfoClassName\", " +
+                        "please ensure that ObjectBox class generation runs properly before"
+            )
         }
         var name = field.name
         if (!entityInfoCtClass.fields.any { it.name == name }) {
@@ -276,8 +290,10 @@ class ClassTransformer(private val debug: Boolean = false) {
             if (name.endsWith(suffix)) {
                 val name2 = name.dropLast(suffix.length)
                 if (!entityInfoCtClass.fields.any { it.name == name2 }) {
-                    throw TransformException("Could not find RelationInfo element for relation field " +
-                            "\"${ctClass.name}.$name\" in generated class \"$entityInfoClassName\"")
+                    throw TransformException(
+                        "Could not find RelationInfo element for relation field " +
+                                "\"${ctClass.name}.$name\" in generated class \"$entityInfoClassName\""
+                    )
                 }
                 name = name2
             }
@@ -289,8 +305,10 @@ class ClassTransformer(private val debug: Boolean = false) {
      * Transforms constructors of [ctClass] that do not call other constructors to add initializers for relation fields,
      * if there are none, yet. If there are [relationFields] already initialized, prints a warning.
      */
-    private fun transformConstructors(context: Context, ctClassEntity: CtClass, ctClass: CtClass,
-                                      relationFields: List<RelationField>): Boolean {
+    private fun transformConstructors(
+        context: Context, ctClassEntity: CtClass, ctClass: CtClass,
+        relationFields: List<RelationField>
+    ): Boolean {
         var changed = false
         val initializedRelationFields = mutableSetOf<String>()
         for (constructor in ctClass.constructors) {
@@ -370,7 +388,7 @@ class ClassTransformer(private val debug: Boolean = false) {
             }
         } catch (e: Exception) {
             BasicBuildTracker("Transformer")
-                    .trackError("Could not define class for params (2): ${constructor.signature}")
+                .trackError("Could not define class for params (2): ${constructor.signature}")
         }
     }
 
@@ -410,12 +428,14 @@ class ClassTransformer(private val debug: Boolean = false) {
      * warns instead.
      */
     private fun transformCursor(ctClass: CtClass, outDir: File, classPool: ClassPool): Boolean {
-        val attachCtMethod = ctClass.declaredMethods?.singleOrNull { it.name == ClassConst.cursorAttachEntityMethodName }
+        val attachCtMethod =
+            ctClass.declaredMethods?.singleOrNull { it.name == ClassConst.cursorAttachEntityMethodName }
         if (attachCtMethod != null) {
             val signature = attachCtMethod.signature
             if (!signature.startsWith("(L") || !signature.endsWith(";)V") || signature.contains(',')) {
                 throw TransformException(
-                        "${ctClass.name} The signature of ${ClassConst.cursorAttachEntityMethodName} is not as expected, but was '$signature'.")
+                    "${ctClass.name} The signature of ${ClassConst.cursorAttachEntityMethodName} is not as expected, but was '$signature'."
+                )
             }
 
             val existingCode = attachCtMethod.methodInfo.codeAttribute.code
@@ -424,8 +444,10 @@ class ClassTransformer(private val debug: Boolean = false) {
             }
 
             if (attachCtMethod.assignsBoxStoreField()) {
-                log("${ctClass.name}.${ClassConst.cursorAttachEntityMethodName} assigns " +
-                        "${ClassConst.boxStoreFieldName}, make sure to read ${TextSnippet.URL_RELATIONS_INIT_MAGIC}.")
+                log(
+                    "${ctClass.name}.${ClassConst.cursorAttachEntityMethodName} assigns " +
+                            "${ClassConst.boxStoreFieldName}, make sure to read ${TextSnippet.URL_RELATIONS_INIT_MAGIC}."
+                )
                 return false // just copy, change nothing
             }
 

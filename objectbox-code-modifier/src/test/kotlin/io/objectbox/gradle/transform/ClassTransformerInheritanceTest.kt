@@ -1,6 +1,6 @@
 /*
  * ObjectBox Build Tools
- * Copyright (C) 2017-2024 ObjectBox Ltd.
+ * Copyright (C) 2017-2025 ObjectBox Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -45,9 +45,11 @@ class ClassTransformerInheritanceTest : AbstractTransformTest() {
         assertThrows(TransformException::class.java) {
             testTransformOrCopy(classes, 0, 0)
         }.also {
-            assertEquals("Relations in an entity super class are not supported," +
-                    " but 'io.objectbox.gradle.transform.EntityBaseWithRelations' is super of entity" +
-                    " 'io.objectbox.gradle.transform.EntityRelationsInSuperBase' and has relations", it.message)
+            assertEquals(
+                "Relations in an entity super class are not supported," +
+                        " but 'io.objectbox.gradle.transform.EntityBaseWithRelations' is super of entity" +
+                        " 'io.objectbox.gradle.transform.EntityRelationsInSuperBase' and has relations", it.message
+            )
         }
     }
 
@@ -58,9 +60,11 @@ class ClassTransformerInheritanceTest : AbstractTransformTest() {
         assertThrows(TransformException::class.java) {
             testTransformOrCopy(classes, 0, 0)
         }.also {
-            assertEquals("Relations in an entity super class are not supported," +
-                    " but 'io.objectbox.gradle.transform.EntitySub' is super of entity" +
-                    " 'io.objectbox.gradle.transform.EntityRelationsInSuperEntity' and has relations", it.message)
+            assertEquals(
+                "Relations in an entity super class are not supported," +
+                        " but 'io.objectbox.gradle.transform.EntitySub' is super of entity" +
+                        " 'io.objectbox.gradle.transform.EntityRelationsInSuperEntity' and has relations", it.message
+            )
         }
     }
 

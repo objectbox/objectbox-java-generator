@@ -1,6 +1,6 @@
 /*
  * ObjectBox Build Tools
- * Copyright (C) 2017-2024 ObjectBox Ltd.
+ * Copyright (C) 2017-2025 ObjectBox Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -60,6 +60,7 @@ open class BasicBuildTracker(
         // For all but the NoBuildProperties event a unique ID is generated and set,
         // so no point in setting the ip param (is better for privacy anyhow).
         const val BASE_URL = "https://api.mixpanel.com/track#live-event"
+
         // Note: the Gradle build script contains the checkAnalysisToken task that expects this file name.
         // So update the task if changing it.
         const val TOKEN_FILE = "analysis-token.txt"

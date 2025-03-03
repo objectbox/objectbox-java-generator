@@ -1,6 +1,6 @@
 /*
  * ObjectBox Build Tools
- * Copyright (C) 2022-2024 ObjectBox Ltd.
+ * Copyright (C) 2022-2025 ObjectBox Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -108,7 +108,10 @@ class ObjectBoxAsmClassVisitorTest {
     private fun transform(kClass: KClass<*>, classContext: ClassContext): ObjectBoxAsmClassVisitor {
         // Test classes are provided via a Gradle test fixture of objectbox-code-modifier,
         // look in the directory its files are compiled into.
-        val classFile = File("../objectbox-code-modifier/build/classes/kotlin/testFixtures", kClass.qualifiedName!!.replace(".", "/") + ".class")
+        val classFile = File(
+            "../objectbox-code-modifier/build/classes/kotlin/testFixtures",
+            kClass.qualifiedName!!.replace(".", "/") + ".class"
+        )
         val classReader = ClassReader(classFile.inputStream())
         val transformer = ObjectBoxAsmClassVisitor(Opcodes.ASM9, null, classContext, true)
         classReader.accept(transformer, 0)

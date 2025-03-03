@@ -1,6 +1,6 @@
 /*
  * ObjectBox Build Tools
- * Copyright (C) 2017-2024 ObjectBox Ltd.
+ * Copyright (C) 2017-2025 ObjectBox Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -113,8 +113,24 @@ class ClassProberTest : AbstractTransformTest() {
 
     @Test
     fun testProbedClassHasRelation() {
-        assertFalse(ProbedClass(File("."), File("."), "", "", listFieldTypes = listOf("Nope")).hasRelation(setOf("Yes")))
-        assertTrue(ProbedClass(File("."), File("."), "", "", listFieldTypes = listOf("Yes")).hasRelation(setOf("Yes")))
+        assertFalse(
+            ProbedClass(
+                outDir = File("."),
+                file = File("."),
+                name = "",
+                javaPackage = "",
+                listFieldTypes = listOf("Nope")
+            ).hasRelation(setOf("Yes"))
+        )
+        assertTrue(
+            ProbedClass(
+                outDir = File("."),
+                file = File("."),
+                name = "",
+                javaPackage = "",
+                listFieldTypes = listOf("Yes")
+            ).hasRelation(setOf("Yes"))
+        )
     }
 
 }

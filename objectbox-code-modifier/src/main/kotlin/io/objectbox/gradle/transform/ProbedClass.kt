@@ -1,6 +1,6 @@
 /*
  * ObjectBox Build Tools
- * Copyright (C) 2017-2024 ObjectBox Ltd.
+ * Copyright (C) 2017-2025 ObjectBox Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -27,32 +27,32 @@ import java.io.File
  * @see ClassTransformer
  */
 data class ProbedClass(
-        /**
-         * Directory to write the transformed class file into. Must be above the top-most package as subdirectories for
-         * packages are auto-created by the transformer.
-         * Background: Class files may have to be written to different directories (notably JavaCompile output dir is
-         * different from KotlinCompile output dir).
-         */
-        val outDir: File,
-        /** The file containing the byte-code for this class. */
-        val file: File,
-        val name: String,
-        val javaPackage: String,
-        val superClass: String? = null,
-        val isCursor: Boolean = false,
-        val isEntity: Boolean = false,
-        val isEntityInfo: Boolean = false,
-        val isBaseEntity: Boolean = false,
-        /**
-         * Fully qualified names (dot notation) of type arguments of all (non-transient) List fields of this class.
-         * Used to find List fields that are relations, see [hasRelation].
-         */
-        val listFieldTypes: List<String> = emptyList(),
-        val hasToOneRef: Boolean = false,
-        val hasToManyRef: Boolean = false,
-        val hasBoxStoreField: Boolean = false,
-        val interfaces: List<String> = listOf()
+    /**
+     * Directory to write the transformed class file into. Must be above the top-most package as subdirectories for
+     * packages are auto-created by the transformer.
+     * Background: Class files may have to be written to different directories (notably JavaCompile output dir is
+     * different from KotlinCompile output dir).
+     */
+    val outDir: File,
+    /** The file containing the byte-code for this class. */
+    val file: File,
+    val name: String,
+    val javaPackage: String,
+    val superClass: String? = null,
+    val isCursor: Boolean = false,
+    val isEntity: Boolean = false,
+    val isEntityInfo: Boolean = false,
+    val isBaseEntity: Boolean = false,
+    /**
+     * Fully qualified names (dot notation) of type arguments of all (non-transient) List fields of this class.
+     * Used to find List fields that are relations, see [hasRelation].
+     */
+    val listFieldTypes: List<String> = emptyList(),
+    val hasToOneRef: Boolean = false,
+    val hasToManyRef: Boolean = false,
+    val hasBoxStoreField: Boolean = false,
+    val interfaces: List<String> = listOf()
 ) {
-    fun hasRelation(entityTypes: Set<String>): Boolean
-            = hasToOneRef || hasToManyRef || listFieldTypes.any { entityTypes.contains(it) }
+    fun hasRelation(entityTypes: Set<String>): Boolean =
+        hasToOneRef || hasToManyRef || listFieldTypes.any { entityTypes.contains(it) }
 }
