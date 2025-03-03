@@ -1,6 +1,6 @@
 /*
  * ObjectBox Build Tools
- * Copyright (C) 2017-2024 ObjectBox Ltd.
+ * Copyright (C) 2017-2025 ObjectBox Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -42,6 +42,7 @@ class ProjectEnv(val project: Project) {
     val hasAndroidPlugin = project.plugins.hasPlugin("com.android.base")
     val hasKotlinAndroidPlugin = project.plugins.hasPlugin("kotlin-android")
     val hasKotlinPlugin = project.plugins.hasPlugin("kotlin")
+
     // The Java Library and Java Application plugin,
     // as well as the Kotlin JVM and Android plugin also apply the Java plugin.
     val hasJavaPlugin = project.plugins.hasPlugin(JavaPlugin::class.java)

@@ -1,6 +1,6 @@
 /*
  * ObjectBox Build Tools
- * Copyright (C) 2017-2024 ObjectBox Ltd.
+ * Copyright (C) 2017-2025 ObjectBox Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -54,8 +54,10 @@ class PluginIntegrationTest {
 //        buildTestProject("kotlin-android", args, "io/objectbox/test/kotlin", "kapt/release/", true)
 //    }
 
-    private fun buildTestProject(name: String, args: List<String>, expectedPackageDir: String, genDirPath: String,
-                         generateBuildFile: Boolean = false) {
+    private fun buildTestProject(
+        name: String, args: List<String>, expectedPackageDir: String, genDirPath: String,
+        generateBuildFile: Boolean = false
+    ) {
         var dir = File("test-gradle-projects/$name")
         if (!dir.exists()) {
             dir = File("objectbox-gradle-plugin/test-gradle-projects/$name")
@@ -81,7 +83,8 @@ class PluginIntegrationTest {
             val buildFile = File(dir, "build.gradle")
             val buildFileTemplate = File(dir, "build.gradle.template")
             buildFile.delete()
-            buildFile.appendText("""buildscript {
+            buildFile.appendText(
+                """buildscript {
     repositories {
         mavenLocal()
         mavenCentral()
@@ -89,20 +92,21 @@ class PluginIntegrationTest {
     dependencies {
         classpath files($classpathString)
     }
-}""")
+}"""
+            )
             buildFile.appendText(buildFileTemplate.readText())
         }
 
         val result = GradleRunner.create()
-                .withProjectDir(dir)
-                // to do: Make this work some time
-//                .withPluginClasspath()
-                .withPluginClasspath(classpath)
-                // Note: args must be passed all at once, or they will overwrite each other
-                .withArguments(args)
-                .forwardOutput()
-                .withDebug(true)
-                .build()
+            .withProjectDir(dir)
+            // to do: Make this work some time
+//          .withPluginClasspath()
+            .withPluginClasspath(classpath)
+            // Note: args must be passed all at once, or they will overwrite each other
+            .withArguments(args)
+            .forwardOutput()
+            .withDebug(true)
+            .build()
 
         assertNotNull(result)
 

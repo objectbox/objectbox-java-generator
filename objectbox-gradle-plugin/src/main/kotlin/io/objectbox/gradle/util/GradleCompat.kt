@@ -1,6 +1,6 @@
 /*
  * ObjectBox Build Tools
- * Copyright (C) 2019-2024 ObjectBox Ltd.
+ * Copyright (C) 2019-2025 ObjectBox Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -38,6 +38,7 @@ abstract class GradleCompat {
             GradleVersion.current() >= GradleVersion.version("7.0") -> {
                 GradleLegacy()
             }
+
             else -> {
                 error("Gradle 7.0 or newer is required.")
             }

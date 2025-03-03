@@ -1,6 +1,6 @@
 /*
  * ObjectBox Build Tools
- * Copyright (C) 2022-2024 ObjectBox Ltd.
+ * Copyright (C) 2022-2025 ObjectBox Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -141,13 +141,15 @@ open class PluginApplyJavaTest : PluginApplyTest() {
         assertNotNull(transformTask)
 
         // Depends on compile task of source set.
-        assertEquals(1, transformTask!!
-            .taskDependencies.getDependencies(transformTask).count { it.name == "compile${sourceSetSuffix}Java" })
+        assertEquals(
+            1, transformTask!!
+                .taskDependencies.getDependencies(transformTask).count { it.name == "compile${sourceSetSuffix}Java" })
 
         // Classes task of source set should depend on it.
         val classesTask = project.tasks.getByName(classesTaskName)
-        assertEquals(1, classesTask
-            .taskDependencies.getDependencies(classesTask).count { it.name == transformTask.name })
+        assertEquals(
+            1, classesTask
+                .taskDependencies.getDependencies(classesTask).count { it.name == transformTask.name })
     }
 
     @Test

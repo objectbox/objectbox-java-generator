@@ -1,6 +1,6 @@
 /*
  * ObjectBox Build Tools
- * Copyright (C) 2017-2024 ObjectBox Ltd.
+ * Copyright (C) 2017-2025 ObjectBox Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -156,15 +156,18 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
                 // Kotlin (Android + Desktop).
                 project.addDep("kapt", processorDep)
             }
+
             project.hasConfig("annotationProcessor") -> {
                 // Android (Java), also Java Desktop with Gradle 5.0 (best as of 5.2) uses annotationProcessor.
                 project.addDep("annotationProcessor", processorDep)
             }
+
             project.hasConfig("apt") -> {
                 // https://bitbucket.org/hvisser/android-apt or custom apt
                 // https://docs.gradle.org/current/userguide/java_plugin.html#sec:java_compile_avoidance
                 project.addDep("apt", processorDep)
             }
+
             else -> {
                 project.logger.warn(
                     "ObjectBox: Could not add dependency on objectbox-processor, " +
