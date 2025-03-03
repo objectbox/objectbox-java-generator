@@ -70,7 +70,7 @@ class IndexTest : BaseProcessorTest() {
                 addSourceFile(
                     fullyQualifiedName = "com.example.IndexUnsupported",
                     source =
-                    """
+                        """
                     package com.example;
             
                     import io.objectbox.annotation.Entity;
@@ -141,7 +141,7 @@ class IndexTest : BaseProcessorTest() {
                 addSourceFile(
                     fullyQualifiedName = "com.example.IndexHashNotSupported",
                     source =
-                    """
+                        """
                     package com.example;
 
                     import io.objectbox.annotation.Entity;
@@ -198,7 +198,7 @@ class IndexTest : BaseProcessorTest() {
                 addSourceFile(
                     fullyQualifiedName = "com.example.IndexHash64NotSupported",
                     source =
-                    """
+                        """
                     package com.example;
 
                     import io.objectbox.annotation.Entity;

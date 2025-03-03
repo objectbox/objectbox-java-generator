@@ -313,7 +313,7 @@ class InheritanceTest : BaseProcessorTest() {
                 addSourceFile(
                     fullyQualifiedName = "com.example.ExampleImpl",
                     source =
-                    """
+                        """
                     package com.example;
                     import io.objectbox.annotation.Entity;
                     import io.objectbox.annotation.Id;

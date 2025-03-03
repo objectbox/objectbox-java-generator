@@ -65,9 +65,11 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         const val OPTION_DAO_PACKAGE: String = "objectbox.daoPackage"
         const val OPTION_FLATBUFFERS_SCHEMA_FOLDER: String = "objectbox.flatbuffersSchemaFolder"
         const val OPTION_DEBUG: String = "objectbox.debug"
+
         /** Set by ObjectBox plugin */
         const val OPTION_TRANSFORMATION_ENABLED: String = "objectbox.transformationEnabled"
         const val OPTION_ALLOW_NUMBERED_CONSTRUCTOR_ARGS: String = "objectbox.allowNumberedConstructorArgs"
+
         /**
          * Set to false to turn off support for incremental processing.
          */
@@ -89,7 +91,8 @@ open class ObjectBoxProcessor : AbstractProcessor() {
                     val indexDot1 = first.indexOf('.', indexSub)
                     val indexDot2 = second.indexOf('.', indexSub)
                     if (indexDot1 == -1 || indexDot2 != indexDot1
-                            || first.substring(indexSub, indexDot1) != second.substring(indexSub, indexDot1)) {
+                        || first.substring(indexSub, indexDot1) != second.substring(indexSub, indexDot1)
+                    ) {
                         return if (second.startsWith(first)) {
                             first // Check for full match separately at the end (last part has no trailing dot)
                         } else if (commonDotCount >= 2) {
@@ -123,7 +126,8 @@ open class ObjectBoxProcessor : AbstractProcessor() {
     private var allowNumberedConstructorArgs: Boolean = false
     private var incremental = true
 
-    @Synchronized override fun init(env: ProcessingEnvironment) {
+    @Synchronized
+    override fun init(env: ProcessingEnvironment) {
         super.init(env)
 
         elementUtils = env.elementUtils
@@ -143,7 +147,8 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         incremental = "false" != options[OPTION_INCREMENTAL] // Default true (opt-out).
 
         messages = Messages(env.messager, debug)
-        messages.debug("""Starting processor
+        messages.debug(
+            """Starting processor
             modelPath=$customModelPath
             myObjectBoxPackage=$customDefaultPackage
             daoCompat=$daoCompat
@@ -151,7 +156,8 @@ open class ObjectBoxProcessor : AbstractProcessor() {
             flatbuffersSchemaFolder=$flatbuffersSchemaPath
             transformationEnabled=$transformationEnabled
             allowNumberedConstructorArgs=$allowNumberedConstructorArgs
-            incremental=$incremental""")
+            incremental=$incremental"""
+        )
     }
 
     override fun getSupportedAnnotationTypes(): Set<String> {
@@ -286,12 +292,12 @@ open class ObjectBoxProcessor : AbstractProcessor() {
             propertyCount += entity.properties?.size ?: 0
         }
         BasicBuildTracker("Processor").trackStats(
-                daoCompat = daoCompat,
-                completed = completed,
-                entityCount = schema.entities.size,
-                propertyCount = propertyCount,
-                toManyCount = toManyCount,
-                toOneCount = toOneCount
+            daoCompat = daoCompat,
+            completed = completed,
+            entityCount = schema.entities.size,
+            propertyCount = propertyCount,
+            toManyCount = toManyCount,
+            toOneCount = toOneCount
         )
     }
 
@@ -339,8 +345,10 @@ open class ObjectBoxProcessor : AbstractProcessor() {
 
         // if not added automatically and relations are used, ensure there is a box store field
         if (!transformationEnabled && relations.hasRelations(entityModel) && !entityModel.hasBoxStoreField) {
-            messages.error("To use relations in '${entityModel.className}' " +
-                    "add a field '__boxStore' of type 'BoxStore'.", entity)
+            messages.error(
+                "To use relations in '${entityModel.className}' " +
+                        "add a field '__boxStore' of type 'BoxStore'.", entity
+            )
         }
 
         // Add or verify target ID reference properties for to-one relations.
@@ -355,7 +363,10 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         // even without a no-arg constructor.
         // https://github.com/objectbox/objectbox-java/issues/900
         if (!entityModel.hasAllArgsConstructor() && !entity.hasNoArgConstructor()) {
-            messages.error("No-argument or all-properties constructor is required for @Entity class. https://docs.objectbox.io/getting-started#define-entity-classes", entity)
+            messages.error(
+                "No-argument or all-properties constructor is required for @Entity class. https://docs.objectbox.io/getting-started#define-entity-classes",
+                entity
+            )
         }
     }
 
@@ -420,8 +431,9 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         val entityInheritanceChain = mutableListOf(entityElement)
         // ...and its super classes that are annotated.
         if (findAnnotatedSuperElements(annotatedElements, entityInheritanceChain, entityElement.asType())) {
-            if (debug) messages.debug("Detected entity inheritance chain: " +
-                    entityInheritanceChain.joinToString(separator = "->") { it.simpleName })
+            if (debug) messages.debug(
+                "Detected entity inheritance chain: " +
+                        entityInheritanceChain.joinToString(separator = "->") { it.simpleName })
         }
 
         // Reverse inheritance chain to parse properties starting with the super-most element in the chain
@@ -486,8 +498,10 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         return false
     }
 
-    private fun parametersMatchProperties(parameters: MutableList<out VariableElement>,
-                                          properties: MutableList<Property>): Boolean {
+    private fun parametersMatchProperties(
+        parameters: MutableList<out VariableElement>,
+        properties: MutableList<Property>
+    ): Boolean {
         val typeHelper = TypeHelper(elementUtils, typeUtils)
         for ((idx, param) in parameters.withIndex()) {
             val property = properties[idx]
@@ -499,11 +513,15 @@ open class ObjectBoxProcessor : AbstractProcessor() {
                     // note: Kotlin generates Java 6 bytecode and may not generate parameter names for any methods.
                     // Java 6 bytecode parameters are named arg0 to argn.
                     if (altName == param.simpleName.toString()) {
-                        if (debug) messages.debug("Constructor param name alternative accepted: " +
-                                "$altName for ${parsedElement.simpleName}")
+                        if (debug) messages.debug(
+                            "Constructor param name alternative accepted: " +
+                                    "$altName for ${parsedElement.simpleName}"
+                        )
                     } else {
-                        if (debug) messages.debug("Constructor param name differs: " +
-                                "${param.simpleName} vs. ${parsedElement.simpleName} ($altName)")
+                        if (debug) messages.debug(
+                            "Constructor param name differs: " +
+                                    "${param.simpleName} vs. ${parsedElement.simpleName} ($altName)"
+                        )
                         return false
                     }
                 }
@@ -548,8 +566,10 @@ open class ObjectBoxProcessor : AbstractProcessor() {
                 val projectRoot = findProjectRoot(filer)
                 File(projectRoot, "objectbox-models/default.json")
             } catch (e: FileNotFoundException) {
-                messages.error("Could not find project root to create model file in. " +
-                        "Add absolute path to model file with processor option '$OPTION_MODEL_PATH'. (${e.message})")
+                messages.error(
+                    "Could not find project root to create model file in. " +
+                            "Add absolute path to model file with processor option '$OPTION_MODEL_PATH'. (${e.message})"
+                )
                 return false
             }
         } else {
@@ -560,13 +580,17 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         if (!modelFolder.isDirectory) {
             if (useDefaultPath) {
                 if (!modelFolder.mkdirs()) {
-                    messages.error("Could not create default model folder at '${modelFolder.absolutePath}'. " +
-                            "Add absolute path to model file with processor option '$OPTION_MODEL_PATH'.")
+                    messages.error(
+                        "Could not create default model folder at '${modelFolder.absolutePath}'. " +
+                                "Add absolute path to model file with processor option '$OPTION_MODEL_PATH'."
+                    )
                     return false
                 }
             } else {
-                messages.error("The model folder does not exist at '${modelFolder.absolutePath}'" +
-                        " (based on the option $OPTION_MODEL_PATH='$customModelPath').")
+                messages.error(
+                    "The model folder does not exist at '${modelFolder.absolutePath}'" +
+                            " (based on the option $OPTION_MODEL_PATH='$customModelPath')."
+                )
                 return false
             }
         }

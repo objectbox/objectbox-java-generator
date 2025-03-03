@@ -95,7 +95,8 @@ class Properties(
         // ignore static, transient or @Transient fields
         val modifiers = field.modifiers
         if (modifiers.contains(Modifier.STATIC) || modifiers.contains(Modifier.TRANSIENT)
-                || field.hasAnnotation(Transient::class.java)) {
+            || field.hasAnnotation(Transient::class.java)
+        ) {
             return
         }
 
@@ -142,7 +143,10 @@ class Properties(
         val hasIndex = field.hasAnnotation(Index::class.java)
         if (hasIndex || field.hasAnnotation(Unique::class.java)) {
             val annotationName = if (hasIndex) "Index" else "Unique"
-            messages.error("@$annotationName can not be used with a $relationType relation, remove @$annotationName.", field)
+            messages.error(
+                "@$annotationName can not be used with a $relationType relation, remove @$annotationName.",
+                field
+            )
         }
     }
 
@@ -152,10 +156,12 @@ class Properties(
             field.hasAnnotation(DefaultValue::class.java) -> {
                 defaultValuePropertyBuilderOrNull(field)
             }
+
             field.hasAnnotation(Convert::class.java) -> {
                 // verify @Convert custom type
                 customPropertyBuilderOrNull(field)
             }
+
             else -> {
                 // Is it a type directly supported by the database?
                 val propertyType = typeHelper.getPropertyType(field.asType())
@@ -204,7 +210,8 @@ class Properties(
             } else {
                 // Only Date or DateNano are supported.
                 if (propertyBuilder.property.propertyType != PropertyType.Date
-                    && propertyBuilder.property.propertyType != PropertyType.DateNano) {
+                    && propertyBuilder.property.propertyType != PropertyType.DateNano
+                ) {
                     messages.error(
                         "@IdCompanion has to be of type Date or a long annotated with @Type(DateNano).",
                         field
@@ -269,8 +276,10 @@ class Properties(
         }
     }
 
-    private fun parseIndexAndUniqueAnnotations(field: VariableElement, propertyBuilder: Property.PropertyBuilder,
-            hasIdAnnotation: Boolean) {
+    private fun parseIndexAndUniqueAnnotations(
+        field: VariableElement, propertyBuilder: Property.PropertyBuilder,
+        hasIdAnnotation: Boolean
+    ) {
         val indexAnnotation = field.getAnnotation(Index::class.java)
         val uniqueAnnotation = field.getAnnotation(Unique::class.java)
         if (indexAnnotation == null && uniqueAnnotation == null) {
@@ -280,7 +289,7 @@ class Properties(
         // determine index type
         val propertyType = propertyBuilder.property.propertyType
         val supportsHashIndex = propertyType == PropertyType.String
-                // || propertyType == PropertyType.ByteArray // Not yet supported for byte[]
+        // || propertyType == PropertyType.ByteArray // Not yet supported for byte[]
         val indexType = indexAnnotation?.type ?: IndexType.DEFAULT
 
         // error if HASH or HASH64 is not supported by property type
@@ -359,6 +368,7 @@ class Properties(
 
                 return builder
             }
+
             else -> {
                 messages.error("Only @DefaultValue(\"\") is supported.", field)
                 return null
@@ -445,6 +455,7 @@ class Properties(
                         null
                     }
                 }
+
                 else -> {
                     messages.error("@Type does not support the given type.", field)
                     null
@@ -500,8 +511,10 @@ class Properties(
             return builder
         }
 
-        messages.error("Field type \"$fieldType\" is not supported. Consider making the target an @Entity, " +
-                "or using @Convert or @Transient on the field (see docs).", field)
+        messages.error(
+            "Field type \"$fieldType\" is not supported. Consider making the target an @Entity, " +
+                    "or using @Convert or @Transient on the field (see docs).", field
+        )
         return null
     }
 
@@ -583,7 +596,10 @@ class Properties(
         // Java: 'isProperty' for booleans (JavaBeans spec).
         if (property.propertyType == PropertyType.Boolean) {
             methods.find {
-                it.simpleName.toString() == "is$propertyNameCapitalized" && typeUtils.isSameType(it.returnType, fieldType)
+                it.simpleName.toString() == "is$propertyNameCapitalized" && typeUtils.isSameType(
+                    it.returnType,
+                    fieldType
+                )
             }?.let {
                 return it.simpleName.toString() // Getter is called 'isPropertyName'.
             }

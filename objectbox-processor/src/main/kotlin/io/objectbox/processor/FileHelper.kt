@@ -42,8 +42,10 @@ import javax.tools.StandardLocation
 fun findProjectRoot(filer: Filer): File {
     val fileProbe: FileObject
     try {
-        fileProbe = filer.createResource(StandardLocation.SOURCE_OUTPUT, "",
-                "objectbox-probe" + System.currentTimeMillis())
+        fileProbe = filer.createResource(
+            StandardLocation.SOURCE_OUTPUT, "",
+            "objectbox-probe" + System.currentTimeMillis()
+        )
     } catch (e: IOException) {
         throw FileNotFoundException("probe failed: ${e.message}")
     }
@@ -88,7 +90,6 @@ fun findProjectRoot(filer: Filer): File {
         }
     }
 
-    return buildDir?.parentFile ?:
-            buildDirWithoutConfigFile?.parentFile ?:
-            throw FileNotFoundException("Could not determine build folder from $filePathProbe")
+    return buildDir?.parentFile ?: buildDirWithoutConfigFile?.parentFile
+    ?: throw FileNotFoundException("Could not determine build folder from $filePathProbe")
 }

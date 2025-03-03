@@ -72,7 +72,7 @@ class ConvertTest : BaseProcessorTest() {
             .compile()
             .assertThatIt {
                 succeededWithoutWarnings()
-                
+
                 @Language("Java")
                 val expectedCursor =
                     """
