@@ -1,0 +1,45 @@
+{
+  "_note1": "KEEP THIS FILE! Check it into a version control system (VCS) like git.",
+  "_note2": "ObjectBox manages crucial IDs for your object model. See docs for details.",
+  "_note3": "If you have VCS merge conflicts, you must resolve them according to ObjectBox docs.",
+  "entities": [
+    {
+      "id": "1:7367374710730783876",
+      "lastPropertyId": "1:4812746380227816069",
+      "name": "MongoEntity",
+      "properties": [
+        {
+          "id": "1:4812746380227816069",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        }
+      ],
+      "relations": [
+        {
+          "id": "1:6965793985203435547",
+          "name": "mongoIdEntities",
+          "externalType": 124,
+          "targetId": "1:7367374710730783876"
+        },
+        {
+          "id": "2:7702572643150505707",
+          "name": "uuidEntities",
+          "externalType": 118,
+          "targetId": "1:7367374710730783876"
+        }
+      ]
+    }
+  ],
+  "lastEntityId": "1:7367374710730783876",
+  "lastIndexId": "0:0",
+  "lastRelationId": "2:7702572643150505707",
+  "lastSequenceId": "0:0",
+  "modelVersion": 5,
+  "modelVersionParserMinimum": 5,
+  "retiredEntityUids": [],
+  "retiredIndexUids": [],
+  "retiredPropertyUids": [],
+  "retiredRelationUids": [],
+  "version": 1
+}

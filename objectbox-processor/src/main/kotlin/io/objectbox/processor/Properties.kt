@@ -1,6 +1,6 @@
 /*
  * ObjectBox Build Tools
- * Copyright (C) 2017-2024 ObjectBox Ltd.
+ * Copyright (C) 2017-2025 ObjectBox Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -22,6 +22,7 @@ import io.objectbox.annotation.ConflictStrategy
 import io.objectbox.annotation.Convert
 import io.objectbox.annotation.DatabaseType
 import io.objectbox.annotation.DefaultValue
+import io.objectbox.annotation.ExternalType
 import io.objectbox.annotation.HnswIndex
 import io.objectbox.annotation.Id
 import io.objectbox.annotation.IdCompanion
@@ -245,6 +246,9 @@ class Properties(
             }
         }
 
+        // @ExternalType
+        parseExternalTypeAnnotation(field, propertyBuilder)
+
         // @Index, @Unique
         parseIndexAndUniqueAnnotations(field, propertyBuilder, hasIdAnnotation)
 
@@ -261,6 +265,15 @@ class Properties(
             val uid = if (uidAnnotation.value == 0L) -1 else uidAnnotation.value
             propertyBuilder.modelId(IdUid(0, uid))
         }
+    }
+
+    private fun parseExternalTypeAnnotation(field: VariableElement, propertyBuilder: Property.PropertyBuilder) {
+        val externalTypeAnnotation = field.getAnnotation(ExternalType::class.java) ?: return
+
+        // Note: not validating the external type is allowed for the property type here. Instead, let the database do
+        // it at runtime as this can be complex. And we don't want to maintain checks in multiple places.
+
+        propertyBuilder.externalType(externalTypeAnnotation.value)
     }
 
     private fun parseHnswIndexAnnotation(field: VariableElement, propertyBuilder: Property.PropertyBuilder) {

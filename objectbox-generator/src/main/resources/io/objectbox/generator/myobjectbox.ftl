@@ -88,15 +88,23 @@ public class MyObjectBox {
                 .flags(${propertyFlags?join(" | ")})</#if><#--
         --><#if property.index?? && (property.index.maxValueLength > 0)>.indexMaxValueLength(${property.index.maxValueLength?c})</#if><#--
         --><#if property.modelIndexId??>.indexId(${property.modelIndexId.id?c}, ${property.modelIndexId.uid?c}L)</#if><#--
+        --><#if property.externalTypeExpression??>
+
+                ${property.externalTypeExpression}</#if><#--
         --><#if property.hasHnswParams()>
 
                 ${property.hnswParamsExpression}</#if>;
     </#list>
+    <#-- Standalone ToMany relations (see condition which filters below) -->
     <#if entity.toManyRelations?size != 0>
 
     <#list entity.toManyRelations as toMany>
+        <#-- Filter by ToManyStandalone (only it has a modelId getter) -->
         <#if toMany.modelId??>
-        entityBuilder.relation("${toMany.dbName}", ${toMany.modelId.id?c}, ${toMany.modelId.uid?c}L, ${toMany.targetEntity.modelId?c}, ${toMany.targetEntity.modelUid?c}L);
+        entityBuilder.relation("${toMany.dbName}", ${toMany.modelId.id?c}, ${toMany.modelId.uid?c}L, ${toMany.targetEntity.modelId?c}, ${toMany.targetEntity.modelUid?c}L)<#--
+        --><#if toMany.externalTypeExpression??>
+
+                ${toMany.externalTypeExpression}</#if>;
         </#if>
     </#list>
     </#if>

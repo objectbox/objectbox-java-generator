@@ -99,6 +99,7 @@ data class Property(
     val name: String,
     val indexId: IdUid?,
     val type: Int?,
+    val externalType: Int?,
     val flags: Int?,
     val relationTarget: String?
 ) : HasIdUid
@@ -107,6 +108,6 @@ data class Property(
 data class Relation(
     override val id: IdUid = IdUid(),
     val name: String,
+    val externalType: Int?,
     val targetId: IdUid?
 ) : HasIdUid
-

@@ -23,6 +23,7 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import io.objectbox.annotation.ExternalPropertyType;
 import io.objectbox.annotation.HnswIndex;
 import io.objectbox.generator.IdUid;
 import io.objectbox.generator.TextUtil;
@@ -45,6 +46,17 @@ public class Property implements HasParsedElement {
 
         public PropertyBuilder dbType(String dbType) {
             property.dbType = dbType;
+            return this;
+        }
+
+        /**
+         * Sets an external type for this property.
+         *
+         * @param externalType One of the {@link ExternalPropertyType} enums.
+         */
+        public PropertyBuilder externalType(ExternalPropertyType externalType) {
+            property.externalTypeId = ExternalPropertyTypeMapper.toId(externalType);
+            property.externalTypeExpression = ExternalPropertyTypeMapper.toExpression(externalType);
             return this;
         }
 
@@ -205,6 +217,11 @@ public class Property implements HasParsedElement {
     private String dbType;
     private Short dbTypeId;
 
+    @Nullable
+    private Short externalTypeId;
+    @Nullable
+    private String externalTypeExpression;
+
     private String customType;
     private String customTypeClassName;
     private String converter;
@@ -296,6 +313,22 @@ public class Property implements HasParsedElement {
      */
     public Short getDbTypeId() {
         return dbTypeId;
+    }
+
+    /**
+     * See {@link ExternalPropertyTypeMapper#toId(ExternalPropertyType)}.
+     */
+    @Nullable
+    public Short getExternalTypeId() {
+        return externalTypeId;
+    }
+
+    /**
+     * See {@link ExternalPropertyTypeMapper#toExpression(ExternalPropertyType)}.
+     */
+    @Nullable
+    public String getExternalTypeExpression() {
+        return externalTypeExpression;
     }
 
     /**

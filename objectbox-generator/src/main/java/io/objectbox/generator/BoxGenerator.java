@@ -1,6 +1,6 @@
 /*
  * ObjectBox Build Tools
- * Copyright (C) 2017-2024 ObjectBox Ltd.
+ * Copyright (C) 2017-2025 ObjectBox Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -34,6 +34,7 @@ import io.objectbox.generator.model.Entity;
 import io.objectbox.generator.model.Property;
 import io.objectbox.generator.model.Schema;
 import io.objectbox.generator.model.ToManyBase;
+import io.objectbox.generator.model.ToManyStandalone;
 import io.objectbox.generator.model.ToOne;
 
 /**
@@ -145,7 +146,11 @@ public class BoxGenerator {
         imports.add("io.objectbox.ModelBuilder.EntityBuilder");
         imports.add("io.objectbox.model.PropertyFlags");
         imports.add("io.objectbox.model.PropertyType");
-        // Most projects won't use HNSW params, so only import classes if necessary
+        // External types are optional, so only import classes if necessary
+        if (hasExternalTypes(schema)) {
+            imports.add("io.objectbox.model.ExternalPropertyType");
+        }
+        // HNSW params are optional, so only import classes if necessary
         if (hasHnswParams(schema)) {
             imports.add("io.objectbox.model.HnswFlags");
             imports.add("io.objectbox.model.HnswDistanceType");
@@ -166,6 +171,27 @@ public class BoxGenerator {
         Map<String, Object> extras = new HashMap<>();
         extras.put("imports", imports);
         return extras;
+    }
+
+    /**
+     * Returns if at least one property or standalone to-many relation has an external type.
+     *
+     * @param schema the schema to search.
+     * @return {@code true} if at least one property or standalone to-many relation with a non-null
+     * {@link Property#getExternalTypeExpression()} or {@link ToManyStandalone#getExternalTypeExpression()} exists.
+     */
+    private boolean hasExternalTypes(Schema schema) {
+        for (Entity entity : schema.getEntities()) {
+            for (Property property : entity.getProperties()) {
+                if (property.getExternalTypeExpression() != null) return true;
+            }
+            for (ToManyBase toManyBase : entity.getToManyRelations()) {
+                if (toManyBase instanceof ToManyStandalone) {
+                    if (((ToManyStandalone) toManyBase).getExternalTypeExpression() != null) return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**
