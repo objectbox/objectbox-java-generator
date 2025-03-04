@@ -8,6 +8,47 @@ plugins {
 }
 
 buildscript {
+    val versionNumber = "4.2.0" // Without "-SNAPSHOT", e.g. "2.5.0" or "2.4.0-RC".
+    val isRelease = true        // WARNING: only set true to publish a release on publish branch!
+                                // See the release checklist for details.
+                                // Makes this produce release artifacts, changes dependencies to release versions.
+
+    val libsRelease = isRelease // e.g. diverge if plugin is still SNAPSHOT, but libs are already final
+    val libsVersion = versionNumber + (if (libsRelease) "" else "-dev-SNAPSHOT")
+    val libsSyncVersion = versionNumber + (if (libsRelease) "" else "-sync-SNAPSHOT")
+
+    // If not releasing, produce snapshot artifacts and add the branch name to the version string
+    // (passed in by CI through the versionPostFix property).
+    val versionPostFix = if (isRelease) {
+        ""
+    } else if (project.hasProperty("versionPostFix")) {
+        "-${project.property("versionPostFix")}-SNAPSHOT"
+    } else {
+        "-dev-SNAPSHOT"
+    }
+
+    val objectboxPluginVersion by extra(versionNumber + versionPostFix) // Artifact versions of this project.
+    val objectboxJavaVersion by extra(libsVersion) // Java library used by sub-projects.
+    val appliesObxJavaVersion by extra(libsVersion) // Java library added to projects applying the plugin.
+    val appliesObxJniLibVersion by extra(libsVersion) // Native library added to projects applying the ObjectBoxGradlePlugin.
+    val appliesObxSyncJniLibVersion by extra(libsSyncVersion) // Native library added to projects applying the ObjectBoxSyncGradlePlugin.
+
+    println("version=$objectboxPluginVersion")
+    println("objectboxJavaVersion=$objectboxJavaVersion")
+    println("appliesObxJavaVersion=$appliesObxJavaVersion")
+    println("ObjectBoxGradlePlugin:")
+    println("  appliesObxJniLibVersion=$appliesObxJniLibVersion")
+    println("ObjectBoxSyncGradlePlugin:")
+    println("  appliesObxSyncJniLibVersion=$appliesObxSyncJniLibVersion\n")
+
+    // To avoid duplicate release artifacts on the internal repository,
+    // prevent uploading from branches other than publish, and main (for which uploading is turned off).
+    val isCI = System.getenv("CI") == "true"
+    val branchOrTag = System.getenv("CI_COMMIT_REF_NAME")
+    if (isCI && isRelease && !("publish" == branchOrTag || "main" == branchOrTag)) {
+        throw GradleException("isRelease = true is only allowed on branch publish or main")
+    }
+
     // Note: Gradle runs plugins at the Kotlin language level that Gradle version supports using the Kotlin library it
     // embeds, regardless of what Kotlin library the plugin depends on.
     // https://github.com/gradle/gradle/issues/16345#issuecomment-931437640
@@ -37,37 +78,6 @@ buildscript {
     // okio 3.0.0+ requires Kotlin 1.5
     val okioVersion by extra("2.10.0") // https://github.com/square/okio/blob/master/CHANGELOG.md
 
-    // Typically, only edit those two:
-    val versionNumber = "4.1.1" // Without "-SNAPSHOT", e.g. "2.5.0" or "2.4.0-RC".
-    val isRelease = false       // Set to true for releasing to ignore versionPostFix to avoid e.g. "-dev" versions.
-
-    val libsRelease = isRelease  // e.g. diverge if plugin is still SNAPSHOT, but libs are already final
-    val libsVersion = versionNumber + (if (libsRelease) "" else "-dev-SNAPSHOT")
-    val libsSyncVersion = versionNumber + (if (libsRelease) "" else "-sync-SNAPSHOT")
-
-    // Calculate version codes.
-    val versionPostFix = if (isRelease) {
-        ""
-    } else if (project.hasProperty("versionPostFix")) {
-        "-${project.property("versionPostFix")}-SNAPSHOT"
-    } else {
-        "-dev-SNAPSHOT"
-    }
-
-    val objectboxPluginVersion by extra(versionNumber + versionPostFix) // Artifact versions of this project.
-    val objectboxJavaVersion by extra(libsVersion) // Java library used by sub-projects.
-    val appliesObxJavaVersion by extra(libsVersion) // Java library added to projects applying the plugin.
-    val appliesObxJniLibVersion by extra(libsVersion) // Native library added to projects applying the ObjectBoxGradlePlugin.
-    val appliesObxSyncJniLibVersion by extra(libsSyncVersion) // Native library added to projects applying the ObjectBoxSyncGradlePlugin.
-
-    println("version=$objectboxPluginVersion")
-    println("objectboxJavaVersion=$objectboxJavaVersion")
-    println("appliesObxJavaVersion=$appliesObxJavaVersion")
-    println("ObjectBoxGradlePlugin:")
-    println("  appliesObxJniLibVersion=$appliesObxJniLibVersion")
-    println("ObjectBoxSyncGradlePlugin:")
-    println("  appliesObxSyncJniLibVersion=$appliesObxSyncJniLibVersion\n")
-
     // Internal Maven repo: used in all projects, printing info/warning only once here.
     val hasInternalObjectBoxRepo by extra(project.hasProperty("gitlabUrl"))
     if (hasInternalObjectBoxRepo) {
@@ -75,14 +85,6 @@ buildscript {
         println("gitlabUrl=$gitlabUrl added to repositories.")
     } else {
         println("WARNING: gitlabUrl missing from gradle.properties.")
-    }
-
-    // To avoid duplicate release artifacts on the internal repository,
-    // prevent uploading from branches other than publish, and main (for which uploading is turned off).
-    val isCI = System.getenv("CI") == "true"
-    val branchOrTag = System.getenv("CI_COMMIT_REF_NAME")
-    if (isCI && isRelease && !("publish" == branchOrTag || "main" == branchOrTag)) {
-        throw GradleException("isRelease = true is only allowed on branch publish or main")
     }
 
     repositories {
