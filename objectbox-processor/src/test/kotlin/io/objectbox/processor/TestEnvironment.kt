@@ -1,6 +1,6 @@
 /*
  * ObjectBox Build Tools
- * Copyright (C) 2018-2024 ObjectBox Ltd.
+ * Copyright (C) 2018-2025 ObjectBox Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -38,6 +38,41 @@ import javax.tools.JavaFileObject
  * If [useTemporaryModelFile] will add "tmp" postfix to model file name so it will be ignored by source control
  * (see .gitignore rules). Removes the file if it exists.
  * Also will not compare against original as it is assumed there is none.
+ *
+ * Use this like:
+ *
+ * ```
+ * @Language("Java")
+ * val exampleSource =
+ *     """
+ *     package com.example;
+ *
+ *     public class Example {}
+ *     """.trimIndent()
+ *
+ * TestEnvironment("example-model.json")
+ *     .apply {
+ *         addSourceFile("com.example.Example", exampleSource)
+ *     }
+ *     .compile()
+ *     .assertThatIt {
+ *         // Assert success
+ *         succeededWithoutWarnings()
+ *         // Assert failure
+ *         // failed()
+ *         // hadErrorContaining("<error message>")
+ *
+ *         // Assert generated code
+ *         @Language("Java") val myObjectBoxSource =
+ *             """
+ *             package com.example;
+ *
+ *             public class MyObjectBox {
+ *             }
+ *             """.trimIndent()
+ *         generatedSourceFileMatches("com.example.MyObjectBox", myObjectBoxSource)
+ *     }
+ * ```
  */
 class TestEnvironment(
     modelFile: String,
@@ -91,24 +126,9 @@ class TestEnvironment(
     }
 
     /**
-     * Use like:
-     * ```
-     * @Language("Java")
-     * val source =
-     *     """
-     *     package com.example;
+     * Adds a source file to be compiled with [compile].
      *
-     *     public class Example {}
-     *     """.trimIndent()
-     * TestEnvironment("model.json")
-     *     .apply {
-     *         addSourceFile("com.example.Example", source)
-     *     }
-     *     .compile()
-     *     .assertThatIt {
-     *         succeededWithoutWarnings() // or other assertions
-     *     }
-     * ```
+     * See [TestEnvironment] for an example.
      */
     fun addSourceFile(fullyQualifiedName: String, source: String): JavaFileObject {
         JavaFileObjects.forSourceString(fullyQualifiedName, source)
@@ -118,16 +138,32 @@ class TestEnvironment(
             }
     }
 
+    /**
+     * Compiles the source files added with [addSourceFile] and, if not [TestEnvironment.useTemporaryModelFile]
+     * and not [modelExpectedToChange], asserts the generated model JSON file matches the one given to [TestEnvironment].
+     *
+     * See [TestEnvironment] for an example.
+     */
     fun compile(modelExpectedToChange: Boolean = false): Compilation {
         check(javaFileObjects.isNotEmpty())
         return compile(javaFileObjects, modelExpectedToChange)
     }
 
+    /**
+     * Variant of [compile] that expects source files as a .java file resource.
+     *
+     * New code should add source code using [addSourceFile] instead.
+     */
     fun compile(vararg files: String, modelExpectedToChange: Boolean = false): Compilation {
         val fileObjects = files.map { JavaFileObjects.forResource("$it.java") }
         return compile(fileObjects, modelExpectedToChange)
     }
 
+    /**
+     * Variant of [compile] that expects source files added as a list of [JavaFileObject].
+     *
+     * New code should add source code using [addSourceFile] instead.
+     */
     fun compile(files: List<JavaFileObject>, modelExpectedToChange: Boolean = false): Compilation {
         val compilation = Compiler.javac()
             .withProcessors(processor)

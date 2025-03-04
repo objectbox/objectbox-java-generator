@@ -1,6 +1,6 @@
 /*
  * ObjectBox Build Tools
- * Copyright (C) 2022-2024 ObjectBox Ltd.
+ * Copyright (C) 2022-2025 ObjectBox Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -27,17 +27,7 @@ import com.google.testing.compile.JavaFileObjects
 /**
  * Asserts the given class exists and the source tree matches the given one.
  *
- * Use like:
- * ```kotlin
- * @Language("Java")
- * val source =
- *     """
- *     package com.example;
- *
- *     public class Example {}
- *     """.trimIndent()
- * generatedSourceFileMatches("com.example.Example", source)
- * ```
+ * See [TestEnvironment] for an example.
  */
 fun CompilationSubject.generatedSourceFileMatches(fullyQualifiedName: String, source: String) {
     generatedSourceFile(fullyQualifiedName).also {
