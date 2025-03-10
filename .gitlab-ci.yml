@@ -106,9 +106,15 @@ trigger-integ-tests:
     project: objectbox/objectbox-integration-test
     branch: $CI_COMMIT_BRANCH
 
-# Why? The Maven plugin uses ObjectBoxJavaTransform from objectbox-code-modifier of this project
+# Build and test the Maven plugin with new Maven snapshots of this project (it uses the code modifier)
 trigger-maven-plugin:
   stage: triggers
+  rules:
+    # Do not trigger publishing of Maven plugin
+    - if: $CI_COMMIT_BRANCH == "publish"
+      when: never
+    # Otherwise, only on push to branch (also set allow_failure in case branch does not exist downstream)
+    - if: $CI_PIPELINE_SOURCE == "push"
   inherit:
     variables: false
   allow_failure: true # Branch might not exist in triggered project
