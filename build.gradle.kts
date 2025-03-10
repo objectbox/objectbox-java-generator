@@ -42,11 +42,11 @@ buildscript {
     println("  appliesObxSyncJniLibVersion=$appliesObxSyncJniLibVersion\n")
 
     // To avoid duplicate release artifacts on the internal repository,
-    // prevent uploading from branches other than publish, and main (for which uploading is turned off).
+    // prevent publishing from branches other than publish, and main (for which publishing is turned off).
     val isCI = System.getenv("CI") == "true"
     val branchOrTag = System.getenv("CI_COMMIT_REF_NAME")
     if (isCI && isRelease && !("publish" == branchOrTag || "main" == branchOrTag)) {
-        throw GradleException("isRelease = true is only allowed on branch publish or main")
+        throw GradleException("isRelease = true only allowed on publish or main branch, but is $branchOrTag")
     }
 
     // Note: Gradle runs plugins at the Kotlin language level that Gradle version supports using the Kotlin library it

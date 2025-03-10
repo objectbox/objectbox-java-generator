@@ -18,10 +18,15 @@ stages:
   - upload-to-central
   - triggers
 
-# Common template to calculate version postfix
+workflow:
+  rules:
+    # Never create a pipeline when a tag is pushed (to simplify version computation in root build script)
+    - if: $CI_COMMIT_TAG
+      when: never
+    # Otherwise, only create a pipeline when a branch is pushed
+    - if: $CI_PIPELINE_SOURCE == "push"
+
 .common:
-  except: # Version postfix is derived from branch name
-    - tags
   before_script:
     # Print Gradle and JVM version info
     - ./gradlew -version
@@ -51,10 +56,18 @@ upload-to-internal:linux:
   extends: .common
   stage: upload-to-internal
   tags: [ docker, x64 ]
-  except:
-    - main # Do not upload duplicate release artifacts
-    - pipelines # Do not upload artifacts if triggered by upstream project to save on disk space
-    - tags # Only upload artifacts from branches
+  rules:
+    # Not from main branch, doing so may duplicate release artifacts (uploaded from publish branch)
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: never
+    # Not if triggered by upstream project to save on disk space
+    - if: $CI_PIPELINE_SOURCE == "pipeline"
+      when: never
+    # Not from scheduled pipelines to save on disk space
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      when: never
+    # Otherwise, only on push to branch
+    - if: $CI_PIPELINE_SOURCE == "push"
   script:
     - ./gradlew $GITLAB_REPO_ARGS $VERSION_ARGS publishMavenJavaPublicationToGitLabRepository
 
@@ -62,8 +75,9 @@ upload-to-central:linux:
   extends: .common
   stage: upload-to-central
   tags: [ docker, x64 ]
-  only:
-    - publish
+  rules:
+    # Only on publish branch
+    - if: $CI_COMMIT_BRANCH == "publish"
   script:
     # Note: can not use before_script for Chat notification as it would overwrite the one from .common (feel free to improve)
     - ci/send-to-gchat.sh "$GOOGLE_CHAT_WEBHOOK_JAVA_CI" --thread $CI_COMMIT_SHA "*Releasing Java Gradle plugin:* $CI_JOB_NAME from branch $CI_COMMIT_BRANCH ($CI_COMMIT_SHORT_SHA)..."
@@ -73,10 +87,18 @@ upload-to-central:linux:
     - ci/send-to-gchat.sh "$GOOGLE_CHAT_WEBHOOK_JAVA_CI" --thread $CI_COMMIT_SHA "*Releasing Java Gradle plugin:* *$CI_JOB_STATUS* for $CI_JOB_NAME"
     - ci/send-to-gchat.sh "$GOOGLE_CHAT_WEBHOOK_JAVA_CI" --thread $CI_COMMIT_SHA "Check https://repo1.maven.org/maven2/io/objectbox/ in a few minutes."
 
+# Run integration tests to test new Maven snapshots of this and upstream projects
 trigger-integ-tests:
   stage: triggers
-  except:
-    - schedules # Do not trigger when run on schedule, integ tests have own schedule
+  rules:
+    # Not for publish branch, does not exist for integration tests
+    - if: $CI_COMMIT_BRANCH == "publish"
+      when: never
+    # Not from scheduled pipelines, integration tests have their own schedule
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      when: never
+    # Otherwise, only on push to branch (also set allow_failure in case branch does not exist downstream)
+    - if: $CI_PIPELINE_SOURCE == "push"
   inherit:
     variables: false
   allow_failure: true # Branch might not exist in triggered project
