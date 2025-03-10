@@ -55,7 +55,7 @@ public class BoxGenerator {
 
     public BoxGenerator() throws IOException {
         log("ObjectBox Generator");
-        log("Copyright 2017-2024 ObjectBox Ltd, objectbox.io. Licensed under GNU Affero General Public License, Version 3.");
+        log("Copyright 2017-2025 ObjectBox Ltd, objectbox.io. Licensed under GNU Affero General Public License, Version 3.");
         log("This program comes with ABSOLUTELY NO WARRANTY");
 
         Configuration config = getConfiguration(MYOBJECTBOX_FTL);
