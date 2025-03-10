@@ -14,8 +14,8 @@ variables:
 
 stages:
   - test
-  - upload-to-internal
-  - upload-to-central
+  - publish-maven-internal
+  - publish-maven-central
   - triggers
 
 workflow:
@@ -52,9 +52,9 @@ test:windows:
   extends: .tests
   tags: [ windows ]
 
-upload-to-internal:linux:
+publish-maven-internal:linux:
   extends: .common
-  stage: upload-to-internal
+  stage: publish-maven-internal
   tags: [ docker, x64 ]
   rules:
     # Not from main branch, doing so may duplicate release artifacts (uploaded from publish branch)
@@ -71,9 +71,9 @@ upload-to-internal:linux:
   script:
     - ./gradlew $GITLAB_REPO_ARGS $VERSION_ARGS publishMavenJavaPublicationToGitLabRepository
 
-upload-to-central:linux:
+publish-maven-central:linux:
   extends: .common
-  stage: upload-to-central
+  stage: publish-maven-central
   tags: [ docker, x64 ]
   rules:
     # Only on publish branch
