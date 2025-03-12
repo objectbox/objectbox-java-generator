@@ -62,17 +62,17 @@ publish-maven-internal:linux:
   stage: publish-maven-internal
   tags: [ docker, x64 ]
   rules:
-    # Not from main branch, doing so may duplicate release artifacts (uploaded from publish branch)
+    # Not for main branch, doing so may duplicate release artifacts (uploaded from publish branch)
     - if: $CI_COMMIT_BRANCH == "main"
       when: never
     # Not if triggered by upstream project to save on disk space
     - if: $CI_PIPELINE_SOURCE == "pipeline"
       when: never
-    # Not from scheduled pipelines to save on disk space
+    # Not for scheduled pipelines to save on disk space
     - if: $CI_PIPELINE_SOURCE == "schedule"
       when: never
-    # In all other cases, create the job
-    - when: always
+    # Otherwise, only if no previous stages failed
+    - when: on_success
   script:
     - ./gradlew $GITLAB_REPO_ARGS $VERSION_ARGS publishMavenJavaPublicationToGitLabRepository
 
@@ -81,8 +81,9 @@ publish-maven-central:linux:
   stage: publish-maven-central
   tags: [ docker, x64 ]
   rules:
-    # Only on publish branch
+    # Only on publish branch, only if no previous stages failed
     - if: $CI_COMMIT_BRANCH == "publish"
+      when: on_success
   script:
     # Note: can not use before_script for Chat notification as it would overwrite the one from .common (feel free to improve)
     - ci/send-to-gchat.sh "$GOOGLE_CHAT_WEBHOOK_JAVA_CI" --thread $CI_COMMIT_SHA "*Releasing Java Gradle plugin:* $CI_JOB_NAME from branch $CI_COMMIT_BRANCH ($CI_COMMIT_SHORT_SHA)..."
@@ -99,11 +100,11 @@ trigger-integ-tests:
     # Not for publish branch, does not exist for integration tests
     - if: $CI_COMMIT_BRANCH == "publish"
       when: never
-    # Not from scheduled pipelines, integration tests have their own schedule
+    # Not for scheduled pipelines, integration tests have their own schedule
     - if: $CI_PIPELINE_SOURCE == "schedule"
       when: never
-    # In all other cases, run the trigger (also set allow_failure in case branch does not exist downstream)
-    - when: always
+    # Otherwise, only if no previous stages failed. Also set allow_failure in case branch does not exist downstream.
+    - when: on_success
   inherit:
     variables: false
   allow_failure: true # Branch might not exist in triggered project
@@ -118,8 +119,8 @@ trigger-maven-plugin:
     # Do not trigger publishing of Maven plugin
     - if: $CI_COMMIT_BRANCH == "publish"
       when: never
-    # In all other cases, run the trigger (also set allow_failure in case branch does not exist downstream)
-    - when: always
+    # Otherwise, only if no previous stages failed. Also set allow_failure in case branch does not exist downstream.
+    - when: on_success
   inherit:
     variables: false
   allow_failure: true # Branch might not exist in triggered project
