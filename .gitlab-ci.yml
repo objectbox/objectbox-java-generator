@@ -1,3 +1,5 @@
+# https://docs.gitlab.com/ci/yaml/
+
 # Default image for linux builds
 image: objectboxio/buildenv-android:2023-07-28
 
@@ -20,11 +22,14 @@ stages:
 
 workflow:
   rules:
+    # Disable merge request pipelines https://docs.gitlab.com/ci/jobs/job_rules/#ci_pipeline_source-predefined-variable
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: never
     # Never create a pipeline when a tag is pushed (to simplify version computation in root build script)
     - if: $CI_COMMIT_TAG
       when: never
-    # Otherwise, only create a pipeline when a branch is pushed
-    - if: $CI_PIPELINE_SOURCE == "push"
+    # In all other cases, create a pipeline
+    - when: always
 
 .common:
   before_script:
@@ -66,8 +71,8 @@ publish-maven-internal:linux:
     # Not from scheduled pipelines to save on disk space
     - if: $CI_PIPELINE_SOURCE == "schedule"
       when: never
-    # Otherwise, only on push to branch
-    - if: $CI_PIPELINE_SOURCE == "push"
+    # In all other cases, create the job
+    - when: always
   script:
     - ./gradlew $GITLAB_REPO_ARGS $VERSION_ARGS publishMavenJavaPublicationToGitLabRepository
 
@@ -97,8 +102,8 @@ trigger-integ-tests:
     # Not from scheduled pipelines, integration tests have their own schedule
     - if: $CI_PIPELINE_SOURCE == "schedule"
       when: never
-    # Otherwise, only on push to branch (also set allow_failure in case branch does not exist downstream)
-    - if: $CI_PIPELINE_SOURCE == "push"
+    # In all other cases, run the trigger (also set allow_failure in case branch does not exist downstream)
+    - when: always
   inherit:
     variables: false
   allow_failure: true # Branch might not exist in triggered project
@@ -113,8 +118,8 @@ trigger-maven-plugin:
     # Do not trigger publishing of Maven plugin
     - if: $CI_COMMIT_BRANCH == "publish"
       when: never
-    # Otherwise, only on push to branch (also set allow_failure in case branch does not exist downstream)
-    - if: $CI_PIPELINE_SOURCE == "push"
+    # In all other cases, run the trigger (also set allow_failure in case branch does not exist downstream)
+    - when: always
   inherit:
     variables: false
   allow_failure: true # Branch might not exist in triggered project
