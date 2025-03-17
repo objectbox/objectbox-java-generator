@@ -68,9 +68,6 @@ publish-maven-internal:linux:
     # Not if triggered by upstream project to save on disk space
     - if: $CI_PIPELINE_SOURCE == "pipeline"
       when: never
-    # Not for scheduled pipelines to save on disk space
-    - if: $CI_PIPELINE_SOURCE == "schedule"
-      when: never
     # Otherwise, only if no previous stages failed
     - when: on_success
   script:
@@ -99,9 +96,6 @@ trigger-integ-tests:
   rules:
     # Not for publish branch, does not exist for integration tests
     - if: $CI_COMMIT_BRANCH == "publish"
-      when: never
-    # Not for scheduled pipelines, integration tests have their own schedule
-    - if: $CI_PIPELINE_SOURCE == "schedule"
       when: never
     # Otherwise, only if no previous stages failed. Also set allow_failure in case branch does not exist downstream.
     - when: on_success
