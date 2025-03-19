@@ -5,6 +5,16 @@
 The ObjectBox Gradle Plugin makes using ObjectBox easy in a JVM or Android project written in Java or Kotlin, 
 and is free and open source. See the [documentation on how to get started](https://docs.objectbox.io/getting-started).
 
+The plugin
+
+- automatically adds a dependency on [the Java SDK](https://github.com/objectbox/objectbox-java) and if needed the
+  [Kotlin extension functions](https://docs.objectbox.io/kotlin-support) library,
+- automatically adds runtime libraries for Android and the developer machine,
+- adds and configures the annotation processor to generate the model JSON file and source code like the `MyObjectBox`
+  and underscore classes (like `Example_`) used for [queries](https://docs.objectbox.io/queries),
+- for Android and Java JVM projects, registers a byte code transformer to 
+  [make relations easier to use](https://docs.objectbox.io/relations#initialization-magic)
+
 ## Minimum requirements to apply the plugin
 
 - Gradle `7.0` (see [GradleCompat](objectbox-gradle-plugin/src/main/kotlin/io/objectbox/gradle/util/GradleCompat.kt))
