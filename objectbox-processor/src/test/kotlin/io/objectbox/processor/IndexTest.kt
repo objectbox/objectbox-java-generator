@@ -1,6 +1,6 @@
 /*
  * ObjectBox Build Tools
- * Copyright (C) 2018-2024 ObjectBox Ltd.
+ * Copyright (C) 2018-2025 ObjectBox Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -96,6 +96,7 @@ class IndexTest : BaseProcessorTest() {
                         @Index Double doublePropOrNull;
                         @Index double doubleProp;
             
+                        @Index boolean[] booleanArrayProp;
                         @Index byte[] byteArrayProp;
                         @Index short[] shortArrayProp;
                         @Index char[] charArrayProp;
@@ -122,6 +123,7 @@ class IndexTest : BaseProcessorTest() {
                 hadErrorContaining("@Index is not supported for Float, remove @Index.")
                 hadErrorContaining("@Index is not supported for Double, remove @Index.")
 
+                hadErrorContaining("@Index is not supported for BooleanArray, remove @Index.")
                 hadErrorContaining("@Index is not supported for ByteArray, remove @Index.")
                 hadErrorContaining("@Index is not supported for ShortArray, remove @Index.")
                 hadErrorContaining("@Index is not supported for CharArray, remove @Index.")

@@ -101,6 +101,8 @@ public class Schema {
                 io.objectbox.model.PropertyType.DateNano, "DateNano", "Long", "long"));
         propertyTypeMapping.put(PropertyType.Flex, new Mapping(
                 io.objectbox.model.PropertyType.Flex, "Flex", "byte[]", "byte[]"));
+        propertyTypeMapping.put(PropertyType.BooleanArray, new Mapping(
+                io.objectbox.model.PropertyType.BoolVector, "BoolVector", "boolean[]", "boolean[]"));
         propertyTypeMapping.put(PropertyType.ByteArray, new Mapping(
                 io.objectbox.model.PropertyType.ByteVector, "ByteVector", "byte[]", "byte[]"));
         propertyTypeMapping.put(PropertyType.ShortArray, new Mapping(

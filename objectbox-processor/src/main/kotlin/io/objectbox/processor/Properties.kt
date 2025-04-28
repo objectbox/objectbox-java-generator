@@ -319,6 +319,7 @@ class Properties(
         // error if unsupported property type
         if (propertyType == PropertyType.Float ||
             propertyType == PropertyType.Double ||
+            propertyType == PropertyType.BooleanArray ||
             propertyType == PropertyType.ByteArray ||
             propertyType == PropertyType.ShortArray ||
             propertyType == PropertyType.CharArray ||

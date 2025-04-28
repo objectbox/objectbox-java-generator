@@ -81,7 +81,9 @@ class PropertyCollector {
             int countStrings = propertiesByType.countElements(PropertyType.String);
 
             String collectSignature;
-            if (hasPropertyOf(PropertyType.ShortArray)) {
+            if (hasPropertyOf(PropertyType.BooleanArray)) {
+                collectSignature = appendPropertyScalarArray(properties, preCall, PropertyType.BooleanArray);
+            } else if (hasPropertyOf(PropertyType.ShortArray)) {
                 collectSignature = appendPropertyScalarArray(properties, preCall, PropertyType.ShortArray);
             } else if (hasPropertyOf(PropertyType.CharArray)) {
                 collectSignature = appendPropertyScalarArray(properties, preCall, PropertyType.CharArray);

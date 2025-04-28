@@ -1,6 +1,6 @@
 /*
  * ObjectBox Build Tools
- * Copyright (C) 2023-2024 ObjectBox Ltd.
+ * Copyright (C) 2023-2025 ObjectBox Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -173,6 +173,7 @@ class SimpleEntityTest : BaseProcessorTest() {
                     }
                 }
 
+                "booleanArray" -> assertType(prop, PropertyType.BooleanArray)
                 "shortArray" -> assertType(prop, PropertyType.ShortArray)
                 "charArray" -> assertType(prop, PropertyType.CharArray)
                 "intArray" -> assertType(prop, PropertyType.IntArray)
@@ -246,6 +247,7 @@ class SimpleEntityTest : BaseProcessorTest() {
             "idCompanion",
             "stringFlexMap",
             "flexProperty",
+            "booleanArray",
             "shortArray",
             "charArray",
             "intArray",
