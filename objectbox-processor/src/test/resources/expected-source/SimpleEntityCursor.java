@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 //////
-// NOTE: this is the EXPECTED generated source.
+// NOTE: this is the EXPECTED generated source. During testing, only the syntax tree is compared, comments are ignored.
 //////
 
 /**

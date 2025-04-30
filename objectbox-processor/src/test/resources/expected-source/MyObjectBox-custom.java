@@ -16,7 +16,7 @@ import io.objectbox.processor.test.SimpleEntityCursor;
 import io.objectbox.processor.test.SimpleEntity_;
 
 //////
-// NOTE: this is the EXPECTED generated source.
+// NOTE: this is the EXPECTED generated source. During testing, only the syntax tree is compared, comments are ignored.
 //////
 
 public class MyObjectBox {
