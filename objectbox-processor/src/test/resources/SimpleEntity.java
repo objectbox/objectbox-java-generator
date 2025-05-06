@@ -94,6 +94,7 @@ public class SimpleEntity {
     Map<String, Object> stringFlexMap;
     Object flexProperty;
 
+    boolean[] booleanArray;
     short[] shortArray;
     char[] charArray;
     int[] intArray;
