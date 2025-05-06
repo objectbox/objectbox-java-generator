@@ -1,7 +1,7 @@
 # https://docs.gitlab.com/ci/yaml/
 
 # Default image for linux builds
-image: objectboxio/buildenv-android:2023-07-28
+image: objectboxio/buildenv-android:2023-07-28 # Includes JDK 17.0.8
 
 variables:
   # Disable the Gradle daemon. Gradle may run in a Docker container with a shared
@@ -51,16 +51,24 @@ workflow:
 
 test:linux:
   extends: .tests
-  tags: [ docker, x64 ]
+  tags:
+    - docker
+    - linux
+    - x64
 
 test:windows:
   extends: .tests
-  tags: [ windows ]
+  tags:
+    - windows-jdk
+    - x64
 
 publish-maven-internal:linux:
   extends: .common
   stage: publish-maven-internal
-  tags: [ docker, x64 ]
+  tags:
+    - docker
+    - linux
+    - x64
   rules:
     # Not for main branch, doing so may duplicate release artifacts (uploaded from publish branch)
     - if: $CI_COMMIT_BRANCH == "main"
@@ -76,7 +84,10 @@ publish-maven-internal:linux:
 publish-maven-central:linux:
   extends: .common
   stage: publish-maven-central
-  tags: [ docker, x64 ]
+  tags:
+    - docker
+    - linux
+    - x64
   rules:
     # Only on publish branch, only if no previous stages failed
     - if: $CI_COMMIT_BRANCH == "publish"
