@@ -42,6 +42,7 @@ object ExternalPropertyTypeMapper {
             ExternalPropertyType.JSON -> "ExternalPropertyType.Json"
             ExternalPropertyType.BSON -> "ExternalPropertyType.Bson"
             ExternalPropertyType.JAVASCRIPT -> "ExternalPropertyType.JavaScript"
+            ExternalPropertyType.JSON_TO_NATIVE -> "ExternalPropertyType.JsonToNative"
             ExternalPropertyType.INT_128_VECTOR -> "ExternalPropertyType.Int128Vector"
             ExternalPropertyType.UUID_VECTOR -> "ExternalPropertyType.UuidVector"
             ExternalPropertyType.MONGO_ID -> "ExternalPropertyType.MongoId"
@@ -69,6 +70,7 @@ object ExternalPropertyTypeMapper {
             ExternalPropertyType.JSON -> ModelExternalPropertyType.Json
             ExternalPropertyType.BSON -> ModelExternalPropertyType.Bson
             ExternalPropertyType.JAVASCRIPT -> ModelExternalPropertyType.JavaScript
+            ExternalPropertyType.JSON_TO_NATIVE -> ModelExternalPropertyType.JsonToNative
             ExternalPropertyType.INT_128_VECTOR -> ModelExternalPropertyType.Int128Vector
             ExternalPropertyType.UUID_VECTOR -> ModelExternalPropertyType.UuidVector
             ExternalPropertyType.MONGO_ID -> ModelExternalPropertyType.MongoId
