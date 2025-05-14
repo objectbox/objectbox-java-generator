@@ -7,6 +7,9 @@ import io.objectbox.ModelBuilder.EntityBuilder;
 import io.objectbox.model.PropertyFlags;
 import io.objectbox.model.PropertyType;
 
+//////
+// NOTE: this is the EXPECTED generated source. During testing, only the syntax tree is compared, comments are ignored.
+//////
 
 public class MyObjectBox {
 

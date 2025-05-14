@@ -1,5 +1,7 @@
+# https://docs.gitlab.com/ci/yaml/
+
 # Default image for linux builds
-image: objectboxio/buildenv-android:2023-07-28
+image: objectboxio/buildenv-android:2023-07-28 # Includes JDK 17.0.8
 
 variables:
   # Disable the Gradle daemon. Gradle may run in a Docker container with a shared
@@ -14,14 +16,22 @@ variables:
 
 stages:
   - test
-  - upload-to-internal
-  - upload-to-central
+  - publish-maven-internal
+  - publish-maven-central
   - triggers
 
-# Common template to calculate version postfix
+workflow:
+  rules:
+    # Disable merge request pipelines https://docs.gitlab.com/ci/jobs/job_rules/#ci_pipeline_source-predefined-variable
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: never
+    # Never create a pipeline when a tag is pushed (to simplify version computation in root build script)
+    - if: $CI_COMMIT_TAG
+      when: never
+    # In all other cases, create a pipeline
+    - when: always
+
 .common:
-  except: # Version postfix is derived from branch name
-    - tags
   before_script:
     # Print Gradle and JVM version info
     - ./gradlew -version
@@ -41,29 +51,47 @@ stages:
 
 test:linux:
   extends: .tests
-  tags: [ docker, x64 ]
+  tags:
+    - docker
+    - linux
+    - x64
 
 test:windows:
   extends: .tests
-  tags: [ windows ]
+  tags:
+    - windows-jdk
+    - x64
 
-upload-to-internal:linux:
+publish-maven-internal:linux:
   extends: .common
-  stage: upload-to-internal
-  tags: [ docker, x64 ]
-  except:
-    - main # Do not upload duplicate release artifacts
-    - pipelines # Do not upload artifacts if triggered by upstream project to save on disk space
-    - tags # Only upload artifacts from branches
+  stage: publish-maven-internal
+  tags:
+    - docker
+    - linux
+    - x64
+  rules:
+    # Not for main branch, doing so may duplicate release artifacts (uploaded from publish branch)
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: never
+    # Not if triggered by upstream project to save on disk space
+    - if: $CI_PIPELINE_SOURCE == "pipeline"
+      when: never
+    # Otherwise, only if no previous stages failed
+    - when: on_success
   script:
     - ./gradlew $GITLAB_REPO_ARGS $VERSION_ARGS publishMavenJavaPublicationToGitLabRepository
 
-upload-to-central:linux:
+publish-maven-central:linux:
   extends: .common
-  stage: upload-to-central
-  tags: [ docker, x64 ]
-  only:
-    - publish
+  stage: publish-maven-central
+  tags:
+    - docker
+    - linux
+    - x64
+  rules:
+    # Only on publish branch, only if no previous stages failed
+    - if: $CI_COMMIT_BRANCH == "publish"
+      when: on_success
   script:
     # Note: can not use before_script for Chat notification as it would overwrite the one from .common (feel free to improve)
     - ci/send-to-gchat.sh "$GOOGLE_CHAT_WEBHOOK_JAVA_CI" --thread $CI_COMMIT_SHA "*Releasing Java Gradle plugin:* $CI_JOB_NAME from branch $CI_COMMIT_BRANCH ($CI_COMMIT_SHORT_SHA)..."
@@ -73,10 +101,15 @@ upload-to-central:linux:
     - ci/send-to-gchat.sh "$GOOGLE_CHAT_WEBHOOK_JAVA_CI" --thread $CI_COMMIT_SHA "*Releasing Java Gradle plugin:* *$CI_JOB_STATUS* for $CI_JOB_NAME"
     - ci/send-to-gchat.sh "$GOOGLE_CHAT_WEBHOOK_JAVA_CI" --thread $CI_COMMIT_SHA "Check https://repo1.maven.org/maven2/io/objectbox/ in a few minutes."
 
+# Run integration tests to test new Maven snapshots of this and upstream projects
 trigger-integ-tests:
   stage: triggers
-  except:
-    - schedules # Do not trigger when run on schedule, integ tests have own schedule
+  rules:
+    # Not for publish branch, does not exist for integration tests
+    - if: $CI_COMMIT_BRANCH == "publish"
+      when: never
+    # Otherwise, only if no previous stages failed. Also set allow_failure in case branch does not exist downstream.
+    - when: on_success
   inherit:
     variables: false
   allow_failure: true # Branch might not exist in triggered project
@@ -84,9 +117,15 @@ trigger-integ-tests:
     project: objectbox/objectbox-integration-test
     branch: $CI_COMMIT_BRANCH
 
-# Why? The Maven plugin uses ObjectBoxJavaTransform from objectbox-code-modifier of this project
+# Build and test the Maven plugin with new Maven snapshots of this project (it uses the code modifier)
 trigger-maven-plugin:
   stage: triggers
+  rules:
+    # Do not trigger publishing of Maven plugin
+    - if: $CI_COMMIT_BRANCH == "publish"
+      when: never
+    # Otherwise, only if no previous stages failed. Also set allow_failure in case branch does not exist downstream.
+    - when: on_success
   inherit:
     variables: false
   allow_failure: true # Branch might not exist in triggered project

@@ -16,7 +16,7 @@ import io.objectbox.processor.test.SimpleEntityCursor;
 import io.objectbox.processor.test.SimpleEntity_;
 
 //////
-// NOTE: this is the EXPECTED generated source.
+// NOTE: this is the EXPECTED generated source. During testing, only the syntax tree is compared, comments are ignored.
 //////
 
 public class MyObjectBox {
@@ -42,7 +42,7 @@ public class MyObjectBox {
 
     private static void buildEntitySimpleEntity(ModelBuilder modelBuilder) {
         EntityBuilder entityBuilder = modelBuilder.entity("A");
-        entityBuilder.id(1, 4858050548069557694L).lastPropertyId(39, 8513602819579966935L);
+        entityBuilder.id(1, 4858050548069557694L).lastPropertyId(40, 8362209306839260233L);
         entityBuilder.flags(io.objectbox.model.EntityFlags.USE_NO_ARG_CONSTRUCTOR);
 
         entityBuilder.property("id", PropertyType.Long).id(1, 8303367770402050741L)
@@ -91,6 +91,7 @@ public class MyObjectBox {
                 .flags(PropertyFlags.ID_COMPANION);
         entityBuilder.property("stringFlexMap", PropertyType.Flex).id(31, 553518482816470515L);
         entityBuilder.property("flexProperty", PropertyType.Flex).id(32, 4612611183471672203L);
+        entityBuilder.property("booleanArray", PropertyType.BoolVector).id(40, 8362209306839260233L);
         entityBuilder.property("shortArray", PropertyType.ShortVector).id(33, 1725775029481425568L);
         entityBuilder.property("charArray", PropertyType.CharVector).id(34, 4774093004605044306L);
         entityBuilder.property("intArray", PropertyType.IntVector).id(35, 6776589142355880307L);

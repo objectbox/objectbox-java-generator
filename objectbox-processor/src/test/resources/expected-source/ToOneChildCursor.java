@@ -8,7 +8,7 @@ import io.objectbox.internal.CursorFactory;
 import io.objectbox.relation.ToOne;
 
 //////
-// NOTE: this is the EXPECTED generated source.
+// NOTE: this is the EXPECTED generated source. During testing, only the syntax tree is compared, comments are ignored.
 //////
 
 /**

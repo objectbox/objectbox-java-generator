@@ -1,6 +1,6 @@
 /*
  * ObjectBox Build Tools
- * Copyright (C) 2017-2024 ObjectBox Ltd.
+ * Copyright (C) 2017-2025 ObjectBox Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -182,6 +182,9 @@ class TypeHelper(
 
         if (kind == TypeKind.ARRAY) {
             val arrayComponentType = (typeMirror as ArrayType).componentType
+            if (arrayComponentType.kind == TypeKind.BOOLEAN) {
+                return PropertyType.BooleanArray
+            }
             if (arrayComponentType.kind == TypeKind.BYTE) {
                 return PropertyType.ByteArray
             }

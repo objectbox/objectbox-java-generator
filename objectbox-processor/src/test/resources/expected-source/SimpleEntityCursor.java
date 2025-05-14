@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 //////
-// NOTE: this is the EXPECTED generated source.
+// NOTE: this is the EXPECTED generated source. During testing, only the syntax tree is compared, comments are ignored.
 //////
 
 /**
@@ -69,6 +69,7 @@ public final class SimpleEntityCursor extends Cursor<SimpleEntity> {
     private final static int __ID_idCompanion = SimpleEntity_.idCompanion.id;
     private final static int __ID_stringFlexMap = SimpleEntity_.stringFlexMap.id;
     private final static int __ID_flexProperty = SimpleEntity_.flexProperty.id;
+    private final static int __ID_booleanArray = SimpleEntity_.booleanArray.id;
     private final static int __ID_shortArray = SimpleEntity_.shortArray.id;
     private final static int __ID_charArray = SimpleEntity_.charArray.id;
     private final static int __ID_intArray = SimpleEntity_.intArray.id;
@@ -104,47 +105,53 @@ public final class SimpleEntityCursor extends Cursor<SimpleEntity> {
                 targetCursor.close();
             }
         }
-        short[] shortArray = entity.shortArray;
-        int __id31 = shortArray != null ? __ID_shortArray : 0;
+        boolean[] booleanArray = entity.booleanArray;
+        int __id31 = booleanArray != null ? __ID_booleanArray : 0;
 
-        collectShortArray(cursor, 0, PUT_FLAG_FIRST,
-                __id31, shortArray);
+        collectBooleanArray(cursor, 0, PUT_FLAG_FIRST,
+                __id31, booleanArray);
+
+        short[] shortArray = entity.shortArray;
+        int __id32 = shortArray != null ? __ID_shortArray : 0;
+
+        collectShortArray(cursor, 0, 0,
+                __id32, shortArray);
 
         char[] charArray = entity.charArray;
-        int __id32 = charArray != null ? __ID_charArray : 0;
+        int __id33 = charArray != null ? __ID_charArray : 0;
 
         collectCharArray(cursor, 0, 0,
-                __id32, charArray);
+                __id33, charArray);
 
         int[] intArray = entity.intArray;
-        int __id33 = intArray != null ? __ID_intArray : 0;
+        int __id34 = intArray != null ? __ID_intArray : 0;
 
         collectIntArray(cursor, 0, 0,
-                __id33, intArray);
+                __id34, intArray);
 
         long[] longArray = entity.longArray;
-        int __id34 = longArray != null ? __ID_longArray : 0;
+        int __id35 = longArray != null ? __ID_longArray : 0;
 
         collectLongArray(cursor, 0, 0,
-                __id34, longArray);
+                __id35, longArray);
 
         float[] floatArray = entity.floatArray;
-        int __id35 = floatArray != null ? __ID_floatArray : 0;
+        int __id36 = floatArray != null ? __ID_floatArray : 0;
 
         collectFloatArray(cursor, 0, 0,
-                __id35, floatArray);
+                __id36, floatArray);
 
         float[] floatArrayHnsw = entity.floatArrayHnsw;
-        int __id37 = floatArrayHnsw != null ? __ID_floatArrayHnsw : 0;
+        int __id38 = floatArrayHnsw != null ? __ID_floatArrayHnsw : 0;
 
         collectFloatArray(cursor, 0, 0,
-                __id37, floatArrayHnsw);
+                __id38, floatArrayHnsw);
 
         double[] doubleArray = entity.doubleArray;
-        int __id36 = doubleArray != null ? __ID_doubleArray : 0;
+        int __id37 = doubleArray != null ? __ID_doubleArray : 0;
 
         collectDoubleArray(cursor, 0, 0,
-                __id36, doubleArray);
+                __id37, doubleArray);
 
         String[] simpleStringArray = entity.simpleStringArray;
         int __id20 = simpleStringArray != null ? __ID_simpleStringArray : 0;
