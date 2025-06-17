@@ -1,5 +1,4 @@
 
-import org.gradle.kotlin.dsl.support.serviceOf
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
@@ -175,16 +174,6 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
     agp41TestRuntimeOnly("com.android.tools.build:gradle:$agp41Version")
     agp73TestRuntimeOnly("com.android.tools.build:gradle:$agp73Version")
-    // Android Plugin 4.2.0 and higher require the BuildEventListenerFactory class,
-    // which Gradle does not include by default, so manually add it.
-    // https://github.com/gradle/gradle/issues/16774#issuecomment-853407822
-    // https://issuetracker.google.com/issues/193859160
-    agp73TestRuntimeOnly(
-        files(
-            serviceOf<org.gradle.api.internal.classpath.ModuleRegistry>().getModule("gradle-tooling-api-builders")
-                .classpath.asFiles.first()
-        )
-    )
 
     testImplementation("io.objectbox:objectbox-java:$objectboxJavaVersion")
     testImplementation("org.greenrobot:essentials:$essentialsVersion")
