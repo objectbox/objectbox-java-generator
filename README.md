@@ -23,7 +23,7 @@ The plugin
 
 ## Development
 
-This project is known to build with JDK 17.
+This project is known to build with JDK 21.
 
 This repository contains a collection of Gradle subprojects:
 - `objectbox-gradle-plugin` provides the actual Gradle plugins (`io.objectbox` and `io.objectbox.sync`),
