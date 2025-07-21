@@ -239,10 +239,7 @@ class IdSync(private val jsonFile: File = File("objectmodel.json")) {
             }
             // Repeat e.message so it shows up in gradle right away
             val message = "Could not sync parsed model with ID model file \"${jsonFile.absolutePath}\": ${e.message}"
-            val fileSyncException = IdSyncException(message, e)
-            // To help diagnose errors, print stack trace
-            fileSyncException.printStackTrace()
-            throw fileSyncException
+            throw IdSyncException(message, e)
         }
 
         // update schema with new IDs
