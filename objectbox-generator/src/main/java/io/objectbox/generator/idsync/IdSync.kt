@@ -313,12 +313,13 @@ class IdSync(private val jsonFile: File = File("objectmodel.json")) {
         val relations = syncRelations(schemaEntity, existingEntity)
 
         val entity = Entity(
-            name = schemaEntity.getName(),
             id = IdUid(schemaEntity.modelId, schemaEntity.modelUid),
+            name = schemaEntity.getName(),
+            externalName = schemaEntity.externalName,
             flags = schemaEntity.entityFlagsForModelFile,
+            lastPropertyId = lastPropertyId,
             properties = properties,
-            relations = relations,
-            lastPropertyId = lastPropertyId
+            relations = relations
         )
         // update schema entity
         schemaEntity.lastPropertyId = entity.lastPropertyId
@@ -391,12 +392,13 @@ class IdSync(private val jsonFile: File = File("objectmodel.json")) {
             existingProperty.id // use existing id + uid
         }
         val property = Property(
-            name = name,
             id = sourceId.clone(),
-            indexId = sourceIndexId?.clone(),
+            name = name,
             type = schemaProperty.dbTypeId.toInt(),
+            externalName = schemaProperty.externalName,
             externalType = schemaProperty.externalTypeId?.toInt(),
             flags = schemaProperty.propertyFlagsForModelFile,
+            indexId = sourceIndexId?.clone(),
             relationTarget = schemaProperty.targetEntity?.dbName
         )
 
@@ -469,8 +471,9 @@ class IdSync(private val jsonFile: File = File("objectmodel.json")) {
             existingRelation.id // use existing id + uid
         }
         val relation = Relation(
-            name = name,
             id = sourceId.clone(),
+            name = name,
+            externalName = schemaRelation.externalName,
             externalType = schemaRelation.externalTypeId?.toInt(),
             // issue: schemaRelation.targetEntity might not have modelId or modelUid set by now
             targetId = IdUid(schemaRelation.targetEntity.modelId, schemaRelation.targetEntity.modelUid)

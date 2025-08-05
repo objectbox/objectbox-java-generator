@@ -19,6 +19,7 @@
 package io.objectbox.processor
 
 import io.objectbox.annotation.Backlink
+import io.objectbox.annotation.ExternalName
 import io.objectbox.annotation.ExternalType
 import io.objectbox.annotation.NameInDb
 import io.objectbox.annotation.TargetIdProperty
@@ -92,6 +93,7 @@ class Relations(private val messages: Messages) {
                 isFieldAccessible = isFieldAccessible
             )
         } else {
+            val externalName = field.getAnnotation(ExternalName::class.java)?.value
             // Note: for a standalone ToMany only vector based external types are allowed, but leaving checks to the
             // database to not duplicate them here.
             val externalType = field.getAnnotation(ExternalType::class.java)?.value
@@ -102,6 +104,7 @@ class Relations(private val messages: Messages) {
                 targetEntityName = targetEntityName,
                 isFieldAccessible = isFieldAccessible,
                 uid = uid.let { if (it == 0L) -1L else it },
+                externalName = externalName,
                 externalTypeId = externalType?.let { ExternalPropertyTypeMapper.toId(it) },
                 externalTypeExpression = externalType?.let { ExternalPropertyTypeMapper.toExpression(it) }
             )

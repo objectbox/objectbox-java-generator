@@ -1,6 +1,6 @@
 /*
  * ObjectBox Build Tools
- * Copyright (C) 2017-2024 ObjectBox Ltd.
+ * Copyright (C) 2017-2025 ObjectBox Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -20,6 +20,7 @@ package io.objectbox.processor
 
 import io.objectbox.annotation.BaseEntity
 import io.objectbox.annotation.Entity
+import io.objectbox.annotation.ExternalName
 import io.objectbox.annotation.NameInDb
 import io.objectbox.annotation.Sync
 import io.objectbox.annotation.Uid
@@ -321,6 +322,10 @@ open class ObjectBoxProcessor : AbstractProcessor() {
                 entityModel.dbName = nameInDbAnnotation.value
             }
         }
+
+        // @ExternalName
+        entity.getAnnotation(ExternalName::class.java)?.value
+            ?.also { entityModel.setExternalName(it) }
 
         // @Uid
         val uidAnnotation = entity.getAnnotation(Uid::class.java)

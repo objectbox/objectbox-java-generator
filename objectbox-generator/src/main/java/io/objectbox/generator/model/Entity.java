@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import io.objectbox.generator.IdUid;
@@ -73,6 +74,7 @@ public class Entity implements HasParsedElement {
     private Object parsedElement;
     private boolean syncEnabled;
     private boolean syncSharedGlobalIds;
+    @Nullable private String externalName;
 
     private Integer entityFlags;
     private Integer entityFlagsModelFile;
@@ -472,6 +474,21 @@ public class Entity implements HasParsedElement {
 
     public void setSyncSharedGlobalIds(boolean enabled) {
         this.syncSharedGlobalIds = enabled;
+    }
+
+    /**
+     * The {@link io.objectbox.annotation.ExternalName} of this entity.
+     */
+    @Nullable
+    public String getExternalName() {
+        return externalName;
+    }
+
+    /**
+     * @see #getExternalName()
+     */
+    public void setExternalName(@Nonnull String externalName) {
+        this.externalName = externalName;
     }
 
     /**

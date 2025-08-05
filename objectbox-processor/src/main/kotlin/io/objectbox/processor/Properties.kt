@@ -22,6 +22,7 @@ import io.objectbox.annotation.ConflictStrategy
 import io.objectbox.annotation.Convert
 import io.objectbox.annotation.DatabaseType
 import io.objectbox.annotation.DefaultValue
+import io.objectbox.annotation.ExternalName
 import io.objectbox.annotation.ExternalType
 import io.objectbox.annotation.HnswIndex
 import io.objectbox.annotation.Id
@@ -246,8 +247,15 @@ class Properties(
             }
         }
 
+        // @ExternalName
+        field.getAnnotation(ExternalName::class.java)?.value
+            ?.also { propertyBuilder.externalName(it) }
+
         // @ExternalType
-        parseExternalTypeAnnotation(field, propertyBuilder)
+        // Note: not validating the external type for the property type here. Instead, let the database do
+        // it at runtime as this can be complex. And we don't want to maintain checks in multiple places.
+        field.getAnnotation(ExternalType::class.java)?.value
+            ?.also { propertyBuilder.externalType(it) }
 
         // @Index, @Unique
         parseIndexAndUniqueAnnotations(field, propertyBuilder, hasIdAnnotation)
@@ -265,15 +273,6 @@ class Properties(
             val uid = if (uidAnnotation.value == 0L) -1 else uidAnnotation.value
             propertyBuilder.modelId(IdUid(0, uid))
         }
-    }
-
-    private fun parseExternalTypeAnnotation(field: VariableElement, propertyBuilder: Property.PropertyBuilder) {
-        val externalTypeAnnotation = field.getAnnotation(ExternalType::class.java) ?: return
-
-        // Note: not validating the external type is allowed for the property type here. Instead, let the database do
-        // it at runtime as this can be complex. And we don't want to maintain checks in multiple places.
-
-        propertyBuilder.externalType(externalTypeAnnotation.value)
     }
 
     private fun parseHnswIndexAnnotation(field: VariableElement, propertyBuilder: Property.PropertyBuilder) {

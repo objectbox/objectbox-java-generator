@@ -88,6 +88,7 @@ data class Entity(
     override val id: IdUid = IdUid(),
     val lastPropertyId: IdUid,
     val name: String,
+    val externalName: String?,
     val flags: Int?,
     val properties: List<Property>,
     val relations: List<Relation>?
@@ -99,6 +100,7 @@ data class Property(
     val name: String,
     val indexId: IdUid?,
     val type: Int?,
+    val externalName: String?,
     val externalType: Int?,
     val flags: Int?,
     val relationTarget: String?
@@ -108,6 +110,7 @@ data class Property(
 data class Relation(
     override val id: IdUid = IdUid(),
     val name: String,
+    val externalName: String?,
     val externalType: Int?,
     val targetId: IdUid?
 ) : HasIdUid

@@ -1,6 +1,6 @@
 /*
  * ObjectBox Build Tools
- * Copyright (C) 2017-2024 ObjectBox Ltd.
+ * Copyright (C) 2017-2025 ObjectBox Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -50,9 +50,16 @@ public class Property implements HasParsedElement {
         }
 
         /**
-         * Sets an external type for this property.
-         *
-         * @param externalType One of the {@link ExternalPropertyType} enums.
+         * @see Property#getExternalName()
+         */
+        public PropertyBuilder externalName(String externalName) {
+            property.externalName = externalName;
+            return this;
+        }
+
+        /**
+         * @see Property#getExternalTypeId()
+         * @see Property#getExternalTypeExpression()
          */
         public PropertyBuilder externalType(ExternalPropertyType externalType) {
             property.externalTypeId = ExternalPropertyTypeMapper.toId(externalType);
@@ -218,6 +225,8 @@ public class Property implements HasParsedElement {
     private Short dbTypeId;
 
     @Nullable
+    private String externalName;
+    @Nullable
     private Short externalTypeId;
     @Nullable
     private String externalTypeExpression;
@@ -316,6 +325,16 @@ public class Property implements HasParsedElement {
     }
 
     /**
+     * The {@link io.objectbox.annotation.ExternalName} of this property.
+     */
+    @Nullable
+    public String getExternalName() {
+        return externalName;
+    }
+
+    /**
+     * The ID of the {@link io.objectbox.annotation.ExternalType} of this property.
+     * <p>
      * See {@link ExternalPropertyTypeMapper#toId(ExternalPropertyType)}.
      */
     @Nullable
@@ -324,6 +343,9 @@ public class Property implements HasParsedElement {
     }
 
     /**
+     * The code expression to use in generated {@link io.objectbox.ModelBuilder} code that sets the
+     * {@link io.objectbox.annotation.ExternalType} of this property.
+     * <p>
      * See {@link ExternalPropertyTypeMapper#toExpression(ExternalPropertyType)}.
      */
     @Nullable
