@@ -66,6 +66,9 @@ public class MyObjectBox {
 <#list schema.entities as entity>
     private static void buildEntity${entity.className}(ModelBuilder modelBuilder) {
         EntityBuilder entityBuilder = modelBuilder.entity("${entity.dbName}");
+    <#if entity.externalName??>
+        entityBuilder.externalName("${entity.externalName}");
+    </#if>
     <#if entity.modelId??>
         entityBuilder.id(${entity.modelId?c}, ${entity.modelUid?c}L)<#if
         entity.lastPropertyId??>.lastPropertyId(${entity.lastPropertyId.id?c}, ${entity.lastPropertyId.uid?c}L)</#if>;
@@ -77,23 +80,40 @@ public class MyObjectBox {
 
     <#list entity.propertiesColumns as property>
         <#assign propertyFlags = property.propertyFlagsForGeneratedCode>
+        <#-- To have each builder call on a new line: remove line breaks after with rt and add explicit once before each method. -->
         entityBuilder.property("${property.dbName}", <#--
         --><#if property.targetEntity??>"${property.targetEntity.dbName}", <#--
             --><#if property.virtualTargetName??>"${property.virtualTargetName}", </#if></#if><#--
-        -->PropertyType.${property.dbType})<#--
-        --><#if property.propertyName != property.dbName>.secondaryName("${property.propertyName}")</#if><#--
-        --><#if property.modelId??>.id(${property.modelId.id?c}, ${property.modelId.uid?c}L)</#if><#--
-        --><#if (propertyFlags?size > 0)>
+        -->PropertyType.${property.dbType})<#rt>
+            <#if property.propertyName != property.dbName>
 
-                .flags(${propertyFlags?join(" | ")})</#if><#--
-        --><#if property.index?? && (property.index.maxValueLength > 0)>.indexMaxValueLength(${property.index.maxValueLength?c})</#if><#--
-        --><#if property.modelIndexId??>.indexId(${property.modelIndexId.id?c}, ${property.modelIndexId.uid?c}L)</#if><#--
-        --><#if property.externalTypeExpression??>
+                .secondaryName("${property.propertyName}")<#rt>
+            </#if>
+            <#if property.modelId??>
 
-                ${property.externalTypeExpression}</#if><#--
-        --><#if property.hasHnswParams()>
+                .id(${property.modelId.id?c}, ${property.modelId.uid?c}L)<#rt>
+            </#if>
+            <#if (propertyFlags?size > 0)>
 
-                ${property.hnswParamsExpression}</#if>;
+                .flags(${propertyFlags?join(" | ")})<#rt>
+            </#if>
+            <#if property.index?? && (property.index.maxValueLength > 0)>
+
+                .indexMaxValueLength(${property.index.maxValueLength?c})<#rt>
+            </#if>
+            <#if property.modelIndexId??>
+
+                .indexId(${property.modelIndexId.id?c}, ${property.modelIndexId.uid?c}L)<#rt>
+            </#if>
+            <#if property.externalTypeExpression??>
+                
+                ${property.externalTypeExpression}<#rt>
+            </#if>
+            <#if property.hasHnswParams()>
+
+                ${property.hnswParamsExpression}<#rt>
+            </#if>
+            ;<#lt>
     </#list>
     <#-- Standalone ToMany relations (see condition which filters below) -->
     <#if entity.toManyRelations?size != 0>
