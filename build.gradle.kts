@@ -2,7 +2,7 @@ plugins {
     // https://github.com/ben-manes/gradle-versions-plugin/releases
     id("com.github.ben-manes.versions") version "0.46.0"
     // https://github.com/gradle-nexus/publish-plugin/releases
-    id("io.github.gradle-nexus.publish-plugin") version "1.3.0"
+    id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
     // https://github.com/gmazzo/gradle-buildconfig-plugin/releases
     id("com.github.gmazzo.buildconfig") version "4.0.3" apply false // code-modifier, gradle-plugin
 }
@@ -151,21 +151,22 @@ tasks.wrapper {
     distributionType = Wrapper.DistributionType.ALL
 }
 
-// Plugin to publish to Central https://github.com/gradle-nexus/publish-plugin/
+// Plugin to publish to Maven Central https://github.com/gradle-nexus/publish-plugin/
 // This plugin ensures a separate, named staging repo is created for each build when publishing.
 nexusPublishing {
     this.repositories {
         sonatype {
-            // Staging profile ID for io.objectbox is 1c4c69cbbab380
-            // Get via https://oss.sonatype.org/service/local/staging/profiles
-            // or with Nexus Staging Plugin getStagingProfile task.
-            stagingProfileId.set("1c4c69cbbab380")
+            // Use the Portal OSSRH Staging API as this plugin does not support the new Portal API
+            // https://central.sonatype.org/publish/publish-portal-ossrh-staging-api/#configuring-your-plugin
+            nexusUrl.set(uri("https://ossrh-staging-api.central.sonatype.com/service/local/"))
+            snapshotRepositoryUrl.set(uri("https://central.sonatype.com/repository/maven-snapshots/"))
+
             if (project.hasProperty("sonatypeUsername") && project.hasProperty("sonatypePassword")) {
-                println("nexusPublishing credentials supplied.")
+                println("Publishing: Sonatype Maven Central credentials supplied.")
                 username.set(project.property("sonatypeUsername").toString())
                 password.set(project.property("sonatypePassword").toString())
             } else {
-                println("nexusPublishing credentials NOT supplied.")
+                println("Publishing: Sonatype Maven Central credentials NOT supplied.")
             }
         }
     }
