@@ -1,3 +1,13 @@
+// This script supports some Gradle project properties:
+// https://docs.gradle.org/current/userguide/build_environment.html#sec:project_properties
+// - versionPostFix: appended to snapshot version number, e.g. "1.2.3-<versionPostFix>-SNAPSHOT".
+//   Use to create different versions based on branch/tag.
+// - sonatypeUsername: Maven Central credential used by Nexus publishing.
+// - sonatypePassword: Maven Central credential used by Nexus publishing.
+// This script supports the following environment variables:
+// - OBX_RELEASE: If set to "true" builds release versions without version postfix.
+//   Otherwise, will build snapshot versions.
+
 plugins {
     // https://github.com/ben-manes/gradle-versions-plugin/releases
     id("com.github.ben-manes.versions") version "0.46.0"
@@ -8,10 +18,15 @@ plugins {
 }
 
 buildscript {
-    val versionNumber = "4.3.1" // Without "-SNAPSHOT", e.g. "2.5.0" or "2.4.0-RC".
-    val isRelease = false       // WARNING: only set true to publish a release on publish branch!
-                                // See the release checklist for details.
-                                // Makes this produce release artifacts, changes dependencies to release versions.
+    // Version of Maven artifacts
+    // Should only be changed as part of the release process, see the release checklist in the objectbox repo
+    val versionNumber = "4.3.1"
+
+    // Release mode should only be enabled when manually triggering a CI pipeline,
+    // see the release checklist in the objectbox repo.
+    // If true won't build snapshots and removes version post fix (e.g. "-dev-SNAPSHOT"),
+    // uses release versions of dependencies.
+    val isRelease = System.getenv("OBX_RELEASE") == "true"
 
     val libsRelease = isRelease // e.g. diverge if plugin is still SNAPSHOT, but libs are already final
     val libsVersion = versionNumber + (if (libsRelease) "" else "-dev-SNAPSHOT")
