@@ -489,6 +489,7 @@ class IdSyncTest {
                 targetEntityName = this.className,
                 isFieldAccessible = true,
                 uid = null,
+                externalName = null,
                 externalTypeId = null,
                 externalTypeExpression = null
             ), this
