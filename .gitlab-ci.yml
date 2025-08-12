@@ -3,6 +3,15 @@
 # Default image for linux builds
 image: objectboxio/buildenv-android:2023-07-28 # Includes JDK 17.0.8
 
+# Assumes these environment variables are configured in GitLab CI/CD Settings:
+# - SONATYPE_USER
+# - SONATYPE_PWD
+# - GOOGLE_CHAT_WEBHOOK_JAVA_CI
+# Additionally, these environment variables used by the objectbox-publish Gradle script:
+# - ORG_GRADLE_PROJECT_signingKeyFile
+# - ORG_GRADLE_PROJECT_signingKeyId
+# - ORG_GRADLE_PROJECT_signingPassword
+
 variables:
   # Disable the Gradle daemon. Gradle may run in a Docker container with a shared
   # Docker volume containing GRADLE_USER_HOME. If the container is stopped after a job
