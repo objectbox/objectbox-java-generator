@@ -80,7 +80,7 @@ public class MyObjectBox {
 
     <#list entity.propertiesColumns as property>
         <#assign propertyFlags = property.propertyFlagsForGeneratedCode>
-        <#-- To have each builder call on a new line: remove line breaks after with rt and add explicit once before each method. -->
+        <#-- To have each builder call on a new line: remove line break afterwards with rt and add an explicit one before each method. -->
         entityBuilder.property("${property.dbName}", <#--
         --><#if property.targetEntity??>"${property.targetEntity.dbName}", <#--
             --><#if property.virtualTargetName??>"${property.virtualTargetName}", </#if></#if><#--
@@ -105,6 +105,10 @@ public class MyObjectBox {
 
                 .indexId(${property.modelIndexId.id?c}, ${property.modelIndexId.uid?c}L)<#rt>
             </#if>
+            <#if property.externalName??>
+
+                .externalName("${property.externalName}")<#rt>
+            </#if>
             <#if property.externalTypeExpression??>
                 
                 ${property.externalTypeExpression}<#rt>
@@ -121,10 +125,17 @@ public class MyObjectBox {
     <#list entity.toManyRelations as toMany>
         <#-- Filter by ToManyStandalone (only it has a modelId getter) -->
         <#if toMany.modelId??>
-        entityBuilder.relation("${toMany.dbName}", ${toMany.modelId.id?c}, ${toMany.modelId.uid?c}L, ${toMany.targetEntity.modelId?c}, ${toMany.targetEntity.modelUid?c}L)<#--
-        --><#if toMany.externalTypeExpression??>
+        <#-- To have each builder call on a new line: remove line break afterwards with rt and add an explicit one before each method. -->
+        entityBuilder.relation("${toMany.dbName}", ${toMany.modelId.id?c}, ${toMany.modelId.uid?c}L, ${toMany.targetEntity.modelId?c}, ${toMany.targetEntity.modelUid?c}L)<#rt>
+            <#if toMany.externalName??>
 
-                ${toMany.externalTypeExpression}</#if>;
+                .externalName("${toMany.externalName}")<#rt>
+            </#if>
+            <#if toMany.externalTypeExpression??>
+
+                ${toMany.externalTypeExpression}<#rt>
+            </#if>
+            ;<#lt>
         </#if>
     </#list>
     </#if>

@@ -28,7 +28,22 @@ class ToManyStandalone(
     targetEntityName: String,
     isFieldAccessible: Boolean,
     uid: Long?,
+    /**
+     * The [io.objectbox.annotation.ExternalName] of this ToMany.
+     */
+    val externalName: String?,
+    /**
+     * The ID of the [io.objectbox.annotation.ExternalType] of this ToMany.
+     *
+     * See [ExternalPropertyTypeMapper.toId].
+     */
     val externalTypeId: Short?,
+    /**
+     * The code expression to use in generated [io.objectbox.ModelBuilder] code that sets the
+     * [io.objectbox.annotation.ExternalType] of this ToMany.
+     *
+     * See [ExternalPropertyTypeMapper.toExpression].
+     */
     val externalTypeExpression: String?
 ) : ToManyBase(name, targetEntityName, isFieldAccessible) {
 
