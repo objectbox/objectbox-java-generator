@@ -104,7 +104,7 @@ fun createPluginClasspathFile(suffix: String = ""): PluginClassPathFile {
         description = "Creates classpath manifest for the plugin."
         group = "verification"
 
-        val outputDir = file("$buildDir/${this.name}")
+        val outputDir = layout.buildDirectory.dir(this.name).get().asFile
 
         // Add main source set runtime classpath as task input.
         inputs.files(sourceSets.main.get().runtimeClasspath)
@@ -221,7 +221,7 @@ publishing {
         // A test repository used for integration tests of this module.
         repositories {
             maven {
-                url = uri("$buildDir/repository")
+                url = uri(layout.buildDirectory.dir("repository").get().asFile)
                 name = "test"
             }
         }
