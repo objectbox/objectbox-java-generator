@@ -138,13 +138,10 @@ configureTestTaskForTestKit(tasks.test)
 // Test Android Plugin with
 // - the lowest supported version and
 // - with the latest API implemented (in the future might add tests for all API levels supported).
-val (agp41TestImplementation, agp41TestRuntimeOnly) =
-    createTestKitSourceSet("agp41", "Runs Android Plugin 4.1 integration tests.")
 val (agp73TestImplementation, agp73TestRuntimeOnly) =
     createTestKitSourceSet("agp73", "Runs Android Plugin 7.3 integration tests.")
 
 val (testPluginClasspath, testPluginClasspathFile) = createPluginClasspathFile()
-val (testPluginClasspathagp41, testPluginClasspathagp41File) = createPluginClasspathFile("agp41")
 val (testPluginClasspathagp73, testPluginClasspathagp73File) = createPluginClasspathFile("agp73")
 
 dependencies {
@@ -161,9 +158,6 @@ dependencies {
     testImplementation(gradleTestKit())
     // For new Gradle TestKit tests (see GradleTestRunner).
     testRuntimeOnly(files(testPluginClasspathFile))
-    val agp41Version = "4.1.3"
-    testPluginClasspathagp41("com.android.tools.build:gradle:$agp41Version")
-    agp41TestRuntimeOnly(files(testPluginClasspathagp41File))
     // Note: not testing with 7.4.0 as it ships Gradle metadata requiring Java 11 which would require a more complicated
     // testing setup. 7.3.0 also supports Gradle 8.
     val agp73Version = "7.3.0"
@@ -172,7 +166,6 @@ dependencies {
 
     // For plugin apply tests and outdated TestKit tests (dir "test-gradle-projects").
     testImplementation("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
-    agp41TestRuntimeOnly("com.android.tools.build:gradle:$agp41Version")
     agp73TestRuntimeOnly("com.android.tools.build:gradle:$agp73Version")
 
     testImplementation("io.objectbox:objectbox-java:$objectboxJavaVersion")
