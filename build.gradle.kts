@@ -78,7 +78,7 @@ buildscript {
     // Set kotlinVersion to the Kotlin version embedded by the Gradle version used to compile this project (needs to
     // be the exact version to avoid conflicts):
     // https://docs.gradle.org/current/userguide/compatibility.html or see output of `gradlew --version`
-    val kotlinVersion by extra("2.0.21") // Embedded by Gradle 8.12.1 used to compile this
+    val kotlinVersion by extra("2.0.21") // Embedded by Gradle 8.14.4 used to compile this
     // To remain compatible with the lowest supported version of Gradle (see GradleCompat), set kotlinApiLevel to
     // the Kotlin language level supported by that version: https://docs.gradle.org/current/userguide/compatibility.html
     val kotlinApiLevel by extra("1.4") // Minimum supported Gradle 7.0 bundles Kotlin 1.4
