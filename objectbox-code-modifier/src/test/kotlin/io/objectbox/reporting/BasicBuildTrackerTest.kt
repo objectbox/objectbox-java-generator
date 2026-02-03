@@ -22,6 +22,7 @@ import com.google.common.truth.Truth.assertThat
 import com.google.crypto.tink.Aead
 import com.google.crypto.tink.InsecureSecretKeyAccess
 import com.google.crypto.tink.KeysetHandle
+import com.google.crypto.tink.RegistryConfiguration
 import com.google.crypto.tink.TinkProtoKeysetFormat
 import com.google.crypto.tink.aead.AeadConfig
 import com.google.crypto.tink.aead.PredefinedAeadParameters
@@ -134,7 +135,7 @@ class BasicBuildTrackerTest {
         val handle = KeysetHandle.generateNew(PredefinedAeadParameters.CHACHA20_POLY1305)
         val serializedKeyset = TinkProtoKeysetFormat.serializeKeyset(handle, InsecureSecretKeyAccess.get())
 
-        val aead = handle.getPrimitive(Aead::class.java)
+        val aead = handle.getPrimitive(RegistryConfiguration.get(), Aead::class.java)
 
         val message = token.encodeToByteArray()
         val ciphertext = aead.encrypt(message, BasicBuildTracker.TOKEN_EMPTY_ASSOCIATED_DATA)

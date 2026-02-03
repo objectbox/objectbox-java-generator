@@ -20,6 +20,7 @@ package io.objectbox.reporting
 
 import com.google.crypto.tink.Aead
 import com.google.crypto.tink.InsecureSecretKeyAccess
+import com.google.crypto.tink.RegistryConfiguration
 import com.google.crypto.tink.TinkProtoKeysetFormat
 import com.google.crypto.tink.aead.AeadConfig
 import com.squareup.moshi.JsonWriter
@@ -184,7 +185,7 @@ open class BasicBuildTracker(
         AeadConfig.register()
 
         val handle = TinkProtoKeysetFormat.parseKeyset(serializedKeyset, InsecureSecretKeyAccess.get())
-        val aead = handle.getPrimitive(Aead::class.java)
+        val aead = handle.getPrimitive(RegistryConfiguration.get(), Aead::class.java)
 
         return aead.decrypt(obfuscatedToken, TOKEN_EMPTY_ASSOCIATED_DATA).toString(charset = Charsets.UTF_8)
     }
