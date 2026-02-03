@@ -1,10 +1,7 @@
 
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
-import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 import java.util.*
-
-// https://docs.gradle.org/current/userguide/custom_plugins.html
 
 val kotlinVersion: String by rootProject.extra
 val kotlinApiLevel: String by rootProject.extra
@@ -20,25 +17,28 @@ val okioVersion: String by rootProject.extra
 plugins {
     kotlin("jvm")
     id("com.github.gmazzo.buildconfig")
+    // https://docs.gradle.org/current/userguide/plugins.html
     id("objectbox-publish")
     id("objectbox-disable-analytics")
 }
 
-// Android Plugin 7 tests require JDK 11, so set toolchain to 11 but still only allow and compile Java 8 code.
+// Use a modern LTS JDK to compile: currently 21 to match the Android Studio default. Android Gradle Plugin 8 tests
+// require at least JDK 17.
+// Target the oldest release possible: currently 11 to support adding Android Gradle Plugin 8 as a dependency.
 // https://docs.gradle.org/current/userguide/building_java_projects.html#sec:java_cross_compilation
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(11))
+        languageVersion.set(JavaLanguageVersion.of(21))
     }
 }
 
 tasks.withType<JavaCompile>().configureEach {
-    options.release.set(8)
+    options.release.set(11)
 }
 
-tasks.withType<KotlinJvmCompile>().configureEach {
+kotlin {
     compilerOptions {
-        jvmTarget.set(JvmTarget.JVM_1_8)
+        jvmTarget.set(JvmTarget.JVM_11)
         // Match Kotlin language level used by minimum supported Gradle version, see root build script for details.
         apiVersion.set(KotlinVersion.fromVersion(kotlinApiLevel))
     }

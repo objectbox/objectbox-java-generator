@@ -19,7 +19,7 @@ The plugin
 
 - Gradle `7.0` (see [GradleCompat](objectbox-gradle-plugin/src/main/kotlin/io/objectbox/gradle/util/GradleCompat.kt))
 - Android Plugin `4.1` (see [AndroidCompat](objectbox-gradle-plugin/src/main/kotlin/io/objectbox/gradle/util/AndroidCompat.kt))
-- JDK 8
+- JDK 11
                    
 For JVM projects, the Java byte code transformer supports `@Entity` classes using up to Java 11 byte code. 
 
