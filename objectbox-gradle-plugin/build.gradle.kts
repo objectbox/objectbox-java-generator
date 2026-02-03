@@ -44,6 +44,12 @@ kotlin {
     }
 }
 
+tasks.withType<Test>().configureEach {
+    // For tests using ProjectBuilder, open some JDK internal classes as Gradle 8 no longer does
+    // https://docs.gradle.com/develocity/test-distribution/current/#accessing-jdk-internal-classes-from-your-tests
+    jvmArgs("--add-opens", "java.base/java.lang=ALL-UNNAMED")
+}
+
 /**
  * Create a new source set for testing, configures the implementation and runtimeOnly configuration to inherit all
  * dependencies from test, creates a test task.
