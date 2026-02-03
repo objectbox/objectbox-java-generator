@@ -18,7 +18,7 @@
 
 package io.objectbox.gradle
 
-import org.gradle.util.GradleVersion
+import org.gradle.testkit.runner.GradleRunner
 import org.intellij.lang.annotations.Language
 
 
@@ -57,8 +57,16 @@ class Android81ProjectPluginTest : AndroidProjectPluginTest() {
         </manifest>
         """.trimIndent()
 
-    override val androidPluginVersion: String = "8.1.4"
-    override val gradleVersion: String = GradleVersion.current().version
+    // Test with the oldest possible version of Gradle (JDK 21 requires Gradle 8.5, Android Plugin 8.1 requires Gradle
+    // 8.0, this plugin (see GradleCompat) requires Gradle 7.0).
+    private val gradleVersionLowest = "8.5"
+    override val additionalRunnerConfiguration: ((GradleRunner) -> Unit) = {
+        it.forwardOutput()
+        it.withGradleVersion(gradleVersionLowest)
+    }
+
+    override val expectedAndroidPluginVersion: String = "8.1.4"
+    override val expectedGradleVersion: String = gradleVersionLowest
 
     // New ASM based transformers output to a different path. The path has also changed with Android Gradle Plugin 8.
     override val buildTransformDirectory =
