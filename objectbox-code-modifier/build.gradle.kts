@@ -44,7 +44,9 @@ dependencies {
     implementation("com.squareup.moshi:moshi:$moshiVersion")
     kapt("com.squareup.moshi:moshi-kotlin-codegen:$moshiVersion")
     implementation("com.squareup.okio:okio:$okioVersion")
-    implementation("com.google.crypto.tink:tink:1.12.0")
+    // Tink 1.19.0 requires Java 11
+    // https://github.com/tink-crypto/tink-java/releases
+    implementation("com.google.crypto.tink:tink:1.18.0")
 
     implementation("io.objectbox:objectbox-java:$objectboxJavaVersion")
 
