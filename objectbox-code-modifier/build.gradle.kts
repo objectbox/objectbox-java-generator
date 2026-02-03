@@ -45,8 +45,9 @@ dependencies {
     kapt("com.squareup.moshi:moshi-kotlin-codegen:$moshiVersion")
     implementation("com.squareup.okio:okio:$okioVersion")
     // Tink 1.19.0 requires Java 11
+    // Tink 1.16.0 includes protobuf-java 4.28.2 which removes a method required by a Android Gradle Plugin 8.1 dependency
     // https://github.com/tink-crypto/tink-java/releases
-    implementation("com.google.crypto.tink:tink:1.18.0")
+    implementation("com.google.crypto.tink:tink:1.15.0")
 
     implementation("io.objectbox:objectbox-java:$objectboxJavaVersion")
 
