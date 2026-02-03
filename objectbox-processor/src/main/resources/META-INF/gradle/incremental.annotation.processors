@@ -1,0 +1,2 @@
+# Tells Gradle to check annotation processor options if it supports incremental processing, see class docs for details
+io.objectbox.processor.ObjectBoxProcessorShim,dynamic

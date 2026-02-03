@@ -39,15 +39,6 @@ dependencies {
 
     implementation("io.objectbox:objectbox-java-api:$objectboxJavaVersion")
     implementation("io.objectbox:objectbox-java:$objectboxJavaVersion")
-    // auto-service generates service configuration for annotation processor.
-    val autoService = "1.0.1"
-    compileOnly("com.google.auto.service:auto-service-annotations:$autoService")
-    annotationProcessor("com.google.auto.service:auto-service:$autoService")
-    // incap generates the META-INF descriptor required to enable incremental annotation processing with Gradle.
-    // https://github.com/tbroyer/gradle-incap-helper/releases
-    val incap = "1.0.0"
-    implementation("net.ltgt.gradle.incap:incap:$incap")
-    annotationProcessor("net.ltgt.gradle.incap:incap-processor:$incap")
 
     // manually add tools.jar required by compile-testing
     val toolsJar = org.gradle.internal.jvm.Jvm.current().toolsJar
