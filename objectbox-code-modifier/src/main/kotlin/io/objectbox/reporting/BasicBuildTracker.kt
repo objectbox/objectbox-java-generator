@@ -169,7 +169,7 @@ open class BasicBuildTracker(
                     return deobfuscateToken(lines[0], lines[1])
                 }
             }
-        } catch (ignore: Exception) {
+        } catch (_: Exception) {
             // Ignore
         }
         return null
@@ -232,7 +232,7 @@ open class BasicBuildTracker(
             val response = con.inputStream.bufferedReader().readLine()
             if (disconnect) con.disconnect()
             return response
-        } catch (ignored: Exception) {
+        } catch (_: Exception) {
         }
         return null
     }
