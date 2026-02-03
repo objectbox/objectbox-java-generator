@@ -87,7 +87,7 @@ buildscript {
     // 3.24.0-GA and newer support Java 11 byte code
     val javassistVersion by extra("3.30.2-GA") // https://github.com/jboss-javassist/javassist/releases
     val junitVersion by extra("4.13.2") // https://junit.org/junit4/
-    val truthVersion by extra("1.1.3") // https://github.com/google/truth/releases
+    val truthVersion by extra("1.4.5") // https://github.com/google/truth/releases
     // mockito 5.0.0+ requires JDK 11
     val mockitoVersion by extra("4.11.0") // https://github.com/mockito/mockito/releases
     val moshiVersion by extra("1.15.0") // https://github.com/square/moshi/blob/master/CHANGELOG.md
