@@ -39,10 +39,10 @@ import java.util.*
 class BasicBuildTrackerTest {
 
     /**
-     * Create analysis-token.txt file.
+     * Creates the contents of the analysis-token.txt file.
      *
      * Obtain the project token from MixPanel project settings,
-     * insert below, then manually run this test.
+     * insert it below, then manually run this test.
      */
     @Ignore("Set token and run manually to create token file contents")
     @Test
@@ -50,13 +50,30 @@ class BasicBuildTrackerTest {
         val token = "REPLACE_WITH_TOKEN"
 
         val obfuscatedToken = obfuscateToken(token)
+        deobfuscateAndCheckSame(obfuscatedToken, token)
+
         val keyset = obfuscatedToken.serializedKeysetBase64
         val obfuscatedTokenBase64 = obfuscatedToken.obfuscatedTokenBase64
         println("Store this in src/main/resources/${BasicBuildTracker.TOKEN_FILE}:");
         println("$keyset\n$obfuscatedTokenBase64");
+    }
 
-        val decryptedToken = BasicBuildTracker("BasicBuildTrackerTest").deobfuscateToken(keyset, obfuscatedTokenBase64)
-        assertThat(decryptedToken).isEqualTo(token)
+    /**
+     * Checks token decryption works ([sendTestEvent] tests the full integration, but is skipped if decryption fails).
+     */
+    @Test
+    fun tokenEncryptionRoundTrip() {
+        val token = "DONT_USE_THIS_TOKEN"
+
+        val obfuscatedToken = obfuscateToken(token)
+
+        deobfuscateAndCheckSame(obfuscatedToken, token)
+    }
+
+    private fun deobfuscateAndCheckSame(tokenInfo: ObfuscatedTokenInfo, expectedToken: String) {
+        BasicBuildTracker("BasicBuildTrackerTest")
+            .deobfuscateToken(tokenInfo.serializedKeysetBase64, tokenInfo.obfuscatedTokenBase64)
+            .also { assertThat(it).isEqualTo(expectedToken) }
     }
 
     /**
