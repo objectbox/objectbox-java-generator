@@ -140,9 +140,12 @@ configureTestTaskForTestKit(tasks.test)
 // - with the latest API implemented (in the future might add tests for all API levels supported).
 val (agp73TestImplementation, agp73TestRuntimeOnly) =
     createTestKitSourceSet("agp73", "Runs Android Plugin 7.3 integration tests.")
+val (agp81TestImplementation, agp81TestRuntimeOnly) =
+    createTestKitSourceSet("agp81", "Runs Android Plugin 8.1 integration tests.")
 
 val (testPluginClasspath, testPluginClasspathFile) = createPluginClasspathFile()
 val (testPluginClasspathagp73, testPluginClasspathagp73File) = createPluginClasspathFile("agp73")
+val (testPluginClasspathagp81, testPluginClasspathagp81File) = createPluginClasspathFile("agp81")
 
 dependencies {
     implementation(project(":objectbox-code-modifier"))
@@ -163,10 +166,15 @@ dependencies {
     val agp73Version = "7.3.0"
     testPluginClasspathagp73("com.android.tools.build:gradle:$agp73Version")
     agp73TestRuntimeOnly(files(testPluginClasspathagp73File))
+    // Testing 8.1, lowest supported by the ObjectBox Android library as of release 4.2.0 (2025-03-04)
+    val agp81Version = "8.1.4"
+    testPluginClasspathagp81("com.android.tools.build:gradle:$agp81Version")
+    agp81TestRuntimeOnly(files(testPluginClasspathagp81File))
 
     // For plugin apply tests and outdated TestKit tests (dir "test-gradle-projects").
     testImplementation("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
     agp73TestRuntimeOnly("com.android.tools.build:gradle:$agp73Version")
+    agp81TestRuntimeOnly("com.android.tools.build:gradle:$agp81Version")
 
     testImplementation("io.objectbox:objectbox-java:$objectboxJavaVersion")
     testImplementation("org.greenrobot:essentials:$essentialsVersion")
