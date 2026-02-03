@@ -187,11 +187,11 @@ buildConfig {
     className("GradlePluginBuildConfig")
     packageName("io.objectbox")
 
-    buildConfigField("String", "VERSION", provider { "\"${project.version}\"" })
+    buildConfigField<String>("VERSION", provider { "${project.version}" })
     // Versions of libraries to add to projects applying the plugin.
-    buildConfigField("String", "APPLIES_JAVA_VERSION", provider { "\"$appliesObxJavaVersion\"" })
-    buildConfigField("String", "APPLIES_NATIVE_VERSION", provider { "\"$appliesObxJniLibVersion\"" })
-    buildConfigField("String", "APPLIES_NATIVE_SYNC_VERSION", provider { "\"$appliesObxSyncJniLibVersion\"" })
+    buildConfigField<String>("APPLIES_JAVA_VERSION", appliesObxJavaVersion)
+    buildConfigField<String>("APPLIES_NATIVE_VERSION", appliesObxJniLibVersion)
+    buildConfigField<String>("APPLIES_NATIVE_SYNC_VERSION", appliesObxSyncJniLibVersion)
 }
 
 val javadocJar by tasks.registering(Jar::class) {

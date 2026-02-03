@@ -61,7 +61,7 @@ buildConfig {
     className("CodeModifierBuildConfig")
     packageName("io.objectbox")
 
-    buildConfigField("String", "VERSION", provider { "\"${project.version}\"" })
+    buildConfigField<String>("VERSION", provider { "${project.version}" })
 }
 
 val javadocJar by tasks.registering(Jar::class) {
