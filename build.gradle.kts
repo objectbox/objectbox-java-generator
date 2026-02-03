@@ -84,7 +84,8 @@ buildscript {
     val kotlinApiLevel by extra("1.4") // Minimum supported Gradle 7.0 bundles Kotlin 1.4
 
     val essentialsVersion by extra("3.1.0")
-    val javassistVersion by extra("3.29.2-GA")
+    // 3.24.0-GA and newer support Java 11 byte code
+    val javassistVersion by extra("3.30.2-GA") // https://github.com/jboss-javassist/javassist/releases
     val junitVersion by extra("4.13.2") // https://junit.org/junit4/
     val truthVersion by extra("1.1.3") // https://github.com/google/truth/releases
     // mockito 5.0.0+ requires JDK 11
