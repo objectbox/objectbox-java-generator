@@ -155,7 +155,6 @@ val (testPluginClasspathagp81, testPluginClasspathagp81File) = createPluginClass
 
 dependencies {
     implementation(project(":objectbox-code-modifier"))
-    implementation(project(":agp-wrapper-3-4"))
     implementation(project(":agp-wrapper-7-2"))
 
     implementation(gradleApi())
