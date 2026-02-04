@@ -1,10 +1,7 @@
 
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
-import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 import java.util.*
-
-// https://docs.gradle.org/current/userguide/custom_plugins.html
 
 val kotlinVersion: String by rootProject.extra
 val kotlinApiLevel: String by rootProject.extra
@@ -20,28 +17,37 @@ val okioVersion: String by rootProject.extra
 plugins {
     kotlin("jvm")
     id("com.github.gmazzo.buildconfig")
+    // https://docs.gradle.org/current/userguide/plugins.html
     id("objectbox-publish")
     id("objectbox-disable-analytics")
 }
 
-// Android Plugin 7 tests require JDK 11, so set toolchain to 11 but still only allow and compile Java 8 code.
+// Use a modern LTS JDK to compile: currently 21 to match the Android Studio default. Android Gradle Plugin 8 tests
+// require at least JDK 17.
+// Target the oldest release possible: currently 11 to support adding Android Gradle Plugin 8 as a dependency.
 // https://docs.gradle.org/current/userguide/building_java_projects.html#sec:java_cross_compilation
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(11))
+        languageVersion.set(JavaLanguageVersion.of(21))
     }
 }
 
 tasks.withType<JavaCompile>().configureEach {
-    options.release.set(8)
+    options.release.set(11)
 }
 
-tasks.withType<KotlinJvmCompile>().configureEach {
+kotlin {
     compilerOptions {
-        jvmTarget.set(JvmTarget.JVM_1_8)
+        jvmTarget.set(JvmTarget.JVM_11)
         // Match Kotlin language level used by minimum supported Gradle version, see root build script for details.
         apiVersion.set(KotlinVersion.fromVersion(kotlinApiLevel))
     }
+}
+
+tasks.withType<Test>().configureEach {
+    // For tests using ProjectBuilder, open some JDK internal classes as Gradle 8 no longer does
+    // https://docs.gradle.com/develocity/test-distribution/current/#accessing-jdk-internal-classes-from-your-tests
+    jvmArgs("--add-opens", "java.base/java.lang=ALL-UNNAMED")
 }
 
 /**
@@ -140,13 +146,15 @@ configureTestTaskForTestKit(tasks.test)
 // - with the latest API implemented (in the future might add tests for all API levels supported).
 val (agp73TestImplementation, agp73TestRuntimeOnly) =
     createTestKitSourceSet("agp73", "Runs Android Plugin 7.3 integration tests.")
+val (agp81TestImplementation, agp81TestRuntimeOnly) =
+    createTestKitSourceSet("agp81", "Runs Android Plugin 8.1 integration tests.")
 
 val (testPluginClasspath, testPluginClasspathFile) = createPluginClasspathFile()
 val (testPluginClasspathagp73, testPluginClasspathagp73File) = createPluginClasspathFile("agp73")
+val (testPluginClasspathagp81, testPluginClasspathagp81File) = createPluginClasspathFile("agp81")
 
 dependencies {
     implementation(project(":objectbox-code-modifier"))
-    implementation(project(":agp-wrapper-3-4"))
     implementation(project(":agp-wrapper-7-2"))
 
     implementation(gradleApi())
@@ -163,10 +171,15 @@ dependencies {
     val agp73Version = "7.3.0"
     testPluginClasspathagp73("com.android.tools.build:gradle:$agp73Version")
     agp73TestRuntimeOnly(files(testPluginClasspathagp73File))
+    // Testing 8.1, lowest supported by the ObjectBox Android library as of release 4.2.0 (2025-03-04)
+    val agp81Version = "8.1.4"
+    testPluginClasspathagp81("com.android.tools.build:gradle:$agp81Version")
+    agp81TestRuntimeOnly(files(testPluginClasspathagp81File))
 
     // For plugin apply tests and outdated TestKit tests (dir "test-gradle-projects").
     testImplementation("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
     agp73TestRuntimeOnly("com.android.tools.build:gradle:$agp73Version")
+    agp81TestRuntimeOnly("com.android.tools.build:gradle:$agp81Version")
 
     testImplementation("io.objectbox:objectbox-java:$objectboxJavaVersion")
     testImplementation("org.greenrobot:essentials:$essentialsVersion")

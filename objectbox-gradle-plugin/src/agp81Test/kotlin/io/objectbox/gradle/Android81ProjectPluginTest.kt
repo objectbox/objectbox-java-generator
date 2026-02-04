@@ -18,17 +18,15 @@
 
 package io.objectbox.gradle
 
-import org.gradle.util.GradleVersion
+import org.gradle.testkit.runner.GradleRunner
 import org.intellij.lang.annotations.Language
-import org.junit.Ignore
 
 
 /**
- * Tests assembling an Android project using Android Plugin 7.3.
+ * Tests assembling an Android project using Android Plugin 8.1.
  * Notably uses the new ASM based Transform API.
  */
-@Ignore("objectbox-android is no longer compatible, this needs updates, see objectbox-java#215")
-class Android73ProjectPluginTest : AndroidProjectPluginTest() {
+class Android81ProjectPluginTest : AndroidProjectPluginTest() {
 
     // Uses the android.namespace property instead of setting package name in AndroidManifest.xml.
     @Language("Groovy")
@@ -36,7 +34,7 @@ class Android73ProjectPluginTest : AndroidProjectPluginTest() {
         """
         android {
             namespace 'com.example'
-            compileSdkVersion 33
+            compileSdkVersion 35 // Matches SDK embedded in buildenv-android CI image to avoid downloading it
             defaultConfig {
                 applicationId "com.example"
                 minSdkVersion 21
@@ -59,11 +57,19 @@ class Android73ProjectPluginTest : AndroidProjectPluginTest() {
         </manifest>
         """.trimIndent()
 
-    override val androidPluginVersion: String = "7.3.0"
-    override val gradleVersion: String = GradleVersion.current().version
+    // Test with the oldest possible version of Gradle (JDK 21 requires Gradle 8.5, Android Plugin 8.1 requires Gradle
+    // 8.0, this plugin (see GradleCompat) requires Gradle 7.0).
+    private val gradleVersionLowest = "8.5"
+    override val additionalRunnerConfiguration: ((GradleRunner) -> Unit) = {
+        it.forwardOutput()
+        it.withGradleVersion(gradleVersionLowest)
+    }
 
-    // New ASM based transformers output to a different path.
+    override val expectedAndroidPluginVersion: String = "8.1.4"
+    override val expectedGradleVersion: String = gradleVersionLowest
+
+    // New ASM based transformers output to a different path. The path has also changed with Android Gradle Plugin 8.
     override val buildTransformDirectory =
-        "build/intermediates/asm_instrumented_project_classes/debug"
+        "build/intermediates/classes/debug/transformDebugClassesWithAsm/dirs"
 
 }
