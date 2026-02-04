@@ -46,7 +46,7 @@ class AndroidPlugin72 : AndroidPluginCompat() {
         }
     }
 
-    // Checked APIs exist up to Android Plugin 7.3.1.
+    // APIs exist up to Android Plugin 9.0, but as of 9.0 the extension types are deprecated.
     override fun getFirstApplicationId(project: Project): String? {
         return when (val androidExtension = project.extensions.findByType(BaseExtension::class.java)) {
             is AppExtension -> androidExtension.applicationVariants.firstOrNull()?.applicationId
