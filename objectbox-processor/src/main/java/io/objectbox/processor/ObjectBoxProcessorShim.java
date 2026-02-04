@@ -43,6 +43,10 @@ import javax.annotation.processing.Processor;
  * There is a flag to turn off incremental support to make indirect inheritance from entity classes work, hence the
  * processor is declared as "dynamic" and only returns the "aggregating" type in {@link #getSupportedOptions()} if
  * incremental support is enabled.
+ * <p>
+ * Note this class is also used in a <a
+ * href="https://github.com/objectbox/objectbox-examples/blob/main/java-main-maven/README.md">Maven setup</a>, so avoid
+ * renaming or moving it.
  */
 public final class ObjectBoxProcessorShim extends ObjectBoxProcessor {
 }
