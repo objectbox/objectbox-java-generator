@@ -57,7 +57,7 @@ This is a checklist on how to add support for a new property type:
 ## License
 
     ObjectBox Build Tools
-    Copyright (C) 2017-2025 ObjectBox Ltd.
+    Copyright (C) 2017-2026 ObjectBox Ltd. <https://objectbox.io>
     
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published
