@@ -28,7 +28,6 @@ tasks.withType<KotlinJvmCompile>().configureEach {
 
 dependencies {
     api(project(":objectbox-code-modifier"))
-    implementation(project(":agp-wrapper-3-4"))
 
     implementation(gradleApi())
     // Note: Kotlin plugin adds kotlin-stdlib-jdk8 dependency.

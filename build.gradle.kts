@@ -10,17 +10,17 @@
 
 plugins {
     // https://github.com/ben-manes/gradle-versions-plugin/releases
-    id("com.github.ben-manes.versions") version "0.46.0"
+    id("com.github.ben-manes.versions") version "0.53.0"
     // https://github.com/gradle-nexus/publish-plugin/releases
     id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
     // https://github.com/gmazzo/gradle-buildconfig-plugin/releases
-    id("com.github.gmazzo.buildconfig") version "4.0.3" apply false // code-modifier, gradle-plugin
+    id("com.github.gmazzo.buildconfig") version "6.0.7" apply false // code-modifier, gradle-plugin
 }
 
 buildscript {
     // Version of Maven artifacts
     // Should only be changed as part of the release process, see the release checklist in the objectbox repo
-    val versionNumber = "5.1.0"
+    val versionNumber = "5.2.0"
 
     // Release mode should only be enabled when manually triggering a CI pipeline,
     // see the release checklist in the objectbox repo.
@@ -79,15 +79,16 @@ buildscript {
     // Set kotlinVersion to the Kotlin version embedded by the Gradle version used to compile this project (needs to
     // be the exact version to avoid conflicts):
     // https://docs.gradle.org/current/userguide/compatibility.html or see output of `gradlew --version`
-    val kotlinVersion by extra("1.8.20") // Embedded by Gradle 8.2.1 used to compile this
+    val kotlinVersion by extra("2.0.21") // Embedded by Gradle 8.14.4 used to compile this
     // To remain compatible with the lowest supported version of Gradle (see GradleCompat), set kotlinApiLevel to
     // the Kotlin language level supported by that version: https://docs.gradle.org/current/userguide/compatibility.html
     val kotlinApiLevel by extra("1.4") // Minimum supported Gradle 7.0 bundles Kotlin 1.4
 
     val essentialsVersion by extra("3.1.0")
-    val javassistVersion by extra("3.29.2-GA")
+    // 3.24.0-GA and newer support Java 11 byte code
+    val javassistVersion by extra("3.30.2-GA") // https://github.com/jboss-javassist/javassist/releases
     val junitVersion by extra("4.13.2") // https://junit.org/junit4/
-    val truthVersion by extra("1.1.3") // https://github.com/google/truth/releases
+    val truthVersion by extra("1.4.5") // https://github.com/google/truth/releases
     // mockito 5.0.0+ requires JDK 11
     val mockitoVersion by extra("4.11.0") // https://github.com/mockito/mockito/releases
     val moshiVersion by extra("1.15.0") // https://github.com/square/moshi/blob/master/CHANGELOG.md

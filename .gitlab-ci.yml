@@ -1,7 +1,7 @@
 # https://docs.gitlab.com/ci/yaml/
 
 # Default image for linux builds
-image: objectboxio/buildenv-android:2023-07-28 # Includes JDK 17.0.8
+image: objectboxio/buildenv-android:2024-12-09 # With JDK 21, Android SDK 35 pre-installed
 
 # Assumes these environment variables are configured in GitLab CI/CD Settings:
 # - SONATYPE_USER

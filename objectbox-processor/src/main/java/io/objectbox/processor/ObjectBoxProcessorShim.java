@@ -18,26 +18,35 @@
 
 package io.objectbox.processor;
 
-import com.google.auto.service.AutoService;
-
-import net.ltgt.gradle.incap.IncrementalAnnotationProcessor;
+import java.util.ServiceLoader;
 
 import javax.annotation.processing.Processor;
 
-
-import static net.ltgt.gradle.incap.IncrementalAnnotationProcessorType.DYNAMIC;
-
 /**
- * Shim to use AutoService (it does not pick up a processor written in Kotlin).
+ * Shim to register {@link ObjectBoxProcessor} as an annotation processor.
  * <p>
- * Processor is aggregating as from each element annotated with @Entity info flows
- * into MyObjectBox file and for each element into multiple helper files (Underscore and Cursor class).
- * Info is also aggregated into the model file, but as it does not need to be compiled it doesn't matter to Gradle.
+ * This class must match requirements as documented in {@link Processor}.
  * <p>
- * There is a flag to turn off incremental support to make indirect inheritance from entity classes work,
- * hence the processor is declared as dynamic here.
+ * To support "service-style" lookup by the Java compiler, it is declared in
+ * {@code resources/META-INF/services/javax.annotation.processing.Processor}. See the section "Deploying service
+ * providers on the class path" of {@link ServiceLoader}.
+ * <p>
+ * To enable <a
+ * href="https://docs.gradle.org/current/userguide/java_plugin.html#sec:incremental_annotation_processing">incremental
+ * annotation processing with Gradle</a>, it is declared in
+ * {@code resources/META-INF/gradle/incremental.annotation.processors}.
+ * <p>
+ * In Gradle terms, this processor is aggregating as from each element annotated with @Entity info flows into
+ * MyObjectBox file and for each element into multiple helper files (Underscore and Cursor class). Info is also
+ * aggregated into the model file, but as it does not need to be compiled it doesn't matter to Gradle.
+ * <p>
+ * There is a flag to turn off incremental support to make indirect inheritance from entity classes work, hence the
+ * processor is declared as "dynamic" and only returns the "aggregating" type in {@link #getSupportedOptions()} if
+ * incremental support is enabled.
+ * <p>
+ * Note this class is also used in a <a
+ * href="https://github.com/objectbox/objectbox-examples/blob/main/java-main-maven/README.md">Maven setup</a>, so avoid
+ * renaming or moving it.
  */
-@AutoService(Processor.class)
-@IncrementalAnnotationProcessor(DYNAMIC)
 public final class ObjectBoxProcessorShim extends ObjectBoxProcessor {
 }

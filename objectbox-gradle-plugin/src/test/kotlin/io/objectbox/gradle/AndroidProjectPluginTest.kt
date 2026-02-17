@@ -54,8 +54,15 @@ abstract class AndroidProjectPluginTest {
         it.forwardOutput()
     }
 
-    abstract val androidPluginVersion: String
-    abstract val gradleVersion: String
+    /**
+     * Used to check that build tracker detects the correct Android Gradle Plugin version.
+     */
+    abstract val expectedAndroidPluginVersion: String
+
+    /**
+     * Used to check that build tracker detects the correct Gradle version.
+     */
+    abstract val expectedGradleVersion: String
 
     /**
      * From project root, the path to the directory where transformed classes are written to.
@@ -136,8 +143,8 @@ abstract class AndroidProjectPluginTest {
         assertThat(buildTrackerLog).contains("\"event\": \"Build\"")
         assertThat(buildTrackerLog).contains("\"Tool\": \"GradlePlugin\"")
         assertThat(buildTrackerLog).contains("\"Target\": \"Android\"")
-        assertThat(buildTrackerLog).contains("\"AGP\": \"$androidPluginVersion\"")
-        assertThat(buildTrackerLog).contains("\"Gradle\": \"$gradleVersion\"")
+        assertThat(buildTrackerLog).contains("\"AGP\": \"$expectedAndroidPluginVersion\"")
+        assertThat(buildTrackerLog).contains("\"Gradle\": \"$expectedGradleVersion\"")
 
         // Assert transform output.
         val transformDir = File(testProjectDir.root, buildTransformDirectory)

@@ -1,0 +1,2 @@
+# Enables lookup of the annotation processor by the Java compiler, see class docs for details
+io.objectbox.processor.ObjectBoxProcessorShim

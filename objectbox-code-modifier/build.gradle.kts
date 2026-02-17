@@ -44,7 +44,10 @@ dependencies {
     implementation("com.squareup.moshi:moshi:$moshiVersion")
     kapt("com.squareup.moshi:moshi-kotlin-codegen:$moshiVersion")
     implementation("com.squareup.okio:okio:$okioVersion")
-    implementation("com.google.crypto.tink:tink:1.12.0")
+    // Tink 1.19.0 requires Java 11
+    // Tink 1.16.0 includes protobuf-java 4.28.2 which removes a method required by a Android Gradle Plugin 8.1 dependency
+    // https://github.com/tink-crypto/tink-java/releases
+    implementation("com.google.crypto.tink:tink:1.15.0")
 
     implementation("io.objectbox:objectbox-java:$objectboxJavaVersion")
 
@@ -61,7 +64,7 @@ buildConfig {
     className("CodeModifierBuildConfig")
     packageName("io.objectbox")
 
-    buildConfigField("String", "VERSION", provider { "\"${project.version}\"" })
+    buildConfigField<String>("VERSION", provider { "${project.version}" })
 }
 
 val javadocJar by tasks.registering(Jar::class) {

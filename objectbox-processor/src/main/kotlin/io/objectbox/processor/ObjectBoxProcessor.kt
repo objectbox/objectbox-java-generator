@@ -32,7 +32,6 @@ import io.objectbox.generator.idsync.IdSyncException
 import io.objectbox.generator.model.Property
 import io.objectbox.generator.model.Schema
 import io.objectbox.reporting.BasicBuildTracker
-import net.ltgt.gradle.incap.IncrementalAnnotationProcessorType
 import java.io.File
 import java.io.FileNotFoundException
 import javax.annotation.processing.AbstractProcessor
@@ -186,7 +185,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         // do not advertise processor as incremental if turned off.
         // See OPTION_INCREMENTAL for explanation.
         if (incremental) {
-            options.add(IncrementalAnnotationProcessorType.AGGREGATING.processorOption)
+            options.add("org.gradle.annotation.processing.aggregating")
         }
         return options
     }

@@ -18,12 +18,14 @@ The plugin
 ## Minimum requirements to apply the plugin
 
 - Gradle `7.0` (see [GradleCompat](objectbox-gradle-plugin/src/main/kotlin/io/objectbox/gradle/util/GradleCompat.kt))
-- Android Plugin `4.1` (see [AndroidCompat](objectbox-gradle-plugin/src/main/kotlin/io/objectbox/gradle/util/AndroidCompat.kt))
-- JDK 8
+- Android Plugin `8.1` (see [AndroidCompat](objectbox-gradle-plugin/src/main/kotlin/io/objectbox/gradle/util/AndroidCompat.kt))
+- JDK 11
+                   
+For JVM projects, the Java byte code transformer supports `@Entity` classes using up to Java 11 byte code. 
 
 ## Development
 
-This project is known to build with JDK 17.
+This project is known to build with JDK 21.
 
 This repository contains a collection of Gradle subprojects:
 - `objectbox-gradle-plugin` provides the actual Gradle plugins (`io.objectbox` and `io.objectbox.sync`),
@@ -55,7 +57,7 @@ This is a checklist on how to add support for a new property type:
 ## License
 
     ObjectBox Build Tools
-    Copyright (C) 2017-2025 ObjectBox Ltd.
+    Copyright (C) 2017-2026 ObjectBox Ltd. <https://objectbox.io>
     
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published

@@ -18,21 +18,32 @@
 
 package io.objectbox.gradle
 
-import com.google.common.truth.Truth.assertThat
-import io.objectbox.gradle.transform.AndroidPlugin72
-import io.objectbox.gradle.util.AndroidCompat
-import org.gradle.api.Project
+import org.gradle.api.internal.plugins.PluginApplicationException
+import org.gradle.testfixtures.ProjectBuilder
+import org.hamcrest.CoreMatchers.instanceOf
+import org.hamcrest.MatcherAssert.assertThat
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertThrows
+import org.junit.Test
 
 
 /**
- * Tests applying [ObjectBoxGradlePlugin] configures a Java or Kotlin Android Gradle project as expected.
- * Tests with Android Plugin 7.3.
+ * Tests applying [ObjectBoxGradlePlugin] with Android Plugin 7.3 fails because it is too old.
  */
-class PluginApplyAndroid73Test : PluginApplyAndroidTest() {
+class PluginApplyAndroid73Test : PluginApplyTest() {
 
-    override fun assertAndroidCompat(project: Project) {
-        assertThat(AndroidCompat.getPlugin(project))
-            .isInstanceOf(AndroidPlugin72::class.java)
+    @Test
+    fun apply_afterAndroidPlugin_failsTooOld() {
+        val project = ProjectBuilder.builder().build()
+        project.pluginManager.apply("com.android.application")
+
+        assertThrows(PluginApplicationException::class.java) {
+            project.project.pluginManager.apply(pluginId)
+        }.also {
+            assertEquals("Failed to apply plugin '$pluginId'.", it.message)
+            assertThat(it.cause, instanceOf(IllegalStateException::class.java))
+            assertEquals(it.cause?.message, "The ObjectBox Gradle plugin requires Android Gradle Plugin 8.1 or newer")
+        }
     }
 
 }
