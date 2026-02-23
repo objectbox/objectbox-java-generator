@@ -15,8 +15,6 @@ publishing {
                 // "https://gitlab.example.com/api/v4/projects/<PROJECT_ID>/packages/maven"
                 val gitlabUrl = project.property("gitlabUrl")
                 url = uri("$gitlabUrl/api/v4/projects/18/packages/maven")
-                println("GitLab repository set to $url.")
-
                 credentials(HttpHeaderCredentials::class) {
                     name = project.findProperty("gitlabTokenName")?.toString()
                         ?: "Private-Token"
@@ -26,8 +24,9 @@ publishing {
                 authentication {
                     create<HttpHeaderAuthentication>("header")
                 }
+                println("Publishing: configured GitLab repository $url")
             } else {
-                println("WARNING: Can not publish to GitLab: gitlabUrl or gitlabToken/gitlabPrivateToken not set.")
+                println("Publishing: GitLab repository not configured")
             }
         }
         // Note: Sonatype repo created by publish-plugin, see root build.gradle.kts.
