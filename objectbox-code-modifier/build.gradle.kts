@@ -82,15 +82,16 @@ val javaComponent = components["java"] as AdhocComponentWithVariants
 javaComponent.withVariantsFromConfiguration(configurations["testFixturesApiElements"]) { skip() }
 javaComponent.withVariantsFromConfiguration(configurations["testFixturesRuntimeElements"]) { skip() }
 
-// Set project-specific properties
 publishing {
     publications {
-        getByName<MavenPublication>("mavenJava") {
+        create<MavenPublication>("obxCodeModifier") {
             artifactId = "objectbox-code-modifier"
             from(components["java"])
             artifact(sourcesJar)
             artifact(javadocJar)
             pom {
+                // Note: common configuration is set by objectbox-publish plugin
+                packaging = "jar"
                 name.set("ObjectBox Code Modifier")
                 description.set("Code modifier for ObjectBox (NoSQL for Objects)")
             }

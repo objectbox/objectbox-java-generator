@@ -51,11 +51,13 @@ val sourcesJar by tasks.registering(Jar::class) {
 // Set project-specific properties
 publishing {
     publications {
-        getByName<MavenPublication>("mavenJava") {
+        create<MavenPublication>("obxGenerator") {
             artifactId = "objectbox-generator"
             from(components["java"])
             artifact(sourcesJar)
             pom {
+                // Note: common configuration is set by objectbox-publish plugin
+                packaging = "jar"
                 name.set("ObjectBox Generator")
                 description.set("Code generator for ObjectBox, the superfast NoSQL database for Objects")
             }

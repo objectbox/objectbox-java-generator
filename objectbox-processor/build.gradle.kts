@@ -67,12 +67,14 @@ val sourcesJar by tasks.registering(Jar::class) {
 // Set project-specific properties
 publishing {
     publications {
-        getByName<MavenPublication>("mavenJava") {
+        create<MavenPublication>("obxProcessor") {
             artifactId = "objectbox-processor"
             from(components["java"])
             artifact(sourcesJar)
             artifact(javadocJar)
             pom {
+                // Note: common configuration is set by objectbox-publish plugin
+                packaging = "jar"
                 name.set("ObjectBox Processor")
                 description.set("Annotation processor for ObjectBox (NoSQL for Objects)")
             }

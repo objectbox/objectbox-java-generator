@@ -47,13 +47,14 @@ dependencies {
     testImplementation("com.android.tools.build:gradle-api:$androidPluginVersion")
 }
 
-// Set project-specific properties
 publishing {
     publications {
-        getByName<MavenPublication>("mavenJava") {
+        create<MavenPublication>("obxAgpWrapper72") {
             artifactId = "agp-wrapper-7-2"
             from(components["java"])
             pom {
+                // Note: common configuration is set by objectbox-publish plugin
+                packaging = "jar"
                 name.set("ObjectBox AGP Wrapper 7.2")
                 description.set("Android Gradle Plugin Wrapper for ObjectBox")
             }

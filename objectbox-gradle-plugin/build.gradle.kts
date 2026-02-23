@@ -242,43 +242,46 @@ evaluationDependsOn(":objectbox-code-modifier")
 evaluationDependsOn(":objectbox-generator")
 evaluationDependsOn(":objectbox-processor")
 
+val pluginTestPrefix = "obxPluginTest"
+
 publishing {
-    publications {
-        // A test repository used for integration tests of this module.
-        repositories {
-            maven {
-                url = uri(layout.buildDirectory.dir("repository").get().asFile)
-                name = "test"
-            }
+    // A test repository used for integration tests of this module (see GradleTestRunner).
+    repositories {
+        maven {
+            url = uri(layout.buildDirectory.dir("repository").get().asFile)
+            name = "test"
         }
-        // Publications for the modules required by integration tests, depends on their projects being evaluated before.
-        publications {
-            create<MavenPublication>("modifier") {
-                val fromProject = project(":objectbox-code-modifier")
-                from(fromProject.components["java"])
-                groupId = fromProject.group.toString()
-                artifactId = fromProject.name
-                version = fromProject.version.toString()
-            }
-            create<MavenPublication>("generator") {
-                val fromProject = project(":objectbox-generator")
-                from(fromProject.components["java"])
-                groupId = fromProject.group.toString()
-                artifactId = fromProject.name
-                version = fromProject.version.toString()
-            }
-            create<MavenPublication>("processor") {
-                val fromProject = project(":objectbox-processor")
-                from(fromProject.components["java"])
-                groupId = fromProject.group.toString()
-                artifactId = fromProject.name
-                version = fromProject.version.toString()
-            }
+    }
+
+    publications {
+        // Publications for the modules required by integration tests (see GradleTestRunner), depends on their projects
+        // being evaluated before. Note: below these are prevented to publish to any other but the test repository.
+        create<MavenPublication>("${pluginTestPrefix}Modifier") {
+            val fromProject = project(":objectbox-code-modifier")
+            from(fromProject.components["java"])
+            groupId = fromProject.group.toString()
+            artifactId = fromProject.name
+            version = fromProject.version.toString()
+        }
+        create<MavenPublication>("${pluginTestPrefix}Generator") {
+            val fromProject = project(":objectbox-generator")
+            from(fromProject.components["java"])
+            groupId = fromProject.group.toString()
+            artifactId = fromProject.name
+            version = fromProject.version.toString()
+        }
+        create<MavenPublication>("${pluginTestPrefix}Processor") {
+            val fromProject = project(":objectbox-processor")
+            from(fromProject.components["java"])
+            groupId = fromProject.group.toString()
+            artifactId = fromProject.name
+            version = fromProject.version.toString()
         }
 
-        // Set project-specific properties for the publication of this module.
-        getByName<MavenPublication>("mavenJava") {
-            from(components["java"])
+        // The publication name must match what the java-gradle-plugin expects, so it can configure it properly.
+        // The plugin also creates additional publications for "marker" artifacts for each plugin ID.
+        // See the gradlePlugin configuration above.
+        create<MavenPublication>("pluginMaven") {
             artifact(sourcesJar)
             artifact(javadocJar)
             pom {
@@ -286,6 +289,28 @@ publishing {
                 description.set("Gradle Plugin for ObjectBox (NoSQL for Objects)")
             }
         }
+    }
+}
+
+// Skip publish tasks for plugin test publications that don't publish to test repository (to avoid publishing them to
+// our internal or a public repository).
+// https://docs.gradle.org/current/userguide/publishing_customization.html#sec:publishing_maven:conditional_publishing
+tasks.withType<PublishToMavenRepository>().configureEach {
+    val predicate = provider {
+        repository == publishing.repositories["test"] ||
+                !publication.name.contains(pluginTestPrefix, ignoreCase = true)
+    }
+    onlyIf("publish plugin test artifacts only to test repository") {
+        predicate.get()
+    }
+}
+// Also skip signing tasks for plugin test publications to avoid conflicts when publishing other publications
+tasks.withType<Sign>().configureEach {
+    val predicate = provider {
+        !name.contains(pluginTestPrefix, ignoreCase = true)
+    }
+    onlyIf("do not sign test artifacts") {
+        predicate.get()
     }
 }
 
@@ -303,9 +328,9 @@ fun configureTestTaskForTestKit(testTaskProvider: TaskProvider<Test>) {
         )
         // Publish the other modules to the test repository before running this test task.
         dependsOn(
-            "publishModifierPublicationToTestRepository",
-            "publishGeneratorPublicationToTestRepository",
-            "publishProcessorPublicationToTestRepository"
+            "publishObxPluginTestModifierPublicationToTestRepository",
+            "publishObxPluginTestGeneratorPublicationToTestRepository",
+            "publishObxPluginTestProcessorPublicationToTestRepository"
         )
         // Forward project properties required for TestKit tests to access the internal GitLab repository.
         systemProperty("gitlabUrl", project.findProperty("gitlabUrl") ?: "")

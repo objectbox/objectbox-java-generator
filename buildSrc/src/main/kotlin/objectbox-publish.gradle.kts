@@ -66,13 +66,6 @@ publishing {
                 }
             }
         }
-        // Create a publication with the same name in all projects to simplify publishing
-        create<MavenPublication>("mavenJava") {
-            // Note: Projects set additional specific properties.
-            pom {
-                packaging = "jar"
-            }
-        }
     }
 }
 
