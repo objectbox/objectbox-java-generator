@@ -20,6 +20,7 @@ plugins {
     // https://docs.gradle.org/current/userguide/plugins.html
     id("objectbox-publish")
     id("objectbox-disable-analytics")
+    id("java-gradle-plugin")
 }
 
 // Use a modern LTS JDK to compile: currently 21 to match the Android Studio default. Android Gradle Plugin 8 tests
@@ -41,6 +42,25 @@ kotlin {
         jvmTarget.set(JvmTarget.JVM_11)
         // Match Kotlin language level used by minimum supported Gradle version, see root build script for details.
         apiVersion.set(KotlinVersion.fromVersion(kotlinApiLevel))
+    }
+}
+
+// Configure Gradle Plugin Development Plugin:
+// - creates descriptors in META-INF/gradle-plugins
+// - creates pluginMaven publication that publishes the main source set (the actual plugin)
+// - creates <pluginName>PluginMarkerMaven publications that publish "marker" artifacts (only contain a POM file with a
+//   dependency on the above artifact) that enable Gradle to map the plugin ID, such as "io.objectbox.sync"
+// https://docs.gradle.org/current/userguide/java_gradle_plugin.html
+gradlePlugin {
+    plugins {
+        create("ioObjectbox") {
+            id = "io.objectbox"
+            implementationClass = "io.objectbox.gradle.ObjectBoxGradlePlugin"
+        }
+        create("ioObjectboxSync") {
+            id = "io.objectbox.sync"
+            implementationClass = "io.objectbox.gradle.ObjectBoxSyncGradlePlugin"
+        }
     }
 }
 

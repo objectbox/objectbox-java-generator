@@ -34,10 +34,9 @@ publishing {
     }
 
     publications {
-        create<MavenPublication>("mavenJava") {
-            // Note: Projects set additional specific properties.
+        // Common configuration for all Maven publications
+        withType<MavenPublication> {
             pom {
-                packaging = "jar"
                 url.set("https://objectbox.io")
                 licenses {
                     license {
@@ -67,10 +66,18 @@ publishing {
                 }
             }
         }
+        // Create a publication with the same name in all projects to simplify publishing
+        create<MavenPublication>("mavenJava") {
+            // Note: Projects set additional specific properties.
+            pom {
+                packaging = "jar"
+            }
+        }
     }
 }
 
 signing {
+    // Sign all publications
     if (hasSigningProperties()) {
         val signingKey = File(project.property("signingKeyFile").toString()).readText()
         useInMemoryPgpKeys(
@@ -78,7 +85,7 @@ signing {
             signingKey,
             project.property("signingPassword").toString()
         )
-        sign(publishing.publications["mavenJava"])
+        sign(publishing.publications)
     } else {
         println("WARNING: Signing information missing/incomplete for ${project.name}")
     }
