@@ -79,8 +79,9 @@ signing {
             project.property("signingPassword").toString()
         )
         sign(publishing.publications)
+        println("Publishing: configured signing with key file")
     } else {
-        println("WARNING: Signing information missing/incomplete for ${project.name}")
+        println("Publishing: signing not configured")
     }
 }
 
