@@ -90,8 +90,13 @@ class ProjectEnv(val project: Project) {
      * Using function for [message] to avoid String getting built unless in debug mode.
      */
     fun logDebug(message: () -> String) {
-        project.afterEvaluate {
+        val isEvaluated = project.state.executed
+        if (isEvaluated) {
             if (options.debug.get()) log(message())
+        } else {
+            project.afterEvaluate {
+                if (options.debug.get()) log(message())
+            }
         }
     }
 }

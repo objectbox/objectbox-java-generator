@@ -182,7 +182,8 @@ dependencies {
     implementation(gradleApi())
     // Note: Kotlin plugin adds kotlin-stdlib-jdk8 dependency.
 
-    compileOnly("com.android.tools.build:gradle-api:7.2.0")
+    val agpApi = "7.2.0"
+    compileOnly("com.android.tools.build:gradle-api:$agpApi")
     compileOnly("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
 
     testImplementation(gradleTestKit())
@@ -200,6 +201,7 @@ dependencies {
 
     // For plugin apply tests and outdated TestKit tests (dir "test-gradle-projects").
     testImplementation("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
+    testImplementation("com.android.tools.build:gradle-api:$agpApi")
     agp73TestRuntimeOnly("com.android.tools.build:gradle:$agp73Version")
     agp81TestRuntimeOnly("com.android.tools.build:gradle:$agp81Version")
 

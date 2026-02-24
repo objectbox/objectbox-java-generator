@@ -18,8 +18,10 @@
 
 package io.objectbox.gradle
 
+import com.android.build.api.dsl.ApplicationExtension
 import org.gradle.api.Project
 import org.gradle.api.artifacts.DependencySet
+import org.gradle.api.internal.project.ProjectInternal
 import org.gradle.api.plugins.JavaPlugin
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
@@ -36,6 +38,38 @@ abstract class PluginApplyAndroidTest : PluginApplyTest() {
      */
     abstract fun assertAndroidCompat(project: Project)
 
+    private fun Project.configureAndroidProject() {
+        val androidExtension = extensions.getByName("android") as ApplicationExtension
+        androidExtension.apply {
+            compileSdk = 35 // Matches SDK embedded in buildenv-android CI image to avoid downloading it
+            namespace = "io.objectbox.plugin.test"
+        }
+    }
+
+    /**
+     * Because the plugin adds dependencies using [org.gradle.api.DomainObjectCollection.addLater] it is necessary to
+     * resolve the dependency graph before being able to inspect them. However, the Android Gradle Plugin only adds the
+     * needed classpath configurations during project evaluation. So force project evaluation (and configure the Android
+     * project as needed to do so).
+     *
+     * See also [io.objectbox.gradle.PluginApplyJavaTest.resolveDependencyGraphWithoutDownloadingFiles], especially with
+     * details on why the Android plugin warns about doing this and why we ignore this warning.
+     */
+    private fun Project.resolveDependencyGraphWithoutDownloadingFiles() {
+        project.configureAndroidProject()
+        (project as ProjectInternal).evaluate()
+
+        project.configurations.getByName("debugCompileClasspath")
+            .incoming
+            .resolutionResult
+            .allDependencies
+
+        project.configurations.getByName("debugUnitTestCompileClasspath")
+            .incoming
+            .resolutionResult
+            .allDependencies
+    }
+
     @Test
     fun apply_afterAndroidPlugin() {
         val project = buildProject {
@@ -45,6 +79,7 @@ abstract class PluginApplyAndroidTest : PluginApplyTest() {
             }
         }
 
+        project.resolveDependencyGraphWithoutDownloadingFiles()
         with(project.configurations) {
             assertProcessorDependency(getByName(JavaPlugin.ANNOTATION_PROCESSOR_CONFIGURATION_NAME).dependencies)
             assertAndroidDependency(getByName(JavaPlugin.API_CONFIGURATION_NAME).dependencies)
@@ -86,6 +121,7 @@ abstract class PluginApplyAndroidTest : PluginApplyTest() {
     }
 
     private fun assertKotlinAndroidSetup(project: Project) {
+        project.resolveDependencyGraphWithoutDownloadingFiles()
         with(project.configurations) {
             assertProcessorDependency(getByName(ProjectEnv.Const.KAPT_CONFIGURATION_NAME).dependencies)
             assertAndroidDependency(getByName(JavaPlugin.API_CONFIGURATION_NAME).dependencies)

@@ -48,6 +48,8 @@ abstract class PluginApplyTest {
      * Test PluginOptions extension is created and can be configured.
      * To check if it actually is recognized, would have to assert log output,
      * currently not doing that.
+     *
+     * This also enables helpful log output to diagnose test failures.
      */
     protected fun Project.enableObjectBoxPluginDebugMode() {
         extensions.apply {

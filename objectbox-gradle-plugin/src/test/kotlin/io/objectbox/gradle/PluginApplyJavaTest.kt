@@ -112,7 +112,33 @@ open class PluginApplyJavaTest : PluginApplyTest() {
         assertJavaProject(project, JavaPlugin.API_CONFIGURATION_NAME)
     }
 
+    /**
+     * The ObjectBox plugin adds dependencies using [org.gradle.api.DomainObjectCollection.addLater] (see
+     * [ObjectBoxGradlePlugin.addDependencies]). As a side effect they won't appear in the configuration they were added
+     * to until the dependency graph is resolved. So to assert dependencies were added by the plugin, the graph must be
+     * resolved.
+     *
+     * To resolve the graph [org.gradle.api.artifacts.Configuration.resolve] could be used, but it will download files.
+     * So instead access all incoming dependencies, which only resolves the graph.
+     *
+     * Also use the compileClasspath configuration all others contribute to as the api and implementation
+     * configurations can not be resolved themselves.
+     *
+     * Despite this being similar to what the Kotlin Gradle plugin tests do, note that the Android plugin warns about
+     * and the Gradle folks [don't recommend resolving configurations before task execution](https://docs.gradle.org/current/userguide/best_practices_tasks.html#dont_resolve_configurations_before_task_execution).
+     * So if ever enforced (see https://github.com/gradle/gradle/issues/2298 for a discussion), this approach might
+     * break in the future. An alternative (that does require downloading files) is to use Gradle TestKit instead and
+     * maybe to inspect output of the dependencies task or to use a custom task to do validation.
+     */
+    private fun Project.resolveDependencyGraphWithoutDownloadingFiles() {
+        configurations.getByName(JavaPlugin.COMPILE_CLASSPATH_CONFIGURATION_NAME)
+            .incoming
+            .resolutionResult
+            .allDependencies
+    }
+
     private fun assertJavaProject(project: Project, configuration: String) {
+        project.resolveDependencyGraphWithoutDownloadingFiles()
         with(project.configurations) {
             assertProcessorDependency(getByName(JavaPlugin.ANNOTATION_PROCESSOR_CONFIGURATION_NAME).dependencies)
 
@@ -179,6 +205,7 @@ open class PluginApplyJavaTest : PluginApplyTest() {
     }
 
     private fun assertKotlinSetup(project: Project) {
+        project.resolveDependencyGraphWithoutDownloadingFiles()
         with(project.configurations) {
             assertProcessorDependency(getByName(ProjectEnv.Const.KAPT_CONFIGURATION_NAME).dependencies)
 
@@ -203,8 +230,8 @@ open class PluginApplyJavaTest : PluginApplyTest() {
         assertTransformTask(project, "Test", JavaPlugin.TEST_CLASSES_TASK_NAME)
     }
 
-    private fun assertJavaDependency(compileDeps: DependencySet) {
-        assertEquals("objectbox-java dependency not found", 1, compileDeps.count {
+    private fun assertJavaDependency(deps: DependencySet) {
+        assertEquals("objectbox-java dependency not found", 1, deps.count {
             it.group == "io.objectbox" && it.name == "objectbox-java"
                     && it.version == ProjectEnv.Const.javaVersionToApply
         })

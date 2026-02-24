@@ -30,6 +30,7 @@ import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.UnknownDomainObjectException
 import org.gradle.api.artifacts.Dependency
+import org.gradle.api.artifacts.DependencySet
 import org.gradle.api.plugins.InvalidPluginException
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.tasks.compile.JavaCompile
@@ -141,6 +142,11 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
         }
     }
 
+    /**
+     * Configure the annotation processor.
+     *
+     * Note that this can't happen in [addDependencies] because it would be too late.
+     */
     private fun addDependenciesAnnotationProcessor(env: ProjectEnv) {
         val project = env.project
         if ((env.hasKotlinPlugin || env.hasKotlinAndroidPlugin) &&
@@ -204,63 +210,89 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
         return ProjectEnv.Const.nativeVersionToApply
     }
 
+    private fun Project.addDepLater(dependencySet: DependencySet, dep: String) {
+        dependencySet.addLater(
+            provider {
+                dependencies.create(dep)
+            }
+        )
+    }
+
+    /**
+     * Before dependencies of project configurations are resolved, adds required ObjectBox dependencies, if a
+     * conflicting one isn't added already:
+     *
+     * - Java APIs (objectbox-java)
+     * - Kotlin APIs (objectbox-kotlin), if the (Android) Kotlin plugin is applied
+     * - database library for Android or JVM, depending on if the Android plugin is applied
+     * - Findbugs JSR305 nullable annotations, if the Android plugin is applied, only for instrumented unit tests
+     */
     private fun addDependencies(env: ProjectEnv) {
         val compileConfig = env.configApiOrImpl
         val project = env.project
 
-        // Note: a preview release might apply different versions of the Java and native library,
-        // so explicitly apply the Java library to avoid the native library pulling in another version.
-        if (!env.hasObjectBoxDep("objectbox-java")) {
-            project.addDep(compileConfig, "io.objectbox:objectbox-java:${ProjectEnv.Const.javaVersionToApply}")
-        }
+        // Use Configuration.withDependencies to also detect dependencies that are added after the plugin is applied
+        // (which, if using modern Gradle plugins syntax, they are always).
+        project.configurations.getByName(compileConfig).withDependencies { dependencySet ->
+            // Note: a preview release might apply different versions of the Java and native library,
+            // so explicitly apply the Java library to avoid the native library pulling in another version.
+            if (!env.hasObjectBoxDep("objectbox-java")) {
+                project.addDepLater(dependencySet, "io.objectbox:objectbox-java:${ProjectEnv.Const.javaVersionToApply}")
+            }
 
-        if (env.hasKotlinPlugin || env.hasKotlinAndroidPlugin) {
-            env.logDebug { "Kotlin plugin detected" }
-            if (env.hasObjectBoxDep("objectbox-kotlin")) {
-                env.logDebug { "Detected objectbox-kotlin dependency, not auto-adding." }
+            if (env.hasKotlinPlugin || env.hasKotlinAndroidPlugin) {
+                env.logDebug { "Kotlin plugin detected" }
+                if (env.hasObjectBoxDep("objectbox-kotlin")) {
+                    env.logDebug { "Detected objectbox-kotlin dependency, not auto-adding." }
+                } else {
+                    project.addDepLater(
+                        dependencySet,
+                        "io.objectbox:objectbox-kotlin:${ProjectEnv.Const.javaVersionToApply}"
+                    )
+                }
+            }
+
+            // If the Android plugin is applied, add the Android database library, otherwise the JVM database library
+            if (env.hasAndroidPlugin) {
+                if (!env.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_DEFAULT-android")
+                    && !env.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_DEFAULT-android-objectbrowser")
+                    && !env.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_SYNC-android")
+                    && !env.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_SYNC-android-objectbrowser")
+                    && !env.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_SYNC-server-android")
+                ) {
+                    project.addDepLater(
+                        dependencySet,
+                        "io.objectbox:${getLibWithSyncVariantPrefix()}-android:${getLibWithSyncVariantVersion()}"
+                    )
+                }
             } else {
-                project.addDep(compileConfig, "io.objectbox:objectbox-kotlin:${ProjectEnv.Const.javaVersionToApply}")
+                addNativeDependency(env, dependencySet, searchTestConfigs = false)
             }
         }
 
         if (env.hasAndroidPlugin) {
-            // for this detection to work apply the plugin after the dependencies block
-            if (!env.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_DEFAULT-android")
-                && !env.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_DEFAULT-android-objectbrowser")
-                && !env.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_SYNC-android")
-                && !env.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_SYNC-android-objectbrowser")
-                && !env.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_SYNC-server-android")
-            ) {
-                project.addDep(
-                    compileConfig,
-                    "io.objectbox:${getLibWithSyncVariantPrefix()}-android:${getLibWithSyncVariantVersion()}"
-                )
-            }
+            // For Android local (on developer machine) unit tests add a dependency on the JVM database library
+            project.configurations.getByName(JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME)
+                .withDependencies { dependencySet ->
+                    addNativeDependency(env, dependencySet, searchTestConfigs = true)
+                }
 
-            // for instrumented unit tests
-            // add jsr305 to prevent conflict with other versions added by test dependencies, like espresso
+            // For Android instrumented (on device/emulator) unit tests
+            // add jsr305 to prevent conflict with other versions added by test dependencies, like espresso.
             // https://github.com/objectbox/objectbox-java/issues/73
-            project.addDep(
-                ProjectEnv.Const.ANDROID_TEST_IMPLEMENTATION_CONFIGURATION_NAME,
-                "com.google.code.findbugs:jsr305:3.0.2"
-            )
-
-            // for local unit tests
-            addNativeDependency(env, JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME, true)
-        } else {
-            addNativeDependency(env, compileConfig, false)
+            project.configurations
+                .getByName(ProjectEnv.Const.ANDROID_TEST_IMPLEMENTATION_CONFIGURATION_NAME)
+                .dependencies
+                .let { project.addDepLater(it, "com.google.code.findbugs:jsr305:3.0.2") }
         }
     }
 
-    private fun addNativeDependency(env: ProjectEnv, config: String, searchTestConfigs: Boolean) {
-        val project = env.project
-
+    private fun addNativeDependency(env: ProjectEnv, dependencySet: DependencySet, searchTestConfigs: Boolean) {
         env.logDebug {
             "Detected OS: ${env.osName} is64=${env.is64Bit} " +
                     "isLinux64=${env.isLinux64} isWindows64=${env.isWindows64} isMac64=${env.isMac64}"
         }
 
-        // note: for this detection to work apply the plugin after the dependencies block
         // Note: use startsWith to detect e.g. -armv7 and -arm64 and any possible future suffixes.
         if (env.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_DEFAULT-linux", searchTestConfigs, startsWith = true)
             || env.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_DEFAULT-macos", searchTestConfigs, startsWith = true)
@@ -283,7 +315,7 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
             if (suffix != null) {
                 val prefix = getLibWithSyncVariantPrefix()
                 val version = getLibWithSyncVariantVersion()
-                project.addDep(config, "io.objectbox:$prefix-$suffix:$version")
+                env.project.addDepLater(dependencySet, "io.objectbox:$prefix-$suffix:$version")
             } else {
                 env.logInfo("Could not set up native dependency for ${env.osName}")
             }
@@ -293,7 +325,8 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
     /**
      * Checks for exact name match. Set [startsWith] to true to only check for prefix.
      *
-     * Note: for this detection to work the plugin must be applied after the dependencies block.
+     * Note: for this detection to work for dependencies added after the plugin is applied, must be called within
+     * [org.gradle.api.artifacts.Configuration.withDependencies].
      */
     private fun ProjectEnv.hasObjectBoxDep(
         name: String,
