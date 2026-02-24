@@ -26,6 +26,9 @@ java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(8))
     }
+    // Note: the javadoc JAR just contains a manifest file and is added only to satisfy Maven Central requirements
+    withJavadocJar()
+    // Note: the sources JAR is created using the custom sourcesJar task below
 }
 
 tasks.withType<KotlinJvmCompile>().configureEach {
@@ -67,14 +70,29 @@ buildConfig {
     buildConfigField<String>("VERSION", provider { "${project.version}" })
 }
 
-val javadocJar by tasks.registering(Jar::class) {
-    archiveClassifier.set("javadoc")
-    from("README")
-}
+val tokenFileName = "analysis-token.txt"
 
 val sourcesJar by tasks.registering(Jar::class) {
     archiveClassifier.set("sources")
-    from("README")
+    from(sourceSets["main"].allSource) {
+        // Don't publish the token file in source code dump
+        exclude(tokenFileName)
+    }
+}
+
+// Ensure Analysis token is set before publishing a Maven artifact
+val checkAnalysisToken by tasks.registering {
+    doLast {
+        val sourceFile = project.file("src/main/resources/$tokenFileName")
+        // Should have at least 2 lines: key info and obfuscated token
+        if (!sourceFile.exists() || sourceFile.readLines().size < 2) {
+            throw GradleException("Analysis: $tokenFileName not found or empty, but trying to publish. See BasicBuildTrackerTest.kt on how to create one.")
+        }
+        println("Analysis: $tokenFileName found, proceeding with publishing")
+    }
+}
+tasks.withType<AbstractPublishToMaven>().configureEach {
+    dependsOn(checkAnalysisToken)
 }
 
 // Do not publish test fixtures.
@@ -88,7 +106,6 @@ publishing {
             artifactId = "objectbox-code-modifier"
             from(components["java"])
             artifact(sourcesJar)
-            artifact(javadocJar)
             pom {
                 // Note: common configuration is set by objectbox-publish plugin
                 packaging = "jar"
@@ -97,19 +114,4 @@ publishing {
             }
         }
     }
-}
-
-// Ensure Analysis token is set before publishing a Maven artifact
-val checkAnalysisToken by tasks.registering {
-    doLast {
-        val sourceFile = project.file("src/main/resources/analysis-token.txt")
-        // Should have at least 2 lines: key info and obfuscated token
-        if (!sourceFile.exists() || sourceFile.readLines().size < 2) {
-            throw GradleException("Analysis: analysis-token.txt not found or empty, but trying to publish. See BasicBuildTrackerTest.kt on how to create one.")
-        }
-        println("Analysis: analysis-token.txt found, proceeding with publishing")
-    }
-}
-tasks.withType<AbstractPublishToMaven>().configureEach {
-    dependsOn(checkAnalysisToken)
 }

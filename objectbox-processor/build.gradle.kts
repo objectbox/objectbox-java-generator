@@ -15,6 +15,9 @@ java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(11))
     }
+    // Note: the javadoc JAR just contains a manifest file and is added only to satisfy Maven Central requirements
+    withJavadocJar()
+    withSourcesJar()
 }
 
 tasks.withType<JavaCompile>().configureEach {
@@ -54,24 +57,12 @@ dependencies {
     testImplementation("io.objectbox:objectbox-java:$objectboxJavaVersion")
 }
 
-val javadocJar by tasks.registering(Jar::class) {
-    archiveClassifier.set("javadoc")
-    from("README")
-}
-
-val sourcesJar by tasks.registering(Jar::class) {
-    archiveClassifier.set("sources")
-    from("README")
-}
-
 // Set project-specific properties
 publishing {
     publications {
         create<MavenPublication>("obxProcessor") {
             artifactId = "objectbox-processor"
             from(components["java"])
-            artifact(sourcesJar)
-            artifact(javadocJar)
             pom {
                 // Note: common configuration is set by objectbox-publish plugin
                 packaging = "jar"

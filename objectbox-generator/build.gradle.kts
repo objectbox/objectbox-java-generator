@@ -10,6 +10,7 @@ java {
         languageVersion.set(JavaLanguageVersion.of(8))
     }
     withJavadocJar()
+    withSourcesJar()
 }
 
 val objectboxJavaVersion: String by rootProject.extra
@@ -43,18 +44,12 @@ tasks.test {
     }
 }
 
-val sourcesJar by tasks.registering(Jar::class) {
-    archiveClassifier.set("sources")
-    from("README")
-}
-
 // Set project-specific properties
 publishing {
     publications {
         create<MavenPublication>("obxGenerator") {
             artifactId = "objectbox-generator"
             from(components["java"])
-            artifact(sourcesJar)
             pom {
                 // Note: common configuration is set by objectbox-publish plugin
                 packaging = "jar"

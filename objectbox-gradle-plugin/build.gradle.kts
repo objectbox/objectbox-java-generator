@@ -31,6 +31,9 @@ java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(21))
     }
+    // Note: the javadoc JAR just contains a manifest file and is added only to satisfy Maven Central requirements
+    withJavadocJar()
+    withSourcesJar()
 }
 
 tasks.withType<JavaCompile>().configureEach {
@@ -227,16 +230,6 @@ buildConfig {
     buildConfigField<String>("APPLIES_NATIVE_SYNC_VERSION", appliesObxSyncJniLibVersion)
 }
 
-val javadocJar by tasks.registering(Jar::class) {
-    archiveClassifier.set("javadoc")
-    from("README")
-}
-
-val sourcesJar by tasks.registering(Jar::class) {
-    archiveClassifier.set("sources")
-    from("README")
-}
-
 // Need to evaluate other modules before a publication for them can be created below.
 evaluationDependsOn(":objectbox-code-modifier")
 evaluationDependsOn(":objectbox-generator")
@@ -282,8 +275,6 @@ publishing {
         // The plugin also creates additional publications for "marker" artifacts for each plugin ID.
         // See the gradlePlugin configuration above.
         create<MavenPublication>("pluginMaven") {
-            artifact(sourcesJar)
-            artifact(javadocJar)
             pom {
                 name.set("ObjectBox Gradle Plugin")
                 description.set("Gradle Plugin for ObjectBox (NoSQL for Objects)")

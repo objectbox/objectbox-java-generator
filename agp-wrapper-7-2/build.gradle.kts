@@ -15,6 +15,7 @@ java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(8))
     }
+    // Note: the javadoc JAR just contains a manifest file and is added only to satisfy Maven Central requirements
     withJavadocJar()
     withSourcesJar()
 }
