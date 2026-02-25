@@ -31,8 +31,7 @@ java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(21))
     }
-    // Note: the javadoc JAR just contains a manifest file and is added only to satisfy Maven Central requirements
-    withJavadocJar()
+    // Note: the javadoc JAR is created using a custom task defined in the objectbox-publish plugin
     withSourcesJar()
 }
 
@@ -275,6 +274,7 @@ publishing {
         // The plugin also creates additional publications for "marker" artifacts for each plugin ID.
         // See the gradlePlugin configuration above.
         create<MavenPublication>("pluginMaven") {
+            artifact(tasks.named("javadocReadmeJar")) // task registered by objectbox-publish plugin
             pom {
                 name.set("ObjectBox Gradle Plugin")
                 description.set("Gradle Plugin for ObjectBox (NoSQL for Objects)")

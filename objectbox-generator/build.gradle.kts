@@ -9,7 +9,7 @@ java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(8))
     }
-    withJavadocJar()
+    // Note: the javadoc JAR is created using a custom task defined in the objectbox-publish plugin
     withSourcesJar()
 }
 
@@ -50,6 +50,7 @@ publishing {
         create<MavenPublication>("obxGenerator") {
             artifactId = "objectbox-generator"
             from(components["java"])
+            artifact(tasks.named("javadocReadmeJar")) // task registered by objectbox-publish plugin
             pom {
                 // Note: common configuration is set by objectbox-publish plugin
                 packaging = "jar"

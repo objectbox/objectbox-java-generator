@@ -26,8 +26,7 @@ java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(8))
     }
-    // Note: the javadoc JAR just contains a manifest file and is added only to satisfy Maven Central requirements
-    withJavadocJar()
+    // Note: the javadoc JAR is created using a custom task defined in the objectbox-publish plugin
     // Note: the sources JAR is created using the custom sourcesJar task below
 }
 
@@ -105,6 +104,7 @@ publishing {
         create<MavenPublication>("obxCodeModifier") {
             artifactId = "objectbox-code-modifier"
             from(components["java"])
+            artifact(tasks.named("javadocReadmeJar")) // task registered by objectbox-publish plugin
             artifact(sourcesJar)
             pom {
                 // Note: common configuration is set by objectbox-publish plugin

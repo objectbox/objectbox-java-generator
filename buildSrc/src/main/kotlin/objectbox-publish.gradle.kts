@@ -5,6 +5,29 @@ plugins {
     id("signing")
 }
 
+/**
+ * Creates a javadoc JAR with a helpful README.md as there aren't really APIs to document.
+ *
+ * This satisfies
+ * [Maven Central requirements](https://central.sonatype.org/publish/requirements/#supply-javadoc-and-sources).
+ *
+ * Add to a publication like:
+ *
+ * ```
+ * publishing {
+ *     publications {
+ *         create<MavenPublication>("obxProject") {
+ *             artifact(tasks.named("javadocReadmeJar"))
+ *         }
+ *     }
+ * }
+ * ```
+ */
+val javadocReadmeJar by tasks.registering(Jar::class) {
+    archiveClassifier.set("javadoc")
+    from(rootProject.file("javadoc/README.md"))
+}
+
 publishing {
     repositories {
         maven {
