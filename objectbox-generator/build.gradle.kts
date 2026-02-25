@@ -9,7 +9,8 @@ java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(8))
     }
-    withJavadocJar()
+    // Note: the javadoc JAR is created using a custom task defined in the objectbox-publish plugin
+    withSourcesJar()
 }
 
 val objectboxJavaVersion: String by rootProject.extra
@@ -43,19 +44,16 @@ tasks.test {
     }
 }
 
-val sourcesJar by tasks.registering(Jar::class) {
-    archiveClassifier.set("sources")
-    from("README")
-}
-
 // Set project-specific properties
 publishing {
     publications {
-        getByName<MavenPublication>("mavenJava") {
+        create<MavenPublication>("obxGenerator") {
             artifactId = "objectbox-generator"
             from(components["java"])
-            artifact(sourcesJar)
+            artifact(tasks.named("javadocReadmeJar")) // task registered by objectbox-publish plugin
             pom {
+                // Note: common configuration is set by objectbox-publish plugin
+                packaging = "jar"
                 name.set("ObjectBox Generator")
                 description.set("Code generator for ObjectBox, the superfast NoSQL database for Objects")
             }
