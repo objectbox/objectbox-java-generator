@@ -30,6 +30,7 @@ import org.hamcrest.MatcherAssert.assertThat
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertThrows
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 
@@ -100,16 +101,17 @@ open class PluginApplyJavaTest : PluginApplyTest() {
         assertJavaProject(project, JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME)
     }
 
-    @Test
-    fun apply_afterJavaLibraryPlugin() {
-        val project = buildProject {
+    private fun buildJavaLibraryProject(): Project =
+        buildProject {
             pluginManager.apply {
                 apply("java-library")
                 apply(pluginId)
             }
         }
 
-        assertJavaProject(project, JavaPlugin.API_CONFIGURATION_NAME)
+    @Test
+    fun apply_afterJavaLibraryPlugin() {
+        assertJavaProject(buildJavaLibraryProject(), JavaPlugin.API_CONFIGURATION_NAME)
     }
 
     /**
@@ -179,9 +181,8 @@ open class PluginApplyJavaTest : PluginApplyTest() {
                 .taskDependencies.getDependencies(classesTask).count { it.name == transformTask.name })
     }
 
-    @Test
-    fun apply_afterKotlinAndKaptPlugin() {
-        val project = buildProject {
+    private fun buildKotlinKaptProject(): Project =
+        buildProject {
             pluginManager.apply {
                 apply("kotlin")
                 apply("kotlin-kapt")
@@ -189,7 +190,9 @@ open class PluginApplyJavaTest : PluginApplyTest() {
             }
         }
 
-        assertKotlinSetup(project)
+    @Test
+    fun apply_afterKotlinAndKaptPlugin() {
+        assertKotlinSetup(buildKotlinKaptProject())
     }
 
     @Test
@@ -235,6 +238,89 @@ open class PluginApplyJavaTest : PluginApplyTest() {
             it.group == "io.objectbox" && it.name == "objectbox-java"
                     && it.version == ProjectEnv.Const.javaVersionToApply
         })
+    }
+
+    @Test
+    fun apply_doesNotAddAdditionalJavaLibrary() {
+        assertOnlySingleDependency(
+            buildJavaLibraryProject(),
+            JavaPlugin.API_CONFIGURATION_NAME,
+            "objectbox-java"
+        )
+        assertOnlySingleDependency(
+            buildJavaLibraryProject(),
+            JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME,
+            "objectbox-java"
+        )
+    }
+
+    @Test
+    fun apply_doesNotAddAdditionalKotlinLibrary() {
+        assertOnlySingleDependency(
+            buildKotlinKaptProject(),
+            JavaPlugin.API_CONFIGURATION_NAME,
+            "objectbox-kotlin"
+        )
+        assertOnlySingleDependency(
+            buildKotlinKaptProject(),
+            JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME,
+            "objectbox-kotlin"
+        )
+    }
+
+    private fun assertOnlySingleDependency(forProject: Project, toConfiguration: String, name: String) {
+        // Use a custom version that's easy to recognize if this test should fail
+        val customVersion = "${ProjectEnv.Const.javaVersionToApply}-custom"
+        forProject.dependencies.add(toConfiguration, "io.objectbox:$name:$customVersion")
+
+        forProject.resolveDependencyGraphWithoutDownloadingFiles()
+
+        val deps = forProject.configurations
+            .flatMap { configuration ->
+                configuration.dependencies
+                    .filter { it.name == name }
+            }
+        assertTrue(
+            "Must not add duplicate $name library, but has:\n${deps.joinToString("\n")}",
+            deps.size == 1 && deps.first().version == customVersion
+        )
+    }
+
+    private val databaseLibraries = listOf(
+        "objectbox-linux",
+        "objectbox-macos",
+        "objectbox-windows",
+        "objectbox-sync-linux",
+        "objectbox-sync-server-linux",
+        "objectbox-sync-macos",
+        "objectbox-sync-windows"
+    )
+
+    @Test
+    fun apply_doesNotAddAdditionalDatabaseLibrary() {
+        databaseLibraries.forEach {
+            assertNoDatabaseLibraryAdded(it)
+        }
+    }
+
+    private fun assertNoDatabaseLibraryAdded(name: String) {
+        val project = buildJavaLibraryProject()
+
+        // Use a custom version that's easy to recognize if this test should fail
+        val customVersion = "${ProjectEnv.Const.nativeVersionToApply}-custom"
+        project.dependencies.add(JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME, "io.objectbox:$name:$customVersion")
+
+        project.resolveDependencyGraphWithoutDownloadingFiles()
+        val databaseDeps = project.configurations
+            .flatMap { configuration ->
+                configuration.dependencies
+                    .filter { databaseLibraries.contains(it.name) }
+            }
+        assertEquals(
+            "Must not add additional database library, but has:\n${databaseDeps.joinToString("\n")}",
+            1,
+            databaseDeps.size
+        )
     }
 
 }
