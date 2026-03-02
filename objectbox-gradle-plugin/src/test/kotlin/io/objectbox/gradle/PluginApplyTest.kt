@@ -30,7 +30,6 @@ abstract class PluginApplyTest {
     open val pluginId = "io.objectbox"
     open val expectedLibWithSyncVariantPrefix = "objectbox"
     open val expectedLibWithSyncVariantVersion = ProjectEnv.Const.nativeVersionToApply
-    val expectedNativeLibVersion = ProjectEnv.Const.nativeVersionToApply
 
     /**
      * Test PluginOptions extension is created and can be configured.
