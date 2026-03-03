@@ -203,7 +203,7 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
     }
 
     private fun addDependencies(env: ProjectEnv) {
-        val compileConfig = env.configApiOrImplOrCompile
+        val compileConfig = env.configApiOrImpl
         val project = env.project
 
         // Note: a preview release might apply different versions of the Java and native library,
@@ -238,10 +238,13 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
             // for instrumented unit tests
             // add jsr305 to prevent conflict with other versions added by test dependencies, like espresso
             // https://github.com/objectbox/objectbox-java/issues/73
-            project.addDep(env.configAndroidTestImplOrCompile, "com.google.code.findbugs:jsr305:3.0.2")
+            project.addDep(
+                ProjectEnv.Const.ANDROID_TEST_IMPLEMENTATION_CONFIGURATION_NAME,
+                "com.google.code.findbugs:jsr305:3.0.2"
+            )
 
             // for local unit tests
-            addNativeDependency(env, env.configTestImplOrCompile, true)
+            addNativeDependency(env, JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME, true)
         } else {
             addNativeDependency(env, compileConfig, false)
         }

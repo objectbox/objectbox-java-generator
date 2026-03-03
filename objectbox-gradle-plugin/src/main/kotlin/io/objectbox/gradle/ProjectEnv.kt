@@ -31,6 +31,12 @@ class ProjectEnv(val project: Project) {
         const val javaVersionToApply = GradlePluginBuildConfig.APPLIES_JAVA_VERSION
         const val nativeVersionToApply = GradlePluginBuildConfig.APPLIES_NATIVE_VERSION
         const val nativeSyncVersionToApply = GradlePluginBuildConfig.APPLIES_NATIVE_SYNC_VERSION
+
+        /**
+         * The name of the default configuration for
+         * [Android instrumented (runs on devices) tests](https://developer.android.com/training/testing/instrumented-tests).
+         */
+        const val ANDROID_TEST_IMPLEMENTATION_CONFIGURATION_NAME = "androidTestImplementation"
     }
 
     /** Note: Plugin extension, values only available after evaluation phase. */
@@ -57,36 +63,19 @@ class ProjectEnv(val project: Project) {
     val isMac64 = isMac && is64Bit
     val isWindows64 = isWindows && is64Bit
 
-
     /**
      * See Gradle [java-library plugin configurations](https://docs.gradle.org/current/userguide/java_library_plugin.html#sec:java_library_configurations_graph)
      * and [java plugin configurations](https://docs.gradle.org/current/userguide/java_plugin.html#sec:java_plugin_and_dependency_management)
      * (used by `applications` plugin).
      */
-    val configApiOrImplOrCompile: String by lazy {
+    val configApiOrImpl: String by lazy {
         if (project.configurations.findByName(JavaPlugin.API_CONFIGURATION_NAME) != null) {
             // Projects applying the java-library plugin.
             // Try to use api by default so consuming projects inherit the dependency.
             JavaPlugin.API_CONFIGURATION_NAME
-        } else if (project.configurations.findByName(JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME) != null) {
+        } else {
             // Projects applying the application plugin (does not have api configuration).
             JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME
-        } else {
-            "compile"
-        }
-    }
-    val configAndroidTestImplOrCompile: String by lazy {
-        if (project.configurations.findByName("androidTestImplementation") != null) {
-            "androidTestImplementation"
-        } else {
-            "androidTestCompile"
-        }
-    }
-    val configTestImplOrCompile: String by lazy {
-        if (project.configurations.findByName(JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME) != null) {
-            JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME
-        } else {
-            "testCompile"
         }
     }
 
