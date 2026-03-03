@@ -31,6 +31,7 @@ import org.gradle.api.Task
 import org.gradle.api.UnknownDomainObjectException
 import org.gradle.api.artifacts.Dependency
 import org.gradle.api.plugins.InvalidPluginException
+import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.tasks.compile.JavaCompile
 
 /**
@@ -157,9 +158,9 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
                 project.addDep("kapt", processorDep)
             }
 
-            project.hasConfig("annotationProcessor") -> {
+            project.hasConfig(JavaPlugin.ANNOTATION_PROCESSOR_CONFIGURATION_NAME) -> {
                 // Android (Java), also Java Desktop with Gradle 5.0 (best as of 5.2) uses annotationProcessor.
-                project.addDep("annotationProcessor", processorDep)
+                project.addDep(JavaPlugin.ANNOTATION_PROCESSOR_CONFIGURATION_NAME, processorDep)
             }
 
             project.hasConfig("apt") -> {

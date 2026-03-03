@@ -64,13 +64,13 @@ class ProjectEnv(val project: Project) {
      * (used by `applications` plugin).
      */
     val configApiOrImplOrCompile: String by lazy {
-        if (project.configurations.findByName("api") != null) {
+        if (project.configurations.findByName(JavaPlugin.API_CONFIGURATION_NAME) != null) {
             // Projects applying the java-library plugin.
             // Try to use api by default so consuming projects inherit the dependency.
-            "api"
-        } else if (project.configurations.findByName("implementation") != null) {
+            JavaPlugin.API_CONFIGURATION_NAME
+        } else if (project.configurations.findByName(JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME) != null) {
             // Projects applying the application plugin (does not have api configuration).
-            "implementation"
+            JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME
         } else {
             "compile"
         }
@@ -83,8 +83,8 @@ class ProjectEnv(val project: Project) {
         }
     }
     val configTestImplOrCompile: String by lazy {
-        if (project.configurations.findByName("testImplementation") != null) {
-            "testImplementation"
+        if (project.configurations.findByName(JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME) != null) {
+            JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME
         } else {
             "testCompile"
         }
