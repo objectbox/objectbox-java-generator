@@ -21,7 +21,6 @@ package io.objectbox.gradle
 import org.gradle.api.Project
 import org.gradle.api.artifacts.DependencySet
 import org.gradle.api.plugins.JavaPlugin
-import org.gradle.testfixtures.ProjectBuilder
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Test
@@ -39,12 +38,12 @@ abstract class PluginApplyAndroidTest : PluginApplyTest() {
 
     @Test
     fun apply_afterAndroidPlugin() {
-        val project = ProjectBuilder.builder().build()
-        project.pluginManager.apply {
-            apply("com.android.application")
-            apply(pluginId)
+        val project = buildProject {
+            pluginManager.apply {
+                apply("com.android.application")
+                apply(pluginId)
+            }
         }
-        project.enableObjectBoxPluginDebugMode()
 
         with(project.configurations) {
             assertProcessorDependency(getByName(JavaPlugin.ANNOTATION_PROCESSOR_CONFIGURATION_NAME).dependencies)
@@ -61,27 +60,27 @@ abstract class PluginApplyAndroidTest : PluginApplyTest() {
 
     @Test
     fun apply_afterKotlinAndroidAndKaptPlugin() {
-        val project = ProjectBuilder.builder().build()
-        project.pluginManager.apply {
-            apply("com.android.application")
-            apply("kotlin-android")
-            apply("kotlin-kapt")
-            apply(pluginId)
+        val project = buildProject {
+            pluginManager.apply {
+                apply("com.android.application")
+                apply("kotlin-android")
+                apply("kotlin-kapt")
+                apply(pluginId)
+            }
         }
-        project.enableObjectBoxPluginDebugMode()
 
         assertKotlinAndroidSetup(project)
     }
 
     @Test
     fun apply_afterKotlinAndroidPlugin_addsKapt() {
-        val project = ProjectBuilder.builder().build()
-        project.pluginManager.apply {
-            apply("com.android.application")
-            apply("kotlin-android")
-            apply(pluginId)
+        val project = buildProject {
+            pluginManager.apply {
+                apply("com.android.application")
+                apply("kotlin-android")
+                apply(pluginId)
+            }
         }
-        project.enableObjectBoxPluginDebugMode()
 
         assertKotlinAndroidSetup(project)
     }

@@ -19,6 +19,7 @@
 package io.objectbox.gradle
 
 import org.gradle.api.Project
+import org.gradle.testfixtures.ProjectBuilder
 import org.junit.Assert.assertTrue
 
 
@@ -30,6 +31,16 @@ abstract class PluginApplyTest {
     open val pluginId = "io.objectbox"
     open val expectedLibWithSyncVariantPrefix = "objectbox"
     open val expectedLibWithSyncVariantVersion = ProjectEnv.Const.nativeVersionToApply
+
+    protected fun buildProject(
+        configureProject: Project.() -> Unit
+    ): Project = ProjectBuilder
+        .builder()
+        .build()
+        .apply(configureProject)
+        .also {
+            it.enableObjectBoxPluginDebugMode()
+        }
 
     /**
      * Test PluginOptions extension is created and can be configured.

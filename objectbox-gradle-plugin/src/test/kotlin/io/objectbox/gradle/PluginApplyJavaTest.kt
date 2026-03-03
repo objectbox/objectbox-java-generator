@@ -78,36 +78,36 @@ open class PluginApplyJavaTest : PluginApplyTest() {
 
     @Test
     fun apply_afterJavaPlugin() {
-        val project = ProjectBuilder.builder().build()
-        project.pluginManager.apply {
-            apply("java")
-            apply(pluginId)
+        val project = buildProject {
+            pluginManager.apply {
+                apply("java")
+                apply(pluginId)
+            }
         }
-        project.enableObjectBoxPluginDebugMode()
 
         assertJavaProject(project, JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME)
     }
 
     @Test
     fun apply_afterApplicationPlugin() {
-        val project = ProjectBuilder.builder().build()
-        project.pluginManager.apply {
-            apply("application") // Note: application plugin adds java plugin.
-            apply(pluginId)
+        val project = buildProject {
+            pluginManager.apply {
+                apply("application") // Note: application plugin adds java plugin.
+                apply(pluginId)
+            }
         }
-        project.enableObjectBoxPluginDebugMode()
 
         assertJavaProject(project, JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME)
     }
 
     @Test
     fun apply_afterJavaLibraryPlugin() {
-        val project = ProjectBuilder.builder().build()
-        project.pluginManager.apply {
-            apply("java-library")
-            apply(pluginId)
+        val project = buildProject {
+            pluginManager.apply {
+                apply("java-library")
+                apply(pluginId)
+            }
         }
-        project.enableObjectBoxPluginDebugMode()
 
         assertJavaProject(project, JavaPlugin.API_CONFIGURATION_NAME)
     }
@@ -155,25 +155,25 @@ open class PluginApplyJavaTest : PluginApplyTest() {
 
     @Test
     fun apply_afterKotlinAndKaptPlugin() {
-        val project = ProjectBuilder.builder().build()
-        project.pluginManager.apply {
-            apply("kotlin")
-            apply("kotlin-kapt")
-            apply(pluginId)
+        val project = buildProject {
+            pluginManager.apply {
+                apply("kotlin")
+                apply("kotlin-kapt")
+                apply(pluginId)
+            }
         }
-        project.enableObjectBoxPluginDebugMode()
 
         assertKotlinSetup(project)
     }
 
     @Test
     fun apply_afterKotlinPlugin_addsKapt() {
-        val project = ProjectBuilder.builder().build()
-        project.pluginManager.apply {
-            apply("kotlin")
-            apply(pluginId)
+        val project = buildProject {
+            pluginManager.apply {
+                apply("kotlin")
+                apply(pluginId)
+            }
         }
-        project.enableObjectBoxPluginDebugMode()
 
         assertKotlinSetup(project)
     }
