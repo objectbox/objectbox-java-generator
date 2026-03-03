@@ -37,6 +37,9 @@ class ProjectEnv(val project: Project) {
          * [Android instrumented (runs on devices) tests](https://developer.android.com/training/testing/instrumented-tests).
          */
         const val ANDROID_TEST_IMPLEMENTATION_CONFIGURATION_NAME = "androidTestImplementation"
+
+        /** Name of the configuration of the [kapt plugin](https://kotlinlang.org/docs/kapt.html). */
+        const val KAPT_CONFIGURATION_NAME = "kapt"
     }
 
     /** Note: Plugin extension, values only available after evaluation phase. */

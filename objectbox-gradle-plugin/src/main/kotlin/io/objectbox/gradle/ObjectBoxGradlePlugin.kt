@@ -143,7 +143,9 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
 
     private fun addDependenciesAnnotationProcessor(env: ProjectEnv) {
         val project = env.project
-        if ((env.hasKotlinPlugin || env.hasKotlinAndroidPlugin) && !project.hasConfig("kapt")) {
+        if ((env.hasKotlinPlugin || env.hasKotlinAndroidPlugin) &&
+            !project.hasConfig(ProjectEnv.Const.KAPT_CONFIGURATION_NAME)
+        ) {
             // Note: no-op if kapt plugin was already applied.
             project.plugins.apply("kotlin-kapt")
             env.logDebug { "Applied 'kotlin-kapt'." }
@@ -153,9 +155,9 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
         val processorDep = "io.objectbox:objectbox-processor:${ProjectEnv.Const.pluginVersion}"
         // Note: check for and use preferred/best config first, potentially ignoring others.
         when {
-            project.hasConfig("kapt") -> {
+            project.hasConfig(ProjectEnv.Const.KAPT_CONFIGURATION_NAME) -> {
                 // Kotlin (Android + Desktop).
-                project.addDep("kapt", processorDep)
+                project.addDep(ProjectEnv.Const.KAPT_CONFIGURATION_NAME, processorDep)
             }
 
             project.hasConfig(JavaPlugin.ANNOTATION_PROCESSOR_CONFIGURATION_NAME) -> {

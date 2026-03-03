@@ -180,7 +180,7 @@ open class PluginApplyJavaTest : PluginApplyTest() {
 
     private fun assertKotlinSetup(project: Project) {
         with(project.configurations) {
-            assertProcessorDependency(getByName("kapt").dependencies)
+            assertProcessorDependency(getByName(ProjectEnv.Const.KAPT_CONFIGURATION_NAME).dependencies)
 
             getByName(JavaPlugin.API_CONFIGURATION_NAME).dependencies.let { deps ->
                 assertEquals(1, deps.count {

@@ -87,7 +87,7 @@ abstract class PluginApplyAndroidTest : PluginApplyTest() {
 
     private fun assertKotlinAndroidSetup(project: Project) {
         with(project.configurations) {
-            assertProcessorDependency(getByName("kapt").dependencies)
+            assertProcessorDependency(getByName(ProjectEnv.Const.KAPT_CONFIGURATION_NAME).dependencies)
             assertAndroidDependency(getByName(JavaPlugin.API_CONFIGURATION_NAME).dependencies)
             assertNativeDependency(getByName(JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME).dependencies)
         }
