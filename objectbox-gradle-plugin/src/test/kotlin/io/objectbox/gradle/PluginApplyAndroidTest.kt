@@ -70,14 +70,17 @@ abstract class PluginApplyAndroidTest : PluginApplyTest() {
             .allDependencies
     }
 
-    @Test
-    fun apply_afterAndroidPlugin() {
-        val project = buildProject {
+    private fun buildAndroidProject(): Project =
+        buildProject {
             pluginManager.apply {
                 apply("com.android.application")
                 apply(pluginId)
             }
         }
+
+    @Test
+    fun apply_afterAndroidPlugin() {
+        val project = buildAndroidProject()
 
         project.resolveDependencyGraphWithoutDownloadingFiles()
         with(project.configurations) {
@@ -140,6 +143,41 @@ abstract class PluginApplyAndroidTest : PluginApplyTest() {
             it.group == "io.objectbox" && it.name == "$expectedLibWithSyncVariantPrefix-android"
                     && it.version == expectedLibWithSyncVariantVersion
         })
+    }
+
+    private val databaseLibraries = listOf(
+        "objectbox-android",
+        "objectbox-android-objectbrowser",
+        "objectbox-sync-android",
+        "objectbox-sync-android-objectbrowser",
+        "objectbox-sync-server-android"
+    )
+
+    @Test
+    fun apply_doesNotAddAdditionalDatabaseLibrary() {
+        databaseLibraries.forEach {
+            assertNoDatabaseLibraryAdded(it)
+        }
+    }
+
+    private fun assertNoDatabaseLibraryAdded(name: String) {
+        val project = buildAndroidProject()
+
+        // Use a custom version that's easy to recognize if this test should fail
+        val customVersion = "${ProjectEnv.Const.nativeVersionToApply}-custom"
+        project.dependencies.add(JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME, "io.objectbox:$name:$customVersion")
+
+        project.resolveDependencyGraphWithoutDownloadingFiles()
+        val databaseDeps = project.configurations
+            .flatMap { configuration ->
+                configuration.dependencies
+                    .filter { databaseLibraries.contains(it.name) }
+            }
+        assertEquals(
+            "Must not add additional database library, but has:\n${databaseDeps.joinToString("\n")}",
+            1,
+            databaseDeps.size
+        )
     }
 
 }
