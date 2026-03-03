@@ -23,6 +23,7 @@ import org.gradle.api.artifacts.DependencySet
 import org.gradle.api.internal.plugins.PluginApplicationException
 import org.gradle.api.internal.project.ProjectInternal
 import org.gradle.api.plugins.InvalidPluginException
+import org.gradle.api.plugins.JavaPlugin
 import org.gradle.testfixtures.ProjectBuilder
 import org.hamcrest.CoreMatchers.instanceOf
 import org.hamcrest.MatcherAssert.assertThat
@@ -84,7 +85,7 @@ open class PluginApplyJavaTest : PluginApplyTest() {
         }
         project.enableObjectBoxPluginDebugMode()
 
-        assertJavaProject(project, "implementation")
+        assertJavaProject(project, JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME)
     }
 
     @Test
@@ -96,7 +97,7 @@ open class PluginApplyJavaTest : PluginApplyTest() {
         }
         project.enableObjectBoxPluginDebugMode()
 
-        assertJavaProject(project, "implementation")
+        assertJavaProject(project, JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME)
     }
 
     @Test
@@ -108,12 +109,12 @@ open class PluginApplyJavaTest : PluginApplyTest() {
         }
         project.enableObjectBoxPluginDebugMode()
 
-        assertJavaProject(project, "api")
+        assertJavaProject(project, JavaPlugin.API_CONFIGURATION_NAME)
     }
 
     private fun assertJavaProject(project: Project, configuration: String) {
         with(project.configurations) {
-            assertProcessorDependency(getByName("annotationProcessor").dependencies)
+            assertProcessorDependency(getByName(JavaPlugin.ANNOTATION_PROCESSOR_CONFIGURATION_NAME).dependencies)
 
             getByName(configuration).dependencies.let {
                 assertJavaDependency(it)
@@ -127,8 +128,8 @@ open class PluginApplyJavaTest : PluginApplyTest() {
 
         // AFTER EVALUATE.
         // Note: by default only main and test source sets exist.
-        assertTransformTask(project, "", "classes")
-        assertTransformTask(project, "Test", "testClasses")
+        assertTransformTask(project, "", JavaPlugin.CLASSES_TASK_NAME)
+        assertTransformTask(project, "Test", JavaPlugin.TEST_CLASSES_TASK_NAME)
     }
 
     private fun assertTransformTask(
@@ -181,7 +182,7 @@ open class PluginApplyJavaTest : PluginApplyTest() {
         with(project.configurations) {
             assertProcessorDependency(getByName("kapt").dependencies)
 
-            getByName("api").dependencies.let { deps ->
+            getByName(JavaPlugin.API_CONFIGURATION_NAME).dependencies.let { deps ->
                 assertEquals(1, deps.count {
                     it.group == "io.objectbox" && it.name == "objectbox-kotlin"
                             && it.version == ProjectEnv.Const.javaVersionToApply
@@ -198,8 +199,8 @@ open class PluginApplyJavaTest : PluginApplyTest() {
         // AFTER EVALUATE.
         // Note: by default only main and test source sets exist.
         // Note: transform is not supported for Kotlin code/tasks, so these match plain Java plugin.
-        assertTransformTask(project, "", "classes")
-        assertTransformTask(project, "Test", "testClasses")
+        assertTransformTask(project, "", JavaPlugin.CLASSES_TASK_NAME)
+        assertTransformTask(project, "Test", JavaPlugin.TEST_CLASSES_TASK_NAME)
     }
 
     private fun assertProcessorDependency(apDeps: DependencySet) {

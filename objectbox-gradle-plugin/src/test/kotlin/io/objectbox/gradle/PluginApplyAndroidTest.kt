@@ -20,6 +20,7 @@ package io.objectbox.gradle
 
 import org.gradle.api.Project
 import org.gradle.api.artifacts.DependencySet
+import org.gradle.api.plugins.JavaPlugin
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
@@ -46,9 +47,9 @@ abstract class PluginApplyAndroidTest : PluginApplyTest() {
         project.enableObjectBoxPluginDebugMode()
 
         with(project.configurations) {
-            assertProcessorDependency(getByName("annotationProcessor").dependencies)
-            assertAndroidDependency(getByName("api").dependencies)
-            assertNativeDependency(getByName("testImplementation").dependencies)
+            assertProcessorDependency(getByName(JavaPlugin.ANNOTATION_PROCESSOR_CONFIGURATION_NAME).dependencies)
+            assertAndroidDependency(getByName(JavaPlugin.API_CONFIGURATION_NAME).dependencies)
+            assertNativeDependency(getByName(JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME).dependencies)
         }
         assertNotNull(project.tasks.findByPath("objectboxPrepareBuild"))
 
@@ -88,8 +89,8 @@ abstract class PluginApplyAndroidTest : PluginApplyTest() {
     private fun assertKotlinAndroidSetup(project: Project) {
         with(project.configurations) {
             assertProcessorDependency(getByName("kapt").dependencies)
-            assertAndroidDependency(getByName("api").dependencies)
-            assertNativeDependency(getByName("testImplementation").dependencies)
+            assertAndroidDependency(getByName(JavaPlugin.API_CONFIGURATION_NAME).dependencies)
+            assertNativeDependency(getByName(JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME).dependencies)
         }
         assertNotNull(project.tasks.findByPath("objectboxPrepareBuild"))
 
