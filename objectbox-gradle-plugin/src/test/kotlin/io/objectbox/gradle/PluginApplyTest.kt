@@ -19,7 +19,9 @@
 package io.objectbox.gradle
 
 import org.gradle.api.Project
+import org.gradle.api.artifacts.DependencySet
 import org.gradle.testfixtures.ProjectBuilder
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 
 
@@ -55,4 +57,22 @@ abstract class PluginApplyTest {
         }
         assertTrue(extensions.getByType(ObjectBoxPluginExtension::class.java).debug.get())
     }
+
+    fun assertProcessorDependency(apDeps: DependencySet) {
+        assertEquals("objectbox-processor dependency not found", 1, apDeps.count {
+            it.group == "io.objectbox" && it.name == "objectbox-processor"
+                    && it.version == ProjectEnv.Const.pluginVersion
+        })
+    }
+
+    fun assertNativeDependency(deps: DependencySet) {
+        assertEquals("JVM database library dependency not found", 1, deps.count {
+            it.group == "io.objectbox"
+                    && (it.name == "$expectedLibWithSyncVariantPrefix-linux"
+                    || it.name == "$expectedLibWithSyncVariantPrefix-windows"
+                    || it.name == "$expectedLibWithSyncVariantPrefix-macos")
+                    && it.version == expectedLibWithSyncVariantVersion
+        })
+    }
+
 }

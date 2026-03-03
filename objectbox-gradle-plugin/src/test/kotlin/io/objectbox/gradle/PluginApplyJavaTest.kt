@@ -203,27 +203,10 @@ open class PluginApplyJavaTest : PluginApplyTest() {
         assertTransformTask(project, "Test", JavaPlugin.TEST_CLASSES_TASK_NAME)
     }
 
-    private fun assertProcessorDependency(apDeps: DependencySet) {
-        assertEquals("objectbox-processor dependency not found", 1, apDeps.count {
-            it.group == "io.objectbox" && it.name == "objectbox-processor"
-                    && it.version == ProjectEnv.Const.pluginVersion
-        })
-    }
-
     private fun assertJavaDependency(compileDeps: DependencySet) {
         assertEquals("objectbox-java dependency not found", 1, compileDeps.count {
             it.group == "io.objectbox" && it.name == "objectbox-java"
                     && it.version == ProjectEnv.Const.javaVersionToApply
-        })
-    }
-
-    open fun assertNativeDependency(compileDeps: DependencySet) {
-        assertEquals("JNI lib dependency not found", 1, compileDeps.count {
-            it.group == "io.objectbox"
-                    && (it.name == "$expectedLibWithSyncVariantPrefix-linux"
-                    || it.name == "$expectedLibWithSyncVariantPrefix-windows"
-                    || it.name == "$expectedLibWithSyncVariantPrefix-macos")
-                    && it.version == expectedLibWithSyncVariantVersion
         })
     }
 

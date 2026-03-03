@@ -99,24 +99,7 @@ abstract class PluginApplyAndroidTest : PluginApplyTest() {
         // this is tested using Gradle TestKit in AndroidTransformTest.
     }
 
-    private fun assertProcessorDependency(apDeps: DependencySet) {
-        assertEquals("objectbox-processor dependency not found", 1, apDeps.count {
-            it.group == "io.objectbox" && it.name == "objectbox-processor"
-                    && it.version == ProjectEnv.Const.pluginVersion
-        })
-    }
-
-    open fun assertNativeDependency(compileDeps: DependencySet) {
-        assertEquals("JNI lib dependency not found", 1, compileDeps.count {
-            it.group == "io.objectbox"
-                    && (it.name == "$expectedLibWithSyncVariantPrefix-linux"
-                    || it.name == "$expectedLibWithSyncVariantPrefix-windows"
-                    || it.name == "$expectedLibWithSyncVariantPrefix-macos")
-                    && it.version == expectedLibWithSyncVariantVersion
-        })
-    }
-
-    open fun assertAndroidDependency(deps: DependencySet) {
+    private fun assertAndroidDependency(deps: DependencySet) {
         assertEquals("Android lib dependency not found", 1, deps.count {
             it.group == "io.objectbox" && it.name == "$expectedLibWithSyncVariantPrefix-android"
                     && it.version == expectedLibWithSyncVariantVersion
