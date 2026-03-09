@@ -32,7 +32,7 @@ class ObjectBoxSyncGradlePlugin : ObjectBoxGradlePlugin() {
     }
 
     override fun getLibWithSyncVariantVersion(): String {
-        return ProjectEnv.Const.nativeSyncVersionToApply
+        return ProjectEnv.Const.OBX_DATABASE_SYNC_VERSION
     }
 
 }

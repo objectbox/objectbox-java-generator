@@ -18,6 +18,7 @@
 
 package io.objectbox.gradle
 
+import io.objectbox.gradle.ProjectEnv.Const
 import io.objectbox.gradle.transform.AndroidPluginCompat
 import io.objectbox.gradle.transform.ObjectBoxJavaClassesTransformTask
 import io.objectbox.gradle.transform.ObjectBoxJavaTransform
@@ -151,7 +152,7 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
     private fun addDependenciesAnnotationProcessor(env: ProjectEnv) {
         val project = env.project
         if ((env.hasKotlinPlugin || env.hasKotlinAndroidPlugin) &&
-            !project.hasConfig(ProjectEnv.Const.KAPT_CONFIGURATION_NAME)
+            !project.hasConfig(Const.KAPT_CONFIGURATION_NAME)
         ) {
             // Note: no-op if kapt plugin was already applied.
             project.plugins.apply("kotlin-kapt")
@@ -159,12 +160,12 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
         }
 
         // Note: use plugin version for processor dependency as processor is part of this project.
-        val processorDep = "io.objectbox:objectbox-processor:${ProjectEnv.Const.pluginVersion}"
+        val processorDep = "${Const.OBX_GROUP}:${Const.OBX_PROCESSOR}:${Const.OBX_PLUGIN_VERSION}"
         // Note: check for and use preferred/best config first, potentially ignoring others.
         when {
-            project.hasConfig(ProjectEnv.Const.KAPT_CONFIGURATION_NAME) -> {
+            project.hasConfig(Const.KAPT_CONFIGURATION_NAME) -> {
                 // Kotlin (Android + Desktop).
-                project.addDep(ProjectEnv.Const.KAPT_CONFIGURATION_NAME, processorDep)
+                project.addDep(Const.KAPT_CONFIGURATION_NAME, processorDep)
             }
 
             project.hasConfig(JavaPlugin.ANNOTATION_PROCESSOR_CONFIGURATION_NAME) -> {
@@ -180,8 +181,9 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
 
             else -> {
                 project.logger.warn(
-                    "ObjectBox: Could not add dependency on objectbox-processor, " +
-                            "no supported configuration (kapt, annotationProcessor, apt) found."
+                    "ObjectBox: Could not add dependency on ${Const.OBX_PROCESSOR}, " +
+                            "no supported configuration (${Const.KAPT_CONFIGURATION_NAME}, " +
+                            "${JavaPlugin.ANNOTATION_PROCESSOR_CONFIGURATION_NAME}, apt) found."
                 )
             }
         }
@@ -205,10 +207,10 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
 
     /**
      * Version for libraries that have Sync enabled versions.
-     * All others always use [ProjectEnv.Const.nativeVersionToApply].
+     * All others always use [ProjectEnv.Const.OBX_DATABASE_VERSION].
      */
     internal open fun getLibWithSyncVariantVersion(): String {
-        return ProjectEnv.Const.nativeVersionToApply
+        return Const.OBX_DATABASE_VERSION
     }
 
     private fun Project.addDepLater(dependencySet: DependencySet, dep: String) {
@@ -218,6 +220,9 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
             }
         )
     }
+
+    private fun Project.addObjectBoxDepLater(dependencySet: DependencySet, name: String, version: String) =
+        addDepLater(dependencySet, "${Const.OBX_GROUP}:$name:$version")
 
     /**
      * Before dependencies of project configurations are resolved, adds required ObjectBox dependencies, if a
@@ -236,16 +241,13 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
         // (which, if using modern Gradle plugins syntax, they are always).
         project.configurations.getByName(compileConfig).withDependencies { dependencySet ->
             val hasKotlinPlugin = env.hasKotlinPlugin || env.hasKotlinAndroidPlugin
-            val hasObxKotlinLibrary = env.hasObjectBoxDep("objectbox-kotlin")
+            val hasObxKotlinLibrary = env.hasObjectBoxDep(Const.OBX_KOTLIN)
 
             if (hasKotlinPlugin) {
                 if (hasObxKotlinLibrary) {
-                    env.logDebug { "Not adding objectbox-kotlin dependency, a configuration has one" }
+                    env.logDebug { "Not adding ${Const.OBX_KOTLIN} dependency, a configuration has one" }
                 } else {
-                    project.addDepLater(
-                        dependencySet,
-                        "io.objectbox:objectbox-kotlin:${ProjectEnv.Const.javaVersionToApply}"
-                    )
+                    project.addObjectBoxDepLater(dependencySet, Const.OBX_KOTLIN, Const.OBX_JAVA_VERSION)
                 }
             }
 
@@ -254,12 +256,12 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
             // (only the Android library has a dependency on the Java library as it includes Java APIs).
             // But don't add it if the Kotlin library is manually added as it has a dependency on the Java library to
             // avoid pulling in a newer, possibly incompatible, Java library.
-            if (env.hasObjectBoxDep("objectbox-java")) {
-                env.logDebug { "Not adding objectbox-java dependency, a configuration has one" }
+            if (env.hasObjectBoxDep(Const.OBX_JAVA)) {
+                env.logDebug { "Not adding ${Const.OBX_JAVA} dependency, a configuration has one" }
             } else if (hasObxKotlinLibrary) {
-                env.logDebug { "Not adding objectbox-java dependency, a configuration has objectbox-kotlin" }
+                env.logDebug { "Not adding ${Const.OBX_JAVA} dependency, a configuration has ${Const.OBX_KOTLIN}" }
             } else {
-                project.addDepLater(dependencySet, "io.objectbox:objectbox-java:${ProjectEnv.Const.javaVersionToApply}")
+                project.addObjectBoxDepLater(dependencySet, Const.OBX_JAVA, Const.OBX_JAVA_VERSION)
             }
 
             // If the Android plugin is applied, add the Android database library, otherwise the JVM database library
@@ -271,10 +273,7 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
                     && !env.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_SYNC-android-objectbrowser")
                     && !env.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_SYNC-server-android")
                 ) {
-                    project.addDepLater(
-                        dependencySet,
-                        "io.objectbox:$androidDepName:${getLibWithSyncVariantVersion()}"
-                    )
+                    project.addObjectBoxDepLater(dependencySet, androidDepName, getLibWithSyncVariantVersion())
                 } else {
                     env.logDebug { "Not adding $androidDepName dependency, a configuration has an Android database library" }
                 }
@@ -294,7 +293,7 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
             // add jsr305 to prevent conflict with other versions added by test dependencies, like espresso.
             // https://github.com/objectbox/objectbox-java/issues/73
             project.configurations
-                .getByName(ProjectEnv.Const.ANDROID_TEST_IMPLEMENTATION_CONFIGURATION_NAME)
+                .getByName(Const.ANDROID_TEST_IMPLEMENTATION_CONFIGURATION_NAME)
                 .dependencies
                 .let { project.addDepLater(it, "com.google.code.findbugs:jsr305:3.0.2") }
         }
@@ -328,7 +327,7 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
             if (suffix != null) {
                 val prefix = getLibWithSyncVariantPrefix()
                 val version = getLibWithSyncVariantVersion()
-                env.project.addDepLater(dependencySet, "io.objectbox:$prefix-$suffix:$version")
+                env.project.addObjectBoxDepLater(dependencySet, "$prefix-$suffix", version)
             } else {
                 env.logInfo("Could not set up native dependency for ${env.osName}")
             }
@@ -364,7 +363,7 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
             project.configurations.filterNot { it.name.contains("test", ignoreCase = true) }
         }.forEach { config ->
             config.dependencies.find {
-                it.group == "io.objectbox" && (if (startsWith) it.name.startsWith(name) else it.name == name)
+                it.group == Const.OBX_GROUP && (if (startsWith) it.name.startsWith(name) else it.name == name)
             }?.let { return config to it }
         }
         return null

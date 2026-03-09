@@ -18,6 +18,7 @@
 
 package io.objectbox.gradle
 
+import io.objectbox.gradle.ProjectEnv.Const
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Dependency
 import org.gradle.api.artifacts.DependencySet
@@ -33,7 +34,7 @@ abstract class PluginApplyTest {
 
     open val pluginId = "io.objectbox"
     open val expectedLibWithSyncVariantPrefix = "objectbox"
-    open val expectedLibWithSyncVariantVersion = ProjectEnv.Const.nativeVersionToApply
+    open val expectedLibWithSyncVariantVersion = Const.OBX_DATABASE_VERSION
 
     protected fun buildProject(
         configureProject: Project.() -> Unit
@@ -54,7 +55,7 @@ abstract class PluginApplyTest {
      */
     protected fun Project.enableObjectBoxPluginDebugMode() {
         extensions.apply {
-            configure<ObjectBoxPluginExtension>("objectbox") {
+            configure<ObjectBoxPluginExtension>(Const.EXTENSION_NAME) {
                 it.debug.set(true)
             }
         }
@@ -74,15 +75,15 @@ abstract class PluginApplyTest {
             }
 
     fun assertProcessorDependency(apDeps: DependencySet) {
-        assertEquals("objectbox-processor dependency not found", 1, apDeps.count {
-            it.group == "io.objectbox" && it.name == "objectbox-processor"
-                    && it.version == ProjectEnv.Const.pluginVersion
+        assertEquals("${Const.OBX_PROCESSOR} dependency not found", 1, apDeps.count {
+            it.group == Const.OBX_GROUP && it.name == Const.OBX_PROCESSOR
+                    && it.version == Const.OBX_PLUGIN_VERSION
         })
     }
 
     fun assertNativeDependency(deps: DependencySet) {
         assertEquals("JVM database library dependency not found", 1, deps.count {
-            it.group == "io.objectbox"
+            it.group == Const.OBX_GROUP
                     && (it.name == "$expectedLibWithSyncVariantPrefix-linux"
                     || it.name == "$expectedLibWithSyncVariantPrefix-windows"
                     || it.name == "$expectedLibWithSyncVariantPrefix-macos")

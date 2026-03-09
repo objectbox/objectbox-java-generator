@@ -26,11 +26,16 @@ import java.util.*
 
 class ProjectEnv(val project: Project) {
     object Const {
-        const val name: String = "objectbox"
-        const val pluginVersion = GradlePluginBuildConfig.VERSION
-        const val javaVersionToApply = GradlePluginBuildConfig.APPLIES_JAVA_VERSION
-        const val nativeVersionToApply = GradlePluginBuildConfig.APPLIES_NATIVE_VERSION
-        const val nativeSyncVersionToApply = GradlePluginBuildConfig.APPLIES_NATIVE_SYNC_VERSION
+        const val EXTENSION_NAME: String = "objectbox"
+        const val OBX_PLUGIN_VERSION = GradlePluginBuildConfig.VERSION
+        const val OBX_JAVA_VERSION = GradlePluginBuildConfig.APPLIES_JAVA_VERSION
+        const val OBX_DATABASE_VERSION = GradlePluginBuildConfig.APPLIES_NATIVE_VERSION
+        const val OBX_DATABASE_SYNC_VERSION = GradlePluginBuildConfig.APPLIES_NATIVE_SYNC_VERSION
+
+        const val OBX_GROUP = "io.objectbox"
+        const val OBX_PROCESSOR = "objectbox-processor"
+        const val OBX_JAVA = "objectbox-java"
+        const val OBX_KOTLIN = "objectbox-kotlin"
 
         /**
          * The name of the default configuration for
@@ -43,7 +48,8 @@ class ProjectEnv(val project: Project) {
     }
 
     /** Note: Plugin extension, values only available after evaluation phase. */
-    val options: ObjectBoxPluginExtension = project.extensions.create(Const.name, ObjectBoxPluginExtension::class.java)
+    val options: ObjectBoxPluginExtension =
+        project.extensions.create(Const.EXTENSION_NAME, ObjectBoxPluginExtension::class.java)
 
     // Note: can not use types as this project uses Android and Kotlin plugin API as compileOnly,
     // so the classes might be missing from projects that do not have the Android or Kotlin plugin on the classpath.

@@ -30,7 +30,7 @@ import java.util.*
 open class GradleBuildTracker(toolName: String) : BasicBuildTracker(toolName) {
 
     override fun version(): String? {
-        return ProjectEnv.Const.pluginVersion
+        return ProjectEnv.Const.OBX_PLUGIN_VERSION
     }
 
     fun trackBuild(env: ProjectEnv) {
@@ -61,7 +61,7 @@ open class GradleBuildTracker(toolName: String) : BasicBuildTracker(toolName) {
         val hasKotlinPlugin = env.hasKotlinAndroidPlugin || env.hasKotlinPlugin
         event.key("Kotlin").value(hasKotlinPlugin.toString()).comma()
         event.key("Java").value(env.hasJavaPlugin.toString()).comma()
-        event.key("Version").value(ProjectEnv.Const.pluginVersion).comma()
+        event.key("Version").value(ProjectEnv.Const.OBX_PLUGIN_VERSION).comma()
         event.key("Target").value(if (env.hasAndroidPlugin) "Android" else "Other").comma()
         if (env.hasAndroidPlugin) {
             event.key("AGP").value(AndroidCompat.getPluginVersion(env.project)).comma()

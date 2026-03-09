@@ -18,6 +18,7 @@
 
 package io.objectbox.gradle
 
+import io.objectbox.gradle.ProjectEnv.Const
 import org.gradle.api.Project
 import org.gradle.api.artifacts.DependencySet
 import org.gradle.api.internal.plugins.PluginApplicationException
@@ -210,12 +211,12 @@ open class PluginApplyJavaTest : PluginApplyTest() {
     private fun assertKotlinSetup(project: Project) {
         project.resolveDependencyGraphWithoutDownloadingFiles()
         with(project.configurations) {
-            assertProcessorDependency(getByName(ProjectEnv.Const.KAPT_CONFIGURATION_NAME).dependencies)
+            assertProcessorDependency(getByName(Const.KAPT_CONFIGURATION_NAME).dependencies)
 
             getByName(JavaPlugin.API_CONFIGURATION_NAME).dependencies.let { deps ->
                 assertEquals(1, deps.count {
-                    it.group == "io.objectbox" && it.name == "objectbox-kotlin"
-                            && it.version == ProjectEnv.Const.javaVersionToApply
+                    it.group == Const.OBX_GROUP && it.name == Const.OBX_KOTLIN
+                            && it.version == Const.OBX_JAVA_VERSION
                 })
                 assertJavaDependency(deps)
                 assertNativeDependency(deps)
@@ -234,9 +235,9 @@ open class PluginApplyJavaTest : PluginApplyTest() {
     }
 
     private fun assertJavaDependency(deps: DependencySet) {
-        assertEquals("objectbox-java dependency not found", 1, deps.count {
-            it.group == "io.objectbox" && it.name == "objectbox-java"
-                    && it.version == ProjectEnv.Const.javaVersionToApply
+        assertEquals("${Const.OBX_JAVA} dependency not found", 1, deps.count {
+            it.group == Const.OBX_GROUP && it.name == Const.OBX_JAVA
+                    && it.version == Const.OBX_JAVA_VERSION
         })
     }
 
@@ -245,12 +246,12 @@ open class PluginApplyJavaTest : PluginApplyTest() {
         assertOnlySingleDependency(
             buildJavaLibraryProject(),
             JavaPlugin.API_CONFIGURATION_NAME,
-            "objectbox-java"
+            Const.OBX_JAVA
         )
         assertOnlySingleDependency(
             buildJavaLibraryProject(),
             JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME,
-            "objectbox-java"
+            Const.OBX_JAVA
         )
     }
 
@@ -260,26 +261,26 @@ open class PluginApplyJavaTest : PluginApplyTest() {
         assertOnlySingleDependency(
             projectApiConfig,
             JavaPlugin.API_CONFIGURATION_NAME,
-            "objectbox-kotlin"
+            Const.OBX_KOTLIN
         )
         // Also check objectbox-java is not added as objectbox-kotlin already has a transitive dependency on it
-        val javaLibDeps = projectApiConfig.getDependenciesMatching { it.name == "objectbox-java" }
+        val javaLibDeps = projectApiConfig.getDependenciesMatching { it.name == Const.OBX_JAVA }
         assertTrue(
-            "Must not add objectbox-java library, but has:\n${javaLibDeps.joinToString("\n")}",
+            "Must not add ${Const.OBX_JAVA} library, but has:\n${javaLibDeps.joinToString("\n")}",
             javaLibDeps.isEmpty()
         )
 
         assertOnlySingleDependency(
             buildKotlinKaptProject(),
             JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME,
-            "objectbox-kotlin"
+            Const.OBX_KOTLIN
         )
     }
 
     private fun assertOnlySingleDependency(forProject: Project, toConfiguration: String, name: String) {
         // Use a custom version that's easy to recognize if this test should fail
-        val customVersion = "${ProjectEnv.Const.javaVersionToApply}-custom"
-        forProject.dependencies.add(toConfiguration, "io.objectbox:$name:$customVersion")
+        val customVersion = "${Const.OBX_JAVA_VERSION}-custom"
+        forProject.dependencies.add(toConfiguration, "${Const.OBX_GROUP}:$name:$customVersion")
 
         forProject.resolveDependencyGraphWithoutDownloadingFiles()
 
@@ -311,8 +312,11 @@ open class PluginApplyJavaTest : PluginApplyTest() {
         val project = buildJavaLibraryProject()
 
         // Use a custom version that's easy to recognize if this test should fail
-        val customVersion = "${ProjectEnv.Const.nativeVersionToApply}-custom"
-        project.dependencies.add(JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME, "io.objectbox:$name:$customVersion")
+        val customVersion = "${Const.OBX_DATABASE_VERSION}-custom"
+        project.dependencies.add(
+            JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME,
+            "${Const.OBX_GROUP}:$name:$customVersion"
+        )
 
         project.resolveDependencyGraphWithoutDownloadingFiles()
         val databaseDeps = project.getDependenciesMatching { databaseLibraries.contains(it.name) }

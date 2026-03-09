@@ -19,6 +19,7 @@
 package io.objectbox.gradle
 
 import com.android.build.api.dsl.ApplicationExtension
+import io.objectbox.gradle.ProjectEnv.Const
 import org.gradle.api.Project
 import org.gradle.api.artifacts.DependencySet
 import org.gradle.api.internal.project.ProjectInternal
@@ -126,7 +127,7 @@ abstract class PluginApplyAndroidTest : PluginApplyTest() {
     private fun assertKotlinAndroidSetup(project: Project) {
         project.resolveDependencyGraphWithoutDownloadingFiles()
         with(project.configurations) {
-            assertProcessorDependency(getByName(ProjectEnv.Const.KAPT_CONFIGURATION_NAME).dependencies)
+            assertProcessorDependency(getByName(Const.KAPT_CONFIGURATION_NAME).dependencies)
             assertAndroidDependency(getByName(JavaPlugin.API_CONFIGURATION_NAME).dependencies)
             assertNativeDependency(getByName(JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME).dependencies)
         }
@@ -140,7 +141,7 @@ abstract class PluginApplyAndroidTest : PluginApplyTest() {
 
     private fun assertAndroidDependency(deps: DependencySet) {
         assertEquals("Android lib dependency not found", 1, deps.count {
-            it.group == "io.objectbox" && it.name == "$expectedLibWithSyncVariantPrefix-android"
+            it.group == Const.OBX_GROUP && it.name == "$expectedLibWithSyncVariantPrefix-android"
                     && it.version == expectedLibWithSyncVariantVersion
         })
     }
@@ -164,8 +165,11 @@ abstract class PluginApplyAndroidTest : PluginApplyTest() {
         val project = buildAndroidProject()
 
         // Use a custom version that's easy to recognize if this test should fail
-        val customVersion = "${ProjectEnv.Const.nativeVersionToApply}-custom"
-        project.dependencies.add(JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME, "io.objectbox:$name:$customVersion")
+        val customVersion = "${Const.OBX_DATABASE_VERSION}-custom"
+        project.dependencies.add(
+            JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME,
+            "${Const.OBX_GROUP}:$name:$customVersion"
+        )
 
         project.resolveDependencyGraphWithoutDownloadingFiles()
         val databaseDeps = project.getDependenciesMatching { databaseLibraries.contains(it.name) }
