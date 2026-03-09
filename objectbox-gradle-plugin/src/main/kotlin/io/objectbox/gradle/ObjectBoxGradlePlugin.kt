@@ -253,7 +253,11 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
             // (only the Android library has a dependency on the Java library as it includes Java APIs).
             // But don't add it if the Kotlin library is manually added as it has a dependency on the Java library to
             // avoid pulling in a newer, possibly incompatible, Java library.
-            if (!env.hasObjectBoxDep("objectbox-java") && !hasObxKotlinLibrary) {
+            if (env.hasObjectBoxDep("objectbox-java")) {
+                env.logDebug { "Not adding objectbox-java dependency, a configuration has one" }
+            } else if (hasObxKotlinLibrary) {
+                env.logDebug { "Not adding objectbox-java dependency, a configuration has objectbox-kotlin" }
+            } else {
                 project.addDepLater(dependencySet, "io.objectbox:objectbox-java:${ProjectEnv.Const.javaVersionToApply}")
             }
 
