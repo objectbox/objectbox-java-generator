@@ -19,6 +19,7 @@
 package io.objectbox.gradle
 
 import org.gradle.api.Project
+import org.gradle.api.artifacts.Dependency
 import org.gradle.api.artifacts.DependencySet
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.Assert.assertEquals
@@ -59,6 +60,18 @@ abstract class PluginApplyTest {
         }
         assertTrue(extensions.getByType(ObjectBoxPluginExtension::class.java).debug.get())
     }
+
+    /**
+     * Gets the dependencies matching the given predicate from all [Project.getConfigurations].
+     */
+    protected fun Project.getDependenciesMatching(
+        predicate: (Dependency) -> Boolean
+    ): List<Dependency> =
+        configurations
+            .flatMap { configuration ->
+                configuration.dependencies
+                    .filter(predicate)
+            }
 
     fun assertProcessorDependency(apDeps: DependencySet) {
         assertEquals("objectbox-processor dependency not found", 1, apDeps.count {

@@ -168,11 +168,7 @@ abstract class PluginApplyAndroidTest : PluginApplyTest() {
         project.dependencies.add(JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME, "io.objectbox:$name:$customVersion")
 
         project.resolveDependencyGraphWithoutDownloadingFiles()
-        val databaseDeps = project.configurations
-            .flatMap { configuration ->
-                configuration.dependencies
-                    .filter { databaseLibraries.contains(it.name) }
-            }
+        val databaseDeps = project.getDependenciesMatching { databaseLibraries.contains(it.name) }
         assertEquals(
             "Must not add additional database library, but has:\n${databaseDeps.joinToString("\n")}",
             1,

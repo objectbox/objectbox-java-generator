@@ -275,11 +275,7 @@ open class PluginApplyJavaTest : PluginApplyTest() {
 
         forProject.resolveDependencyGraphWithoutDownloadingFiles()
 
-        val deps = forProject.configurations
-            .flatMap { configuration ->
-                configuration.dependencies
-                    .filter { it.name == name }
-            }
+        val deps = forProject.getDependenciesMatching { it.name == name }
         assertTrue(
             "Must not add duplicate $name library, but has:\n${deps.joinToString("\n")}",
             deps.size == 1 && deps.first().version == customVersion
@@ -311,11 +307,7 @@ open class PluginApplyJavaTest : PluginApplyTest() {
         project.dependencies.add(JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME, "io.objectbox:$name:$customVersion")
 
         project.resolveDependencyGraphWithoutDownloadingFiles()
-        val databaseDeps = project.configurations
-            .flatMap { configuration ->
-                configuration.dependencies
-                    .filter { databaseLibraries.contains(it.name) }
-            }
+        val databaseDeps = project.getDependenciesMatching { databaseLibraries.contains(it.name) }
         assertEquals(
             "Must not add additional database library, but has:\n${databaseDeps.joinToString("\n")}",
             1,
