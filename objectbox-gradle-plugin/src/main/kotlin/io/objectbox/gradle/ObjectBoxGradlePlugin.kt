@@ -173,17 +173,11 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
                 project.addDep(JavaPlugin.ANNOTATION_PROCESSOR_CONFIGURATION_NAME, processorDep)
             }
 
-            project.hasConfig("apt") -> {
-                // https://bitbucket.org/hvisser/android-apt or custom apt
-                // https://docs.gradle.org/current/userguide/java_plugin.html#sec:java_compile_avoidance
-                project.addDep("apt", processorDep)
-            }
-
             else -> {
                 project.logger.warn(
                     "ObjectBox: Could not add dependency on ${Const.OBX_PROCESSOR}, " +
                             "no supported configuration (${Const.KAPT_CONFIGURATION_NAME}, " +
-                            "${JavaPlugin.ANNOTATION_PROCESSOR_CONFIGURATION_NAME}, apt) found."
+                            "${JavaPlugin.ANNOTATION_PROCESSOR_CONFIGURATION_NAME}) found."
                 )
             }
         }
