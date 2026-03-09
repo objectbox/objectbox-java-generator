@@ -264,6 +264,7 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
 
             // If the Android plugin is applied, add the Android database library, otherwise the JVM database library
             if (env.hasAndroidPlugin) {
+                val androidDepName = "${getLibWithSyncVariantPrefix()}-android"
                 if (!env.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_DEFAULT-android")
                     && !env.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_DEFAULT-android-objectbrowser")
                     && !env.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_SYNC-android")
@@ -272,8 +273,10 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
                 ) {
                     project.addDepLater(
                         dependencySet,
-                        "io.objectbox:${getLibWithSyncVariantPrefix()}-android:${getLibWithSyncVariantVersion()}"
+                        "io.objectbox:$androidDepName:${getLibWithSyncVariantVersion()}"
                     )
+                } else {
+                    env.logDebug { "Not adding $androidDepName dependency, a configuration has an Android database library" }
                 }
             } else {
                 addNativeDependency(env, dependencySet, searchTestConfigs = false)
@@ -312,7 +315,7 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
             || env.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_SYNC-macos", searchTestConfigs, startsWith = true)
             || env.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_SYNC-windows", searchTestConfigs, startsWith = true)
         ) {
-            env.logDebug { "Detected native dependency, not auto-adding one." }
+            env.logDebug { "Not adding JVM database library dependency, a configuration has one" }
         } else {
             // Note: -armv7 and -arm64 variants of the Linux library are not added automatically,
             // users are expected to do so themselves if needed.
