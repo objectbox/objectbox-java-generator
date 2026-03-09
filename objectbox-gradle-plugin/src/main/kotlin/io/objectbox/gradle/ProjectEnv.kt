@@ -26,6 +26,8 @@ import java.util.*
 
 class ProjectEnv(val project: Project) {
     object Const {
+        const val PLUGIN_ID = "io.objectbox"
+        const val SYNC_PLUGIN_ID = "io.objectbox.sync"
         const val EXTENSION_NAME: String = "objectbox"
         const val OBX_PLUGIN_VERSION = GradlePluginBuildConfig.VERSION
         const val OBX_JAVA_VERSION = GradlePluginBuildConfig.APPLIES_JAVA_VERSION

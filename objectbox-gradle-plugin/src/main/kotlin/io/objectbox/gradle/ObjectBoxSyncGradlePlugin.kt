@@ -18,13 +18,15 @@
 
 package io.objectbox.gradle
 
+import io.objectbox.gradle.ProjectEnv.Const
+
 
 /**
  * Like [ObjectBoxGradlePlugin], but adds native libraries that are sync-enabled as dependencies.
  */
 class ObjectBoxSyncGradlePlugin : ObjectBoxGradlePlugin() {
 
-    override val pluginId = "io.objectbox.sync"
+    override val pluginId = Const.SYNC_PLUGIN_ID
 
     override fun getLibWithSyncVariantPrefix(): String {
         // Use Sync version.
@@ -32,7 +34,7 @@ class ObjectBoxSyncGradlePlugin : ObjectBoxGradlePlugin() {
     }
 
     override fun getLibWithSyncVariantVersion(): String {
-        return ProjectEnv.Const.OBX_DATABASE_SYNC_VERSION
+        return Const.OBX_DATABASE_SYNC_VERSION
     }
 
 }

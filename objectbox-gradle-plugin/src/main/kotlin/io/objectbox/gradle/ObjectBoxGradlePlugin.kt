@@ -48,9 +48,10 @@ import org.gradle.api.tasks.compile.JavaCompile
 open class ObjectBoxGradlePlugin : Plugin<Project> {
 
     /**
-     * The Gradle plugin id as registered in resources/META-INF/gradle-plugins.
+     * The Gradle plugin id as registered in resources/META-INF/gradle-plugins (but actually configured using the
+     * Gradle plugin development plugin in the build script using the gradlePlugin extension).
      */
-    internal open val pluginId = "io.objectbox"
+    internal open val pluginId = Const.PLUGIN_ID
 
     private val buildTracker = GradleBuildTracker("GradlePlugin")
 

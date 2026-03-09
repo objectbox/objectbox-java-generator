@@ -32,7 +32,7 @@ import org.junit.Assert.assertTrue
  */
 abstract class PluginApplyTest {
 
-    open val pluginId = "io.objectbox"
+    open val pluginId = Const.PLUGIN_ID
     open val expectedLibWithSyncVariantPrefix = "objectbox"
     open val expectedLibWithSyncVariantVersion = Const.OBX_DATABASE_VERSION
 
