@@ -256,11 +256,19 @@ open class PluginApplyJavaTest : PluginApplyTest() {
 
     @Test
     fun apply_doesNotAddAdditionalKotlinLibrary() {
+        val projectApiConfig = buildKotlinKaptProject()
         assertOnlySingleDependency(
-            buildKotlinKaptProject(),
+            projectApiConfig,
             JavaPlugin.API_CONFIGURATION_NAME,
             "objectbox-kotlin"
         )
+        // Also check objectbox-java is not added as objectbox-kotlin already has a transitive dependency on it
+        val javaLibDeps = projectApiConfig.getDependenciesMatching { it.name == "objectbox-java" }
+        assertTrue(
+            "Must not add objectbox-java library, but has:\n${javaLibDeps.joinToString("\n")}",
+            javaLibDeps.isEmpty()
+        )
+
         assertOnlySingleDependency(
             buildKotlinKaptProject(),
             JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME,

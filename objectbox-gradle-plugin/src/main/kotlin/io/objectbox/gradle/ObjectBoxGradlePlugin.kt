@@ -234,22 +234,27 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
         // Use Configuration.withDependencies to also detect dependencies that are added after the plugin is applied
         // (which, if using modern Gradle plugins syntax, they are always).
         project.configurations.getByName(compileConfig).withDependencies { dependencySet ->
-            // Note: a preview release might apply different versions of the Java and native library,
-            // so explicitly apply the Java library to avoid the native library pulling in another version.
-            if (!env.hasObjectBoxDep("objectbox-java")) {
-                project.addDepLater(dependencySet, "io.objectbox:objectbox-java:${ProjectEnv.Const.javaVersionToApply}")
-            }
+            val hasKotlinPlugin = env.hasKotlinPlugin || env.hasKotlinAndroidPlugin
+            val hasObxKotlinLibrary = env.hasObjectBoxDep("objectbox-kotlin")
 
-            if (env.hasKotlinPlugin || env.hasKotlinAndroidPlugin) {
-                env.logDebug { "Kotlin plugin detected" }
-                if (env.hasObjectBoxDep("objectbox-kotlin")) {
-                    env.logDebug { "Detected objectbox-kotlin dependency, not auto-adding." }
+            if (hasKotlinPlugin) {
+                if (hasObxKotlinLibrary) {
+                    env.logDebug { "Not adding objectbox-kotlin dependency, a configuration has one" }
                 } else {
                     project.addDepLater(
                         dependencySet,
                         "io.objectbox:objectbox-kotlin:${ProjectEnv.Const.javaVersionToApply}"
                     )
                 }
+            }
+
+            // Note: a preview release of the plugin might apply different versions of the Java and database library,
+            // so always add the Java library to avoid the Android database library pulling in an older Java library
+            // (only the Android library has a dependency on the Java library as it includes Java APIs).
+            // But don't add it if the Kotlin library is manually added as it has a dependency on the Java library to
+            // avoid pulling in a newer, possibly incompatible, Java library.
+            if (!env.hasObjectBoxDep("objectbox-java") && !hasObxKotlinLibrary) {
+                project.addDepLater(dependencySet, "io.objectbox:objectbox-java:${ProjectEnv.Const.javaVersionToApply}")
             }
 
             // If the Android plugin is applied, add the Android database library, otherwise the JVM database library
