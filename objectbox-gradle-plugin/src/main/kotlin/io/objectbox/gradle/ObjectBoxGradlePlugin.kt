@@ -29,6 +29,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.UnknownDomainObjectException
+import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.Dependency
 import org.gradle.api.artifacts.DependencySet
 import org.gradle.api.plugins.InvalidPluginException
@@ -342,9 +343,10 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
         searchTestConfigs: Boolean = false,
         startsWith: Boolean = false
     ): Boolean {
-        val dependency = findObjectBoxDependency(project, name, searchTestConfigs, startsWith)
-        logDebug { "$name dependency: $dependency" }
-        return dependency != null
+        val (config, dependency) = findObjectBoxDependency(project, name, searchTestConfigs, startsWith)
+            ?: return false
+        logDebug { "$name dependency on $config: $dependency" }
+        return true
     }
 
     private fun findObjectBoxDependency(
@@ -352,7 +354,7 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
         name: String,
         searchTestConfigs: Boolean,
         startsWith: Boolean
-    ): Dependency? {
+    ): Pair<Configuration, Dependency>? {
         if (searchTestConfigs) {
             project.configurations
         } else {
@@ -360,7 +362,7 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
         }.forEach { config ->
             config.dependencies.find {
                 it.group == "io.objectbox" && (if (startsWith) it.name.startsWith(name) else it.name == name)
-            }?.let { return it }
+            }?.let { return config to it }
         }
         return null
     }
