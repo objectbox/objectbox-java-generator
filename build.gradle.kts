@@ -20,7 +20,7 @@ plugins {
 buildscript {
     // Version of Maven artifacts
     // Should only be changed as part of the release process, see the release checklist in the objectbox repo
-    val versionNumber = "5.3.0-rc.2"
+    val versionNumber = "5.3.0"
 
     // Release mode should only be enabled when manually triggering a CI pipeline,
     // see the release checklist in the objectbox repo.
@@ -29,10 +29,8 @@ buildscript {
     val isRelease = System.getenv("OBX_RELEASE") == "true"
 
     val libsRelease = isRelease // e.g. diverge if plugin is still SNAPSHOT, but libs are already final
-//    val libsVersion = versionNumber + (if (libsRelease) "" else "-dev-SNAPSHOT")
-    val libsVersion = "5.2.0"
-//    val libsSyncVersion = versionNumber + (if (libsRelease) "" else "-sync-SNAPSHOT")
-    val libsSyncVersion = "5.2.0"
+    val libsVersion = versionNumber + (if (libsRelease) "" else "-dev-SNAPSHOT")
+    val libsSyncVersion = versionNumber + (if (libsRelease) "" else "-sync-SNAPSHOT")
 
     // If not releasing, produce snapshot artifacts and add the branch name to the version string
     // (passed in by CI through the versionPostFix property).
