@@ -1,6 +1,8 @@
 # https://docs.gitlab.com/ci/yaml/
 
 # Default image for linux builds
+# Should contain Android components that are used by tests to avoid downloading them.
+# Such as for PluginApplyAndroidTest and AndroidProjectPluginTest and their subclasses.
 image: objectboxio/buildenv-android:2024-12-09 # With JDK 21, Android SDK 35 pre-installed
 
 # Assumes these environment variables are configured in GitLab CI/CD Settings:

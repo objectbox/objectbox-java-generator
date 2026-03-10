@@ -56,7 +56,7 @@ class BuildTrackerTest {
         `when`(project.extensions).thenReturn(extensionContainer)
 
         val options = mock(ObjectBoxPluginExtension::class.java)
-        `when`(extensionContainer.create(ProjectEnv.Const.name, ObjectBoxPluginExtension::class.java)).thenReturn(
+        `when`(extensionContainer.create(ProjectEnv.Const.EXTENSION_NAME, ObjectBoxPluginExtension::class.java)).thenReturn(
             options
         )
 
@@ -74,7 +74,7 @@ class BuildTrackerTest {
         val distinctId = properties["distinct_id"] as String
         assertEquals(analytics.hashBase64WithoutPadding(aid), properties["AAID"])
         assertEquals(toolName, properties["Tool"])
-        assertEquals(ProjectEnv.Const.pluginVersion, properties["Version"])
+        assertEquals(ProjectEnv.Const.OBX_PLUGIN_VERSION, properties["Version"])
         assertEquals(GradleVersion.current().version, properties["Gradle"])
 
         val analytics2 = spy(GradleBuildTracker(toolName))
@@ -93,7 +93,7 @@ class BuildTrackerTest {
         @Suppress("UNCHECKED_CAST")
         val properties = json["properties"] as Map<String, Any>
 
-        assertEquals(ProjectEnv.Const.pluginVersion, properties["Version"])
+        assertEquals(ProjectEnv.Const.OBX_PLUGIN_VERSION, properties["Version"])
 
         val exStack = properties["ExStack"] as String
         assertTrue(exStack, exStack.contains("Banana"))

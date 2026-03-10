@@ -18,9 +18,12 @@
 
 package io.objectbox.gradle
 
+import com.android.build.api.dsl.ApplicationExtension
+import io.objectbox.gradle.ProjectEnv.Const
 import org.gradle.api.Project
 import org.gradle.api.artifacts.DependencySet
-import org.gradle.testfixtures.ProjectBuilder
+import org.gradle.api.internal.project.ProjectInternal
+import org.gradle.api.plugins.JavaPlugin
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Test
@@ -36,19 +39,55 @@ abstract class PluginApplyAndroidTest : PluginApplyTest() {
      */
     abstract fun assertAndroidCompat(project: Project)
 
+    private fun Project.configureAndroidProject() {
+        val androidExtension = extensions.getByName("android") as ApplicationExtension
+        androidExtension.apply {
+            compileSdk = 35 // Matches SDK embedded in buildenv-android CI image to avoid downloading it
+            namespace = "io.objectbox.plugin.test"
+        }
+    }
+
+    /**
+     * Because the plugin adds dependencies using [org.gradle.api.DomainObjectCollection.addLater] it is necessary to
+     * resolve the dependency graph before being able to inspect them. However, the Android Gradle Plugin only adds the
+     * needed classpath configurations during project evaluation. So force project evaluation (and configure the Android
+     * project as needed to do so).
+     *
+     * See also [io.objectbox.gradle.PluginApplyJavaTest.resolveDependencyGraphWithoutDownloadingFiles], especially with
+     * details on why the Android plugin warns about doing this and why we ignore this warning.
+     */
+    private fun Project.resolveDependencyGraphWithoutDownloadingFiles() {
+        project.configureAndroidProject()
+        (project as ProjectInternal).evaluate()
+
+        project.configurations.getByName("debugCompileClasspath")
+            .incoming
+            .resolutionResult
+            .allDependencies
+
+        project.configurations.getByName("debugUnitTestCompileClasspath")
+            .incoming
+            .resolutionResult
+            .allDependencies
+    }
+
+    private fun buildAndroidProject(): Project =
+        buildProject {
+            pluginManager.apply {
+                apply("com.android.application")
+                apply(pluginId)
+            }
+        }
+
     @Test
     fun apply_afterAndroidPlugin() {
-        val project = ProjectBuilder.builder().build()
-        project.pluginManager.apply {
-            apply("com.android.application")
-            apply(pluginId)
-        }
-        project.enableObjectBoxPluginDebugMode()
+        val project = buildAndroidProject()
 
+        project.resolveDependencyGraphWithoutDownloadingFiles()
         with(project.configurations) {
-            assertProcessorDependency(getByName("annotationProcessor").dependencies)
-            assertAndroidDependency(getByName("api").dependencies)
-            assertNativeDependency(getByName("testImplementation").dependencies)
+            assertProcessorDependency(getByName(JavaPlugin.ANNOTATION_PROCESSOR_CONFIGURATION_NAME).dependencies)
+            assertAndroidDependency(getByName(JavaPlugin.API_CONFIGURATION_NAME).dependencies)
+            assertNativeDependency(getByName(JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME).dependencies)
         }
         assertNotNull(project.tasks.findByPath("objectboxPrepareBuild"))
 
@@ -60,36 +99,37 @@ abstract class PluginApplyAndroidTest : PluginApplyTest() {
 
     @Test
     fun apply_afterKotlinAndroidAndKaptPlugin() {
-        val project = ProjectBuilder.builder().build()
-        project.pluginManager.apply {
-            apply("com.android.application")
-            apply("kotlin-android")
-            apply("kotlin-kapt")
-            apply(pluginId)
+        val project = buildProject {
+            pluginManager.apply {
+                apply("com.android.application")
+                apply("kotlin-android")
+                apply("kotlin-kapt")
+                apply(pluginId)
+            }
         }
-        project.enableObjectBoxPluginDebugMode()
 
         assertKotlinAndroidSetup(project)
     }
 
     @Test
     fun apply_afterKotlinAndroidPlugin_addsKapt() {
-        val project = ProjectBuilder.builder().build()
-        project.pluginManager.apply {
-            apply("com.android.application")
-            apply("kotlin-android")
-            apply(pluginId)
+        val project = buildProject {
+            pluginManager.apply {
+                apply("com.android.application")
+                apply("kotlin-android")
+                apply(pluginId)
+            }
         }
-        project.enableObjectBoxPluginDebugMode()
 
         assertKotlinAndroidSetup(project)
     }
 
     private fun assertKotlinAndroidSetup(project: Project) {
+        project.resolveDependencyGraphWithoutDownloadingFiles()
         with(project.configurations) {
-            assertProcessorDependency(getByName("kapt").dependencies)
-            assertAndroidDependency(getByName("api").dependencies)
-            assertNativeDependency(getByName("testImplementation").dependencies)
+            assertProcessorDependency(getByName(Const.KAPT_CONFIGURATION_NAME).dependencies)
+            assertAndroidDependency(getByName(JavaPlugin.API_CONFIGURATION_NAME).dependencies)
+            assertNativeDependency(getByName(JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME).dependencies)
         }
         assertNotNull(project.tasks.findByPath("objectboxPrepareBuild"))
 
@@ -99,28 +139,45 @@ abstract class PluginApplyAndroidTest : PluginApplyTest() {
         // this is tested using Gradle TestKit in AndroidTransformTest.
     }
 
-    private fun assertProcessorDependency(apDeps: DependencySet) {
-        assertEquals("objectbox-processor dependency not found", 1, apDeps.count {
-            it.group == "io.objectbox" && it.name == "objectbox-processor"
-                    && it.version == ProjectEnv.Const.pluginVersion
-        })
-    }
-
-    open fun assertNativeDependency(compileDeps: DependencySet) {
-        assertEquals("JNI lib dependency not found", 1, compileDeps.count {
-            it.group == "io.objectbox"
-                    && (it.name == "$expectedLibWithSyncVariantPrefix-linux"
-                    || it.name == "$expectedLibWithSyncVariantPrefix-windows"
-                    || it.name == "$expectedLibWithSyncVariantPrefix-macos")
-                    && it.version == expectedLibWithSyncVariantVersion
-        })
-    }
-
-    open fun assertAndroidDependency(deps: DependencySet) {
+    private fun assertAndroidDependency(deps: DependencySet) {
         assertEquals("Android lib dependency not found", 1, deps.count {
-            it.group == "io.objectbox" && it.name == "$expectedLibWithSyncVariantPrefix-android"
+            it.group == Const.OBX_GROUP && it.name == "$expectedLibWithSyncVariantPrefix-android"
                     && it.version == expectedLibWithSyncVariantVersion
         })
+    }
+
+    private val databaseLibraries = listOf(
+        "objectbox-android",
+        "objectbox-android-objectbrowser",
+        "objectbox-sync-android",
+        "objectbox-sync-android-objectbrowser",
+        "objectbox-sync-server-android"
+    )
+
+    @Test
+    fun apply_doesNotAddAdditionalDatabaseLibrary() {
+        databaseLibraries.forEach {
+            assertNoDatabaseLibraryAdded(it)
+        }
+    }
+
+    private fun assertNoDatabaseLibraryAdded(name: String) {
+        val project = buildAndroidProject()
+
+        // Use a custom version that's easy to recognize if this test should fail
+        val customVersion = "${Const.OBX_DATABASE_VERSION}-custom"
+        project.dependencies.add(
+            JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME,
+            "${Const.OBX_GROUP}:$name:$customVersion"
+        )
+
+        project.resolveDependencyGraphWithoutDownloadingFiles()
+        val databaseDeps = project.getDependenciesMatching { databaseLibraries.contains(it.name) }
+        assertEquals(
+            "Must not add additional database library, but has:\n${databaseDeps.joinToString("\n")}",
+            1,
+            databaseDeps.size
+        )
     }
 
 }

@@ -18,6 +18,7 @@
 
 package io.objectbox.gradle
 
+import io.objectbox.gradle.ProjectEnv.Const
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
 import org.intellij.lang.annotations.Language
@@ -76,7 +77,7 @@ class GradleTestRunner(
                 
             plugins {
                 ${additionalPlugins.joinToString(separator = "\n") { "id(\"$it\")" }}
-                id("io.objectbox")
+                id("${Const.PLUGIN_ID}")
             }
             
             java {

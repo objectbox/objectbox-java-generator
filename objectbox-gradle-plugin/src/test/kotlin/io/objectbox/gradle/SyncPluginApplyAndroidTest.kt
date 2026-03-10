@@ -18,13 +18,15 @@
 
 package io.objectbox.gradle
 
+import io.objectbox.gradle.ProjectEnv.Const
+
 /**
  * Base class to test applying [ObjectBoxSyncGradlePlugin] configures a Java or Kotlin Android Gradle project as expected.
  */
 abstract class SyncPluginApplyAndroidTest : PluginApplyAndroidTest() {
 
-    override val pluginId = "io.objectbox.sync"
+    override val pluginId = Const.SYNC_PLUGIN_ID
     override val expectedLibWithSyncVariantPrefix = "objectbox-sync"
-    override val expectedLibWithSyncVariantVersion = ProjectEnv.Const.nativeSyncVersionToApply
+    override val expectedLibWithSyncVariantVersion = Const.OBX_DATABASE_SYNC_VERSION
 
 }

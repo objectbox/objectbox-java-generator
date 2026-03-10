@@ -18,7 +18,12 @@
 
 package io.objectbox.gradle
 
+import io.objectbox.gradle.ProjectEnv.Const
 import org.gradle.api.Project
+import org.gradle.api.artifacts.Dependency
+import org.gradle.api.artifacts.DependencySet
+import org.gradle.testfixtures.ProjectBuilder
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 
 
@@ -27,21 +32,63 @@ import org.junit.Assert.assertTrue
  */
 abstract class PluginApplyTest {
 
-    open val pluginId = "io.objectbox"
+    open val pluginId = Const.PLUGIN_ID
     open val expectedLibWithSyncVariantPrefix = "objectbox"
-    open val expectedLibWithSyncVariantVersion = ProjectEnv.Const.nativeVersionToApply
+    open val expectedLibWithSyncVariantVersion = Const.OBX_DATABASE_VERSION
+
+    protected fun buildProject(
+        configureProject: Project.() -> Unit
+    ): Project = ProjectBuilder
+        .builder()
+        .build()
+        .apply(configureProject)
+        .also {
+            it.enableObjectBoxPluginDebugMode()
+        }
 
     /**
      * Test PluginOptions extension is created and can be configured.
      * To check if it actually is recognized, would have to assert log output,
      * currently not doing that.
+     *
+     * This also enables helpful log output to diagnose test failures.
      */
     protected fun Project.enableObjectBoxPluginDebugMode() {
         extensions.apply {
-            configure<ObjectBoxPluginExtension>("objectbox") {
+            configure<ObjectBoxPluginExtension>(Const.EXTENSION_NAME) {
                 it.debug.set(true)
             }
         }
         assertTrue(extensions.getByType(ObjectBoxPluginExtension::class.java).debug.get())
     }
+
+    /**
+     * Gets the dependencies matching the given predicate from all [Project.getConfigurations].
+     */
+    protected fun Project.getDependenciesMatching(
+        predicate: (Dependency) -> Boolean
+    ): List<Dependency> =
+        configurations
+            .flatMap { configuration ->
+                configuration.dependencies
+                    .filter(predicate)
+            }
+
+    fun assertProcessorDependency(apDeps: DependencySet) {
+        assertEquals("${Const.OBX_PROCESSOR} dependency not found", 1, apDeps.count {
+            it.group == Const.OBX_GROUP && it.name == Const.OBX_PROCESSOR
+                    && it.version == Const.OBX_PLUGIN_VERSION
+        })
+    }
+
+    fun assertNativeDependency(deps: DependencySet) {
+        assertEquals("JVM database library dependency not found", 1, deps.count {
+            it.group == Const.OBX_GROUP
+                    && (it.name == "$expectedLibWithSyncVariantPrefix-linux"
+                    || it.name == "$expectedLibWithSyncVariantPrefix-windows"
+                    || it.name == "$expectedLibWithSyncVariantPrefix-macos")
+                    && it.version == expectedLibWithSyncVariantVersion
+        })
+    }
+
 }
