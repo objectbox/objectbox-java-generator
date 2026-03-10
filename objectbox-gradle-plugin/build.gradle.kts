@@ -277,9 +277,14 @@ publishing {
         // See the gradlePlugin configuration above.
         create<MavenPublication>("pluginMaven") {
             artifact(tasks.named("javadocReadmeJar")) // task registered by objectbox-publish plugin
-            pom {
-                name.set("ObjectBox Gradle Plugin")
-                description.set("Gradle Plugin for ObjectBox (NoSQL for Objects)")
+        }
+        // A project name and description are required to publish to Maven Central.
+        withType<MavenPublication> {
+            if (!name.contains(pluginTestPrefix)) {
+                pom {
+                    name.set("ObjectBox Gradle Plugin")
+                    description.set("Gradle Plugin for ObjectBox (NoSQL for Objects)")
+                }
             }
         }
     }
