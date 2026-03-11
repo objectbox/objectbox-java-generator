@@ -18,17 +18,20 @@
 
 package io.objectbox.gradle
 
+import io.objectbox.gradle.ProjectEnv.Const
 import org.gradle.api.Project
 import org.gradle.api.artifacts.DependencySet
 import org.gradle.api.internal.plugins.PluginApplicationException
 import org.gradle.api.internal.project.ProjectInternal
 import org.gradle.api.plugins.InvalidPluginException
+import org.gradle.api.plugins.JavaPlugin
 import org.gradle.testfixtures.ProjectBuilder
 import org.hamcrest.CoreMatchers.instanceOf
 import org.hamcrest.MatcherAssert.assertThat
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertThrows
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 
@@ -77,43 +80,70 @@ open class PluginApplyJavaTest : PluginApplyTest() {
 
     @Test
     fun apply_afterJavaPlugin() {
-        val project = ProjectBuilder.builder().build()
-        project.pluginManager.apply {
-            apply("java")
-            apply(pluginId)
+        val project = buildProject {
+            pluginManager.apply {
+                apply("java")
+                apply(pluginId)
+            }
         }
-        project.enableObjectBoxPluginDebugMode()
 
-        assertJavaProject(project, "implementation")
+        assertJavaProject(project, JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME)
     }
 
     @Test
     fun apply_afterApplicationPlugin() {
-        val project = ProjectBuilder.builder().build()
-        project.pluginManager.apply {
-            apply("application") // Note: application plugin adds java plugin.
-            apply(pluginId)
+        val project = buildProject {
+            pluginManager.apply {
+                apply("application") // Note: application plugin adds java plugin.
+                apply(pluginId)
+            }
         }
-        project.enableObjectBoxPluginDebugMode()
 
-        assertJavaProject(project, "implementation")
+        assertJavaProject(project, JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME)
     }
+
+    private fun buildJavaLibraryProject(): Project =
+        buildProject {
+            pluginManager.apply {
+                apply("java-library")
+                apply(pluginId)
+            }
+        }
 
     @Test
     fun apply_afterJavaLibraryPlugin() {
-        val project = ProjectBuilder.builder().build()
-        project.pluginManager.apply {
-            apply("java-library")
-            apply(pluginId)
-        }
-        project.enableObjectBoxPluginDebugMode()
+        assertJavaProject(buildJavaLibraryProject(), JavaPlugin.API_CONFIGURATION_NAME)
+    }
 
-        assertJavaProject(project, "api")
+    /**
+     * The ObjectBox plugin adds dependencies using [org.gradle.api.DomainObjectCollection.addLater] (see
+     * [ObjectBoxGradlePlugin.addDependencies]). As a side effect they won't appear in the configuration they were added
+     * to until the dependency graph is resolved. So to assert dependencies were added by the plugin, the graph must be
+     * resolved.
+     *
+     * To resolve the graph [org.gradle.api.artifacts.Configuration.resolve] could be used, but it will download files.
+     * So instead access all incoming dependencies, which only resolves the graph.
+     *
+     * Also use the compileClasspath configuration all others contribute to as the api and implementation
+     * configurations can not be resolved themselves.
+     *
+     * Despite this being similar to what the Kotlin Gradle plugin tests do, note that the Android plugin warns about
+     * and the Gradle folks [don't recommend resolving configurations before task execution](https://docs.gradle.org/current/userguide/best_practices_tasks.html#dont_resolve_configurations_before_task_execution).
+     * So if ever enforced (see https://github.com/gradle/gradle/issues/2298 for a discussion), this approach might
+     * break in the future. An alternative (that does require downloading files) is to use Gradle TestKit instead and
+     * maybe to inspect output of the dependencies task or to use a custom task to do validation.
+     */
+    private fun Project.resolveDependencyGraphWithoutDownloadingFiles() {
+        configurations.getByName(JavaPlugin.COMPILE_CLASSPATH_CONFIGURATION_NAME)
+            .incoming
+            .resolutionResult
+            .allDependencies
     }
 
     private fun assertJavaProject(project: Project, configuration: String) {
+        project.resolveDependencyGraphWithoutDownloadingFiles()
         with(project.configurations) {
-            assertProcessorDependency(getByName("annotationProcessor").dependencies)
+            assertProcessorDependency(getByName(JavaPlugin.ANNOTATION_PROCESSOR_CONFIGURATION_NAME).dependencies)
 
             getByName(configuration).dependencies.let {
                 assertJavaDependency(it)
@@ -127,8 +157,8 @@ open class PluginApplyJavaTest : PluginApplyTest() {
 
         // AFTER EVALUATE.
         // Note: by default only main and test source sets exist.
-        assertTransformTask(project, "", "classes")
-        assertTransformTask(project, "Test", "testClasses")
+        assertTransformTask(project, "", JavaPlugin.CLASSES_TASK_NAME)
+        assertTransformTask(project, "Test", JavaPlugin.TEST_CLASSES_TASK_NAME)
     }
 
     private fun assertTransformTask(
@@ -152,39 +182,41 @@ open class PluginApplyJavaTest : PluginApplyTest() {
                 .taskDependencies.getDependencies(classesTask).count { it.name == transformTask.name })
     }
 
+    private fun buildKotlinKaptProject(): Project =
+        buildProject {
+            pluginManager.apply {
+                apply("kotlin")
+                apply("kotlin-kapt")
+                apply(pluginId)
+            }
+        }
+
     @Test
     fun apply_afterKotlinAndKaptPlugin() {
-        val project = ProjectBuilder.builder().build()
-        project.pluginManager.apply {
-            apply("kotlin")
-            apply("kotlin-kapt")
-            apply(pluginId)
-        }
-        project.enableObjectBoxPluginDebugMode()
-
-        assertKotlinSetup(project)
+        assertKotlinSetup(buildKotlinKaptProject())
     }
 
     @Test
     fun apply_afterKotlinPlugin_addsKapt() {
-        val project = ProjectBuilder.builder().build()
-        project.pluginManager.apply {
-            apply("kotlin")
-            apply(pluginId)
+        val project = buildProject {
+            pluginManager.apply {
+                apply("kotlin")
+                apply(pluginId)
+            }
         }
-        project.enableObjectBoxPluginDebugMode()
 
         assertKotlinSetup(project)
     }
 
     private fun assertKotlinSetup(project: Project) {
+        project.resolveDependencyGraphWithoutDownloadingFiles()
         with(project.configurations) {
-            assertProcessorDependency(getByName("kapt").dependencies)
+            assertProcessorDependency(getByName(Const.KAPT_CONFIGURATION_NAME).dependencies)
 
-            getByName("api").dependencies.let { deps ->
+            getByName(JavaPlugin.API_CONFIGURATION_NAME).dependencies.let { deps ->
                 assertEquals(1, deps.count {
-                    it.group == "io.objectbox" && it.name == "objectbox-kotlin"
-                            && it.version == ProjectEnv.Const.javaVersionToApply
+                    it.group == Const.OBX_GROUP && it.name == Const.OBX_KOTLIN
+                            && it.version == Const.OBX_JAVA_VERSION
                 })
                 assertJavaDependency(deps)
                 assertNativeDependency(deps)
@@ -198,32 +230,101 @@ open class PluginApplyJavaTest : PluginApplyTest() {
         // AFTER EVALUATE.
         // Note: by default only main and test source sets exist.
         // Note: transform is not supported for Kotlin code/tasks, so these match plain Java plugin.
-        assertTransformTask(project, "", "classes")
-        assertTransformTask(project, "Test", "testClasses")
+        assertTransformTask(project, "", JavaPlugin.CLASSES_TASK_NAME)
+        assertTransformTask(project, "Test", JavaPlugin.TEST_CLASSES_TASK_NAME)
     }
 
-    private fun assertProcessorDependency(apDeps: DependencySet) {
-        assertEquals("objectbox-processor dependency not found", 1, apDeps.count {
-            it.group == "io.objectbox" && it.name == "objectbox-processor"
-                    && it.version == ProjectEnv.Const.pluginVersion
+    private fun assertJavaDependency(deps: DependencySet) {
+        assertEquals("${Const.OBX_JAVA} dependency not found", 1, deps.count {
+            it.group == Const.OBX_GROUP && it.name == Const.OBX_JAVA
+                    && it.version == Const.OBX_JAVA_VERSION
         })
     }
 
-    private fun assertJavaDependency(compileDeps: DependencySet) {
-        assertEquals("objectbox-java dependency not found", 1, compileDeps.count {
-            it.group == "io.objectbox" && it.name == "objectbox-java"
-                    && it.version == ProjectEnv.Const.javaVersionToApply
-        })
+    @Test
+    fun apply_doesNotAddAdditionalJavaLibrary() {
+        assertOnlySingleDependency(
+            buildJavaLibraryProject(),
+            JavaPlugin.API_CONFIGURATION_NAME,
+            Const.OBX_JAVA
+        )
+        assertOnlySingleDependency(
+            buildJavaLibraryProject(),
+            JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME,
+            Const.OBX_JAVA
+        )
     }
 
-    open fun assertNativeDependency(compileDeps: DependencySet) {
-        assertEquals("JNI lib dependency not found", 1, compileDeps.count {
-            it.group == "io.objectbox"
-                    && (it.name == "$expectedLibWithSyncVariantPrefix-linux"
-                    || it.name == "$expectedLibWithSyncVariantPrefix-windows"
-                    || it.name == "$expectedLibWithSyncVariantPrefix-macos")
-                    && it.version == expectedLibWithSyncVariantVersion
-        })
+    @Test
+    fun apply_doesNotAddAdditionalKotlinLibrary() {
+        val projectApiConfig = buildKotlinKaptProject()
+        assertOnlySingleDependency(
+            projectApiConfig,
+            JavaPlugin.API_CONFIGURATION_NAME,
+            Const.OBX_KOTLIN
+        )
+        // Also check objectbox-java is not added as objectbox-kotlin already has a transitive dependency on it
+        val javaLibDeps = projectApiConfig.getDependenciesMatching { it.name == Const.OBX_JAVA }
+        assertTrue(
+            "Must not add ${Const.OBX_JAVA} library, but has:\n${javaLibDeps.joinToString("\n")}",
+            javaLibDeps.isEmpty()
+        )
+
+        assertOnlySingleDependency(
+            buildKotlinKaptProject(),
+            JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME,
+            Const.OBX_KOTLIN
+        )
+    }
+
+    private fun assertOnlySingleDependency(forProject: Project, toConfiguration: String, name: String) {
+        // Use a custom version that's easy to recognize if this test should fail
+        val customVersion = "${Const.OBX_JAVA_VERSION}-custom"
+        forProject.dependencies.add(toConfiguration, "${Const.OBX_GROUP}:$name:$customVersion")
+
+        forProject.resolveDependencyGraphWithoutDownloadingFiles()
+
+        val deps = forProject.getDependenciesMatching { it.name == name }
+        assertTrue(
+            "Must not add duplicate $name library, but has:\n${deps.joinToString("\n")}",
+            deps.size == 1 && deps.first().version == customVersion
+        )
+    }
+
+    private val databaseLibraries = listOf(
+        "objectbox-linux",
+        "objectbox-macos",
+        "objectbox-windows",
+        "objectbox-sync-linux",
+        "objectbox-sync-server-linux",
+        "objectbox-sync-macos",
+        "objectbox-sync-windows"
+    )
+
+    @Test
+    fun apply_doesNotAddAdditionalDatabaseLibrary() {
+        databaseLibraries.forEach {
+            assertNoDatabaseLibraryAdded(it)
+        }
+    }
+
+    private fun assertNoDatabaseLibraryAdded(name: String) {
+        val project = buildJavaLibraryProject()
+
+        // Use a custom version that's easy to recognize if this test should fail
+        val customVersion = "${Const.OBX_DATABASE_VERSION}-custom"
+        project.dependencies.add(
+            JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME,
+            "${Const.OBX_GROUP}:$name:$customVersion"
+        )
+
+        project.resolveDependencyGraphWithoutDownloadingFiles()
+        val databaseDeps = project.getDependenciesMatching { databaseLibraries.contains(it.name) }
+        assertEquals(
+            "Must not add additional database library, but has:\n${databaseDeps.joinToString("\n")}",
+            1,
+            databaseDeps.size
+        )
     }
 
 }

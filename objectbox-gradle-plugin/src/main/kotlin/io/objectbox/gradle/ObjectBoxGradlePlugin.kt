@@ -18,6 +18,7 @@
 
 package io.objectbox.gradle
 
+import io.objectbox.gradle.ProjectEnv.Const
 import io.objectbox.gradle.transform.AndroidPluginCompat
 import io.objectbox.gradle.transform.ObjectBoxJavaClassesTransformTask
 import io.objectbox.gradle.transform.ObjectBoxJavaTransform
@@ -29,8 +30,11 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.UnknownDomainObjectException
+import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.Dependency
+import org.gradle.api.artifacts.DependencySet
 import org.gradle.api.plugins.InvalidPluginException
+import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.tasks.compile.JavaCompile
 
 /**
@@ -44,9 +48,10 @@ import org.gradle.api.tasks.compile.JavaCompile
 open class ObjectBoxGradlePlugin : Plugin<Project> {
 
     /**
-     * The Gradle plugin id as registered in resources/META-INF/gradle-plugins.
+     * The Gradle plugin id as registered in resources/META-INF/gradle-plugins (but actually configured using the
+     * Gradle plugin development plugin in the build script using the gradlePlugin extension).
      */
-    internal open val pluginId = "io.objectbox"
+    internal open val pluginId = Const.PLUGIN_ID
 
     private val buildTracker = GradleBuildTracker("GradlePlugin")
 
@@ -140,38 +145,40 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
         }
     }
 
+    /**
+     * Configure the annotation processor.
+     *
+     * Note that this can't happen in [addDependencies] because it would be too late.
+     */
     private fun addDependenciesAnnotationProcessor(env: ProjectEnv) {
         val project = env.project
-        if ((env.hasKotlinPlugin || env.hasKotlinAndroidPlugin) && !project.hasConfig("kapt")) {
+        if ((env.hasKotlinPlugin || env.hasKotlinAndroidPlugin) &&
+            !project.hasConfig(Const.KAPT_CONFIGURATION_NAME)
+        ) {
             // Note: no-op if kapt plugin was already applied.
             project.plugins.apply("kotlin-kapt")
             env.logDebug { "Applied 'kotlin-kapt'." }
         }
 
         // Note: use plugin version for processor dependency as processor is part of this project.
-        val processorDep = "io.objectbox:objectbox-processor:${ProjectEnv.Const.pluginVersion}"
+        val processorDep = "${Const.OBX_GROUP}:${Const.OBX_PROCESSOR}:${Const.OBX_PLUGIN_VERSION}"
         // Note: check for and use preferred/best config first, potentially ignoring others.
         when {
-            project.hasConfig("kapt") -> {
+            project.hasConfig(Const.KAPT_CONFIGURATION_NAME) -> {
                 // Kotlin (Android + Desktop).
-                project.addDep("kapt", processorDep)
+                project.addDep(Const.KAPT_CONFIGURATION_NAME, processorDep)
             }
 
-            project.hasConfig("annotationProcessor") -> {
+            project.hasConfig(JavaPlugin.ANNOTATION_PROCESSOR_CONFIGURATION_NAME) -> {
                 // Android (Java), also Java Desktop with Gradle 5.0 (best as of 5.2) uses annotationProcessor.
-                project.addDep("annotationProcessor", processorDep)
-            }
-
-            project.hasConfig("apt") -> {
-                // https://bitbucket.org/hvisser/android-apt or custom apt
-                // https://docs.gradle.org/current/userguide/java_plugin.html#sec:java_compile_avoidance
-                project.addDep("apt", processorDep)
+                project.addDep(JavaPlugin.ANNOTATION_PROCESSOR_CONFIGURATION_NAME, processorDep)
             }
 
             else -> {
                 project.logger.warn(
-                    "ObjectBox: Could not add dependency on objectbox-processor, " +
-                            "no supported configuration (kapt, annotationProcessor, apt) found."
+                    "ObjectBox: Could not add dependency on ${Const.OBX_PROCESSOR}, " +
+                            "no supported configuration (${Const.KAPT_CONFIGURATION_NAME}, " +
+                            "${JavaPlugin.ANNOTATION_PROCESSOR_CONFIGURATION_NAME}) found."
                 )
             }
         }
@@ -195,66 +202,104 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
 
     /**
      * Version for libraries that have Sync enabled versions.
-     * All others always use [ProjectEnv.Const.nativeVersionToApply].
+     * All others always use [ProjectEnv.Const.OBX_DATABASE_VERSION].
      */
     internal open fun getLibWithSyncVariantVersion(): String {
-        return ProjectEnv.Const.nativeVersionToApply
+        return Const.OBX_DATABASE_VERSION
     }
 
+    private fun Project.addDepLater(dependencySet: DependencySet, dep: String) {
+        dependencySet.addLater(
+            provider {
+                dependencies.create(dep)
+            }
+        )
+    }
+
+    private fun Project.addObjectBoxDepLater(dependencySet: DependencySet, name: String, version: String) =
+        addDepLater(dependencySet, "${Const.OBX_GROUP}:$name:$version")
+
+    /**
+     * Before dependencies of project configurations are resolved, adds required ObjectBox dependencies, if a
+     * conflicting one isn't added already:
+     *
+     * - Java APIs (objectbox-java)
+     * - Kotlin APIs (objectbox-kotlin), if the (Android) Kotlin plugin is applied
+     * - database library for Android or JVM, depending on if the Android plugin is applied
+     * - Findbugs JSR305 nullable annotations, if the Android plugin is applied, only for instrumented unit tests
+     */
     private fun addDependencies(env: ProjectEnv) {
-        val compileConfig = env.configApiOrImplOrCompile
+        val compileConfig = env.configApiOrImpl
         val project = env.project
 
-        // Note: a preview release might apply different versions of the Java and native library,
-        // so explicitly apply the Java library to avoid the native library pulling in another version.
-        if (!env.hasObjectBoxDep("objectbox-java")) {
-            project.addDep(compileConfig, "io.objectbox:objectbox-java:${ProjectEnv.Const.javaVersionToApply}")
-        }
+        // Use Configuration.withDependencies to also detect dependencies that are added after the plugin is applied
+        // (which, if using modern Gradle plugins syntax, they are always).
+        project.configurations.getByName(compileConfig).withDependencies { dependencySet ->
+            val hasKotlinPlugin = env.hasKotlinPlugin || env.hasKotlinAndroidPlugin
+            val hasObxKotlinLibrary = env.hasObjectBoxDep(Const.OBX_KOTLIN)
 
-        if (env.hasKotlinPlugin || env.hasKotlinAndroidPlugin) {
-            env.logDebug { "Kotlin plugin detected" }
-            if (env.hasObjectBoxDep("objectbox-kotlin")) {
-                env.logDebug { "Detected objectbox-kotlin dependency, not auto-adding." }
+            if (hasKotlinPlugin) {
+                if (hasObxKotlinLibrary) {
+                    env.logDebug { "Not adding ${Const.OBX_KOTLIN} dependency, a configuration has one" }
+                } else {
+                    project.addObjectBoxDepLater(dependencySet, Const.OBX_KOTLIN, Const.OBX_JAVA_VERSION)
+                }
+            }
+
+            // Note: a preview release of the plugin might apply different versions of the Java and database library,
+            // so always add the Java library to avoid the Android database library pulling in an older Java library
+            // (only the Android library has a dependency on the Java library as it includes Java APIs).
+            // But don't add it if the Kotlin library is manually added as it has a dependency on the Java library to
+            // avoid pulling in a newer, possibly incompatible, Java library.
+            if (env.hasObjectBoxDep(Const.OBX_JAVA)) {
+                env.logDebug { "Not adding ${Const.OBX_JAVA} dependency, a configuration has one" }
+            } else if (hasObxKotlinLibrary) {
+                env.logDebug { "Not adding ${Const.OBX_JAVA} dependency, a configuration has ${Const.OBX_KOTLIN}" }
             } else {
-                project.addDep(compileConfig, "io.objectbox:objectbox-kotlin:${ProjectEnv.Const.javaVersionToApply}")
+                project.addObjectBoxDepLater(dependencySet, Const.OBX_JAVA, Const.OBX_JAVA_VERSION)
+            }
+
+            // If the Android plugin is applied, add the Android database library, otherwise the JVM database library
+            if (env.hasAndroidPlugin) {
+                val androidDepName = "${getLibWithSyncVariantPrefix()}-android"
+                if (!env.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_DEFAULT-android")
+                    && !env.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_DEFAULT-android-objectbrowser")
+                    && !env.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_SYNC-android")
+                    && !env.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_SYNC-android-objectbrowser")
+                    && !env.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_SYNC-server-android")
+                ) {
+                    project.addObjectBoxDepLater(dependencySet, androidDepName, getLibWithSyncVariantVersion())
+                } else {
+                    env.logDebug { "Not adding $androidDepName dependency, a configuration has an Android database library" }
+                }
+            } else {
+                addNativeDependency(env, dependencySet, searchTestConfigs = false)
             }
         }
 
         if (env.hasAndroidPlugin) {
-            // for this detection to work apply the plugin after the dependencies block
-            if (!env.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_DEFAULT-android")
-                && !env.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_DEFAULT-android-objectbrowser")
-                && !env.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_SYNC-android")
-                && !env.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_SYNC-android-objectbrowser")
-                && !env.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_SYNC-server-android")
-            ) {
-                project.addDep(
-                    compileConfig,
-                    "io.objectbox:${getLibWithSyncVariantPrefix()}-android:${getLibWithSyncVariantVersion()}"
-                )
-            }
+            // For Android local (on developer machine) unit tests add a dependency on the JVM database library
+            project.configurations.getByName(JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME)
+                .withDependencies { dependencySet ->
+                    addNativeDependency(env, dependencySet, searchTestConfigs = true)
+                }
 
-            // for instrumented unit tests
-            // add jsr305 to prevent conflict with other versions added by test dependencies, like espresso
+            // For Android instrumented (on device/emulator) unit tests
+            // add jsr305 to prevent conflict with other versions added by test dependencies, like espresso.
             // https://github.com/objectbox/objectbox-java/issues/73
-            project.addDep(env.configAndroidTestImplOrCompile, "com.google.code.findbugs:jsr305:3.0.2")
-
-            // for local unit tests
-            addNativeDependency(env, env.configTestImplOrCompile, true)
-        } else {
-            addNativeDependency(env, compileConfig, false)
+            project.configurations
+                .getByName(Const.ANDROID_TEST_IMPLEMENTATION_CONFIGURATION_NAME)
+                .dependencies
+                .let { project.addDepLater(it, "com.google.code.findbugs:jsr305:3.0.2") }
         }
     }
 
-    private fun addNativeDependency(env: ProjectEnv, config: String, searchTestConfigs: Boolean) {
-        val project = env.project
-
+    private fun addNativeDependency(env: ProjectEnv, dependencySet: DependencySet, searchTestConfigs: Boolean) {
         env.logDebug {
             "Detected OS: ${env.osName} is64=${env.is64Bit} " +
                     "isLinux64=${env.isLinux64} isWindows64=${env.isWindows64} isMac64=${env.isMac64}"
         }
 
-        // note: for this detection to work apply the plugin after the dependencies block
         // Note: use startsWith to detect e.g. -armv7 and -arm64 and any possible future suffixes.
         if (env.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_DEFAULT-linux", searchTestConfigs, startsWith = true)
             || env.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_DEFAULT-macos", searchTestConfigs, startsWith = true)
@@ -264,7 +309,7 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
             || env.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_SYNC-macos", searchTestConfigs, startsWith = true)
             || env.hasObjectBoxDep("$LIBRARY_NAME_PREFIX_SYNC-windows", searchTestConfigs, startsWith = true)
         ) {
-            env.logDebug { "Detected native dependency, not auto-adding one." }
+            env.logDebug { "Not adding JVM database library dependency, a configuration has one" }
         } else {
             // Note: -armv7 and -arm64 variants of the Linux library are not added automatically,
             // users are expected to do so themselves if needed.
@@ -277,7 +322,7 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
             if (suffix != null) {
                 val prefix = getLibWithSyncVariantPrefix()
                 val version = getLibWithSyncVariantVersion()
-                project.addDep(config, "io.objectbox:$prefix-$suffix:$version")
+                env.project.addObjectBoxDepLater(dependencySet, "$prefix-$suffix", version)
             } else {
                 env.logInfo("Could not set up native dependency for ${env.osName}")
             }
@@ -287,16 +332,18 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
     /**
      * Checks for exact name match. Set [startsWith] to true to only check for prefix.
      *
-     * Note: for this detection to work the plugin must be applied after the dependencies block.
+     * Note: for this detection to work for dependencies added after the plugin is applied, must be called within
+     * [org.gradle.api.artifacts.Configuration.withDependencies].
      */
     private fun ProjectEnv.hasObjectBoxDep(
         name: String,
         searchTestConfigs: Boolean = false,
         startsWith: Boolean = false
     ): Boolean {
-        val dependency = findObjectBoxDependency(project, name, searchTestConfigs, startsWith)
-        logDebug { "$name dependency: $dependency" }
-        return dependency != null
+        val (config, dependency) = findObjectBoxDependency(project, name, searchTestConfigs, startsWith)
+            ?: return false
+        logDebug { "$name dependency on $config: $dependency" }
+        return true
     }
 
     private fun findObjectBoxDependency(
@@ -304,15 +351,15 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
         name: String,
         searchTestConfigs: Boolean,
         startsWith: Boolean
-    ): Dependency? {
+    ): Pair<Configuration, Dependency>? {
         if (searchTestConfigs) {
             project.configurations
         } else {
             project.configurations.filterNot { it.name.contains("test", ignoreCase = true) }
         }.forEach { config ->
             config.dependencies.find {
-                it.group == "io.objectbox" && (if (startsWith) it.name.startsWith(name) else it.name == name)
-            }?.let { return it }
+                it.group == Const.OBX_GROUP && (if (startsWith) it.name.startsWith(name) else it.name == name)
+            }?.let { return config to it }
         }
         return null
     }

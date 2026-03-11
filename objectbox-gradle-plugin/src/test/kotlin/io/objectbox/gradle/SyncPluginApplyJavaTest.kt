@@ -18,14 +18,16 @@
 
 package io.objectbox.gradle
 
+import io.objectbox.gradle.ProjectEnv.Const
+
 
 /**
  * Tests applying [ObjectBoxSyncGradlePlugin] configures a Java or Kotlin desktop Gradle project as expected.
  */
 class SyncPluginApplyJavaTest : PluginApplyJavaTest() {
 
-    override val pluginId = "io.objectbox.sync"
+    override val pluginId = Const.SYNC_PLUGIN_ID
     override val expectedLibWithSyncVariantPrefix = "objectbox-sync"
-    override val expectedLibWithSyncVariantVersion = ProjectEnv.Const.nativeSyncVersionToApply
+    override val expectedLibWithSyncVariantVersion = ProjectEnv.Const.OBX_DATABASE_SYNC_VERSION
 
 }

@@ -15,6 +15,8 @@ java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(11))
     }
+    // Note: the javadoc JAR is created using a custom task defined in the objectbox-publish plugin
+    withSourcesJar()
 }
 
 tasks.withType<JavaCompile>().configureEach {
@@ -54,25 +56,16 @@ dependencies {
     testImplementation("io.objectbox:objectbox-java:$objectboxJavaVersion")
 }
 
-val javadocJar by tasks.registering(Jar::class) {
-    archiveClassifier.set("javadoc")
-    from("README")
-}
-
-val sourcesJar by tasks.registering(Jar::class) {
-    archiveClassifier.set("sources")
-    from("README")
-}
-
 // Set project-specific properties
 publishing {
     publications {
-        getByName<MavenPublication>("mavenJava") {
+        create<MavenPublication>("obxProcessor") {
             artifactId = "objectbox-processor"
             from(components["java"])
-            artifact(sourcesJar)
-            artifact(javadocJar)
+            artifact(tasks.named("javadocReadmeJar")) // task registered by objectbox-publish plugin
             pom {
+                // Note: common configuration is set by objectbox-publish plugin
+                packaging = "jar"
                 name.set("ObjectBox Processor")
                 description.set("Annotation processor for ObjectBox (NoSQL for Objects)")
             }

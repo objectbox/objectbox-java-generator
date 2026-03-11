@@ -26,15 +26,32 @@ import java.util.*
 
 class ProjectEnv(val project: Project) {
     object Const {
-        const val name: String = "objectbox"
-        const val pluginVersion = GradlePluginBuildConfig.VERSION
-        const val javaVersionToApply = GradlePluginBuildConfig.APPLIES_JAVA_VERSION
-        const val nativeVersionToApply = GradlePluginBuildConfig.APPLIES_NATIVE_VERSION
-        const val nativeSyncVersionToApply = GradlePluginBuildConfig.APPLIES_NATIVE_SYNC_VERSION
+        const val PLUGIN_ID = "io.objectbox"
+        const val SYNC_PLUGIN_ID = "io.objectbox.sync"
+        const val EXTENSION_NAME: String = "objectbox"
+        const val OBX_PLUGIN_VERSION = GradlePluginBuildConfig.VERSION
+        const val OBX_JAVA_VERSION = GradlePluginBuildConfig.APPLIES_JAVA_VERSION
+        const val OBX_DATABASE_VERSION = GradlePluginBuildConfig.APPLIES_NATIVE_VERSION
+        const val OBX_DATABASE_SYNC_VERSION = GradlePluginBuildConfig.APPLIES_NATIVE_SYNC_VERSION
+
+        const val OBX_GROUP = "io.objectbox"
+        const val OBX_PROCESSOR = "objectbox-processor"
+        const val OBX_JAVA = "objectbox-java"
+        const val OBX_KOTLIN = "objectbox-kotlin"
+
+        /**
+         * The name of the default configuration for
+         * [Android instrumented (runs on devices) tests](https://developer.android.com/training/testing/instrumented-tests).
+         */
+        const val ANDROID_TEST_IMPLEMENTATION_CONFIGURATION_NAME = "androidTestImplementation"
+
+        /** Name of the configuration of the [kapt plugin](https://kotlinlang.org/docs/kapt.html). */
+        const val KAPT_CONFIGURATION_NAME = "kapt"
     }
 
     /** Note: Plugin extension, values only available after evaluation phase. */
-    val options: ObjectBoxPluginExtension = project.extensions.create(Const.name, ObjectBoxPluginExtension::class.java)
+    val options: ObjectBoxPluginExtension =
+        project.extensions.create(Const.EXTENSION_NAME, ObjectBoxPluginExtension::class.java)
 
     // Note: can not use types as this project uses Android and Kotlin plugin API as compileOnly,
     // so the classes might be missing from projects that do not have the Android or Kotlin plugin on the classpath.
@@ -57,36 +74,19 @@ class ProjectEnv(val project: Project) {
     val isMac64 = isMac && is64Bit
     val isWindows64 = isWindows && is64Bit
 
-
     /**
      * See Gradle [java-library plugin configurations](https://docs.gradle.org/current/userguide/java_library_plugin.html#sec:java_library_configurations_graph)
      * and [java plugin configurations](https://docs.gradle.org/current/userguide/java_plugin.html#sec:java_plugin_and_dependency_management)
      * (used by `applications` plugin).
      */
-    val configApiOrImplOrCompile: String by lazy {
-        if (project.configurations.findByName("api") != null) {
+    val configApiOrImpl: String by lazy {
+        if (project.configurations.findByName(JavaPlugin.API_CONFIGURATION_NAME) != null) {
             // Projects applying the java-library plugin.
             // Try to use api by default so consuming projects inherit the dependency.
-            "api"
-        } else if (project.configurations.findByName("implementation") != null) {
+            JavaPlugin.API_CONFIGURATION_NAME
+        } else {
             // Projects applying the application plugin (does not have api configuration).
-            "implementation"
-        } else {
-            "compile"
-        }
-    }
-    val configAndroidTestImplOrCompile: String by lazy {
-        if (project.configurations.findByName("androidTestImplementation") != null) {
-            "androidTestImplementation"
-        } else {
-            "androidTestCompile"
-        }
-    }
-    val configTestImplOrCompile: String by lazy {
-        if (project.configurations.findByName("testImplementation") != null) {
-            "testImplementation"
-        } else {
-            "testCompile"
+            JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME
         }
     }
 
@@ -98,8 +98,13 @@ class ProjectEnv(val project: Project) {
      * Using function for [message] to avoid String getting built unless in debug mode.
      */
     fun logDebug(message: () -> String) {
-        project.afterEvaluate {
+        val isEvaluated = project.state.executed
+        if (isEvaluated) {
             if (options.debug.get()) log(message())
+        } else {
+            project.afterEvaluate {
+                if (options.debug.get()) log(message())
+            }
         }
     }
 }
