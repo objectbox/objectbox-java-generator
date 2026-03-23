@@ -19,9 +19,7 @@
 package io.objectbox.processor
 
 import com.google.common.truth.Truth.assertThat
-import com.google.testing.compile.JavaFileObjects
 import io.objectbox.model.PropertyFlags
-import org.intellij.lang.annotations.Language
 import org.junit.Test
 
 /**
@@ -31,37 +29,38 @@ class SyncClockPrecedenceTest : BaseProcessorTest() {
 
     @Test
     fun syncClock_and_syncPrecedence_setFlags() {
-        @Language("Java")
-        val sourceFile = """
-        package com.example;
-        import io.objectbox.annotation.Entity;
-        import io.objectbox.annotation.Id;
-        import io.objectbox.annotation.Sync;
+        // language=Java
+        val additionalImports = """
         import io.objectbox.annotation.SyncClock;
         import io.objectbox.annotation.SyncPrecedence;
+        """
 
-        @Entity
-        @Sync
-        public class Example {
-            @Id long id;
-
-            @SyncClock
-            Long clock;
-
-            @SyncPrecedence
-            Long precedence;
-        }
-        """.trimIndent().let {
-            JavaFileObjects.forSourceString("com.example.Example", it)
-        }
+        // language=Java
+        val entityBody = """
+        @SyncClock
+        Long clock;
+        
+        @SyncPrecedence
+        Long precedence;
+        """
 
         // Need stable model file + ids to verify sources match.
-        TestEnvironment("sync-precedence.json").compile(listOf(sourceFile))
+        TestEnvironment("sync-precedence.json")
+            .apply {
+                addEntitySourceFile(
+                    sync = true,
+                    additionalImports = additionalImports
+                ) {
+                    entityBody
+                }
+            }
+            .compile()
             .assertThatIt {
                 succeededWithoutWarnings()
 
-                @Language("Java") val myObjectBox = """
-                package com.example;
+                // language=Java
+                val myObjectBox = """
+                package example;
                 
                 import io.objectbox.BoxStore;
                 import io.objectbox.BoxStoreBuilder;
@@ -106,12 +105,20 @@ class SyncClockPrecedenceTest : BaseProcessorTest() {
                 
                 }
                 """.trimIndent()
-                generatedSourceFileMatches("com.example.MyObjectBox", myObjectBox)
+                generatedSourceFileMatches("example.MyObjectBox", myObjectBox)
             }
 
         // Use temp model file to assert model file flags.
         val environment = TestEnvironment("not-generated.json", useTemporaryModelFile = true)
-        environment.compile(listOf(sourceFile))
+            .apply {
+                addEntitySourceFile(
+                    sync = true,
+                    additionalImports = additionalImports
+                ) {
+                    entityBody
+                }
+            }
+        environment.compile()
             .assertThatIt { succeededWithoutWarnings() }
 
         val model = environment.readModel()
@@ -135,26 +142,19 @@ class SyncClockPrecedenceTest : BaseProcessorTest() {
     }
 
     private fun assertAnnotationOnEntityWithoutSync(annotation: String) {
-        @Language("Java")
-        val sourceFile = """
-        package com.example;
-        import io.objectbox.annotation.Entity;
-        import io.objectbox.annotation.Id;
-        import io.objectbox.annotation.$annotation;
-
-        @Entity
-        public class Example {
-            @Id long id;
-
-            @$annotation
-            Long field;
-        }
-        """.trimIndent().let {
-            JavaFileObjects.forSourceString("com.example.Example", it)
-        }
-
         TestEnvironment("not-generated.json", useTemporaryModelFile = true)
-            .compile(listOf(sourceFile))
+            .apply {
+                // language=Java
+                addEntitySourceFile(
+                    additionalImports = "import io.objectbox.annotation.$annotation;"
+                ) {
+                    """
+                    @$annotation
+                    Long field;
+                    """
+                }
+            }
+            .compile()
             .assertThatIt {
                 failed()
                 hadErrorContaining(
@@ -174,31 +174,23 @@ class SyncClockPrecedenceTest : BaseProcessorTest() {
     }
 
     private fun assertDuplicateAnnotationOnEntityFails(annotation: String) {
-        @Language("Java")
-        val sourceFile = """
-        package com.example;
-        import io.objectbox.annotation.Entity;
-        import io.objectbox.annotation.Id;
-        import io.objectbox.annotation.Sync;
-        import io.objectbox.annotation.$annotation;
-
-        @Entity
-        @Sync
-        public class Example {
-            @Id long id;
-
-            @$annotation
-            Long field1;
-
-            @$annotation
-            Long field2;
-        }
-        """.trimIndent().let {
-            JavaFileObjects.forSourceString("com.example.Example", it)
-        }
-
         TestEnvironment("not-generated.json", useTemporaryModelFile = true)
-            .compile(listOf(sourceFile))
+            .apply {
+                // language=Java
+                addEntitySourceFile(
+                    sync = true,
+                    additionalImports = "import io.objectbox.annotation.$annotation;"
+                ) {
+                    """
+                    @$annotation
+                    Long field1;
+        
+                    @$annotation
+                    Long field2;
+                    """
+                }
+            }
+            .compile()
             .assertThatIt {
                 failed()
                 hadErrorContaining(
@@ -209,30 +201,25 @@ class SyncClockPrecedenceTest : BaseProcessorTest() {
 
     @Test
     fun syncClock_and_syncPrecedence_onSameProperty_fails() {
-        @Language("Java")
-        val sourceFile = """
-        package com.example;
-        import io.objectbox.annotation.Entity;
-        import io.objectbox.annotation.Id;
-        import io.objectbox.annotation.Sync;
-        import io.objectbox.annotation.SyncClock;
-        import io.objectbox.annotation.SyncPrecedence;
-
-        @Entity
-        @Sync
-        public class Example {
-            @Id long id;
-
-            @SyncClock
-            @SyncPrecedence
-            Long clockAndPrecedence;
-        }
-        """.trimIndent().let {
-            JavaFileObjects.forSourceString("com.example.Example", it)
-        }
-
         TestEnvironment("not-generated.json", useTemporaryModelFile = true)
-            .compile(listOf(sourceFile))
+            .apply {
+                // language=Java
+                addEntitySourceFile(
+                    sync = true,
+                    additionalImports =
+                        """
+                        import io.objectbox.annotation.SyncClock;
+                        import io.objectbox.annotation.SyncPrecedence;
+                        """
+                ) {
+                    """
+                    @SyncClock
+                    @SyncPrecedence
+                    Long clockAndPrecedence;
+                    """
+                }
+            }
+            .compile()
             .assertThatIt {
                 failed()
                 hadErrorContaining(
@@ -252,28 +239,20 @@ class SyncClockPrecedenceTest : BaseProcessorTest() {
     }
 
     private fun assertAnnotationOnNonLongPropertyFails(annotation: String) {
-        @Language("Java")
-        val sourceFile = """
-        package com.example;
-        import io.objectbox.annotation.Entity;
-        import io.objectbox.annotation.Id;
-        import io.objectbox.annotation.Sync;
-        import io.objectbox.annotation.$annotation;
-
-        @Entity
-        @Sync
-        public class Example {
-            @Id long id;
-
-            @$annotation
-            String field;
-        }
-        """.trimIndent().let {
-            JavaFileObjects.forSourceString("com.example.Example", it)
-        }
-
         TestEnvironment("not-generated.json", useTemporaryModelFile = true)
-            .compile(listOf(sourceFile))
+            .apply {
+                // language=Java
+                addEntitySourceFile(
+                    sync = true,
+                    additionalImports = "import io.objectbox.annotation.$annotation;"
+                ) {
+                    """
+                    @$annotation
+                    String field;
+                    """
+                }
+            }
+            .compile()
             .assertThatIt {
                 failed()
                 hadErrorContaining(
