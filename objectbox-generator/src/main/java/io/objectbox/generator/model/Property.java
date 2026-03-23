@@ -189,6 +189,22 @@ public class Property implements HasParsedElement {
             return this;
         }
 
+        /**
+         * See {@link Property#isSyncClock()}.
+         */
+        public PropertyBuilder syncClock() {
+            property.isSyncClock = true;
+            return this;
+        }
+
+        /**
+         * See {@link Property#isSyncPrecedence()}.
+         */
+        public PropertyBuilder syncPrecedence() {
+            property.isSyncPrecedence = true;
+            return this;
+        }
+
         public PropertyBuilder virtualTargetName(String virtualTargetName) {
             property.virtualTargetName = virtualTargetName;
             return this;
@@ -246,6 +262,8 @@ public class Property implements HasParsedElement {
     private boolean isUnsigned;
     private boolean idAssignable;
     private boolean fieldAccessible;
+    private boolean isSyncClock;
+    private boolean isSyncPrecedence;
 
     private int ordinal;
 
@@ -473,6 +491,20 @@ public class Property implements HasParsedElement {
     }
 
     /**
+     * If {@link PropertyFlags#SYNC_CLOCK} should be set on this property.
+     */
+    public boolean isSyncClock() {
+        return isSyncClock;
+    }
+
+    /**
+     * If {@link PropertyFlags#SYNC_PRECEDENCE} should be set on this property.
+     */
+    public boolean isSyncPrecedence() {
+        return isSyncPrecedence;
+    }
+
+    /**
      * If this property does not actually exist in the entity class, but only in the model
      * and {@link PropertyFlags#VIRTUAL} should be set.
      */
@@ -665,6 +697,14 @@ public class Property implements HasParsedElement {
         if (isUnsigned()) {
             flagsModelFile |= PropertyFlags.UNSIGNED;
             flagsGeneratedCode.add("PropertyFlags.UNSIGNED");
+        }
+        if (isSyncClock()) {
+            flagsModelFile |= PropertyFlags.SYNC_CLOCK;
+            flagsGeneratedCode.add("PropertyFlags.SYNC_CLOCK");
+        }
+        if (isSyncPrecedence()) {
+            flagsModelFile |= PropertyFlags.SYNC_PRECEDENCE;
+            flagsGeneratedCode.add("PropertyFlags.SYNC_PRECEDENCE");
         }
 
         if (getPropertyType() == PropertyType.RelationId) {
