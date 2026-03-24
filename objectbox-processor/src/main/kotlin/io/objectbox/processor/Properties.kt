@@ -30,6 +30,8 @@ import io.objectbox.annotation.IdCompanion
 import io.objectbox.annotation.Index
 import io.objectbox.annotation.IndexType
 import io.objectbox.annotation.NameInDb
+import io.objectbox.annotation.SyncClock
+import io.objectbox.annotation.SyncPrecedence
 import io.objectbox.annotation.Transient
 import io.objectbox.annotation.Type
 import io.objectbox.annotation.Uid
@@ -273,6 +275,9 @@ class Properties(
             val uid = if (uidAnnotation.value == 0L) -1 else uidAnnotation.value
             propertyBuilder.modelId(IdUid(0, uid))
         }
+
+        // @SyncClock, @SyncPrecedence
+        parseSyncClockAndSyncPrecedenceAnnotations(field, propertyBuilder)
     }
 
     private fun parseHnswIndexAnnotation(field: VariableElement, propertyBuilder: Property.PropertyBuilder) {
@@ -355,6 +360,64 @@ class Properties(
         }
 
         propertyBuilder.index(indexFlags, 0)
+    }
+
+    private fun parseSyncClockAndSyncPrecedenceAnnotations(
+        field: VariableElement,
+        propertyBuilder: Property.PropertyBuilder
+    ) {
+        val hasSyncClock = field.hasAnnotation(SyncClock::class.java)
+        val hasSyncPrecedence = field.hasAnnotation(SyncPrecedence::class.java)
+
+        if (!hasSyncClock && !hasSyncPrecedence) return
+
+        // Cannot have both on the same property
+        if (hasSyncClock && hasSyncPrecedence) {
+            messages.error("@SyncClock and @SyncPrecedence cannot be used on the same property", field)
+            return
+        }
+
+        val annotationName = if (hasSyncClock) "@SyncClock" else "@SyncPrecedence"
+
+        // Must be on a synced entity
+        if (!entityModel.isSyncEnabled) {
+            messages.error(
+                "$annotationName can only be used on a property of a synced entity (annotated with @Sync)",
+                field
+            )
+            return
+        }
+
+        // Must be a 64-bit integer property
+        val property = propertyBuilder.property
+        if (property.propertyType != PropertyType.Long) {
+            messages.error("$annotationName can only be used on Long (OBXPropertyType.Long) properties", field)
+            return
+        }
+
+        // Only one per entity
+        // Note: the property being built is already added to the entity model, but it won't have the flag set, yet
+        val existing = entityModel.properties
+            .filter {
+                if (hasSyncClock) it.isSyncClock else it.isSyncPrecedence
+            }
+        if (existing.isNotEmpty()) {
+            val names = existing.map { it.propertyName }
+                .plus(property.propertyName)
+                .joinToString()
+            messages.error(
+                "only one property can be annotated with $annotationName, but found multiple: $names",
+                field
+            )
+            return
+        }
+
+        // Add the flag
+        if (hasSyncClock) {
+            propertyBuilder.syncClock()
+        } else {
+            propertyBuilder.syncPrecedence()
+        }
     }
 
     private fun defaultValuePropertyBuilderOrNull(field: VariableElement): Property.PropertyBuilder? {
