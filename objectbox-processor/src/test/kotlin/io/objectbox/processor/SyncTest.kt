@@ -21,6 +21,7 @@ package io.objectbox.processor
 import com.google.common.truth.Truth.assertThat
 import com.google.testing.compile.JavaFileObjects
 import io.objectbox.model.EntityFlags
+import org.intellij.lang.annotations.Language
 import org.junit.Test
 
 /**
@@ -30,6 +31,7 @@ class SyncTest : BaseProcessorTest() {
 
     @Test
     fun sync_works() {
+        @Language("Java")
         val sourceFile = """
         package com.example;
         
@@ -38,7 +40,7 @@ class SyncTest : BaseProcessorTest() {
         import io.objectbox.annotation.Id;
         import io.objectbox.annotation.Sync;
         import io.objectbox.annotation.Unique;
-
+        
         @Entity
         @Sync
         public class Example {
@@ -78,13 +80,14 @@ class SyncTest : BaseProcessorTest() {
 
     @Test
     fun sync_relationToSyncedEntity_works() {
+        @Language("Java")
         val exampleFile = """
         package com.example;
         import io.objectbox.annotation.Entity;
         import io.objectbox.annotation.Id;
         import io.objectbox.annotation.Sync;
         import io.objectbox.relation.ToMany;
-
+        
         @Entity
         @Sync
         public class Example {
@@ -117,13 +120,14 @@ class SyncTest : BaseProcessorTest() {
 
     @Test
     fun sync_relationToNotSyncedEntity_fails() {
+        @Language("Java")
         val exampleFile = """
         package com.example;
         import io.objectbox.annotation.Entity;
         import io.objectbox.annotation.Id;
         import io.objectbox.annotation.Sync;
         import io.objectbox.relation.ToMany;
-
+        
         @Entity
         @Sync
         public class Example {
@@ -160,12 +164,13 @@ class SyncTest : BaseProcessorTest() {
 
     @Test
     fun sync_sharedGlobalIds_works() {
+        @Language("Java")
         val sourceFile = """
         package com.example;
         import io.objectbox.annotation.Entity;
         import io.objectbox.annotation.Id;
         import io.objectbox.annotation.Sync;
-
+        
         @Entity
         @Sync(sharedGlobalIds = true)
         public class Example {
@@ -204,6 +209,7 @@ class SyncTest : BaseProcessorTest() {
 
     @Test
     fun sync_uniqueNotReplace_fails() {
+        @Language("Java")
         val exampleFile = """
         package com.example;
         
@@ -212,7 +218,7 @@ class SyncTest : BaseProcessorTest() {
         import io.objectbox.annotation.Id;
         import io.objectbox.annotation.Sync;
         import io.objectbox.annotation.Unique;
-
+        
         @Entity
         @Sync
         public class Example {

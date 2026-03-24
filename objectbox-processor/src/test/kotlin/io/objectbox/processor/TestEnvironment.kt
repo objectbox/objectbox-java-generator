@@ -138,6 +138,39 @@ class TestEnvironment(
             }
     }
 
+    fun addEntitySourceFile(
+        name: String = "Example",
+        sync: Boolean = false,
+        additionalImports: String = "",
+        body: () -> String
+    ): JavaFileObject {
+        // language=Java
+        val syncImport = if (sync) "import io.objectbox.annotation.Sync;" else ""
+        val syncAnnotation = if (sync) "@Sync" else ""
+
+        // language=Java
+        val source = """
+        package example;
+        import io.objectbox.annotation.Entity;
+        import io.objectbox.annotation.Id;
+        $syncImport
+${additionalImports.replaceIndent("        ")}
+        
+        @Entity
+        $syncAnnotation
+        public class $name {
+            @Id long id;
+            
+${body().replaceIndent("            ")}
+        }
+        """
+        return source
+            .trimIndent()
+            .let {
+                addSourceFile("example.$name", it)
+            }
+    }
+
     /**
      * Compiles the source files added with [addSourceFile] and, if not [TestEnvironment.useTemporaryModelFile]
      * and not [modelExpectedToChange], asserts the generated model JSON file matches the one given to [TestEnvironment].
