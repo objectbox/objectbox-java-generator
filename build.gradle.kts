@@ -26,8 +26,7 @@ buildscript {
     // see the release checklist in the objectbox repo.
     // If true won't build snapshots and removes version post fix (e.g. "-dev-SNAPSHOT"),
     // uses release versions of dependencies.
-    // val isRelease = System.getenv("OBX_RELEASE") == "true"
-    val isRelease = true // On (public) main branch don't use snapshots (publishing is disabled in CI for main branch)
+    val isRelease = System.getenv("OBX_RELEASE") == "true"
 
     val libsRelease = isRelease // e.g. diverge if plugin is still SNAPSHOT, but libs are already final
     val libsVersion = versionNumber + (if (libsRelease) "" else "-dev-SNAPSHOT")
