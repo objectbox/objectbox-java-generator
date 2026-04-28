@@ -19,7 +19,7 @@ plugins {
 buildscript {
     // Version of Maven artifacts
     // Should only be changed as part of the release process, see the release checklist in the objectbox repo
-    val versionNumber = "5.4.2"
+    val versionNumber = "5.4.2-preview1"
 
     // If OBX_RELEASE is set, build and depend on release versions. Doesn't publish a release.
     // See the release checklist in the objectbox repo on how to publish a release.
