@@ -21,13 +21,31 @@ for arg in "$@"; do
     esac
 done
 
+# macOS includes BSD versions of sed and grep, which have different options and syntax than the
+# expected GNU versions. So require users of this script to install gsed and ggrep.
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  if ! command -v gsed &>/dev/null; then
+    echo "Error: gsed is required but not installed. Install it, for example using 'brew install gnu-sed'."
+    exit 1
+  fi
+  if ! command -v ggrep &>/dev/null; then
+    echo "Error: ggrep is required but not installed. Install it, for example using 'brew install grep'."
+    exit 1
+  fi
+  sed="gsed"
+  grep="ggrep"
+else
+  sed="sed"
+  grep="grep"
+fi
+
 buildScriptFile="../build.gradle.kts"
 propVersionNumber="versionNumber"
 
 # Extract the value of `versionNumber` in build.gradle.kts and store it in the versionCurrent variable
 buildScriptPath="$(dirname "$0")/$buildScriptFile"
 # Regex matches 'versionNumber = "..."', \K to only capture the version string inside the quotes
-versionCurrent=$(grep --only-matching --perl-regexp "$propVersionNumber"' = "\K[^"]+' "$buildScriptPath" || true)
+versionCurrent=$($grep --only-matching --perl-regexp "$propVersionNumber"' = "\K[^"]+' "$buildScriptPath" || true)
 if [[ -z "$versionCurrent" ]]; then
     echo "Error: could not find '$propVersionNumber' in '$buildScriptFile'"
     exit 1
@@ -62,7 +80,7 @@ fi
 echo "Version will be $versionNew"
 
 # Change the value of `versionNumber` in build.gradle.kts to the value of versionNew
-sed --in-place "s/$propVersionNumber = \"$versionCurrent\"/$propVersionNumber = \"$versionNew\"/" "$buildScriptPath"
+$sed --in-place "s/$propVersionNumber = \"$versionCurrent\"/$propVersionNumber = \"$versionNew\"/" "$buildScriptPath"
 
 # After confirmation commit any changes and for a release create a tag
 # git commit --all --message="Publishing: increase version 5.4.0 -> 5.4.1"
