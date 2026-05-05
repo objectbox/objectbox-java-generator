@@ -86,7 +86,8 @@ test:linux:
 test:windows:
   extends: .tests
   tags:
-    - windows-jdk
+    - jdk
+    - windows
     - x64
 
 publish-maven-internal:linux:
