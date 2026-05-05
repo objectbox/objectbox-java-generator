@@ -85,21 +85,6 @@ buildscript {
     // okio 3.0.0+ requires Kotlin 1.5
     val okioVersion by extra("2.10.0") // https://github.com/square/okio/blob/master/CHANGELOG.md
 
-    // Internal Maven repo: used in all projects, printing info/warning only once here.
-    val hasInternalObjectBoxRepo by extra(project.hasProperty("gitlabUrl"))
-    if (hasInternalObjectBoxRepo) {
-        val gitlabUrl = project.property("gitlabUrl")
-        println("gitlabUrl=$gitlabUrl added to repositories.")
-    } else {
-        println("WARNING: gitlabUrl missing from gradle.properties.")
-    }
-
-    repositories {
-        mavenCentral()
-        google()
-        maven { url = uri("https://plugins.gradle.org/m2/") }
-    }
-
     dependencies {
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
     }
@@ -122,29 +107,6 @@ allprojects {
     group = "io.objectbox"
     val objectboxPluginVersion: String by rootProject.extra
     version = objectboxPluginVersion
-
-    // Note: also update IncrementalCompilationTest.projectSetup as needed.
-    repositories {
-        mavenCentral()
-        google()
-        val hasInternalObjectBoxRepo: Boolean by rootProject.extra
-        if (hasInternalObjectBoxRepo) {
-            maven {
-                val gitlabUrl = project.property("gitlabUrl")
-                url = uri("$gitlabUrl/api/v4/groups/objectbox/-/packages/maven")
-                name = "GitLab"
-                credentials(HttpHeaderCredentials::class) {
-                    name = project.findProperty("gitlabTokenName")?.toString() ?: "Private-Token"
-                    value = project.findProperty("gitlabToken")?.toString()
-                        ?: project.property("gitlabPrivateToken").toString()
-                }
-                authentication {
-                    create<HttpHeaderAuthentication>("header")
-                }
-            }
-        }
-        mavenLocal()
-    }
 
     configurations.all {
         // Projects are using snapshot dependencies that may update more often than 24 hours.
