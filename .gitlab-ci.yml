@@ -34,7 +34,7 @@ variables:
   GITLAB_REPO_ARGS: "-PgitlabUrl=$CI_SERVER_URL -PgitlabTokenName=Job-Token -PgitlabToken=$CI_JOB_TOKEN"
   CENTRAL_REPO_ARGS: "-PsonatypeUsername=$SONATYPE_USER -PsonatypePassword=$SONATYPE_PWD"
   # CI_COMMIT_REF_SLUG is the branch or tag name, but web-safe (only 0-9, a-z)
-  VERSION_ARGS: "-PversionPostFix=$CI_COMMIT_REF_SLUG"
+  VERSION_ARGS: "-PversionSuffix=$CI_COMMIT_REF_SLUG"
 
 stages:
   - test

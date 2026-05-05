@@ -2,7 +2,7 @@ def COLOR_MAP = ['SUCCESS': 'good', 'FAILURE': 'danger', 'UNSTABLE': 'danger', '
 
 def gradleArgs = "--stacktrace"
 def isPublish = BRANCH_NAME == 'publish'
-String versionPostfix = BRANCH_NAME
+String versionSuffix = BRANCH_NAME
 
 // Note: using Jenkins only for publishing to Central, so only run all stages if triggered manually.
 def buildCauses = currentBuild.getBuildCauses()
@@ -69,7 +69,7 @@ pipeline {
                 ORG_GRADLE_PROJECT_signingKeyFile = credentials('objectbox_signing_key')
             }
             steps {
-                sh "./gradlew $gradleArgs $gitlabRepoArgs -PversionPostFix=$versionPostfix publishMavenJavaPublicationToGitLabRepository"
+                sh "./gradlew $gradleArgs $gitlabRepoArgs -PversionSuffix=$versionSuffix publishMavenJavaPublicationToGitLabRepository"
             }
         }
 
