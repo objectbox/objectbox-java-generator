@@ -34,7 +34,7 @@ variables:
   GITLAB_REPO_ARGS: "-PgitlabUrl=$CI_SERVER_URL -PgitlabTokenName=Job-Token -PgitlabToken=$CI_JOB_TOKEN"
   CENTRAL_REPO_ARGS: "-PsonatypeUsername=$SONATYPE_USER -PsonatypePassword=$SONATYPE_PWD"
   # CI_COMMIT_REF_SLUG is the branch or tag name, but web-safe (only 0-9, a-z)
-  VERSION_ARGS: "-PversionPostFix=$CI_COMMIT_REF_SLUG"
+  VERSION_ARGS: "-PversionSuffix=$CI_COMMIT_REF_SLUG"
 
 stages:
   - test
@@ -125,11 +125,11 @@ publish-maven-central:linux:
       when: on_success
   script:
     # Note: can not use before_script for Chat notification as it would overwrite the one from .common (feel free to improve)
-    - ci/send-to-gchat.sh "$GOOGLE_CHAT_WEBHOOK_JAVA_CI" --thread $CI_COMMIT_SHA "*Releasing Java Gradle plugin:* $CI_JOB_NAME from branch $CI_COMMIT_BRANCH ($CI_COMMIT_SHORT_SHA)..."
+    - ci/send-to-gchat.sh "$GOOGLE_CHAT_WEBHOOK_JAVA_CI" --thread $CI_COMMIT_SHA "*Releasing Gradle plugin to Maven Central:* $CI_JOB_NAME from branch $CI_COMMIT_BRANCH ($CI_COMMIT_SHORT_SHA)..."
     - ./gradlew $GITLAB_REPO_ARGS $VERSION_ARGS $CENTRAL_REPO_ARGS publishAllPublicationsToSonatypeRepository closeAndReleaseSonatypeStagingRepository
     - echo "Published successfully to Central - check https://repo1.maven.org/maven2/io/objectbox/ in a few minutes."
   after_script:  # also runs on failure, so show CI_JOB_STATUS
-    - ci/send-to-gchat.sh "$GOOGLE_CHAT_WEBHOOK_JAVA_CI" --thread $CI_COMMIT_SHA "*Releasing Java Gradle plugin:* *$CI_JOB_STATUS* for $CI_JOB_NAME"
+    - ci/send-to-gchat.sh "$GOOGLE_CHAT_WEBHOOK_JAVA_CI" --thread $CI_COMMIT_SHA "*Releasing Gradle plugin to Maven Central:* *$CI_JOB_STATUS* for $CI_JOB_NAME"
     - ci/send-to-gchat.sh "$GOOGLE_CHAT_WEBHOOK_JAVA_CI" --thread $CI_COMMIT_SHA "Check https://repo1.maven.org/maven2/io/objectbox/ in a few minutes."
 
 # Run integration tests to test new Maven snapshots of this and upstream projects

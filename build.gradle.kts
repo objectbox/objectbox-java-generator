@@ -1,11 +1,19 @@
-// This script supports some Gradle project properties:
-// https://docs.gradle.org/current/userguide/build_environment.html#sec:project_properties
-// - versionPostFix: appended to snapshot version number, e.g. "1.2.3-<versionPostFix>-SNAPSHOT".
-//   Use to create different versions based on branch/tag.
-// - sonatypeUsername: Maven Central credential used by Nexus publishing.
-// - sonatypePassword: Maven Central credential used by Nexus publishing.
-// This script supports the following environment variables:
-// - OBX_RELEASE: If set to "true" builds and depends on release versions, without branch name and snapshot suffix.
+/*
+ * This script supports some Gradle project properties:
+ *
+ * - versionSuffix: appended to snapshot version number, e.g. "1.2.3-<versionSuffix>-SNAPSHOT".
+ *   Use to create different versions based on branch/tag.
+ * - sonatypeUsername: Maven Central credential used by Nexus publishing.
+ * - sonatypePassword: Maven Central credential used by Nexus publishing.
+ *
+ * This script supports the following environment variables:
+ *
+ * - OBX_RELEASE: If set to "true" builds and depends on release versions, without branch name and snapshot suffix.
+ */
+
+// Gradle properties (more defined in buildscript block below)
+val propertySonatypeUsername = providers.gradleProperty("sonatypeUsername")
+val propertySonatypePassword = providers.gradleProperty("sonatypePassword")
 
 plugins {
     // https://github.com/ben-manes/gradle-versions-plugin/releases
@@ -17,31 +25,36 @@ plugins {
 }
 
 buildscript {
+    // Environment variables (see notes at the top of this file)
+    val envRelease = System.getenv("OBX_RELEASE")
+    // Gradle properties (see notes at the top of this file)
+    val propertyVersionSuffix = providers.gradleProperty("versionSuffix")
+
     // Version of Maven artifacts
     // Should only be changed as part of the release process, see the release checklist in the objectbox repo
-    val versionNumber = "5.4.1"
+    val versionNumber = "5.4.2"
 
     // If OBX_RELEASE is set, build and depend on release versions. Doesn't publish a release.
     // See the release checklist in the objectbox repo on how to publish a release.
     // If true, Maven artifacts use a release version, so without branch name and snapshot suffix
     // (such as "-dev-SNAPSHOT"), including for dependencies (such as objectbox-java).
-    val isRelease = System.getenv("OBX_RELEASE") == "true"
+    val isRelease = envRelease == "true"
 
     val libsRelease = isRelease // e.g. diverge if plugin is still SNAPSHOT, but libs are already final
     val libsVersion = versionNumber + (if (libsRelease) "" else "-dev-SNAPSHOT")
     val libsSyncVersion = versionNumber + (if (libsRelease) "" else "-sync-SNAPSHOT")
 
     // If not releasing, produce snapshot artifacts and add the branch name to the version string
-    // (passed in by CI through the versionPostFix property).
-    val versionPostFix = if (isRelease) {
+    // (passed in by CI through the versionSuffix property).
+    val versionSuffix = if (isRelease) {
         ""
-    } else if (project.hasProperty("versionPostFix")) {
-        "-${project.property("versionPostFix")}-SNAPSHOT"
+    } else if (propertyVersionSuffix.isPresent) {
+        "-${propertyVersionSuffix.get()}-SNAPSHOT"
     } else {
         "-dev-SNAPSHOT"
     }
 
-    val objectboxPluginVersion by extra(versionNumber + versionPostFix) // Artifact versions of this project.
+    val objectboxPluginVersion by extra(versionNumber + versionSuffix) // Artifact versions of this project.
     val objectboxJavaVersion by extra(libsVersion) // Java library used by sub-projects.
     val appliesObxJavaVersion by extra(libsVersion) // Java library added to projects applying the plugin.
     val appliesObxJniLibVersion by extra(libsVersion) // Native library added to projects applying the ObjectBoxGradlePlugin.
@@ -85,21 +98,6 @@ buildscript {
     // okio 3.0.0+ requires Kotlin 1.5
     val okioVersion by extra("2.10.0") // https://github.com/square/okio/blob/master/CHANGELOG.md
 
-    // Internal Maven repo: used in all projects, printing info/warning only once here.
-    val hasInternalObjectBoxRepo by extra(project.hasProperty("gitlabUrl"))
-    if (hasInternalObjectBoxRepo) {
-        val gitlabUrl = project.property("gitlabUrl")
-        println("gitlabUrl=$gitlabUrl added to repositories.")
-    } else {
-        println("WARNING: gitlabUrl missing from gradle.properties.")
-    }
-
-    repositories {
-        mavenCentral()
-        google()
-        maven { url = uri("https://plugins.gradle.org/m2/") }
-    }
-
     dependencies {
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
     }
@@ -123,29 +121,6 @@ allprojects {
     val objectboxPluginVersion: String by rootProject.extra
     version = objectboxPluginVersion
 
-    // Note: also update IncrementalCompilationTest.projectSetup as needed.
-    repositories {
-        mavenCentral()
-        google()
-        val hasInternalObjectBoxRepo: Boolean by rootProject.extra
-        if (hasInternalObjectBoxRepo) {
-            maven {
-                val gitlabUrl = project.property("gitlabUrl")
-                url = uri("$gitlabUrl/api/v4/groups/objectbox/-/packages/maven")
-                name = "GitLab"
-                credentials(HttpHeaderCredentials::class) {
-                    name = project.findProperty("gitlabTokenName")?.toString() ?: "Private-Token"
-                    value = project.findProperty("gitlabToken")?.toString()
-                        ?: project.property("gitlabPrivateToken").toString()
-                }
-                authentication {
-                    create<HttpHeaderAuthentication>("header")
-                }
-            }
-        }
-        mavenLocal()
-    }
-
     configurations.all {
         // Projects are using snapshot dependencies that may update more often than 24 hours.
         resolutionStrategy {
@@ -168,12 +143,12 @@ nexusPublishing {
             nexusUrl.set(uri("https://ossrh-staging-api.central.sonatype.com/service/local/"))
             snapshotRepositoryUrl.set(uri("https://central.sonatype.com/repository/maven-snapshots/"))
 
-            if (project.hasProperty("sonatypeUsername") && project.hasProperty("sonatypePassword")) {
-                println("Publishing: Sonatype Maven Central credentials supplied.")
-                username.set(project.property("sonatypeUsername").toString())
-                password.set(project.property("sonatypePassword").toString())
+            if (propertySonatypeUsername.isPresent && propertySonatypePassword.isPresent) {
+                println("Publishing: Maven Central credentials supplied")
+                username.set(propertySonatypeUsername.get())
+                password.set(propertySonatypePassword.get())
             } else {
-                println("Publishing: Sonatype Maven Central credentials NOT supplied.")
+                println("Publishing: Maven Central credentials NOT supplied, see root build script for required project properties")
             }
         }
     }
