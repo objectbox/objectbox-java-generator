@@ -18,7 +18,6 @@
 
 package io.objectbox.reporting
 
-import io.objectbox.reporting.BuildPropertiesFile.FileCreateListener
 import java.io.File
 import java.io.FileReader
 import java.io.FileWriter
@@ -71,10 +70,24 @@ class BuildPropertiesFile(fileCreateListener: FileCreateListener) {
         properties = propertiesTemp
     }
 
-    fun write() {
+    /**
+     * Writes the properties to the file, retrying once if it fails
+     * (e.g. on Windows if another process, like a concurrent build, has the file open).
+     * If it still fails only prints a message, as this file is not essential, it should never fail the build.
+     */
+    fun write(retryOnce: Boolean = true) {
         file?.let { file ->
-            FileWriter(file).use {
-                properties.store(it, "Properties for ObjectBox build tools")
+            try {
+                FileWriter(file).use {
+                    properties.store(it, "Properties for ObjectBox build tools")
+                }
+            } catch (e: Exception) {
+                if (retryOnce) {
+                    Thread.sleep(100) // Wait for a potential concurrent process to finish and retry once
+                    write(retryOnce = false)
+                } else {
+                    System.err.println("Could not write properties file: $e") // No stack trace
+                }
             }
         }
     }
