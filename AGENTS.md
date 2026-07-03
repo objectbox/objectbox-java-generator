@@ -32,9 +32,12 @@ Setting `OBX_RELEASE=true` in the environment makes the build use and produce re
 
 TestKit tests (`GradleTestRunner`-based tests and the `agpXYTest` tasks) build throwaway Gradle projects:
 they first publish the other subprojects to a local test repository and receive the `gitlab*` properties as system properties, so they also need the GitLab credentials to be set.
+Some of them build an actual Android project, which requires `ANDROID_HOME` to point to an Android SDK — if it is not set, `check` fails late with "SDK location not found" in a single `agp81Test` test.
+A 401 Unauthorized when resolving `io.objectbox` snapshots means the GitLab token is expired/invalid (verify with `curl -H "Private-Token: $token" <gitlabUrl>/api/v4/user`).
 
 Versioning/release: `versionNumber` in the root `build.gradle.kts` is the single source of truth; change it via `scripts/set-version.sh` (use `--release` to also tag).
 CI (GitLab, see `.gitlab-ci.yml`) publishes; snapshot versions get `-<branch>-SNAPSHOT` appended via the `versionSuffix` property.
+The `Jenkinsfile` at the repo root is an obsolete leftover from the previous CI setup — ignore it.
 
 ## Subprojects and how they relate
 
