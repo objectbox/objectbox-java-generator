@@ -199,6 +199,10 @@ dependencies {
     testImplementation(gradleTestKit())
     // For new Gradle TestKit tests (see GradleTestRunner).
     testRuntimeOnly(files(testPluginClasspathFile))
+    // The Kotlin plugin for TestKit projects with Kotlin code, resolved from the injected plugin
+    // classpath. The version must be able to read the Kotlin metadata of objectbox-kotlin.
+    val kotlinTestKitVersion = "2.4.0"
+    testPluginClasspath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinTestKitVersion")
     // Note: not testing with 7.4.0 as it ships Gradle metadata requiring Java 11 which would require a more complicated
     // testing setup. 7.3.0 also supports Gradle 8.
     val agp73Version = "7.3.0"

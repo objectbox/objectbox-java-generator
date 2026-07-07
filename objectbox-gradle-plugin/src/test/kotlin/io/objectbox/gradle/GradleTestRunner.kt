@@ -38,6 +38,9 @@ class GradleTestRunner(
     val javaCompilerArgs: MutableList<String> = mutableListOf()
     var buildscriptBlock: String = ""
     val additionalPlugins: MutableList<String> = mutableListOf()
+
+    /** Set to false to build a project that does not apply the ObjectBox plugin. */
+    var applyObjectBoxPlugin: Boolean = true
     var additionalBlocks: String = ""
 
     private val gitlabUrl = System.getProperty("gitlabUrl")
@@ -77,7 +80,7 @@ class GradleTestRunner(
                 
             plugins {
                 ${additionalPlugins.joinToString(separator = "\n") { "id(\"$it\")" }}
-                id("${Const.PLUGIN_ID}")
+                ${if (applyObjectBoxPlugin) "id(\"${Const.PLUGIN_ID}\")" else ""}
             }
 
             repositories {
@@ -107,10 +110,13 @@ class GradleTestRunner(
             }
             
             $additionalBlocks
-            
+
+            ${
+                if (applyObjectBoxPlugin) """
             // Enable ObjectBox plugin and processor debug output.
             objectbox {
                 debug = true
+            }""" else ""
             }
             tasks.withType(JavaCompile) {
                 options.compilerArgs += [ $compilerArgs ]
@@ -128,7 +134,7 @@ class GradleTestRunner(
     }
 
     /**
-     * Like [build], but expects the build to fail.
+     * Like [build], but expects the build to fail (like due to a processor error).
      */
     fun buildAndFail(
         args: List<String>,
