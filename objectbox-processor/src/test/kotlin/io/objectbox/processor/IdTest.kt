@@ -26,7 +26,7 @@ import org.junit.Test
 /**
  * Tests related to the @Id annotation.
  */
-class IdTest : BaseProcessorTest() {
+class IdTest(processorType: ProcessorType) : BaseProcessorTest(processorType) {
 
     @Test
     fun id_missing() {
@@ -43,7 +43,7 @@ class IdTest : BaseProcessorTest() {
             JavaFileObjects.forSourceString("io.objectbox.processor.test.NoIdEntity", it)
         }
 
-        val environment = TestEnvironment("not-generated.json", useTemporaryModelFile = true)
+        val environment = env("not-generated.json", useTemporaryModelFile = true)
 
         environment.compile(listOf(sourceFile))
             .assertThatIt {
@@ -68,7 +68,7 @@ class IdTest : BaseProcessorTest() {
             JavaFileObjects.forSourceString("io.objectbox.processor.test.NotLongEntity", it)
         }
 
-        val environment = TestEnvironment("not-generated.json", useTemporaryModelFile = true)
+        val environment = env("not-generated.json", useTemporaryModelFile = true)
 
         environment.compile(listOf(sourceFile))
             .assertThatIt {
@@ -92,7 +92,7 @@ class IdTest : BaseProcessorTest() {
             JavaFileObjects.forSourceString("com.example.objectbox.PrivateEntity", it)
         }
 
-        val environment = TestEnvironment("not-generated.json", useTemporaryModelFile = true)
+        val environment = env("not-generated.json", useTemporaryModelFile = true)
 
         environment.compile(listOf(sourceFile))
             .assertThatIt {
@@ -120,7 +120,7 @@ class IdTest : BaseProcessorTest() {
         """.trimIndent()
             .let { JavaFileObjects.forSourceString("com.example.NullableIdEntity", it) }
 
-        val environment = TestEnvironment("nullable-id.json")
+        val environment = env("nullable-id.json")
 
         environment.compile(listOf(sourceFile))
             .assertThatIt {

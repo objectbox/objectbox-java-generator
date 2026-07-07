@@ -24,7 +24,7 @@ import io.objectbox.generator.model.PropertyType
 import org.junit.Test
 
 
-class AutoConverterTest : BaseProcessorTest() {
+class AutoConverterTest(processorType: ProcessorType) : BaseProcessorTest(processorType) {
 
     @Test
     fun javaStringMap_isAutoConverted() {
@@ -45,7 +45,7 @@ class AutoConverterTest : BaseProcessorTest() {
         """.trimIndent()
             .let { JavaFileObjects.forSourceString("com.example.MapEntity", it) }
 
-        val environment = TestEnvironment("auto-convert-java-string-map.json", useTemporaryModelFile = true)
+        val environment = env("auto-convert-java-string-map.json", useTemporaryModelFile = true)
 
         environment.compile(listOf(sourceFile))
             .assertThatIt { succeededWithoutWarnings() }
@@ -100,7 +100,7 @@ class AutoConverterTest : BaseProcessorTest() {
         """.trimIndent()
             .let { JavaFileObjects.forSourceString("com.example.MapEntity", it) }
 
-        val environment = TestEnvironment("auto-convert-java-integer-map.json", useTemporaryModelFile = true)
+        val environment = env("auto-convert-java-integer-map.json", useTemporaryModelFile = true)
 
         environment.compile(listOf(sourceFile))
             .assertThatIt { succeededWithoutWarnings() }
@@ -145,7 +145,7 @@ class AutoConverterTest : BaseProcessorTest() {
         """.trimIndent()
             .let { JavaFileObjects.forSourceString("com.example.MapEntity", it) }
 
-        val environment = TestEnvironment("auto-convert-java-long-map.json", useTemporaryModelFile = true)
+        val environment = env("auto-convert-java-long-map.json", useTemporaryModelFile = true)
 
         environment.compile(listOf(sourceFile))
             .assertThatIt { succeededWithoutWarnings() }
@@ -189,7 +189,7 @@ class AutoConverterTest : BaseProcessorTest() {
         """.trimIndent()
             .let { JavaFileObjects.forSourceString("com.example.MapEntity", it) }
 
-        val environment = TestEnvironment("auto-convert-java-other-map.json", useTemporaryModelFile = true)
+        val environment = env("auto-convert-java-other-map.json", useTemporaryModelFile = true)
 
         environment.compile(listOf(sourceFile))
             .assertThatIt {

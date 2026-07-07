@@ -40,11 +40,22 @@ dependencies {
     implementation("io.objectbox:objectbox-java-api:$objectboxJavaVersion")
     implementation("io.objectbox:objectbox-java:$objectboxJavaVersion")
 
+    // For the KSP processor: compile against an API version built with a Kotlin version this build
+    // can read metadata of. At runtime the consumer project supplies its (newer) KSP version, KSP
+    // keeps the processor API compatible (verified by TestKit tests running the supported KSP version).
+    compileOnly("com.google.devtools.ksp:symbol-processing-api:2.0.21-1.0.28")
+
     // manually add tools.jar required by compile-testing
     val toolsJar = org.gradle.internal.jvm.Jvm.current().toolsJar
     if (toolsJar != null) {
         testCompileOnly(files(toolsJar))
     }
+    // To run the KSP processor in tests, without Gradle: the standalone KSP2 implementation
+    // (bundles the Kotlin Analysis API). Like the compileOnly API dependency of the processor,
+    // the version must match the Kotlin version of this build.
+    testImplementation("com.google.devtools.ksp:symbol-processing-api:2.0.21-1.0.28")
+    testImplementation("com.google.devtools.ksp:symbol-processing-common-deps:2.0.21-1.0.28")
+    testImplementation("com.google.devtools.ksp:symbol-processing-aa:2.0.21-1.0.28")
     testImplementation("junit:junit:$junitVersion")
     testImplementation("com.google.truth:truth:$truthVersion")
     // https://github.com/google/compile-testing/releases

@@ -28,7 +28,7 @@ import org.junit.Test
 /**
  * Tests some common functionality and some special cases for `@Entity` classes.
  */
-class BasicsTest : BaseProcessorTest() {
+class BasicsTest(processorType: ProcessorType) : BaseProcessorTest(processorType) {
 
     @Test
     fun selectPackage() {
@@ -55,7 +55,7 @@ class BasicsTest : BaseProcessorTest() {
     fun entity_noPackage() {
         val className = "SimpleEntityNoPackage"
 
-        val environment = TestEnvironment("default-no-pkg.json", useTemporaryModelFile = true)
+        val environment = env("default-no-pkg.json", useTemporaryModelFile = true)
 
         environment.compile(className)
             .assertThatIt { succeededWithoutWarnings() }
@@ -66,7 +66,7 @@ class BasicsTest : BaseProcessorTest() {
         // test multiple (non-conflicting) annotations on a single property
         val className = "MultipleEntity"
 
-        val environment = TestEnvironment("multiple-annotations.json")
+        val environment = env("multiple-annotations.json")
 
         environment.compile(className)
             .assertThatIt { succeededWithoutWarnings() }
@@ -106,7 +106,7 @@ class BasicsTest : BaseProcessorTest() {
         val entityTopLastPackageName = "MultiPackageTopLast"
         val entitySubPackageName = "MultiPackageSub"
 
-        val environment = TestEnvironment("multiple-packages.json", useTemporaryModelFile = true)
+        val environment = env("multiple-packages.json", useTemporaryModelFile = true)
 
         // add to compiler ordered by length of package (unsorted)
         environment.compile(entityTopLastPackageName, entityTopFirstPackageName, entitySubPackageName)
@@ -143,7 +143,7 @@ class BasicsTest : BaseProcessorTest() {
             JavaFileObjects.forSourceString("io.objectbox.processor.test.NoArgCtrMissing", it)
         }
 
-        val environment = TestEnvironment("ctr-no-arg-missing.json", useTemporaryModelFile = true)
+        val environment = env("ctr-no-arg-missing.json", useTemporaryModelFile = true)
 
         environment.compile(listOf(noArgCtrMissing))
             .assertThatIt {
@@ -184,7 +184,7 @@ class BasicsTest : BaseProcessorTest() {
             JavaFileObjects.forSourceString("io.objectbox.processor.test.AllPropsCtrOnly", it)
         }
 
-        val environment = TestEnvironment("ctr-all-props.json", useTemporaryModelFile = true)
+        val environment = env("ctr-all-props.json", useTemporaryModelFile = true)
 
         environment.compile(listOf(allPropertiesCtrOnly))
             .assertThatIt { succeededWithoutWarnings() }
@@ -198,7 +198,7 @@ class BasicsTest : BaseProcessorTest() {
         val parentName = "ToOneParent"
         val childName = "ToOneAllArgs"
 
-        val environment = TestEnvironment("to-one-all-args.json", useTemporaryModelFile = true)
+        val environment = env("to-one-all-args.json", useTemporaryModelFile = true)
 
         environment.compile(parentName, childName)
             .assertThatIt { succeededWithoutWarnings() }
@@ -215,7 +215,7 @@ class BasicsTest : BaseProcessorTest() {
     fun entity_kotlin() {
         val entityName = "SimpleKotlinEntity"
 
-        val environment = TestEnvironment("kotlin.json", useTemporaryModelFile = true)
+        val environment = env("kotlin.json", useTemporaryModelFile = true)
 
         environment.compile(entityName)
             .assertThatIt { succeededWithoutWarnings() }
@@ -270,7 +270,7 @@ class BasicsTest : BaseProcessorTest() {
         val parentName = "NameConflict"
         val childName = "Property" // <-- named like ObjectBox class io.objectbox.Property imported in generated classes
 
-        val environment = TestEnvironment("name-conflict.json", useTemporaryModelFile = true)
+        val environment = env("name-conflict.json", useTemporaryModelFile = true)
 
         environment.compile(parentName, childName)
             .assertThatIt { succeededWithoutWarnings() }
@@ -292,7 +292,7 @@ class BasicsTest : BaseProcessorTest() {
             JavaFileObjects.forSourceString("com.example.Example", it)
         }
 
-        TestEnvironment("reserved-boxstore.json", useTemporaryModelFile = true)
+        env("reserved-boxstore.json", useTemporaryModelFile = true)
             .compile(listOf(entityWithBoxstoreProperty))
             .assertThatIt {
                 hadErrorContaining("A property can not be named `__boxStore`. Adding a BoxStore field for relations? Annotate it with @Transient.")
@@ -326,10 +326,12 @@ class BasicsTest : BaseProcessorTest() {
             JavaFileObjects.forSourceString("com.example.duplicate.Example", it)
         }
 
-        TestEnvironment("getter-matching-return.json", useTemporaryModelFile = true)
+        env("getter-matching-return.json", useTemporaryModelFile = true)
             .compile(listOf(javaFileObjectOriginal, javaFileObjectDuplicate))
             .assertThatIt {
-                hadErrorContaining("There is already an entity class 'Example': 'com.example.original.Example'.")
+                // Note: which of the two is found first depends on the order the compiler
+                // provides them in, which differs between javac and KSP.
+                hadErrorContainingMatch("There is already an entity class 'Example': 'com\\.example\\.(original|duplicate)\\.Example'\\.")
             }
     }
 }

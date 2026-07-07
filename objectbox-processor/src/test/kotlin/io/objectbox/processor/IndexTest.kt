@@ -28,13 +28,13 @@ import org.junit.Test
 /**
  * Tests related to the @Index annotation.
  */
-class IndexTest : BaseProcessorTest() {
+class IndexTest(processorType: ProcessorType) : BaseProcessorTest(processorType) {
 
     @Test
     fun index_type_autoDetectAsExpected() {
         val entity = "IndexAutoDetect"
 
-        val environment = TestEnvironment("index-auto-detect.json", useTemporaryModelFile = true)
+        val environment = env("index-auto-detect.json", useTemporaryModelFile = true)
 
         environment.compile(entity)
             .assertThatIt { succeededWithoutWarnings() }
@@ -65,7 +65,7 @@ class IndexTest : BaseProcessorTest() {
 
     @Test
     fun index_unsupportedProperties_failsWithError() {
-        TestEnvironment("index-unsupported.json", useTemporaryModelFile = true)
+        env("index-unsupported.json", useTemporaryModelFile = true)
             .apply {
                 addSourceFile(
                     fullyQualifiedName = "com.example.IndexUnsupported",
@@ -138,7 +138,7 @@ class IndexTest : BaseProcessorTest() {
 
     @Test
     fun index_hash_failsForUnsupportedTypes() {
-        TestEnvironment("index-hash-not.json", useTemporaryModelFile = true)
+        env("index-hash-not.json", useTemporaryModelFile = true)
             .apply {
                 addSourceFile(
                     fullyQualifiedName = "com.example.IndexHashNotSupported",
@@ -195,7 +195,7 @@ class IndexTest : BaseProcessorTest() {
 
     @Test
     fun index_hash64_failsForUnsupportedTypes() {
-        TestEnvironment("index-hash64-not.json", useTemporaryModelFile = true)
+        env("index-hash64-not.json", useTemporaryModelFile = true)
             .apply {
                 addSourceFile(
                     fullyQualifiedName = "com.example.IndexHash64NotSupported",
@@ -254,7 +254,7 @@ class IndexTest : BaseProcessorTest() {
     fun index_type_ifSetOverridesDefault() {
         val entity = "IndexTypeOverride"
 
-        val environment = TestEnvironment("index-override.json", useTemporaryModelFile = true)
+        val environment = env("index-override.json", useTemporaryModelFile = true)
 
         environment.compile(entity)
             .assertThatIt { succeededWithoutWarnings() }
@@ -289,7 +289,7 @@ class IndexTest : BaseProcessorTest() {
         val entity = "IndexGenerated"
 
         // need stable model file + ids to verify sources match
-        val environment = TestEnvironment("index-generated.json")
+        val environment = env("index-generated.json")
 
         environment.compile(entity)
             .assertThatIt { succeededWithoutWarnings() }

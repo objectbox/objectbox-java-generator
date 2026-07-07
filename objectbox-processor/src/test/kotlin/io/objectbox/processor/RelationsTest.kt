@@ -35,7 +35,7 @@ import org.junit.Test
 /**
  * Tests relations using standalone ToOne, standalone ToMany and ToMany with @Backlink ToOne.
  */
-class RelationsTest : BaseProcessorTest() {
+class RelationsTest(processorType: ProcessorType) : BaseProcessorTest(processorType) {
 
     private val idEntityFileObject = JavaFileObjects.forResource("IdEntity.java")
 
@@ -49,7 +49,7 @@ class RelationsTest : BaseProcessorTest() {
         testToOneSources(parentName, childName, "relation.json")
 
         // assert schema and model
-        val environment = TestEnvironment("relation.json", useTemporaryModelFile = true)
+        val environment = env("relation.json", useTemporaryModelFile = true)
 
         environment.compile(parentName, childName)
             .assertThatIt { succeededWithoutWarnings() }
@@ -98,7 +98,7 @@ class RelationsTest : BaseProcessorTest() {
         testToOneSources(parentName, childName, "to-one.json")
 
         // assert schema and model
-        val environment = TestEnvironment("to-one.json", useTemporaryModelFile = true)
+        val environment = env("to-one.json", useTemporaryModelFile = true)
 
         environment.compile(parentName, childName)
             .assertThatIt { succeededWithoutWarnings() }
@@ -144,7 +144,7 @@ class RelationsTest : BaseProcessorTest() {
     }
 
     private fun testToOneSources(parentName: String, childName: String, modelFileName: String) {
-        val fixedEnvironment = TestEnvironment(modelFileName)
+        val fixedEnvironment = env(modelFileName)
 
         fixedEnvironment.compile(parentName, childName)
             .assertThatIt { succeededWithoutWarnings() }
@@ -207,7 +207,7 @@ class RelationsTest : BaseProcessorTest() {
             JavaFileObjects.forSourceString("com.example.NoType", it)
         }
 
-        val environment = TestEnvironment("not-generated.json", useTemporaryModelFile = true)
+        val environment = env("not-generated.json", useTemporaryModelFile = true)
 
         environment.compile(listOf(javaFileObjectSource, javaFileObjectToOneTarget))
             .assertThatIt {
@@ -239,7 +239,7 @@ class RelationsTest : BaseProcessorTest() {
             JavaFileObjects.forSourceString("com.example.NoType", it)
         }
 
-        val environment = TestEnvironment("not-generated.json", useTemporaryModelFile = true)
+        val environment = env("not-generated.json", useTemporaryModelFile = true)
 
         environment.compile(listOf(javaFileObjectSource, javaFileObjectToOneTarget))
             .assertThatIt {
@@ -273,7 +273,7 @@ class RelationsTest : BaseProcessorTest() {
             JavaFileObjects.forSourceString("com.example.ToOneSource", it)
         }
 
-        val environment = TestEnvironment("not-generated.json", useTemporaryModelFile = true)
+        val environment = env("not-generated.json", useTemporaryModelFile = true)
 
         environment.compile(listOf(javaFileObjectSource, javaFileObjectToOneTarget))
             .assertThatIt {
@@ -309,7 +309,7 @@ class RelationsTest : BaseProcessorTest() {
             JavaFileObjects.forSourceString("com.example.ToOneSource", it)
         }
 
-        val environment = TestEnvironment("not-generated.json", useTemporaryModelFile = true)
+        val environment = env("not-generated.json", useTemporaryModelFile = true)
 
         environment.compile(listOf(javaFileObjectSource, javaFileObjectToOneTarget))
             .assertThatIt {
@@ -326,7 +326,7 @@ class RelationsTest : BaseProcessorTest() {
         val childName = "ToOneNoBoxStore"
 
         val environment =
-            TestEnvironment("not-generated.json", optionDisableTransform = true, useTemporaryModelFile = true)
+            env("not-generated.json", optionDisableTransform = true, useTemporaryModelFile = true)
 
         environment.compile(parentName, childName)
             .assertThatIt {
@@ -343,7 +343,7 @@ class RelationsTest : BaseProcessorTest() {
         val targetName = "BacklinkToOneListTarget"
         val sourceName = "BacklinkToOneListSource"
 
-        val environment = TestEnvironment("backlink-list.json")
+        val environment = env("backlink-list.json")
 
         environment.compile(targetName, sourceName)
             .assertThatIt { succeededWithoutWarnings() }
@@ -359,7 +359,7 @@ class RelationsTest : BaseProcessorTest() {
         val targetName = "BacklinkToOneTarget"
         val sourceName = "BacklinkToOneSource"
 
-        val environment = TestEnvironment("backlink-to-many.json")
+        val environment = env("backlink-to-many.json")
 
         environment.compile(targetName, sourceName)
             .assertThatIt { succeededWithoutWarnings() }
@@ -375,7 +375,7 @@ class RelationsTest : BaseProcessorTest() {
         val targetName = "BacklinkToManyTarget"
         val sourceName = "BacklinkToManySource"
 
-        val environment = TestEnvironment("backlink-to-many-to-many.json", useTemporaryModelFile = true)
+        val environment = env("backlink-to-many-to-many.json", useTemporaryModelFile = true)
 
         environment.compile(targetName, sourceName)
             .assertThatIt { succeededWithoutWarnings() }
@@ -478,7 +478,7 @@ class RelationsTest : BaseProcessorTest() {
      * Tests if multiple relation fields for one @Backlink (without 'to' value) are causing an error.
      */
     private fun assertMultipleRelationsError(targetName: String, sourceName: String) {
-        val environment = TestEnvironment("not-generated.json", useTemporaryModelFile = true)
+        val environment = env("not-generated.json", useTemporaryModelFile = true)
 
         environment.compile(targetName, sourceName)
             .assertThatIt {
@@ -505,7 +505,7 @@ class RelationsTest : BaseProcessorTest() {
     }
 
     private fun assertMultipleBacklinksError(backlinkEntity: String, relationEntity: String) {
-        val environment = TestEnvironment("not-generated.json", useTemporaryModelFile = true)
+        val environment = env("not-generated.json", useTemporaryModelFile = true)
 
         environment.compile(backlinkEntity, relationEntity)
             .assertThatIt {
@@ -521,7 +521,7 @@ class RelationsTest : BaseProcessorTest() {
         val targetName = "BacklinkWithToTarget"
         val sourceName = "BacklinkWithToSource"
 
-        val environment = TestEnvironment("backlink-with-to.json", useTemporaryModelFile = true)
+        val environment = env("backlink-with-to.json", useTemporaryModelFile = true)
 
         environment.compile(targetName, sourceName)
             .assertThatIt { succeededWithoutWarnings() }
@@ -594,7 +594,7 @@ class RelationsTest : BaseProcessorTest() {
         val targetName = "BacklinkWrongToTarget"
         val sourceName = "BacklinkWrongToSource"
 
-        val environment = TestEnvironment("not-generated.json", useTemporaryModelFile = true)
+        val environment = env("not-generated.json", useTemporaryModelFile = true)
 
         environment.compile(targetName, sourceName)
             .assertThatIt {
@@ -608,7 +608,7 @@ class RelationsTest : BaseProcessorTest() {
     fun backlink_toOne_shouldError() {
         val sourceName = "BacklinkToOneError"
 
-        val environment = TestEnvironment("not-generated.json", useTemporaryModelFile = true)
+        val environment = env("not-generated.json", useTemporaryModelFile = true)
 
         environment.compile(sourceName)
             .assertThatIt {
@@ -643,7 +643,7 @@ class RelationsTest : BaseProcessorTest() {
         }
         val childName = "IdEntity"
 
-        val environment = TestEnvironment("standalone-to-many.json")
+        val environment = env("standalone-to-many.json")
 
         environment.compile(listOf(parentFileObject, idEntityFileObject))
             .assertThatIt { succeededWithoutWarnings() }
@@ -660,16 +660,15 @@ class RelationsTest : BaseProcessorTest() {
         val parentName = "ToManyStandaloneUidName"
         val childName = "IdEntity"
 
-        val environment = TestEnvironment("standalone-to-many-uid-name.json")
+        val environment = env("standalone-to-many-uid-name.json")
 
         val compilation = environment.compile(parentName, childName)
             .assertThatIt { succeededWithoutWarnings() }
 
         val myObjectBoxContent = compilation
-            .generatedSourceFileOrFail("io.objectbox.processor.test.MyObjectBox")
-            .contentsAsUtf8String()
-        myObjectBoxContent.contains("420000000L")
-        myObjectBoxContent.contains("\"Hoolaloop\"")
+            .generatedSourceFileContent("io.objectbox.processor.test.MyObjectBox")
+        assertThat(myObjectBoxContent).contains("420000000L")
+        assertThat(myObjectBoxContent).contains("\"Hoolaloop\"")
         val entity = environment.schema.entities.single { it.className == "ToManyStandaloneUidName" }
         assertEquals(1, entity.toManyRelations.size)
         val toMany = entity.toManyRelations[0] as ToManyStandalone
@@ -684,7 +683,7 @@ class RelationsTest : BaseProcessorTest() {
         val parentName = "ToManyAndConverter"
         val childName = "IdEntity"
 
-        val environment = TestEnvironment("to-many-and-converter.json")
+        val environment = env("to-many-and-converter.json")
 
         environment.compile(parentName, childName, "TestConverter")
             .assertThatIt { succeededWithoutWarnings() }
@@ -694,7 +693,7 @@ class RelationsTest : BaseProcessorTest() {
     fun toOne_relatedEntityIsGeneric_error() {
         val className = "ToOneGenerics"
 
-        val environment = TestEnvironment("not-generated.json", useTemporaryModelFile = true)
+        val environment = env("not-generated.json", useTemporaryModelFile = true)
 
         environment.compile(className)
             .assertThatIt {
@@ -709,7 +708,7 @@ class RelationsTest : BaseProcessorTest() {
     fun toMany_relatedEntityIsGeneric_error() {
         val className = "ToManyGenerics"
 
-        val environment = TestEnvironment("not-generated.json", useTemporaryModelFile = true)
+        val environment = env("not-generated.json", useTemporaryModelFile = true)
 
         environment.compile(className)
             .assertThatIt {

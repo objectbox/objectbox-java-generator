@@ -24,7 +24,7 @@ import io.objectbox.generator.model.PropertyType
 import org.junit.Test
 
 
-class DefaultValueTest : BaseProcessorTest() {
+class DefaultValueTest(processorType: ProcessorType) : BaseProcessorTest(processorType) {
 
     @Test
     fun defaultValue_emptyString_works() {
@@ -44,7 +44,7 @@ class DefaultValueTest : BaseProcessorTest() {
             JavaFileObjects.forSourceString("com.example.DefaultValueEntity", it)
         }
 
-        val environment = TestEnvironment("default-value-empty-string.json", useTemporaryModelFile = true)
+        val environment = env("default-value-empty-string.json", useTemporaryModelFile = true)
 
         environment.compile(listOf(sourceFile))
             .assertThatIt { succeededWithoutWarnings() }
@@ -80,7 +80,7 @@ class DefaultValueTest : BaseProcessorTest() {
             JavaFileObjects.forSourceString("com.example.DefaultValueEntity", it)
         }
 
-        val environment = TestEnvironment("default-value-not-empty-string.json", useTemporaryModelFile = true)
+        val environment = env("default-value-not-empty-string.json", useTemporaryModelFile = true)
 
         environment.compile(listOf(sourceFile))
             .assertThatIt {
@@ -108,7 +108,7 @@ class DefaultValueTest : BaseProcessorTest() {
             JavaFileObjects.forSourceString("com.example.DefaultValueEntity", it)
         }
 
-        val environment = TestEnvironment("default-value-prop-not-string.json", useTemporaryModelFile = true)
+        val environment = env("default-value-prop-not-string.json", useTemporaryModelFile = true)
 
         environment.compile(listOf(sourceFile))
             .assertThatIt {
@@ -152,7 +152,7 @@ class DefaultValueTest : BaseProcessorTest() {
             JavaFileObjects.forSourceString("com.example.DefaultValueEntity", it)
         }
 
-        val environment = TestEnvironment("default-value-convert.json", useTemporaryModelFile = true)
+        val environment = env("default-value-convert.json", useTemporaryModelFile = true)
 
         environment.compile(listOf(sourceFile))
             .assertThatIt {

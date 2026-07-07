@@ -41,7 +41,7 @@ open class PluginApplyAndroid9Test : PluginApplyAndroidTest() {
         // The plugin should apply the legacy-kapt plugin.
         assertThat(project.plugins.hasPlugin(Const.ANDROID_LEGACY_KAPT_PLUGIN_ID)).isTrue()
 
-        assertKotlinAndroidSetup(project)
+        assertKotlinAndroidSetup(project, Const.KAPT_CONFIGURATION_NAME)
     }
 
     @Test
@@ -54,7 +54,7 @@ open class PluginApplyAndroid9Test : PluginApplyAndroidTest() {
             }
         }
 
-        assertKotlinAndroidSetup(project)
+        assertKotlinAndroidSetup(project, Const.KAPT_CONFIGURATION_NAME)
     }
 
 }

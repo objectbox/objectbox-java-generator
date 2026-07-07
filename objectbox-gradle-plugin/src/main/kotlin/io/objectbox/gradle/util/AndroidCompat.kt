@@ -29,6 +29,26 @@ object AndroidCompat {
 
     private const val ERROR_AGP_TOO_OLD = "The ObjectBox Gradle plugin requires Android Gradle Plugin 8.1 or newer"
 
+    const val ERROR_AGP_TOO_OLD_FOR_KSP =
+        "Using ObjectBox with Kotlin and KSP requires Android Gradle Plugin 8.10 or newer " +
+                "(required by the KSP plugin). Alternatively, apply the kotlin-kapt plugin to use kapt."
+
+    /**
+     * Throws if the Android Plugin version does not support the KSP plugin
+     * (KSP itself requires at least Android Plugin 8.10).
+     */
+    fun checkSupportsKsp(project: Project) {
+        try {
+            val androidComponents = project.extensions.getByType(AndroidComponentsExtension::class.java)
+            if (androidComponents.pluginVersion < AndroidPluginVersion(8, 10, 0)) {
+                error(ERROR_AGP_TOO_OLD_FOR_KSP)
+            }
+        } catch (e: NoClassDefFoundError) {
+            // Android Plugins before 7.0 do not have the AndroidComponentsExtension (or version API).
+            error(ERROR_AGP_TOO_OLD)
+        }
+    }
+
     fun getPlugin(project: Project): AndroidPluginCompat {
         return try {
             getPluginByVersion(project)

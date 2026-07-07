@@ -46,14 +46,6 @@ class PluginIntegrationTest {
         buildTestProject("java-android", args, "io/objectbox/test", "apt/release/", true)
     }
 
-//    @Test
-//    @Ignore("FIXME kapt does not run, works fine if used as standalone project")
-//    fun buildTestProjectKotlinAndroid() {
-//        // Disable Lint, fails with kotlin-android
-//        val args = listOf("--stacktrace", "clean", "build", "-xlint")
-//        buildTestProject("kotlin-android", args, "io/objectbox/test/kotlin", "kapt/release/", true)
-//    }
-
     private fun buildTestProject(
         name: String, args: List<String>, expectedPackageDir: String, genDirPath: String,
         generateBuildFile: Boolean = false

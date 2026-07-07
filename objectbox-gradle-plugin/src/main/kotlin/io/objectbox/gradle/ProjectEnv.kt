@@ -33,6 +33,7 @@ class ProjectEnv(val project: Project) {
         const val OBX_JAVA_VERSION = GradlePluginBuildConfig.APPLIES_JAVA_VERSION
         const val OBX_DATABASE_VERSION = GradlePluginBuildConfig.APPLIES_NATIVE_VERSION
         const val OBX_DATABASE_SYNC_VERSION = GradlePluginBuildConfig.APPLIES_NATIVE_SYNC_VERSION
+        const val OBX_KSP_VERSION = GradlePluginBuildConfig.APPLIES_KSP_VERSION
 
         const val OBX_GROUP = "io.objectbox"
         const val OBX_PROCESSOR = "objectbox-processor"
@@ -44,6 +45,12 @@ class ProjectEnv(val project: Project) {
          * [Android instrumented (runs on devices) tests](https://developer.android.com/training/testing/instrumented-tests).
          */
         const val ANDROID_TEST_IMPLEMENTATION_CONFIGURATION_NAME = "androidTestImplementation"
+
+        /** Plugin id of the [KSP plugin](https://kotlinlang.org/docs/ksp-overview.html). */
+        const val KSP_PLUGIN_ID = "com.google.devtools.ksp"
+
+        /** Name of the configuration of the [KSP plugin](https://kotlinlang.org/docs/ksp-overview.html). */
+        const val KSP_CONFIGURATION_NAME = "ksp"
 
         /** Name of the configuration of the [kapt plugin](https://kotlinlang.org/docs/kapt.html). */
         const val KAPT_CONFIGURATION_NAME = "kapt"

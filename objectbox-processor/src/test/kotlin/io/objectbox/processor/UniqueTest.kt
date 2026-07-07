@@ -24,13 +24,13 @@ import com.google.testing.compile.JavaFileObjects
 import org.junit.Test
 
 
-class UniqueTest : BaseProcessorTest() {
+class UniqueTest(processorType: ProcessorType) : BaseProcessorTest(processorType) {
 
     @Test
     fun unique_createsUniqueIndex() {
         val entity = "UniqueCreatesIndex"
 
-        val environment = TestEnvironment("unique-creates-index.json", useTemporaryModelFile = true)
+        val environment = env("unique-creates-index.json", useTemporaryModelFile = true)
 
         environment.compile(entity)
             .assertThatIt { succeededWithoutWarnings() }
@@ -60,7 +60,7 @@ class UniqueTest : BaseProcessorTest() {
     fun unique_unsupportedProperties_failsWithError() {
         val entity = "UniqueUnsupported"
 
-        val environment = TestEnvironment("unique-unsupported.json", useTemporaryModelFile = true)
+        val environment = env("unique-unsupported.json", useTemporaryModelFile = true)
 
         environment.compile(entity)
             .assertThatIt {
@@ -82,7 +82,7 @@ class UniqueTest : BaseProcessorTest() {
     fun unique_andIndex_makesIndexUnique() {
         val entity = "UniqueAndIndex"
 
-        val environment = TestEnvironment("unique-and-index.json", useTemporaryModelFile = true)
+        val environment = env("unique-and-index.json", useTemporaryModelFile = true)
 
         environment.compile(entity)
             .assertThatIt { succeededWithoutWarnings() }
@@ -138,7 +138,7 @@ class UniqueTest : BaseProcessorTest() {
             JavaFileObjects.forSourceString("com.example.Example", it)
         }
 
-        val environment = TestEnvironment("not-generated.json", useTemporaryModelFile = true)
+        val environment = env("not-generated.json", useTemporaryModelFile = true)
 
         environment.compile(listOf(sourceFile))
             .assertThatIt {
@@ -155,7 +155,7 @@ class UniqueTest : BaseProcessorTest() {
         val entity = "UniqueGenerated"
 
         // need stable model file + ids to verify sources match
-        val environment = TestEnvironment("unique-generated.json")
+        val environment = env("unique-generated.json")
 
         environment.compile(entity)
             .assertThatIt { succeededWithoutWarnings() }

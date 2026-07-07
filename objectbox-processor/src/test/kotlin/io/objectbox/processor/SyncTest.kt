@@ -27,7 +27,7 @@ import org.junit.Test
 /**
  * Tests related to the @Sync annotation.
  */
-class SyncTest : BaseProcessorTest() {
+class SyncTest(processorType: ProcessorType) : BaseProcessorTest(processorType) {
 
     @Test
     fun sync_works() {
@@ -54,13 +54,13 @@ class SyncTest : BaseProcessorTest() {
         }
 
         // Need stable model file + ids to verify sources match.
-        TestEnvironment("sync-works.json").compile(listOf(sourceFile))
+        env("sync-works.json").compile(listOf(sourceFile))
             .assertThatIt { succeededWithoutWarnings() }
             // Entity flag added to generated code
             .assertGeneratedSourceMatches("com.example.MyObjectBox", "MyObjectBox-sync.java")
 
         // Use temp model file to assert model file.
-        TestEnvironment("sync-works.json", useTemporaryModelFile = true).let { environment ->
+        env("sync-works.json", useTemporaryModelFile = true).let { environment ->
             environment.compile(listOf(sourceFile))
                 .assertThatIt { succeededWithoutWarnings() }
 
@@ -112,7 +112,7 @@ class SyncTest : BaseProcessorTest() {
             JavaFileObjects.forSourceString("com.example.Related", it)
         }
 
-        val environment = TestEnvironment("sync-relation-works.json", useTemporaryModelFile = true)
+        val environment = env("sync-relation-works.json", useTemporaryModelFile = true)
 
         environment.compile(listOf(exampleFile, relatedFile))
             .assertThatIt { succeededWithoutWarnings() }
@@ -150,7 +150,7 @@ class SyncTest : BaseProcessorTest() {
             JavaFileObjects.forSourceString("com.example.Related", it)
         }
 
-        val environment = TestEnvironment("sync-relation-fails.json", useTemporaryModelFile = true)
+        val environment = env("sync-relation-fails.json", useTemporaryModelFile = true)
 
         environment.compile(listOf(exampleFile, relatedFile))
             .assertThatIt {
@@ -181,14 +181,14 @@ class SyncTest : BaseProcessorTest() {
         }
 
         // Need stable model file + ids to verify sources match.
-        TestEnvironment("sync-global-ids-works.json")
+        env("sync-global-ids-works.json")
             .compile(listOf(sourceFile))
             .assertThatIt { succeededWithoutWarnings() }
             // Entity flag added to generated code
             .assertGeneratedSourceMatches("com.example.MyObjectBox", "MyObjectBox-sync-global-ids.java")
 
         // Use temp model file to assert model file.
-        TestEnvironment("sync-global-ids-works.json", useTemporaryModelFile = true).let { environment ->
+        env("sync-global-ids-works.json", useTemporaryModelFile = true).let { environment ->
             environment.compile(listOf(sourceFile))
                 .assertThatIt { succeededWithoutWarnings() }
 
@@ -234,7 +234,7 @@ class SyncTest : BaseProcessorTest() {
             JavaFileObjects.forSourceString("com.example.Example", it)
         }
 
-        val environment = TestEnvironment("not-generated.json", useTemporaryModelFile = true)
+        val environment = env("not-generated.json", useTemporaryModelFile = true)
 
         environment.compile(listOf(exampleFile))
             .assertThatIt {

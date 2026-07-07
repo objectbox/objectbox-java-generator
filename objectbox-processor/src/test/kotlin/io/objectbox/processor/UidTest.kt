@@ -26,7 +26,7 @@ import org.junit.Test
 /**
  * Tests @Uid annotations.
  */
-class UidTest {
+class UidTest(processorType: ProcessorType) : BaseProcessorTest(processorType) {
 
     /**
      * Test that @Uid values are picked up.
@@ -35,7 +35,7 @@ class UidTest {
     fun testUid() {
         val className = "UidEntity"
 
-        val environment = TestEnvironment("uid.json")
+        val environment = env("uid.json")
 
         environment.compile(className)
             .assertThatIt { succeededWithoutWarnings() }
@@ -49,7 +49,7 @@ class UidTest {
 
     @Test
     fun testUidEmpty() {
-        val environment = TestEnvironment("uid.json")
+        val environment = env("uid.json")
         // Note: suggested UID added to newUidPool in model file.
         environment.compile("UidEmptyEntity", modelExpectedToChange = true)
             .assertThatIt {
@@ -60,7 +60,7 @@ class UidTest {
 
     @Test
     fun testUidNew() {
-        val environment = TestEnvironment("uid-new-uid-pool.json")
+        val environment = env("uid-new-uid-pool.json")
         val modelBefore = environment.readModel()
         Assert.assertEquals(1, modelBefore.newUidPool.size)
 
@@ -78,7 +78,7 @@ class UidTest {
     @Test
     fun testPropertyUidEmpty() {
         // Note: suggested UID added to newUidPool in model file.
-        TestEnvironment("uid.json")
+        env("uid.json")
             .compile("UidPropertyEmptyEntity", modelExpectedToChange = true)
             .assertThatIt {
                 failed()
@@ -88,7 +88,7 @@ class UidTest {
 
     @Test
     fun testPropertyUidNew() {
-        val environment = TestEnvironment("uid-new-uid-pool.json")
+        val environment = env("uid-new-uid-pool.json")
         val entityName = "UidPropertyNewEntity"
         val modelBefore = environment.readModel()
         Assert.assertEquals(1, modelBefore.newUidPool.size)
@@ -111,7 +111,7 @@ class UidTest {
     @Test
     fun testToOneUidEmpty() {
         // Note: suggested UID added to newUidPool in model file.
-        TestEnvironment("uid-relation.json")
+        env("uid-relation.json")
             .compile("UidToOneEmptyEntity", modelExpectedToChange = true)
             .assertThatIt {
                 failed()
@@ -121,7 +121,7 @@ class UidTest {
 
     @Test
     fun testToOneUidNew() {
-        val environment = TestEnvironment("uid-relation-new-uid-pool.json")
+        val environment = env("uid-relation-new-uid-pool.json")
         val entityName = "UidToOneNewEntity"
         val modelBefore = environment.readModel()
         Assert.assertEquals(1, modelBefore.newUidPool.size)
@@ -143,7 +143,7 @@ class UidTest {
 
     @Test
     fun testToManyUidNew() {
-        val environment = TestEnvironment("uid-relation-new-uid-pool.json")
+        val environment = env("uid-relation-new-uid-pool.json")
         val entityName = "UidToManyNewEntity"
         val modelBefore = environment.readModel()
         Assert.assertEquals(1, modelBefore.newUidPool.size)
@@ -164,7 +164,7 @@ class UidTest {
 
     @Test
     fun testToManyUidEmpty() {
-        TestEnvironment("uid-relation.json")
+        env("uid-relation.json")
             .compile("UidToManyEmptyEntity", modelExpectedToChange = true)
             .assertThatIt {
                 failed()

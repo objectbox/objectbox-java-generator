@@ -1,0 +1,113 @@
+/*
+ * ObjectBox Build Tools
+ * Copyright (C) 2026 ObjectBox Ltd.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+package io.objectbox.gradle
+
+import com.google.common.truth.Truth.assertThat
+import org.gradle.testkit.runner.TaskOutcome
+import org.junit.Rule
+import org.junit.Test
+import org.junit.rules.TemporaryFolder
+import java.io.File
+
+/**
+ * Compiles a Kotlin JVM project with Kotlin and Java entity classes using only the Kotlin and
+ * ObjectBox plugins, end-to-end: the ObjectBox plugin is expected to apply its bundled KSP plugin
+ * and add the processor and library dependencies.
+ *
+ * The expected output resources were originally generated with the kapt based setup this plugin
+ * used to configure, which the KSP based setup must reproduce exactly.
+ */
+class KotlinPluginKspCompileTest {
+
+    @JvmField
+    @Rule
+    val testProjectDir: TemporaryFolder = TemporaryFolder.builder().assureDeletion().build()
+
+    private fun createRunner(): GradleTestRunner {
+        return GradleTestRunner(testProjectDir).apply {
+            // Resolved from the injected plugin classpath (see testPluginClasspath).
+            additionalPlugins += "org.jetbrains.kotlin.jvm"
+            additionalBlocks = KotlinTestEntities.buildScriptJvmTargetBlock + "\n" + """
+                ksp {
+                    arg("objectbox.debug", "true")
+                }
+            """.trimIndent()
+        }
+    }
+
+    @Test
+    fun kotlinProject_objectBoxPluginAppliesKsp_generatesExpectedSources() {
+        val runner = createRunner()
+        KotlinTestEntities.addEntitySources(runner)
+        val modelFile = KotlinTestEntities.seedModelFile(testProjectDir)
+        val seededModelJson = modelFile.readText()
+
+        val result = runner.build(listOf("assemble", "--stacktrace"))
+
+        // The plugin applied the KSP plugin and added the processor, so KSP ran.
+        assertThat(result.output).contains("Applied '${ProjectEnv.Const.KSP_PLUGIN_ID}'.")
+        assertThat(result.task(":kspKotlin")?.outcome).isEqualTo(TaskOutcome.SUCCESS)
+        assertThat(result.task(":compileKotlin")?.outcome).isEqualTo(TaskOutcome.SUCCESS)
+        assertThat(result.task(":assemble")?.outcome).isEqualTo(TaskOutcome.SUCCESS)
+
+        // The model file must not be modified: all entities and properties resolve to existing UIDs.
+        assertThat(modelFile.readText().replace("\r", ""))
+            .isEqualTo(seededModelJson.replace("\r", ""))
+
+        // Generated sources match the expected (originally kapt generated) ones exactly.
+        assertGeneratedSourceMatches("MyObjectBox.java")
+        assertGeneratedSourceMatches("Customer_.java")
+        assertGeneratedSourceMatches("CustomerCursor.java")
+        assertGeneratedSourceMatches("JavaNote_.java")
+        assertGeneratedSourceMatches("JavaNoteCursor.java")
+        for (fileName in listOf("Order_.java", "OrderCursor.java", "Item_.java", "ItemCursor.java")) {
+            assertThat(generatedSourceFile(fileName).exists()).isTrue()
+        }
+    }
+
+    @Test
+    fun kotlinProject_userAppliedKsp_pluginDoesNotApplyBundledKsp() {
+        val runner = createRunner()
+        // The user applies the KSP plugin before the ObjectBox plugin.
+        // Note: no version, as the bundled KSP plugin is already on the (injected) classpath.
+        runner.additionalPlugins += "com.google.devtools.ksp"
+        KotlinTestEntities.addEntitySources(runner)
+        KotlinTestEntities.seedModelFile(testProjectDir)
+
+        val result = runner.build(listOf("assemble"))
+
+        // The plugin respects the user applied KSP plugin, the processor still runs.
+        assertThat(result.output).doesNotContain("Applied '${ProjectEnv.Const.KSP_PLUGIN_ID}'.")
+        assertThat(result.task(":kspKotlin")?.outcome).isEqualTo(TaskOutcome.SUCCESS)
+        assertThat(generatedSourceFile("MyObjectBox.java").exists()).isTrue()
+    }
+
+    private fun generatedSourceFile(fileName: String): File {
+        return testProjectDir.root.resolve("build/generated/ksp/main/java/com/example/$fileName")
+    }
+
+    private fun assertGeneratedSourceMatches(fileName: String) {
+        val actualFile = generatedSourceFile(fileName)
+        assertThat(actualFile.exists()).isTrue()
+        val expected = KotlinTestEntities.readTestResource("kotlin-project/$fileName")
+        assertThat(actualFile.readText().replace("\r", ""))
+            .isEqualTo(expected.replace("\r", ""))
+    }
+
+}

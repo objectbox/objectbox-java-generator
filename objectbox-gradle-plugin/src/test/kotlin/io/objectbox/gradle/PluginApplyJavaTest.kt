@@ -28,6 +28,7 @@ import org.gradle.testfixtures.ProjectBuilder
 import org.hamcrest.CoreMatchers.instanceOf
 import org.hamcrest.MatcherAssert.assertThat
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
@@ -181,22 +182,22 @@ open class PluginApplyJavaTest : PluginApplyTest() {
                 .taskDependencies.getDependencies(classesTask).count { it.name == transformTask.name })
     }
 
-    private fun buildKotlinKaptProject(): Project =
+    private fun buildKotlinKspProject(): Project =
         buildProject {
             pluginManager.apply {
                 apply(Const.KOTLIN_PLUGIN_ID)
-                apply(Const.KOTLIN_KAPT_PLUGIN_ID)
+                apply(Const.KSP_PLUGIN_ID)
                 apply(pluginId)
             }
         }
 
     @Test
-    fun apply_afterKotlinAndKaptPlugin() {
-        assertKotlinSetup(buildKotlinKaptProject())
+    fun apply_afterKotlinAndKspPlugin() {
+        assertKotlinSetup(buildKotlinKspProject())
     }
 
     @Test
-    fun apply_afterKotlinPlugin_addsKapt() {
+    fun apply_afterKotlinPlugin_addsKsp() {
         val project = buildProject {
             pluginManager.apply {
                 apply(Const.KOTLIN_PLUGIN_ID)
@@ -204,13 +205,43 @@ open class PluginApplyJavaTest : PluginApplyTest() {
             }
         }
 
+        assertTrue(project.plugins.hasPlugin(Const.KSP_PLUGIN_ID))
         assertKotlinSetup(project)
     }
 
-    private fun assertKotlinSetup(project: Project) {
+    @Test
+    fun apply_afterKotlinAndKaptPlugin_usesKapt() {
+        val project = buildProject {
+            pluginManager.apply {
+                apply(Const.KOTLIN_PLUGIN_ID)
+                apply(Const.KOTLIN_KAPT_PLUGIN_ID)
+                apply(pluginId)
+            }
+        }
+
+        // The plugin respects the kapt setup, so does not apply the KSP plugin.
+        assertFalse(project.plugins.hasPlugin(Const.KSP_PLUGIN_ID))
+        assertKotlinSetup(project, Const.KAPT_CONFIGURATION_NAME)
+    }
+
+    @Test
+    fun apply_afterKotlinKaptAndKspPlugin_prefersKsp() {
+        val project = buildProject {
+            pluginManager.apply {
+                apply(Const.KOTLIN_PLUGIN_ID)
+                apply(Const.KOTLIN_KAPT_PLUGIN_ID)
+                apply(Const.KSP_PLUGIN_ID)
+                apply(pluginId)
+            }
+        }
+
+        assertKotlinSetup(project, Const.KSP_CONFIGURATION_NAME)
+    }
+
+    private fun assertKotlinSetup(project: Project, processorConfiguration: String = Const.KSP_CONFIGURATION_NAME) {
         project.resolveDependencyGraphWithoutDownloadingFiles()
         with(project.configurations) {
-            assertProcessorDependency(getByName(Const.KAPT_CONFIGURATION_NAME).dependencies)
+            assertProcessorDependency(getByName(processorConfiguration).dependencies)
 
             getByName(JavaPlugin.API_CONFIGURATION_NAME).dependencies.let { deps ->
                 deps.assertKotlinDependency()
@@ -246,7 +277,7 @@ open class PluginApplyJavaTest : PluginApplyTest() {
 
     @Test
     fun apply_doesNotAddAdditionalKotlinLibrary() {
-        val projectApiConfig = buildKotlinKaptProject()
+        val projectApiConfig = buildKotlinKspProject()
         assertOnlySingleDependency(
             projectApiConfig,
             JavaPlugin.API_CONFIGURATION_NAME,
@@ -260,7 +291,7 @@ open class PluginApplyJavaTest : PluginApplyTest() {
         )
 
         assertOnlySingleDependency(
-            buildKotlinKaptProject(),
+            buildKotlinKspProject(),
             JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME,
             Const.OBX_KOTLIN
         )

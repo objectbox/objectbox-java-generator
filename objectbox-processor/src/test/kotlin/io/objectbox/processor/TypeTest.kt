@@ -26,7 +26,7 @@ import org.junit.Test
 /**
  * Additional tests for the Type annotation. For basic tests see SimpleEntityTest.
  */
-class TypeTest : BaseProcessorTest() {
+class TypeTest(processorType: ProcessorType) : BaseProcessorTest(processorType) {
 
     @Test
     fun typeAnnotation_withConverter_supported() {
@@ -65,7 +65,7 @@ class TypeTest : BaseProcessorTest() {
             JavaFileObjects.forSourceString("com.example.Example", it)
         }
 
-        val environment = TestEnvironment("type-custom-datenano.json", useTemporaryModelFile = true)
+        val environment = env("type-custom-datenano.json", useTemporaryModelFile = true)
 
         environment.compile(listOf(entitySource))
             .assertThatIt { succeededWithoutWarnings() }
@@ -106,7 +106,7 @@ class TypeTest : BaseProcessorTest() {
             JavaFileObjects.forSourceString("com.example.Example", it)
         }
 
-        TestEnvironment("type-not-long.json", useTemporaryModelFile = true)
+        env("type-not-long.json", useTemporaryModelFile = true)
             .compile(listOf(javaFileObject))
             .assertThatIt {
                 hadErrorContaining("@Type(DateNano) only supports properties with type Long")

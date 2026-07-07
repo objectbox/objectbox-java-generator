@@ -27,7 +27,7 @@ import javax.tools.JavaFileObject
 /**
  * Additional tests for the IdCompanion annotation. For basic tests see SimpleEntityTest.
  */
-class IdCompanionTest : BaseProcessorTest() {
+class IdCompanionTest(processorType: ProcessorType) : BaseProcessorTest(processorType) {
 
     @Test
     fun datenano_primitive_supported() {
@@ -74,7 +74,7 @@ class IdCompanionTest : BaseProcessorTest() {
     }
 
     private fun assertIdCompanionDateNano(javaFileObject: JavaFileObject) {
-        val environment = TestEnvironment("idcompanion-datenano.json", useTemporaryModelFile = true)
+        val environment = env("idcompanion-datenano.json", useTemporaryModelFile = true)
 
         environment.compile(listOf(javaFileObject))
             .assertThatIt { succeededWithoutWarnings() }
@@ -108,7 +108,7 @@ class IdCompanionTest : BaseProcessorTest() {
             JavaFileObjects.forSourceString("com.example.Example", it)
         }
 
-        val environment = TestEnvironment("idcompanion-multiple.json", useTemporaryModelFile = true)
+        val environment = env("idcompanion-multiple.json", useTemporaryModelFile = true)
 
         environment.compile(listOf(javaFileObject))
             .assertThatIt {
@@ -133,7 +133,7 @@ class IdCompanionTest : BaseProcessorTest() {
             JavaFileObjects.forSourceString("com.example.Example", it)
         }
 
-        val environment = TestEnvironment("idcompanion-not-date.json", useTemporaryModelFile = true)
+        val environment = env("idcompanion-not-date.json", useTemporaryModelFile = true)
 
         environment.compile(listOf(javaFileObject))
             .assertThatIt {

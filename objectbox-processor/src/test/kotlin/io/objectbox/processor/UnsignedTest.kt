@@ -24,7 +24,7 @@ import io.objectbox.model.PropertyFlags
 import org.junit.Test
 
 
-class UnsignedTest : BaseProcessorTest() {
+class UnsignedTest(processorType: ProcessorType) : BaseProcessorTest(processorType) {
 
     @Test
     fun unsigned_detectedAndGeneratesFlag() {
@@ -45,19 +45,16 @@ class UnsignedTest : BaseProcessorTest() {
 
         // Assert generated MyObjectBox file.
         // Need stable model file + ids to verify sources match.
-        TestEnvironment("unsigned.json").run {
+        env("unsigned.json").run {
             compile(listOf(javaFileObject))
                 .assertThatIt {
                     succeededWithoutWarnings()
-                    generatedSourceFile("com.example.MyObjectBox").run {
-                        isNotNull()
-                        hasSourceEquivalentTo(JavaFileObjects.forResource("expected-source/MyObjectBox-unsigned.java"))
-                    }
+                    assertGeneratedSourceMatches("com.example.MyObjectBox", "MyObjectBox-unsigned.java")
                 }
         }
 
         // Assert model file, ensure it is re-created on each run.
-        val environment = TestEnvironment("unsigned.json", useTemporaryModelFile = true)
+        val environment = env("unsigned.json", useTemporaryModelFile = true)
         environment.compile(listOf(javaFileObject))
             .assertThatIt { succeededWithoutWarnings() }
 
@@ -83,7 +80,7 @@ class UnsignedTest : BaseProcessorTest() {
             JavaFileObjects.forSourceString("com.example.Example", it)
         }
 
-        TestEnvironment("not-generated.json", useTemporaryModelFile = true)
+        env("not-generated.json", useTemporaryModelFile = true)
             .compile(listOf(javaFileObject))
             .assertThatIt {
                 failed()
@@ -108,7 +105,7 @@ class UnsignedTest : BaseProcessorTest() {
             JavaFileObjects.forSourceString("com.example.Example", it)
         }
 
-        TestEnvironment("not-generated.json", useTemporaryModelFile = true)
+        env("not-generated.json", useTemporaryModelFile = true)
             .compile(listOf(javaFileObject))
             .assertThatIt {
                 failed()

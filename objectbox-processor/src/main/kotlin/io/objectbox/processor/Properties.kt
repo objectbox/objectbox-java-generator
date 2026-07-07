@@ -1,6 +1,6 @@
 /*
  * ObjectBox Build Tools
- * Copyright (C) 2017-2025 ObjectBox Ltd.
+ * Copyright (C) 2017-2026 ObjectBox Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -18,17 +18,15 @@
 
 package io.objectbox.processor
 
-import io.objectbox.annotation.ConflictStrategy
 import io.objectbox.annotation.Convert
-import io.objectbox.annotation.DatabaseType
 import io.objectbox.annotation.DefaultValue
 import io.objectbox.annotation.ExternalName
+import io.objectbox.annotation.ExternalPropertyType
 import io.objectbox.annotation.ExternalType
 import io.objectbox.annotation.HnswIndex
 import io.objectbox.annotation.Id
 import io.objectbox.annotation.IdCompanion
 import io.objectbox.annotation.Index
-import io.objectbox.annotation.IndexType
 import io.objectbox.annotation.NameInDb
 import io.objectbox.annotation.SyncClock
 import io.objectbox.annotation.SyncPrecedence
@@ -52,37 +50,23 @@ import io.objectbox.generator.model.ModelException
 import io.objectbox.generator.model.Property
 import io.objectbox.generator.model.PropertyType
 import io.objectbox.model.PropertyFlags
-import java.util.*
-import javax.lang.model.element.AnnotationMirror
-import javax.lang.model.element.Element
-import javax.lang.model.element.ExecutableElement
-import javax.lang.model.element.Modifier
-import javax.lang.model.element.VariableElement
-import javax.lang.model.type.TypeMirror
-import javax.lang.model.util.ElementFilter
-import javax.lang.model.util.Elements
-import javax.lang.model.util.Types
 
 /**
- * Parses properties from fields for a given entity and adds them to the entity model.
+ * Parses properties from the fields ([ProcessingField]) of an entity class and adds them to the
+ * entity model.
  */
 class Properties(
-    private val elementUtils: Elements,
-    private val typeUtils: Types,
-    private val messages: Messages,
+    private val messages: CommonMessages,
     private val relations: Relations,
     private val entityModel: Entity,
-    entityElement: Element,
+    entityClass: ProcessingClass,
     private val isSuperEntity: Boolean
 ) {
 
-    private val typeHelper = TypeHelper(elementUtils, typeUtils)
-
-    private val fields: List<VariableElement> = ElementFilter.fieldsIn(entityElement.enclosedElements)
-    private val methods: List<ExecutableElement> = ElementFilter.methodsIn(entityElement.enclosedElements)
+    private val fields: List<ProcessingField> = entityClass.declaredFields()
 
     fun hasBoxStoreField(): Boolean {
-        return fields.find { it.simpleName.toString() == BOXSTORE_FIELD_NAME } != null
+        return fields.find { it.name == BOXSTORE_FIELD_NAME } != null
     }
 
     fun parseFields() {
@@ -95,16 +79,29 @@ class Properties(
         return this == BOXSTORE_FIELD_NAME
     }
 
-    private fun parseField(field: VariableElement) {
+    private fun parseField(field: ProcessingField) {
         // ignore static, transient or @Transient fields
-        val modifiers = field.modifiers
-        if (modifiers.contains(Modifier.STATIC) || modifiers.contains(Modifier.TRANSIENT)
-            || field.hasAnnotation(Transient::class.java)
-        ) {
+        if (field.isStatic || field.isTransient || field.hasAnnotation(Transient::class.java)) {
             return
         }
 
-        if (field.simpleName.toString().isReservedName()) {
+        if (field.isKotlin) {
+            // KAPT compiles a delegated property to a field of the delegate type (like 'name$delegate'),
+            // which the annotation processor fails on. Fail with a better message instead.
+            if (field.isDelegated) {
+                messages.error(
+                    "Delegated properties are not supported, use @Transient or a regular property.",
+                    field
+                )
+                return
+            }
+            // ignore Kotlin properties that do not compile to a field
+            if (!field.hasBackingField) {
+                return
+            }
+        }
+
+        if (field.name.isReservedName()) {
             messages.error(
                 "A property can not be named `__boxStore`. Adding a BoxStore field for relations? Annotate it with @Transient.",
                 field
@@ -112,21 +109,22 @@ class Properties(
             return
         }
 
-        if (typeHelper.isToOne(field.asType())) {
+        val fieldType = field.type
+        if (fieldType.isToOne) {
             // ToOne<TARGET> property
             checkNotSuperEntity(field)
             checkNoIndexOrUniqueAnnotation(field, "ToOne")
             relations.parseToOne(entityModel, field)
         } else if (
             !field.hasAnnotation(Convert::class.java)
-            && typeHelper.isList(field.asType())
-            && !typeHelper.isStringList(field.asType())
+            && fieldType.isList
+            && !fieldType.isStringList
         ) {
             // List<TARGET> property, except List<String>
             checkNotSuperEntity(field)
             checkNoIndexOrUniqueAnnotation(field, "List")
             relations.parseToMany(entityModel, field)
-        } else if (typeHelper.isToMany(field.asType())) {
+        } else if (fieldType.isToMany) {
             // ToMany<TARGET> property
             checkNotSuperEntity(field)
             checkNoIndexOrUniqueAnnotation(field, "ToMany")
@@ -137,13 +135,13 @@ class Properties(
         }
     }
 
-    private fun checkNotSuperEntity(field: VariableElement) {
+    private fun checkNotSuperEntity(field: ProcessingField) {
         if (isSuperEntity) {
             messages.error("A super class of an @Entity must not have a relation.", field)
         }
     }
 
-    private fun checkNoIndexOrUniqueAnnotation(field: VariableElement, relationType: String) {
+    private fun checkNoIndexOrUniqueAnnotation(field: ProcessingField, relationType: String) {
         val hasIndex = field.hasAnnotation(Index::class.java)
         if (hasIndex || field.hasAnnotation(Unique::class.java)) {
             val annotationName = if (hasIndex) "Index" else "Unique"
@@ -154,7 +152,7 @@ class Properties(
         }
     }
 
-    private fun parseProperty(field: VariableElement) {
+    private fun parseProperty(field: ProcessingField) {
         // Why nullable? A property might not be parsed due to an error. Do not throw here.
         val propertyBuilder: Property.PropertyBuilder = when {
             field.hasAnnotation(DefaultValue::class.java) -> {
@@ -168,7 +166,7 @@ class Properties(
 
             else -> {
                 // Is it a type directly supported by the database?
-                val propertyType = typeHelper.getPropertyType(field.asType())
+                val propertyType = field.type.propertyTypeOrNull()
                 if (propertyType != null) {
                     supportedPropertyBuilderOrNull(field, propertyType)
                 } else {
@@ -181,17 +179,16 @@ class Properties(
         propertyBuilder.property.parsedElement = field
 
         // checks if field is accessible
-        val isPrivate = field.modifiers.contains(Modifier.PRIVATE)
+        val isPrivate = !field.isAccessibleField
         if (!isPrivate) {
             propertyBuilder.fieldAccessible()
         }
         // find getter method name
-        val getterMethodName = getGetterMethodNameFor(field.asType(), propertyBuilder.property)
+        val getterMethodName = field.getterNameOrNull(propertyBuilder.property.propertyType)
         propertyBuilder.getterMethodName(getterMethodName)
 
         // @Id
-        val idAnnotation = field.getAnnotation(Id::class.java)
-        val hasIdAnnotation = idAnnotation != null
+        val hasIdAnnotation = field.hasAnnotation(Id::class.java)
         if (hasIdAnnotation) {
             if (propertyBuilder.property.propertyType != PropertyType.Long) {
                 messages.error("An @Id property must be a not-null long.", field)
@@ -200,7 +197,7 @@ class Properties(
                 messages.error("An @Id property must not be private or have a not-private getter and setter.", field)
             }
             propertyBuilder.primaryKey()
-            if (idAnnotation.assignable) {
+            if (field.booleanValueOf(Id::class.java, "assignable") == true) {
                 propertyBuilder.idAssignable()
             }
         }
@@ -241,23 +238,20 @@ class Properties(
         }
 
         // @NameInDb
-        val nameInDbAnnotation = field.getAnnotation(NameInDb::class.java)
-        if (nameInDbAnnotation != null) {
-            val name = nameInDbAnnotation.value
-            if (name.isNotEmpty()) {
-                propertyBuilder.dbName(name)
-            }
+        val nameInDb = field.stringValueOf(NameInDb::class.java)
+        if (nameInDb != null && nameInDb.isNotEmpty()) {
+            propertyBuilder.dbName(nameInDb)
         }
 
         // @ExternalName
-        field.getAnnotation(ExternalName::class.java)?.value
+        field.stringValueOf(ExternalName::class.java)
             ?.also { propertyBuilder.externalName(it) }
 
         // @ExternalType
         // Note: not validating the external type for the property type here. Instead, let the database do
         // it at runtime as this can be complex. And we don't want to maintain checks in multiple places.
-        field.getAnnotation(ExternalType::class.java)?.value
-            ?.also { propertyBuilder.externalType(it) }
+        field.enumValueNameOf(ExternalType::class.java)
+            ?.also { propertyBuilder.externalType(ExternalPropertyType.valueOf(it)) }
 
         // @Index, @Unique
         parseIndexAndUniqueAnnotations(field, propertyBuilder, hasIdAnnotation)
@@ -268,11 +262,11 @@ class Properties(
         parseHnswIndexAnnotation(field, propertyBuilder)
 
         // @Uid
-        val uidAnnotation = field.getAnnotation(Uid::class.java)
-        if (uidAnnotation != null) {
+        val uidValue = field.longValueOf(Uid::class.java)
+        if (uidValue != null) {
             // just storing uid, id model sync will replace with correct id+uid
             // Note: UID values 0 and -1 are special: print current value and fail later
-            val uid = if (uidAnnotation.value == 0L) -1 else uidAnnotation.value
+            val uid = if (uidValue == 0L) -1 else uidValue
             propertyBuilder.modelId(IdUid(0, uid))
         }
 
@@ -280,12 +274,14 @@ class Properties(
         parseSyncClockAndSyncPrecedenceAnnotations(field, propertyBuilder)
     }
 
-    private fun parseHnswIndexAnnotation(field: VariableElement, propertyBuilder: Property.PropertyBuilder) {
-        val hnswIndexAnnotation = field.getAnnotation(HnswIndex::class.java) ?: return
+    private fun parseHnswIndexAnnotation(field: ProcessingField, propertyBuilder: Property.PropertyBuilder) {
+        if (!field.hasAnnotation(HnswIndex::class.java)) return
         val propertyType = propertyBuilder.property.propertyType
         if (propertyType != PropertyType.FloatArray) {
             messages.error("@HnswIndex is only supported for float vector properties.")
         }
+        // The model builder takes the annotation class, so get an actual instance.
+        val hnswIndexAnnotation = field.annotationInstanceOf(HnswIndex::class.java) ?: return
         try {
             propertyBuilder.hnswParams(hnswIndexAnnotation)
         } catch (e: ModelException) {
@@ -294,12 +290,12 @@ class Properties(
     }
 
     private fun parseIndexAndUniqueAnnotations(
-        field: VariableElement, propertyBuilder: Property.PropertyBuilder,
+        field: ProcessingField, propertyBuilder: Property.PropertyBuilder,
         hasIdAnnotation: Boolean
     ) {
-        val indexAnnotation = field.getAnnotation(Index::class.java)
-        val uniqueAnnotation = field.getAnnotation(Unique::class.java)
-        if (indexAnnotation == null && uniqueAnnotation == null) {
+        val hasIndexAnnotation = field.hasAnnotation(Index::class.java)
+        val hasUniqueAnnotation = field.hasAnnotation(Unique::class.java)
+        if (!hasIndexAnnotation && !hasUniqueAnnotation) {
             return
         }
 
@@ -307,16 +303,20 @@ class Properties(
         val propertyType = propertyBuilder.property.propertyType
         val supportsHashIndex = propertyType == PropertyType.String
         // || propertyType == PropertyType.ByteArray // Not yet supported for byte[]
-        val indexType = indexAnnotation?.type ?: IndexType.DEFAULT
+        val indexType = if (hasIndexAnnotation) {
+            field.enumValueNameOf(Index::class.java, "type") ?: "DEFAULT"
+        } else {
+            "DEFAULT"
+        }
 
         // error if HASH or HASH64 is not supported by property type
-        if (!supportsHashIndex && (indexType == IndexType.HASH || indexType == IndexType.HASH64)) {
+        if (!supportsHashIndex && (indexType == "HASH" || indexType == "HASH64")) {
             messages.error("IndexType.$indexType is not supported for $propertyType.", field)
         }
 
         // error if used with @Id
         if (hasIdAnnotation) {
-            val annotationName = if (indexAnnotation != null) "Index" else "Unique"
+            val annotationName = if (hasIndexAnnotation) "Index" else "Unique"
             messages.error("@Id property is unique and indexed by default, remove @$annotationName.", field)
         }
 
@@ -333,16 +333,16 @@ class Properties(
             propertyType == PropertyType.DoubleArray ||
             propertyType == PropertyType.StringArray
         ) {
-            val annotationName = if (indexAnnotation != null) "Index" else "Unique"
+            val annotationName = if (hasIndexAnnotation) "Index" else "Unique"
             messages.error("@$annotationName is not supported for $propertyType, remove @$annotationName.", field)
         }
 
         // compute actual property flags for model
         var indexFlags: Int = when (indexType) {
-            IndexType.VALUE -> PropertyFlags.INDEXED
-            IndexType.HASH -> PropertyFlags.INDEX_HASH
-            IndexType.HASH64 -> PropertyFlags.INDEX_HASH64
-            IndexType.DEFAULT -> {
+            "VALUE" -> PropertyFlags.INDEXED
+            "HASH" -> PropertyFlags.INDEX_HASH
+            "HASH64" -> PropertyFlags.INDEX_HASH64
+            else -> {
                 // auto detect
                 if (supportsHashIndex) {
                     PropertyFlags.INDEX_HASH // String and byte[] like HASH
@@ -351,10 +351,10 @@ class Properties(
                 }
             }
         }
-        if (uniqueAnnotation != null) {
+        if (hasUniqueAnnotation) {
             indexFlags = indexFlags or PropertyFlags.UNIQUE
             // determine unique conflict resolution
-            if (uniqueAnnotation.onConflict == ConflictStrategy.REPLACE) {
+            if (field.enumValueNameOf(Unique::class.java, "onConflict") == "REPLACE") {
                 indexFlags = indexFlags or PropertyFlags.UNIQUE_ON_CONFLICT_REPLACE
             }
         }
@@ -363,7 +363,7 @@ class Properties(
     }
 
     private fun parseSyncClockAndSyncPrecedenceAnnotations(
-        field: VariableElement,
+        field: ProcessingField,
         propertyBuilder: Property.PropertyBuilder
     ) {
         val hasSyncClock = field.hasAnnotation(SyncClock::class.java)
@@ -420,27 +420,27 @@ class Properties(
         }
     }
 
-    private fun defaultValuePropertyBuilderOrNull(field: VariableElement): Property.PropertyBuilder? {
+    private fun defaultValuePropertyBuilderOrNull(field: ProcessingField): Property.PropertyBuilder? {
         if (field.hasAnnotation(Convert::class.java)) {
             messages.error("Can not use both @Convert and @DefaultValue.", field)
             return null
         }
 
-        when (field.getAnnotation(DefaultValue::class.java).value) {
+        when (field.stringValueOf(DefaultValue::class.java)) {
             "" -> {
-                val propertyType = typeHelper.getPropertyType(field.asType())
+                val propertyType = field.type.propertyTypeOrNull()
                 if (propertyType != PropertyType.String) {
                     messages.error("For @DefaultValue(\"\") property must be String.", field)
                     return null
                 }
 
                 val builder = try {
-                    entityModel.addProperty(propertyType, field.simpleName.toString())
+                    entityModel.addProperty(propertyType, field.name)
                 } catch (e: Exception) {
                     messages.error("Could not add property: ${e.message}", field)
                     if (e is ModelException) return null else throw e
                 }
-                builder.customType(field.asType().toString(), NullToEmptyStringConverter::class.java.canonicalName)
+                builder.customType(field.type.erasedJavaTypeName(), NullToEmptyStringConverter::class.java.canonicalName)
 
                 return builder
             }
@@ -452,18 +452,15 @@ class Properties(
         }
     }
 
-    private fun customPropertyBuilderOrNull(field: VariableElement): Property.PropertyBuilder? {
+    private fun customPropertyBuilderOrNull(field: ProcessingField): Property.PropertyBuilder? {
         // extract @Convert annotation member values
-        // as they are types, need to access them via annotation mirrors
-        val annotationMirror = getAnnotationMirror(field, Convert::class.java)
-            ?: return null // did not find @Convert mirror
-
+        // as they are class values, need to access them as types
         // converter and dbType value existence guaranteed by compiler
-        val converter = getAnnotationValueType(annotationMirror, "converter")!!
-        val dbType = getAnnotationValueType(annotationMirror, "dbType")!!
+        val converter = field.typeValueOf(Convert::class.java, "converter")!!
+        val dbType = field.typeValueOf(Convert::class.java, "dbType")!!
 
         // Detect property type based on dbType of annotation.
-        val propertyType = typeHelper.getPropertyType(dbType)
+        val propertyType = dbType.propertyTypeOrNull()
         if (propertyType == null) {
             messages.error("@Convert dbType type is not supported, use a Java primitive wrapper class.", field)
             return null
@@ -474,11 +471,11 @@ class Properties(
         ) ?: return null
 
         // may be a parameterized type like List<CustomType>, so erase any type parameters
-        val customType = typeUtils.erasure(field.asType())
+        val customType = field.type.erasedJavaTypeName()
 
         val propertyBuilder = entityModel.tryToAddProperty(propertyDbType, field) ?: return null
 
-        propertyBuilder.customType(customType.toString(), converter.toString())
+        propertyBuilder.customType(customType, converter.typeNameForCode())
         // Flag custom type properties as non-primitive to the database
         propertyBuilder.nonPrimitiveFlag()
         return propertyBuilder
@@ -489,7 +486,7 @@ class Properties(
      * If adding the property to the model fails, prints an error and returns null.
      */
     private fun supportedPropertyBuilderOrNull(
-        field: VariableElement,
+        field: ProcessingField,
         propertyType: PropertyType
     ): Property.PropertyBuilder? {
         val propertyDbType = determinePropertyDatabaseType(
@@ -499,14 +496,14 @@ class Properties(
 
         val propertyBuilder = entityModel.tryToAddProperty(propertyDbType, field) ?: return null
 
-        val typeMirror = field.asType()
-        val isPrimitive = typeMirror.kind.isPrimitive
+        val fieldType = field.type
+        val isPrimitive = fieldType.isPrimitiveLike
         // Flag wrapper types (Long, Integer, ...) of scalar types and String list as non-primitive to the database
-        if (!isPrimitive && (propertyDbType.isScalar || typeHelper.isStringList(typeMirror))) {
+        if (!isPrimitive && (propertyDbType.isScalar || fieldType.isStringList)) {
             propertyBuilder.nonPrimitiveFlag()
         }
         // For String vectors, indicate if the Java type is a List (or otherwise an array).
-        if (propertyType == PropertyType.StringArray && typeHelper.isStringList(typeMirror)) {
+        if (propertyType == PropertyType.StringArray && fieldType.isStringList) {
             propertyBuilder.isList()
         }
         // Only Java primitive types can never be null
@@ -519,17 +516,21 @@ class Properties(
      * If property type is overridden using a `@Type` annotation, returns the new property type.
      * Errors and returns null if `@Type` is used incorrectly.
      */
-    private fun determinePropertyDatabaseType(field: VariableElement, propertyType: PropertyType): PropertyType? {
-        val typeAnnotation = field.getAnnotation(Type::class.java)
-        if (typeAnnotation != null) {
-            return when (typeAnnotation.value) {
-                DatabaseType.DateNano -> {
+    private fun determinePropertyDatabaseType(field: ProcessingField, propertyType: PropertyType): PropertyType? {
+        if (field.hasAnnotation(Type::class.java)) {
+            return when (field.enumValueNameOf(Type::class.java)) {
+                "DateNano" -> {
                     if (propertyType == PropertyType.Long) {
                         PropertyType.DateNano
                     } else {
                         messages.error("@Type(DateNano) only supports properties with type Long.", field)
                         null
                     }
+                }
+
+                else -> {
+                    messages.error("@Type does not support the given type.", field)
+                    null
                 }
             }
         }
@@ -542,43 +543,43 @@ class Properties(
      * If [field] has a type for which a built-in converter is available,
      * prints which converter is used and returns a builder. Otherwise, prints an error and returns null.
      */
-    private fun autoConvertedPropertyBuilderOrNull(field: VariableElement): Property.PropertyBuilder? {
-        val fieldType = field.asType()
+    private fun autoConvertedPropertyBuilderOrNull(field: ProcessingField): Property.PropertyBuilder? {
+        val fieldType = field.type
 
-        if (typeHelper.isStringStringMap(fieldType)) {
+        if (fieldType.isStringStringMap) {
             return addAutoConvertedMapProperty(field, StringMapConverter::class.java.canonicalName)
         }
 
-        if (typeHelper.isStringLongMap(fieldType)) {
+        if (fieldType.isStringLongMap) {
             return addAutoConvertedMapProperty(field, StringLongMapConverter::class.java.canonicalName)
         }
 
-        if (typeHelper.isStringMap(fieldType)) {
+        if (fieldType.isStringMap) {
             return addAutoConvertedMapProperty(field, StringFlexMapConverter::class.java.canonicalName)
         }
 
-        if (typeHelper.isIntegerLongMap(fieldType)) {
+        if (fieldType.isIntegerLongMap) {
             return addAutoConvertedMapProperty(field, IntegerLongMapConverter::class.java.canonicalName)
         }
 
-        if (typeHelper.isIntegerMap(fieldType)) {
+        if (fieldType.isIntegerMap) {
             return addAutoConvertedMapProperty(field, IntegerFlexMapConverter::class.java.canonicalName)
         }
 
-        if (typeHelper.isLongLongMap(fieldType)) {
+        if (fieldType.isLongLongMap) {
             return addAutoConvertedMapProperty(field, LongLongMapConverter::class.java.canonicalName)
         }
 
-        if (typeHelper.isLongMap(fieldType)) {
+        if (fieldType.isLongMap) {
             return addAutoConvertedMapProperty(field, LongFlexMapConverter::class.java.canonicalName)
         }
 
-        if (typeHelper.isObject(fieldType)) {
+        if (fieldType.isObject) {
             val builder = entityModel.tryToAddProperty(PropertyType.Flex, field)
                 ?: return null
             val converterCanonicalName = FlexObjectConverter::class.java.canonicalName
-            builder.customType(field.asType().toString(), converterCanonicalName)
-            messages.info("Using $converterCanonicalName to convert Object property '${field.simpleName}' in '${entityModel.className}', to change this use @Convert.")
+            builder.customType(fieldType.erasedJavaTypeName(), converterCanonicalName)
+            messages.info("Using $converterCanonicalName to convert Object property '${field.name}' in '${entityModel.className}', to change this use @Convert.")
             return builder
         }
 
@@ -590,102 +591,31 @@ class Properties(
     }
 
     private fun addAutoConvertedMapProperty(
-        field: VariableElement,
+        field: ProcessingField,
         converterCanonicalName: String
     ): Property.PropertyBuilder? {
         val builder = entityModel.tryToAddProperty(PropertyType.Flex, field)
             ?: return null
 
         // Is Map<K, V>, so erase type params (-> Map) as generator model does not support them.
-        val plainMapType = typeUtils.erasure(field.asType()).toString()
+        val plainMapType = field.type.erasedJavaTypeName()
 
         builder.customType(plainMapType, converterCanonicalName)
-        messages.info("Using $converterCanonicalName to convert map property '${field.simpleName}' in '${entityModel.className}', to change this use @Convert.")
+        messages.info("Using $converterCanonicalName to convert map property '${field.name}' in '${entityModel.className}', to change this use @Convert.")
 
         return builder
     }
 
-    private fun Entity.tryToAddProperty(propertyType: PropertyType, field: VariableElement): Property.PropertyBuilder? {
+    private fun Entity.tryToAddProperty(propertyType: PropertyType, field: ProcessingField): Property.PropertyBuilder? {
         return try {
-            addProperty(propertyType, field.simpleName.toString())
+            addProperty(propertyType, field.name)
         } catch (e: Exception) {
             messages.error("Could not add property: ${e.message}", field)
             if (e is ModelException) null else throw e
         }
     }
 
-    private fun getAnnotationMirror(element: Element, annotationClass: Class<*>): AnnotationMirror? {
-        val annotationMirrors = element.annotationMirrors
-        for (annotationMirror in annotationMirrors) {
-            val annotationType = annotationMirror.annotationType
-            val convertType = elementUtils.getTypeElement(annotationClass.canonicalName).asType()
-            if (typeUtils.isSameType(annotationType, convertType)) {
-                return annotationMirror
-            }
-        }
-        return null
-    }
-
-    private fun getAnnotationValueType(annotationMirror: AnnotationMirror, memberName: String): TypeMirror? {
-        val elementValues = annotationMirror.elementValues
-        for ((key, value) in elementValues) {
-            val elementName = key.simpleName.toString()
-            if (elementName == memberName) {
-                // this is a shortcut instead of using entry.getValue().accept(visitor, null)
-                return value.value as TypeMirror
-            }
-        }
-        return null
-    }
-
-    private fun <A : Annotation> Element.hasAnnotation(annotationType: Class<A>): Boolean {
-        return getAnnotation(annotationType) != null
-    }
-
-    /**
-     * Tries to find a getter method name for the given property that returns the given type.
-     * Prefers isPropertyName over getPropertyName if property starts with 'is' then uppercase letter.
-     * Prefers isPropertyName over getPropertyName if property is Boolean.
-     * Otherwise, looks for getPropertyName method.
-     * If none is found, returns null (Property falls back to expecting regular getter).
-     */
-    private fun getGetterMethodNameFor(fieldType: TypeMirror, property: Property): String? {
-        val propertyName = property.propertyName
-        val propertyNameCapitalized = propertyName.replaceFirstChar { it.titlecase(Locale.getDefault()) }
-
-        // https://kotlinlang.org/docs/reference/java-to-kotlin-interop.html#properties
-        // Kotlin: 'isProperty' (but not 'isproperty').
-        if (propertyName.startsWith("is") && propertyName[2].isUpperCase()) {
-            methods.find {
-                it.simpleName.toString() == propertyName && typeUtils.isSameType(it.returnType, fieldType)
-            }?.let {
-                return it.simpleName.toString() // Getter is called 'isProperty' (setter 'setProperty').
-            }
-        }
-
-        // https://docs.oracle.com/javase/tutorial/javabeans/writing/properties.html
-        // Java: 'isProperty' for booleans (JavaBeans spec).
-        if (property.propertyType == PropertyType.Boolean) {
-            methods.find {
-                it.simpleName.toString() == "is$propertyNameCapitalized" && typeUtils.isSameType(
-                    it.returnType,
-                    fieldType
-                )
-            }?.let {
-                return it.simpleName.toString() // Getter is called 'isPropertyName'.
-            }
-        }
-
-        // At last, check for regular getter.
-        return methods.find {
-            it.simpleName.toString() == "get$propertyNameCapitalized" && typeUtils.isSameType(it.returnType, fieldType)
-        }?.simpleName?.toString()
-    }
-
     companion object {
-        @Suppress("unused") // Preserved for future use.
-        private const val INDEX_MAX_VALUE_LENGTH_MAX = 450
-
         private const val BOXSTORE_FIELD_NAME = "__boxStore"
     }
 

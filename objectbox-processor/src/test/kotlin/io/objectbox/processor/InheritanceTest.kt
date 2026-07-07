@@ -28,7 +28,7 @@ import javax.tools.JavaFileObject
 /**
  * Tests related to entities in an inheritance chain (@BaseEntity, @Entity, regular classes).
  */
-class InheritanceTest : BaseProcessorTest() {
+class InheritanceTest(processorType: ProcessorType) : BaseProcessorTest(processorType) {
 
     /**
      * Tests if properties from @BaseEntity class are used in ObjectBox, other super class and interface are ignored.
@@ -41,7 +41,7 @@ class InheritanceTest : BaseProcessorTest() {
         val nameSubSub = "InheritanceSubSub"
         val nameInterface = "InheritanceInterface"
 
-        val environment = TestEnvironment("inheritance.json")
+        val environment = env("inheritance.json")
 
         environment.compile(nameBase, nameNoBase, nameSub, nameSubSub, nameInterface)
             .assertThatIt { succeededWithoutWarnings() }
@@ -119,7 +119,7 @@ class InheritanceTest : BaseProcessorTest() {
         val nameBase = "InheritanceBaseGeneric"
         val nameSub = "InheritanceSubGeneric"
 
-        val environment = TestEnvironment("inheritance-generic.json")
+        val environment = env("inheritance-generic.json")
 
         environment.compile(nameBase, nameSub)
             .assertThatIt { succeededWithoutWarnings() }
@@ -173,7 +173,7 @@ class InheritanceTest : BaseProcessorTest() {
         val nameSub = "InheritanceSubEntity"
         val nameInterface = "InheritanceInterface"
 
-        val environment = TestEnvironment("inheritance-entities.json")
+        val environment = env("inheritance-entities.json")
 
         environment.compile(nameSuper, nameSub, nameInterface)
             .assertThatIt { succeededWithoutWarnings() }
@@ -246,7 +246,7 @@ class InheritanceTest : BaseProcessorTest() {
         val nameBase = "InheritanceBase"
         val nameSub = "InheritanceSubOverride"
 
-        TestEnvironment("inheritance-overridden.json", useTemporaryModelFile = true)
+        env("inheritance-overridden.json", useTemporaryModelFile = true)
             .compile(nameBase, nameSub)
             .assertThatIt {
                 failed()
@@ -306,10 +306,9 @@ class InheritanceTest : BaseProcessorTest() {
     }
 
     private fun assertSuperRelationError(source: String) {
-        val superEntity: JavaFileObject
-        TestEnvironment("super-relation-error.json", useTemporaryModelFile = true)
+        env("super-relation-error.json", useTemporaryModelFile = true)
             .apply {
-                superEntity = addSourceFile("com.example.Example", source)
+                addSourceFile("com.example.Example", source)
                 addSourceFile(
                     fullyQualifiedName = "com.example.ExampleImpl",
                     source =
@@ -332,10 +331,10 @@ class InheritanceTest : BaseProcessorTest() {
             }
             .compile()
             .assertThatIt {
-                // Note: ensure error originates from super class, extending class has allowed relation.
+                // Note: ensure error originates from super class (the error message includes the
+                // class the field is in), extending class has allowed relation.
                 hadErrorCount(1)
-                hadErrorContaining("A super class of an @Entity must not have a relation.")
-                    .inFile(superEntity)
+                hadErrorContaining("A super class of an @Entity must not have a relation. (com.example.Example.")
             }
     }
 

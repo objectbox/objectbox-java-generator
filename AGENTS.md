@@ -33,9 +33,10 @@ Without one of these, the build fails to resolve dependencies.
 # Android Gradle Plugin integration tests (separate source sets in objectbox-gradle-plugin)
 # Too-old AGP fails with a helpful error (TestKit)
 ./gradlew :objectbox-gradle-plugin:agp73Test
-# Lowest supported AGP, Android project build (TestKit)
+# Lowest supported AGP (Java projects), Android project build (TestKit)
 ./gradlew :objectbox-gradle-plugin:agp81Test
-# AGP 8.10, in-process plugin apply tests (incl. kotlin-android/kapt)
+# AGP 8.10, lowest supporting KSP (Kotlin projects): in-process plugin apply tests
+# (incl. kotlin-android/kapt) + Kotlin Android project build with KSP (TestKit)
 ./gradlew :objectbox-gradle-plugin:agp810Test
 # Apply tests (built-in Kotlin) + Android project builds (lowest and latest Gradle)
 ./gradlew :objectbox-gradle-plugin:agp9Test
@@ -82,11 +83,21 @@ Contents:
 - **objectbox-gradle-plugin** — the actual Gradle plugins.
   `ObjectBoxGradlePlugin` (id `io.objectbox`) does the work; `ObjectBoxSyncGradlePlugin`
   (id `io.objectbox.sync`) subclasses it to swap in the Sync-enabled native library.
-  On apply, the plugin adds objectbox-java/native-library dependencies, wires up the annotation
-  processor, and registers byte-code transform tasks.
+  On apply, the plugin adds objectbox-java/native-library dependencies, wires up the processor
+  (Java projects: `annotationProcessor`; Kotlin projects: applies the KSP plugin — which must be on
+  the project classpath — and uses the `ksp` configuration, unless the project has applied the
+  kapt plugin, then the `kapt` configuration is used), and registers byte-code transform tasks.
   The library/dependency versions it injects come from BuildConfig constants generated in the root
   build script (`appliesObx*Version` extra properties).
-- **objectbox-processor** — annotation processor that reads `@Entity` classes.
+- **objectbox-processor** — reads `@Entity` classes: a javax annotation processor and a KSP
+  `SymbolProcessor` (`io.objectbox.processor.ksp` package) that produce identical output and share
+  their implementation: parsing works on an abstraction of the two processor APIs
+  (`ProcessingApi.kt`, implemented by `JavaxProcessing`/`KspProcessing`), so
+  `ObjectBoxProcessorCore`, `Properties` and `Relations` exist only once.
+  The KSP processor is compiled against an older KSP API the build's Kotlin version can read, but
+  runs under the consumer's (newer) KSP version.
+  Unit tests run against both processors (parameterized `BaseProcessorTest`; KSP runs without
+  Gradle via the standalone KSP found in `KspCompiler`).
 - **objectbox-generator** — source code generator used by the processor (generates `MyObjectBox`,
   underscore/`Example_` classes from FreeMarker templates, `*.ftl` in
   `src/main/resources/io/objectbox/generator`) plus the schema model classes (`generator.model`)

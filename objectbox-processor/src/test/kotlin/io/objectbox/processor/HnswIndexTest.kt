@@ -27,7 +27,7 @@ import org.junit.Test
 /**
  * Tests the [HnswIndex] annotation.
  */
-class HnswIndexTest : BaseProcessorTest() {
+class HnswIndexTest(processorType: ProcessorType) : BaseProcessorTest(processorType) {
 
     @Test
     fun hnswAnnotation_notFloatArray_errors() {
@@ -48,7 +48,7 @@ class HnswIndexTest : BaseProcessorTest() {
             }    
             """.trimIndent()
 
-        val env = TestEnvironment("hnsw-unsupported.json", useTemporaryModelFile = true)
+        val env = env("hnsw-unsupported.json", useTemporaryModelFile = true)
             .apply { addSourceFile("com.example.City", citySource) }
 
         env.compile()
@@ -77,7 +77,7 @@ class HnswIndexTest : BaseProcessorTest() {
             }    
             """.trimIndent()
 
-        val env = TestEnvironment("hnsw-defaults.json")
+        val env = env("hnsw-defaults.json")
             .apply { addSourceFile("com.example.City", citySource) }
 
         env.compile()
@@ -183,7 +183,7 @@ class HnswIndexTest : BaseProcessorTest() {
                 float[] coordinates;
             }    
             """.trimIndent()
-        val env = TestEnvironment("hnsw-defaults.json")
+        val env = env("hnsw-defaults.json")
             .apply { addSourceFile("com.example.City", citySource) }
 
         env.compile()
