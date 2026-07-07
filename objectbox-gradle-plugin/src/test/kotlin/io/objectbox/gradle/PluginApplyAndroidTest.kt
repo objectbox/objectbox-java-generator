@@ -1,6 +1,6 @@
 /*
  * ObjectBox Build Tools
- * Copyright (C) 2022-2024 ObjectBox Ltd.
+ * Copyright (C) 2022-2026 ObjectBox Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -19,6 +19,7 @@
 package io.objectbox.gradle
 
 import com.android.build.api.dsl.ApplicationExtension
+import com.google.common.truth.Truth.assertThat
 import io.objectbox.gradle.ProjectEnv.Const
 import org.gradle.api.Project
 import org.gradle.api.artifacts.DependencySet
@@ -30,7 +31,10 @@ import org.junit.Test
 
 
 /**
- * Base class to test applying [ObjectBoxGradlePlugin] configures a Java or Kotlin Android Gradle project as expected.
+ * Base class to test applying [ObjectBoxGradlePlugin] configures an Android Gradle project as expected.
+ *
+ * Note: tests in this class run the Android Plugin in-process (with ProjectBuilder), so subclasses can only use
+ * Android Plugin versions that are compatible with the Gradle version running this build.
  */
 abstract class PluginApplyAndroidTest : PluginApplyTest() {
 
@@ -39,10 +43,22 @@ abstract class PluginApplyAndroidTest : PluginApplyTest() {
      */
     abstract fun assertAndroidCompat(project: Project)
 
+    /**
+     * True if the Android Plugin is expected to provide built-in Kotlin support (Android Plugin 9 or newer), so
+     * this plugin should apply the legacy-kapt plugin, add the processor to its kapt configuration and add the
+     * ObjectBox Kotlin library.
+     */
+    open val expectsBuiltInKotlin: Boolean = false
+
+    /**
+     * Should match an SDK embedded in the buildenv-android CI image to avoid downloading it.
+     */
+    open val compileSdk: Int = 35
+
     private fun Project.configureAndroidProject() {
         val androidExtension = extensions.getByName("android") as ApplicationExtension
         androidExtension.apply {
-            compileSdk = 35 // Matches SDK embedded in buildenv-android CI image to avoid downloading it
+            compileSdk = this@PluginApplyAndroidTest.compileSdk
             namespace = "io.objectbox.plugin.test"
         }
     }
@@ -56,7 +72,7 @@ abstract class PluginApplyAndroidTest : PluginApplyTest() {
      * See also [io.objectbox.gradle.PluginApplyJavaTest.resolveDependencyGraphWithoutDownloadingFiles], especially with
      * details on why the Android plugin warns about doing this and why we ignore this warning.
      */
-    private fun Project.resolveDependencyGraphWithoutDownloadingFiles() {
+    protected fun Project.resolveDependencyGraphWithoutDownloadingFiles() {
         project.configureAndroidProject()
         (project as ProjectInternal).evaluate()
 
@@ -71,7 +87,7 @@ abstract class PluginApplyAndroidTest : PluginApplyTest() {
             .allDependencies
     }
 
-    private fun buildAndroidProject(): Project =
+    protected fun buildAndroidProject(): Project =
         buildProject {
             pluginManager.apply {
                 apply("com.android.application")
@@ -83,9 +99,21 @@ abstract class PluginApplyAndroidTest : PluginApplyTest() {
     fun apply_afterAndroidPlugin() {
         val project = buildAndroidProject()
 
+        if (expectsBuiltInKotlin) {
+            // As the project uses built-in Kotlin, expect the plugin to have applied the legacy-kapt plugin.
+            assertThat(project.plugins.hasPlugin(Const.ANDROID_LEGACY_KAPT_PLUGIN_ID)).isTrue()
+        }
+
         project.resolveDependencyGraphWithoutDownloadingFiles()
         with(project.configurations) {
-            assertProcessorDependency(getByName(JavaPlugin.ANNOTATION_PROCESSOR_CONFIGURATION_NAME).dependencies)
+            if (expectsBuiltInKotlin) {
+                // The processor should be added to the kapt configuration (of the legacy-kapt plugin).
+                assertProcessorDependency(getByName(Const.KAPT_CONFIGURATION_NAME).dependencies)
+                // As the project uses built-in Kotlin, the Kotlin library should be added.
+                assertKotlinDependency(getByName(JavaPlugin.API_CONFIGURATION_NAME).dependencies)
+            } else {
+                assertProcessorDependency(getByName(JavaPlugin.ANNOTATION_PROCESSOR_CONFIGURATION_NAME).dependencies)
+            }
             assertAndroidDependency(getByName(JavaPlugin.API_CONFIGURATION_NAME).dependencies)
             assertNativeDependency(getByName(JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME).dependencies)
         }
@@ -94,55 +122,20 @@ abstract class PluginApplyAndroidTest : PluginApplyTest() {
         assertAndroidCompat(project)
 
         // Note: can not evaluate and assert transform task for unit tests as Android plugin requires actual project,
-        // this is tested using Gradle TestKit in AndroidPluginTransformTest.
+        // this is tested using Gradle TestKit in the AndroidProjectPluginTest subclasses.
     }
 
-    @Test
-    fun apply_afterKotlinAndroidAndKaptPlugin() {
-        val project = buildProject {
-            pluginManager.apply {
-                apply("com.android.application")
-                apply("kotlin-android")
-                apply("kotlin-kapt")
-                apply(pluginId)
-            }
-        }
-
-        assertKotlinAndroidSetup(project)
-    }
-
-    @Test
-    fun apply_afterKotlinAndroidPlugin_addsKapt() {
-        val project = buildProject {
-            pluginManager.apply {
-                apply("com.android.application")
-                apply("kotlin-android")
-                apply(pluginId)
-            }
-        }
-
-        assertKotlinAndroidSetup(project)
-    }
-
-    private fun assertKotlinAndroidSetup(project: Project) {
-        project.resolveDependencyGraphWithoutDownloadingFiles()
-        with(project.configurations) {
-            assertProcessorDependency(getByName(Const.KAPT_CONFIGURATION_NAME).dependencies)
-            assertAndroidDependency(getByName(JavaPlugin.API_CONFIGURATION_NAME).dependencies)
-            assertNativeDependency(getByName(JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME).dependencies)
-        }
-        assertNotNull(project.tasks.findByPath("objectboxPrepareBuild"))
-
-        assertAndroidCompat(project)
-
-        // Note: can not evaluate and assert transform task for unit tests as Android plugin requires actual project,
-        // this is tested using Gradle TestKit in AndroidTransformTest.
-    }
-
-    private fun assertAndroidDependency(deps: DependencySet) {
+    protected fun assertAndroidDependency(deps: DependencySet) {
         assertEquals("Android lib dependency not found", 1, deps.count {
             it.group == Const.OBX_GROUP && it.name == "$expectedLibWithSyncVariantPrefix-android"
                     && it.version == expectedLibWithSyncVariantVersion
+        })
+    }
+
+    protected fun assertKotlinDependency(deps: DependencySet) {
+        assertEquals("Kotlin lib dependency not found", 1, deps.count {
+            it.group == Const.OBX_GROUP && it.name == Const.OBX_KOTLIN
+                    && it.version == Const.OBX_JAVA_VERSION
         })
     }
 

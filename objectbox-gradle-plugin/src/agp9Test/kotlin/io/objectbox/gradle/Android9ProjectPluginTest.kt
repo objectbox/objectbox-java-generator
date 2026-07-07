@@ -18,14 +18,17 @@
 
 package io.objectbox.gradle
 
-import org.gradle.testkit.runner.GradleRunner
 import org.intellij.lang.annotations.Language
 
 
 /**
- * Tests assembling an Android project with Java sources using Android Plugin 9.
+ * Tests assembling an Android project using Android Plugin 9.
+ *
+ * As Android Plugin 9 has built-in Kotlin support enabled by default, this also covers that the plugin applies its
+ * legacy-kapt plugin (available on the plugin classpath for this test, see the build script of this project), which
+ * then runs the processor.
  */
-class Android9ProjectPluginTest : AndroidProjectPluginTest() {
+open class Android9ProjectPluginTest : AndroidProjectPluginTest() {
 
     // Uses the new DSL of Android Plugin 9 (assignment instead of the removed old setter methods).
     @Language("Groovy")
@@ -44,27 +47,9 @@ class Android9ProjectPluginTest : AndroidProjectPluginTest() {
     // The java block of older tests is not used with Android Plugin 9, the android block configures the project.
     override val buildScriptJavaBlock = ""
 
-    @Language("XML")
-    override val androidManifest =
-        """
-        <?xml version="1.0" encoding="utf-8"?>
-        <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-            <application>
-            </application>
-        </manifest>
-        """.trimIndent()
-
     // Test with the oldest possible version of Gradle (Android Plugin 9.2 requires Gradle 9.4.1).
-    private val gradleVersionLowest = "9.4.1"
-    override val additionalRunnerConfiguration: ((GradleRunner) -> Unit) = {
-        it.forwardOutput()
-        it.withGradleVersion(gradleVersionLowest)
-    }
+    override val gradleVersion = "9.4.1"
 
     override val expectedAndroidPluginVersion: String = "9.2.1"
-    override val expectedGradleVersion: String = gradleVersionLowest
-
-    override val buildTransformDirectory =
-        "build/intermediates/classes/debug/transformDebugClassesWithAsm/dirs"
 
 }

@@ -47,7 +47,15 @@ abstract class AndroidProjectPluginTest {
 
     abstract val buildScriptAndroidBlock: String
 
-    abstract val androidManifest: String
+    @Language("XML")
+    open val androidManifest: String =
+        """
+        <?xml version="1.0" encoding="utf-8"?>
+        <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+            <application>
+            </application>
+        </manifest>
+        """.trimIndent()
 
     /**
      * The java block written to the build script, null to use the [GradleTestRunner] default.
@@ -55,9 +63,15 @@ abstract class AndroidProjectPluginTest {
      */
     open val buildScriptJavaBlock: String? = null
 
+    /**
+     * The version of Gradle to run the test project with.
+     */
+    abstract val gradleVersion: String
+
     open val additionalRunnerConfiguration: ((GradleRunner) -> Unit) = {
         // Log build output to standard out, does not pollute logs as just using --stacktrace option.
         it.forwardOutput()
+        it.withGradleVersion(gradleVersion)
     }
 
     /**
@@ -68,12 +82,15 @@ abstract class AndroidProjectPluginTest {
     /**
      * Used to check that build tracker detects the correct Gradle version.
      */
-    abstract val expectedGradleVersion: String
+    open val expectedGradleVersion: String
+        get() = gradleVersion
 
     /**
      * From project root, the path to the directory where transformed classes are written to.
+     * This is the path as of Android Plugin 8.
      */
-    abstract val buildTransformDirectory: String
+    open val buildTransformDirectory: String =
+        "build/intermediates/classes/debug/transformDebugClassesWithAsm/dirs"
 
     @Test
     fun assemble() {

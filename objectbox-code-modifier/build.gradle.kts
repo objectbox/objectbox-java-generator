@@ -32,8 +32,9 @@ java {
 
 tasks.withType<KotlinJvmCompile>().configureEach {
     compilerOptions {
-        // Match Kotlin language level used by minimum supported Gradle version, see root build script for details.
+        // Match Kotlin version embedded by minimum supported Gradle version, see root build script for details.
         apiVersion.set(KotlinVersion.fromVersion(kotlinApiLevel))
+        languageVersion.set(KotlinVersion.fromVersion(kotlinApiLevel))
     }
 }
 

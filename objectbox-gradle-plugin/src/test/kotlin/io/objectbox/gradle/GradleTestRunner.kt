@@ -70,13 +70,6 @@ class GradleTestRunner(
         }
     }
 
-    fun addKotlinSourceFile(name: String, content: String): File {
-        val sourceDir = File(testProjectDir.root, "src/main/kotlin/com/example").apply { mkdirs() }
-        return File(sourceDir, name).apply {
-            writeText(content)
-        }
-    }
-
     private fun writeBuildFile() {
         // Enable debug mode for plugin.
         val compilerArgs = javaCompilerArgs

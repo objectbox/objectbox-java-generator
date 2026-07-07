@@ -1,6 +1,6 @@
 /*
  * ObjectBox Build Tools
- * Copyright (C) 2020-2024 ObjectBox Ltd.
+ * Copyright (C) 2026 ObjectBox Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -18,15 +18,14 @@
 
 package io.objectbox.gradle
 
-import io.objectbox.gradle.ProjectEnv.Const
 
 /**
- * Base class to test applying [ObjectBoxSyncGradlePlugin] configures a Java or Kotlin Android Gradle project as expected.
+ * Like [Android9ProjectPluginTest], but tests with the latest version of Gradle. Notably, this build itself can not
+ * use that version as it still runs tests with the Android Plugin 8 series, which Gradle 9.6 can no longer run
+ * (see the root build script).
  */
-abstract class SyncPluginApplyAndroidTest : PluginApplyAndroidTest() {
+class Android9LatestGradleProjectPluginTest : Android9ProjectPluginTest() {
 
-    override val pluginId = Const.SYNC_PLUGIN_ID
-    override val expectedLibWithSyncVariantPrefix = "objectbox-sync"
-    override val expectedLibWithSyncVariantVersion = Const.OBX_DATABASE_SYNC_VERSION
+    override val gradleVersion = "9.6.1"
 
 }

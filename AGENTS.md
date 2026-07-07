@@ -29,7 +29,7 @@ Setting `OBX_RELEASE=true` in the environment makes the build use and produce re
 ./gradlew :objectbox-gradle-plugin:agp73Test    # too-old AGP fails with a helpful error (TestKit)
 ./gradlew :objectbox-gradle-plugin:agp81Test    # lowest supported AGP, Android project build (TestKit)
 ./gradlew :objectbox-gradle-plugin:agp813Test   # latest AGP 8, in-process plugin apply tests (incl. kotlin-android/kapt)
-./gradlew :objectbox-gradle-plugin:agp9Test     # AGP 9: apply tests + Android project builds (incl. built-in Kotlin)
+./gradlew :objectbox-gradle-plugin:agp9Test     # AGP 9: apply tests (built-in Kotlin) + Android project builds (lowest and latest Gradle)
 ```
 
 TestKit tests (`GradleTestRunner`-based tests and the `agpXYTest` tasks) build throwaway Gradle projects:
