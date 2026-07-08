@@ -70,6 +70,19 @@ generated Java sources in `expected-source/`, model JSON files in `objectbox-mod
 - The `Jenkinsfile` at the repo root is an obsolete leftover from the previous CI setup (CI is
   GitLab, see `.gitlab-ci.yml`) — ignore it.
 
+## Conventions for changes
+
+These are general working principles for this project; the repo-specific pointers are examples, apply the principle to whatever is being changed.
+
+- **No duplicate logic.** When adding a variant of existing code (a second API, backend, format, ...), extracting the shared core — via base classes, delegates, or a small abstraction over the differing APIs — is part of the task, not an optional follow-up. A good order: implement the variant, prove behavior parity with tests, then generalize until each piece of logic exists once. Example: the two processors share `ObjectBoxProcessorCore`/`Properties`/`Relations` through the `ProcessingApi.kt` abstraction — extend that rather than adding parallel javax/KSP code paths.
+- **The same applies to tests.** Adapt or parameterize existing tests to also cover a new variant, so all variants are held to identical expectations — do not write a separate, diverging suite. Example: tests extending `BaseProcessorTest` (environments via `env(...)`) run against both processors automatically; end-to-end (TestKit) coverage alone is not acceptable for processor behavior.
+- **Pin behavior before changing it.** For code that produces output, characterization tests comparing against expected output come first, then the port/refactor is verified against them. Example: generated sources and the model JSON file are byte-compatible across all processor setups, pinned by `objectbox-processor/src/test/resources/` (`expected-source/`, `objectbox-models/`) and `objectbox-gradle-plugin/src/test/resources/kotlin-project/`. Only change expected files when the output is meant to change.
+- **Prefer coexistence over removal.** When introducing a replacement, keep existing consumer setups working (the old way may become opt-in); dropping support requires explicit agreement. Example: kapt remains supported alongside the preferred KSP.
+- **Prefer slim in-repo helpers over new dependencies.** Build on official/first-party APIs instead of adding third-party libraries, also for test-only needs; adding a dependency requires explicit agreement. Example: `KspCompiler` runs the KSP processor in tests via the standalone KSP implementation instead of a compile-testing fork.
+- **Verify claims empirically.** Version-compatibility assumptions (Kotlin/KSP/AGP/Gradle) and behavior claims are checked with tests or experiments; documentation is often wrong about minimum versions. When results contradict expectations, present the evidence (error output, version checks), not just the conclusion.
+- **Commits tell a clean story.** Split work into logical, self-contained steps that each build and pass tests; for message style see Workflow above. Never add AI/tool attribution or co-author trailers. Avoid within-branch churn (one commit adding what a later one removes or renames) — restructure the commits instead.
+- **Done means `./gradlew check` is green.**
+
 ## Subprojects and how they relate
 
 Subprojects (see `settings.gradle.kts`), dependency chain:
@@ -122,3 +135,10 @@ Contents:
   Plugin 8, which the in-process (ProjectBuilder-based) `agp810Test` tests still cover.
   TestKit tests run other Gradle versions in a subprocess (e.g. `agp9Test`).
 - Java targets: everything compiles to Java 8, except `objectbox-gradle-plugin` (Java 11).
+- KSP version coupling: the KSP API artifacts this build compiles against must be readable by
+  `kotlinVersion` of this build (a Kotlin compiler can not read much newer metadata):
+  `symbol-processing-api` (processor) and `symbol-processing-aa` (test infrastructure).
+  The KSP Gradle plugin version (`kspVersion`, 2.3.x, versioned independently of Kotlin) is both
+  recommended to consumers and used for the internal Moshi code gen.
+  Current KSP versions require AGP 8.10+ for Android projects (the plugin fails Kotlin Android
+  projects on older versions with a helpful error; kapt remains the alternative there).
