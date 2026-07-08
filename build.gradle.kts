@@ -94,13 +94,13 @@ buildscript {
     val kotlinVersion by extra("2.3.20") // Embedded by Gradle 9.5.1 used to compile this
     // To remain compatible with the lowest supported version of Gradle (see GradleCompat), plugin code must not
     // use Kotlin APIs newer than the Kotlin version embedded by that Gradle version (the plugin runs against the
-    // embedded Kotlin standard library). So set kotlinApiLevel to the Kotlin version embedded by the lowest
-    // supported Gradle version: https://docs.gradle.org/current/userguide/compatibility.html
-    // Plugin projects also compile with this as the language version so class metadata remains readable by the
-    // Kotlin compiler embedded by that Gradle version (e.g. for typed access to the plugin extension from
-    // Kotlin DSL build scripts).
-    // Note: Kotlin 2.3 and newer only support API and language level 1.9 or newer, so can not support Gradle
-    // before 8.3 (the first version that embeds Kotlin 1.9).
+    // embedded Kotlin standard library). So set kotlinApiLevel to the "Embedded Kotlin version" of the lowest
+    // supported Gradle version: https://docs.gradle.org/current/userguide/compatibility.html#kotlin
+    // Note: the "Kotlin Language version" column does not matter for pre-compiled, binary plugins like this one,
+    // it only applies to build scripts and precompiled script plugins:
+    // https://blog.gradle.org/three-kotlin-versions-in-a-gradle-project
+    // Note: Kotlin 2.3 and newer only support API level 1.9 or newer, so can not support Gradle before 8.3
+    // (the first version that embeds Kotlin 1.9).
     val kotlinApiLevel by extra("1.9") // Minimum supported Gradle 8.3 embeds Kotlin 1.9
 
     val essentialsVersion by extra("3.1.0")

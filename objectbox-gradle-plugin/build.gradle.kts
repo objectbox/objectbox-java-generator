@@ -44,7 +44,6 @@ kotlin {
         jvmTarget.set(JvmTarget.JVM_11)
         // Match Kotlin version embedded by minimum supported Gradle version, see root build script for details.
         apiVersion.set(KotlinVersion.fromVersion(kotlinApiLevel))
-        languageVersion.set(KotlinVersion.fromVersion(kotlinApiLevel))
     }
 }
 
@@ -173,15 +172,15 @@ configureTestTaskForTestKit(tasks.test)
 // - the lowest supported version and
 // - with the latest API implemented (in the future might add tests for all API levels supported).
 // Note: tests based on ProjectBuilder (like the plugin apply tests) run the Android Plugin in-process with the
-// Gradle version of this build, so they only work with Android Plugin versions compatible with it (currently only
-// Android Plugin 9). For older Android Plugin versions tests must use TestKit (GradleTestRunner) which runs an
-// actual build with a compatible Gradle version.
+// Gradle version of this build, so they only work with Android Plugin versions compatible with it (verified for
+// Android Plugin 8.10 and 9, whereas 8.1 fails). For older Android Plugin versions tests must use TestKit
+// (GradleTestRunner) which runs an actual build with a compatible Gradle version.
 val (agp73TestImplementation, agp73TestRuntimeOnly) =
     createTestKitSourceSet("agp73", "Runs Android Plugin 7.3 integration tests.")
 val (agp81TestImplementation, agp81TestRuntimeOnly) =
     createTestKitSourceSet("agp81", "Runs Android Plugin 8.1 integration tests.")
-val (agp813TestImplementation, agp813TestRuntimeOnly) =
-    createTestKitSourceSet("agp813", "Runs Android Plugin 8.13 integration tests.")
+val (agp810TestImplementation, agp810TestRuntimeOnly) =
+    createTestKitSourceSet("agp810", "Runs Android Plugin 8.10 integration tests.")
 val (agp9TestImplementation, agp9TestRuntimeOnly) =
     createTestKitSourceSet("agp9", "Runs Android Plugin 9 integration tests.")
 
@@ -213,11 +212,12 @@ dependencies {
     val agp81Version = "8.1.4"
     testPluginClasspathagp81("com.android.tools.build:gradle:$agp81Version")
     agp81TestRuntimeOnly(files(testPluginClasspathagp81File))
-    // Testing 8.13, the latest version of the 8 series. Unlike 8.1, it is compatible with the Gradle version of
-    // this build, so it is used for the in-process plugin apply tests of the Android Plugin 8 series (like for the
-    // Kotlin Android plugin with kapt, which projects using the Android Plugin 9 series can no longer use).
-    val agp813Version = "8.13.2"
-    agp813TestRuntimeOnly("com.android.tools.build:gradle:$agp813Version")
+    // Testing 8.10, a potential future minimum supported version. Unlike 8.1, it is compatible with the Gradle
+    // version of this build, so it is used for the in-process plugin apply tests of the Android Plugin 8 series
+    // (like for the Kotlin Android plugin with kapt, which projects using the Android Plugin 9 series can no
+    // longer use).
+    val agp810Version = "8.10.1"
+    agp810TestRuntimeOnly("com.android.tools.build:gradle:$agp810Version")
     // Testing 9, the latest major version (has built-in Kotlin support enabled by default)
     val agp9Version = "9.2.1"
     testPluginClasspathagp9("com.android.tools.build:gradle:$agp9Version")

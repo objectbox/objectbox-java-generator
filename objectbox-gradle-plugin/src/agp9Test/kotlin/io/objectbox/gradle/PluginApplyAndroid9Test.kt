@@ -28,7 +28,7 @@ import org.gradle.api.Project
  * Tests applying [ObjectBoxGradlePlugin] configures an Android Gradle project as expected.
  *
  * Tests with Android Plugin 9 which has built-in Kotlin support enabled by default, so unlike for older versions
- * (see PluginApplyAndroid813Test in the agp813Test source set) the Kotlin Android plugin can not be applied and
+ * (see PluginApplyAndroid810Test in the agp810Test source set) the Kotlin Android plugin can not be applied and
  * the plugin is expected to apply the legacy-kapt plugin of the Android Plugin (available on the classpath for
  * this test, see the build script of this project) and to add the ObjectBox Kotlin library.
  */

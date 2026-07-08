@@ -30,13 +30,14 @@ import org.junit.Test
 
 /**
  * Tests applying [ObjectBoxGradlePlugin] configures a Java or Kotlin Android Gradle project as expected.
- * Tests with Android Plugin 8.13 (the latest of the 8 series that is compatible with the Gradle version of this build).
+ * Tests with Android Plugin 8.10, a potential future minimum supported version (and unlike 8.1 compatible with
+ * the Gradle version of this build).
  *
  * Also tests with the Kotlin Android plugin (and kapt), which is specific to the Android Plugin 8 series: projects
  * using Android Plugin 9 or newer can no longer apply it (they use built-in Kotlin, see PluginApplyAndroid9Test in
  * the agp9Test source set).
  */
-open class PluginApplyAndroid813Test : PluginApplyAndroidTest() {
+open class PluginApplyAndroid810Test : PluginApplyAndroidTest() {
 
     override fun assertAndroidCompat(project: Project) {
         assertThat(AndroidCompat.getPlugin(project))

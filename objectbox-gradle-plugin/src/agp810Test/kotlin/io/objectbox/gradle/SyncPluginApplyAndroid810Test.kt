@@ -22,9 +22,9 @@ import io.objectbox.gradle.ProjectEnv.Const
 
 
 /**
- * Like [PluginApplyAndroid813Test], but tests applying [ObjectBoxSyncGradlePlugin].
+ * Like [PluginApplyAndroid810Test], but tests applying [ObjectBoxSyncGradlePlugin].
  */
-class SyncPluginApplyAndroid813Test : PluginApplyAndroid813Test() {
+class SyncPluginApplyAndroid810Test : PluginApplyAndroid810Test() {
 
     override val pluginId = Const.SYNC_PLUGIN_ID
     override val expectedLibWithSyncVariantPrefix = "objectbox-sync"

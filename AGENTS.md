@@ -28,7 +28,7 @@ Setting `OBX_RELEASE=true` in the environment makes the build use and produce re
 # Android Gradle Plugin integration tests (separate source sets in objectbox-gradle-plugin)
 ./gradlew :objectbox-gradle-plugin:agp73Test    # too-old AGP fails with a helpful error (TestKit)
 ./gradlew :objectbox-gradle-plugin:agp81Test    # lowest supported AGP, Android project build (TestKit)
-./gradlew :objectbox-gradle-plugin:agp813Test   # latest AGP 8, in-process plugin apply tests (incl. kotlin-android/kapt)
+./gradlew :objectbox-gradle-plugin:agp810Test   # AGP 8.10, in-process plugin apply tests (incl. kotlin-android/kapt)
 ./gradlew :objectbox-gradle-plugin:agp9Test     # AGP 9: apply tests (built-in Kotlin) + Android project builds (lowest and latest Gradle)
 ```
 
@@ -56,7 +56,7 @@ Dependency chain (see `settings.gradle.kts`):
 
 - The plugin supports Gradle 8.3+ (`GradleCompat`) and Android Plugin 8.1+ (`AndroidCompat`), including Android Plugin 9 with built-in Kotlin (the plugin then applies `com.android.legacy-kapt` if available on the classpath).
 - Gradle runs plugins with its *embedded* Kotlin version, so all plugin projects set Kotlin `apiVersion` to 1.9 (what Gradle 8.3 bundles). Do not use newer Kotlin APIs in `objectbox-gradle-plugin`, `objectbox-code-modifier`, or `agp-wrapper-*` code — this also applies to their dependencies.
-- The wrapper intentionally stays on Gradle 9.5.x: Gradle 9.6 can no longer run Android Plugin 8, which the in-process (ProjectBuilder-based) `agp813Test` tests still cover. TestKit tests run other Gradle versions in a subprocess (e.g. `agp9Test` covers Gradle 9.6).
+- The wrapper intentionally stays on Gradle 9.5.x: Gradle 9.6 can no longer run Android Plugin 8, which the in-process (ProjectBuilder-based) `agp810Test` tests still cover. TestKit tests run other Gradle versions in a subprocess (e.g. `agp9Test` covers Gradle 9.6).
 - Java targets: `objectbox-processor` and `objectbox-generator` compile to Java 8; the plugin projects target Java 11.
 - Version-specific Gradle/AGP API access goes through the `util/GradleCompat`/`AndroidCompat` abstractions and `agp-wrapper-x-y` projects — follow that pattern rather than calling new APIs directly.
 
