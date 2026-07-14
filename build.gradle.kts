@@ -26,9 +26,12 @@ plugins {
 
 buildscript {
     // Environment variables (see notes at the top of this file)
+    // https://docs.gitlab.com/ci/variables/predefined_variables/
+    val envIsCI: Boolean = System.getenv("CI") == "true"
     val envRelease = System.getenv("OBX_RELEASE")
     // Gradle properties (see notes at the top of this file)
-    val propertyVersionSuffix = providers.gradleProperty("versionSuffix")
+    val propertyVersionSuffixName = "versionSuffix"
+    val propertyVersionSuffix = providers.gradleProperty(propertyVersionSuffixName)
 
     // Version of Maven artifacts
     // Should only be changed as part of the release process, see the release checklist in the objectbox repo
@@ -51,6 +54,10 @@ buildscript {
     } else if (propertyVersionSuffix.isPresent) {
         "-${propertyVersionSuffix.get()}-SNAPSHOT"
     } else {
+        if (envIsCI) {
+            throw GradleException("Publishing: property $propertyVersionSuffixName must be set in CI to calculate version suffix.")
+        }
+        println("WARNING: Publishing: property $propertyVersionSuffixName not set, using '-dev-SNAPSHOT' version suffix.")
         "-dev-SNAPSHOT"
     }
 
