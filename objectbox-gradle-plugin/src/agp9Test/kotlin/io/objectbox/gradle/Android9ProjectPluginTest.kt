@@ -22,7 +22,8 @@ import org.intellij.lang.annotations.Language
 
 
 /**
- * Tests assembling an Android project using Android Plugin 9.
+ * Tests assembling an Android project using the latest supported version of the Android Plugin
+ * (see build script and [expectedAndroidPluginVersion]) and Gradle (see [gradleVersion]).
  *
  * As Android Plugin 9 has built-in Kotlin support enabled by default, this also covers that the plugin applies its
  * legacy-kapt plugin (available on the plugin classpath for this test, see the build script of this project), which
@@ -47,8 +48,8 @@ open class Android9ProjectPluginTest : AndroidProjectPluginTest() {
     // The java block of older tests is not used with Android Plugin 9, the android block configures the project.
     override val buildScriptJavaBlock = ""
 
-    // Test with the oldest possible version of Gradle (Android Plugin 9.2 requires Gradle 9.4.1).
-    override val gradleVersion = "9.4.1"
+    // Test with the latest possible version of Gradle
+    override val gradleVersion = "9.6.1"
 
     override val expectedAndroidPluginVersion: String = "9.2.1"
 
