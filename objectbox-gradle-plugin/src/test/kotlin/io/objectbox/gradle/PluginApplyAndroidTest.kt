@@ -21,6 +21,8 @@ package io.objectbox.gradle
 import com.android.build.api.dsl.ApplicationExtension
 import com.google.common.truth.Truth.assertThat
 import io.objectbox.gradle.ProjectEnv.Const
+import io.objectbox.gradle.transform.AndroidPlugin72
+import io.objectbox.gradle.util.AndroidCompat
 import org.gradle.api.Project
 import org.gradle.api.artifacts.DependencySet
 import org.gradle.api.internal.project.ProjectInternal
@@ -41,24 +43,15 @@ abstract class PluginApplyAndroidTest : PluginApplyTest() {
     /**
      * Checks the correct compat shim is used.
      */
-    abstract fun assertAndroidCompat(project: Project)
-
-    /**
-     * True if the Android Plugin is expected to provide built-in Kotlin support (Android Plugin 9 or newer), so
-     * this plugin should apply the legacy-kapt plugin, add the processor to its kapt configuration and add the
-     * ObjectBox Kotlin library.
-     */
-    open val expectsBuiltInKotlin: Boolean = false
-
-    /**
-     * Should match an SDK embedded in the buildenv-android CI image to avoid downloading it.
-     */
-    open val compileSdk: Int = 35
+    fun assertAndroidCompat(project: Project) {
+        assertThat(AndroidCompat.getPlugin(project))
+            .isInstanceOf(AndroidPlugin72::class.java)
+    }
 
     private fun Project.configureAndroidProject() {
         val androidExtension = extensions.getByName("android") as ApplicationExtension
         androidExtension.apply {
-            compileSdk = this@PluginApplyAndroidTest.compileSdk
+            compileSdk = 35 // Matches SDK embedded in buildenv-android CI image to avoid downloading it
             namespace = "io.objectbox.plugin.test"
         }
     }
@@ -95,26 +88,12 @@ abstract class PluginApplyAndroidTest : PluginApplyTest() {
             }
         }
 
-    @Test
-    fun apply_afterAndroidPlugin() {
-        val project = buildAndroidProject()
-
-        if (expectsBuiltInKotlin) {
-            // As the project uses built-in Kotlin, expect the plugin to have applied the legacy-kapt plugin.
-            assertThat(project.plugins.hasPlugin(Const.ANDROID_LEGACY_KAPT_PLUGIN_ID)).isTrue()
-        }
-
+    fun assertKotlinAndroidSetup(project: Project) {
         project.resolveDependencyGraphWithoutDownloadingFiles()
         with(project.configurations) {
-            if (expectsBuiltInKotlin) {
-                // The processor should be added to the kapt configuration (of the legacy-kapt plugin).
-                assertProcessorDependency(getByName(Const.KAPT_CONFIGURATION_NAME).dependencies)
-                // As the project uses built-in Kotlin, the Kotlin library should be added.
-                assertKotlinDependency(getByName(JavaPlugin.API_CONFIGURATION_NAME).dependencies)
-            } else {
-                assertProcessorDependency(getByName(JavaPlugin.ANNOTATION_PROCESSOR_CONFIGURATION_NAME).dependencies)
-            }
+            assertProcessorDependency(getByName(Const.KAPT_CONFIGURATION_NAME).dependencies)
             assertAndroidDependency(getByName(JavaPlugin.API_CONFIGURATION_NAME).dependencies)
+            assertKotlinDependency(getByName(JavaPlugin.API_CONFIGURATION_NAME).dependencies)
             assertNativeDependency(getByName(JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME).dependencies)
         }
         assertNotNull(project.tasks.findByPath("objectboxPrepareBuild"))

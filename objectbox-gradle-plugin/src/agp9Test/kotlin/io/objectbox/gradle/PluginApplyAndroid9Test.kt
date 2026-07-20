@@ -19,28 +19,42 @@
 package io.objectbox.gradle
 
 import com.google.common.truth.Truth.assertThat
-import io.objectbox.gradle.transform.AndroidPlugin72
-import io.objectbox.gradle.util.AndroidCompat
-import org.gradle.api.Project
+import io.objectbox.gradle.ProjectEnv.Const
+import org.junit.Test
 
 
 /**
- * Tests applying [ObjectBoxGradlePlugin] configures an Android Gradle project as expected.
+ * Tests applying [ObjectBoxGradlePlugin] configures an Android Kotlin Gradle project as expected.
  *
- * Tests with Android Plugin 9 which has built-in Kotlin support enabled by default, so unlike for older versions
- * (see PluginApplyAndroid810Test in the agp810Test source set) the Kotlin Android plugin can not be applied and
- * the plugin is expected to apply the legacy-kapt plugin of the Android Plugin (available on the classpath for
- * this test, see the build script of this project) and to add the ObjectBox Kotlin library.
+ * Tests with the latest Android Plugin 9.
+ *
+ * Starting with 9.0 the Android Gradle Plugin applies the Kotlin plugin itself ("built-in Kotlin")
+ * and instead of kapt its bundled legacy-kapt plugin must be used. So no longer testing a Java
+ * Android project.
  */
 open class PluginApplyAndroid9Test : PluginApplyAndroidTest() {
 
-    override val expectsBuiltInKotlin: Boolean = true
+    @Test
+    fun apply_afterAndroidPlugin_addsLegacyKapt() {
+        val project = buildAndroidProject()
 
-    override val compileSdk: Int = 36
+        // The plugin should apply the legacy-kapt plugin.
+        assertThat(project.plugins.hasPlugin(Const.ANDROID_LEGACY_KAPT_PLUGIN_ID)).isTrue()
 
-    override fun assertAndroidCompat(project: Project) {
-        assertThat(AndroidCompat.getPlugin(project))
-            .isInstanceOf(AndroidPlugin72::class.java)
+        assertKotlinAndroidSetup(project)
+    }
+
+    @Test
+    fun apply_afterAndroidAndLegacyKaptPlugin() {
+        val project = buildProject {
+            pluginManager.apply {
+                apply("com.android.application")
+                apply(Const.ANDROID_LEGACY_KAPT_PLUGIN_ID)
+                apply(pluginId)
+            }
+        }
+
+        assertKotlinAndroidSetup(project)
     }
 
 }

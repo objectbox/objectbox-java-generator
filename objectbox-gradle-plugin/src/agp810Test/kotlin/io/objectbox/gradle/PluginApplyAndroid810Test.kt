@@ -18,30 +18,36 @@
 
 package io.objectbox.gradle
 
-import com.google.common.truth.Truth.assertThat
-import io.objectbox.gradle.ProjectEnv.Const
-import io.objectbox.gradle.transform.AndroidPlugin72
-import io.objectbox.gradle.util.AndroidCompat
-import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPlugin
 import org.junit.Assert.assertNotNull
 import org.junit.Test
 
 
 /**
- * Tests applying [ObjectBoxGradlePlugin] configures a Java or Kotlin Android Gradle project as expected.
- * Tests with Android Plugin 8.10, a potential future minimum supported version (and unlike 8.1 compatible with
- * the Gradle version of this build).
+ * Tests applying [ObjectBoxGradlePlugin] configures a Java or Kotlin Android Gradle project as
+ * expected.
  *
- * Also tests with the Kotlin Android plugin (and kapt), which is specific to the Android Plugin 8 series: projects
- * using Android Plugin 9 or newer can no longer apply it (they use built-in Kotlin, see PluginApplyAndroid9Test in
- * the agp9Test source set).
+ * Tests with Android Plugin 8.10 (as 8.1 is incompatible with Gradle 9 required by
+ * [PluginApplyAndroidTest]).
  */
 open class PluginApplyAndroid810Test : PluginApplyAndroidTest() {
 
-    override fun assertAndroidCompat(project: Project) {
-        assertThat(AndroidCompat.getPlugin(project))
-            .isInstanceOf(AndroidPlugin72::class.java)
+    @Test
+    fun apply_afterAndroidPlugin() {
+        val project = buildAndroidProject()
+
+        project.resolveDependencyGraphWithoutDownloadingFiles()
+        with(project.configurations) {
+            assertProcessorDependency(getByName(JavaPlugin.ANNOTATION_PROCESSOR_CONFIGURATION_NAME).dependencies)
+            assertAndroidDependency(getByName(JavaPlugin.API_CONFIGURATION_NAME).dependencies)
+            assertNativeDependency(getByName(JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME).dependencies)
+        }
+        assertNotNull(project.tasks.findByPath("objectboxPrepareBuild"))
+
+        assertAndroidCompat(project)
+
+        // Note: can not evaluate and assert transform task for unit tests as Android plugin requires actual project,
+        // this is tested using Gradle TestKit in the AndroidProjectPluginTest subclasses.
     }
 
     @Test
@@ -69,22 +75,6 @@ open class PluginApplyAndroid810Test : PluginApplyAndroidTest() {
         }
 
         assertKotlinAndroidSetup(project)
-    }
-
-    private fun assertKotlinAndroidSetup(project: Project) {
-        project.resolveDependencyGraphWithoutDownloadingFiles()
-        with(project.configurations) {
-            assertProcessorDependency(getByName(Const.KAPT_CONFIGURATION_NAME).dependencies)
-            assertAndroidDependency(getByName(JavaPlugin.API_CONFIGURATION_NAME).dependencies)
-            assertKotlinDependency(getByName(JavaPlugin.API_CONFIGURATION_NAME).dependencies)
-            assertNativeDependency(getByName(JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME).dependencies)
-        }
-        assertNotNull(project.tasks.findByPath("objectboxPrepareBuild"))
-
-        assertAndroidCompat(project)
-
-        // Note: can not evaluate and assert transform task for unit tests as Android plugin requires actual project,
-        // this is tested using Gradle TestKit in the AndroidProjectPluginTest subclasses.
     }
 
 }
