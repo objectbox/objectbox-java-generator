@@ -92,8 +92,11 @@ abstract class PluginApplyAndroidTest : PluginApplyTest() {
         project.resolveDependencyGraphWithoutDownloadingFiles()
         with(project.configurations) {
             assertProcessorDependency(getByName(Const.KAPT_CONFIGURATION_NAME).dependencies)
-            assertAndroidDependency(getByName(JavaPlugin.API_CONFIGURATION_NAME).dependencies)
-            assertKotlinDependency(getByName(JavaPlugin.API_CONFIGURATION_NAME).dependencies)
+            getByName(JavaPlugin.API_CONFIGURATION_NAME).dependencies.also {
+                it.assertAndroidDependency()
+                it.assertKotlinDependency()
+                it.assertJavaDependency()
+            }
             assertNativeDependency(getByName(JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME).dependencies)
         }
         assertNotNull(project.tasks.findByPath("objectboxPrepareBuild"))
@@ -104,18 +107,11 @@ abstract class PluginApplyAndroidTest : PluginApplyTest() {
         // this is tested using Gradle TestKit in the AndroidProjectPluginTest subclasses.
     }
 
-    protected fun assertAndroidDependency(deps: DependencySet) {
-        assertEquals("Android lib dependency not found", 1, deps.count {
-            it.group == Const.OBX_GROUP && it.name == "$expectedLibWithSyncVariantPrefix-android"
-                    && it.version == expectedLibWithSyncVariantVersion
-        })
-    }
-
-    protected fun assertKotlinDependency(deps: DependencySet) {
-        assertEquals("Kotlin lib dependency not found", 1, deps.count {
-            it.group == Const.OBX_GROUP && it.name == Const.OBX_KOTLIN
-                    && it.version == Const.OBX_JAVA_VERSION
-        })
+    protected fun DependencySet.assertAndroidDependency() {
+        assertObxDependency(
+            name = "$expectedLibWithSyncVariantPrefix-android",
+            version = expectedLibWithSyncVariantVersion
+        )
     }
 
     private val databaseLibraries = listOf(

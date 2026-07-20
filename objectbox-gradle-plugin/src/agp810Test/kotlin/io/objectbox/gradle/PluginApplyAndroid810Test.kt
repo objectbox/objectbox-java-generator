@@ -39,7 +39,10 @@ open class PluginApplyAndroid810Test : PluginApplyAndroidTest() {
         project.resolveDependencyGraphWithoutDownloadingFiles()
         with(project.configurations) {
             assertProcessorDependency(getByName(JavaPlugin.ANNOTATION_PROCESSOR_CONFIGURATION_NAME).dependencies)
-            assertAndroidDependency(getByName(JavaPlugin.API_CONFIGURATION_NAME).dependencies)
+            getByName(JavaPlugin.API_CONFIGURATION_NAME).dependencies.also {
+                it.assertAndroidDependency()
+                it.assertJavaDependency()
+            }
             assertNativeDependency(getByName(JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME).dependencies)
         }
         assertNotNull(project.tasks.findByPath("objectboxPrepareBuild"))
