@@ -104,7 +104,7 @@ buildscript {
     // minimum supported Gradle version based on the Kotlin version it embeds. Details above.
     // Look up in org.jetbrains.kotlin.gradle.dsl.KotlinVersion (check deprecated annotations).
     // Kotlin 2.3.20 still supports 1.9, requires at least Gradle 8.3 which embeds Kotlin 1.9.0
-    val kotlinApiLevel by extra("1.9")
+    val kotlinApiVersion by extra("1.9")
 
     val essentialsVersion by extra("3.1.0")
     // 3.24.0-GA and newer support Java 11 byte code

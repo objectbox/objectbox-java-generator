@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 
-val kotlinApiLevel: String by rootProject.extra
+val kotlinApiVersion: String by rootProject.extra
 val objectboxJavaVersion: String by rootProject.extra
 val junitVersion: String by rootProject.extra
 val truthVersion: String by rootProject.extra
@@ -22,7 +22,7 @@ java {
 tasks.withType<KotlinJvmCompile>().configureEach {
     compilerOptions {
         // Match Kotlin version embedded by minimum supported Gradle version, see root build script for details.
-        apiVersion.set(KotlinVersion.fromVersion(kotlinApiLevel))
+        apiVersion.set(KotlinVersion.fromVersion(kotlinApiVersion))
     }
 }
 
