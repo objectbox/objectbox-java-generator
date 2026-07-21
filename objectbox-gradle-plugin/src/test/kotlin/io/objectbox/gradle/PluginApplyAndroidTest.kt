@@ -83,7 +83,7 @@ abstract class PluginApplyAndroidTest : PluginApplyTest() {
     protected fun buildAndroidProject(): Project =
         buildProject {
             pluginManager.apply {
-                apply("com.android.application")
+                apply(Const.ANDROID_APPLICATION_PLUGIN_ID)
                 apply(pluginId)
             }
         }

@@ -184,8 +184,8 @@ open class PluginApplyJavaTest : PluginApplyTest() {
     private fun buildKotlinKaptProject(): Project =
         buildProject {
             pluginManager.apply {
-                apply("kotlin")
-                apply("kotlin-kapt")
+                apply(Const.KOTLIN_PLUGIN_ID)
+                apply(Const.KOTLIN_KAPT_PLUGIN_ID)
                 apply(pluginId)
             }
         }
@@ -199,7 +199,7 @@ open class PluginApplyJavaTest : PluginApplyTest() {
     fun apply_afterKotlinPlugin_addsKapt() {
         val project = buildProject {
             pluginManager.apply {
-                apply("kotlin")
+                apply(Const.KOTLIN_PLUGIN_ID)
                 apply(pluginId)
             }
         }

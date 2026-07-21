@@ -48,6 +48,12 @@ class ProjectEnv(val project: Project) {
         /** Name of the configuration of the [kapt plugin](https://kotlinlang.org/docs/kapt.html). */
         const val KAPT_CONFIGURATION_NAME = "kapt"
 
+        const val ANDROID_BASE_PLUGIN_ID = "com.android.base"
+        const val ANDROID_APPLICATION_PLUGIN_ID = "com.android.application"
+        const val KOTLIN_PLUGIN_ID = "kotlin"
+        const val KOTLIN_ANDROID_PLUGIN_ID = "kotlin-android"
+        const val KOTLIN_KAPT_PLUGIN_ID = "kotlin-kapt"
+
         /**
          * The kapt replacement plugin shipped with Android Gradle Plugin 9.0 or newer for projects that use its
          * [built-in Kotlin support](https://developer.android.com/build/migrate-to-built-in-kotlin).
@@ -63,9 +69,9 @@ class ProjectEnv(val project: Project) {
     // Note: can not use types as this project uses Android and Kotlin plugin API as compileOnly,
     // so the classes might be missing from projects that do not have the Android or Kotlin plugin on the classpath.
     // All Android plugins also apply the AndroidBasePlugin.
-    val hasAndroidPlugin = project.plugins.hasPlugin("com.android.base")
-    val hasKotlinAndroidPlugin = project.plugins.hasPlugin("kotlin-android")
-    val hasKotlinPlugin = project.plugins.hasPlugin("kotlin")
+    val hasAndroidPlugin = project.plugins.hasPlugin(Const.ANDROID_BASE_PLUGIN_ID)
+    val hasKotlinAndroidPlugin = project.plugins.hasPlugin(Const.KOTLIN_ANDROID_PLUGIN_ID)
+    val hasKotlinPlugin = project.plugins.hasPlugin(Const.KOTLIN_PLUGIN_ID)
 
     /**
      * If the project uses the built-in Kotlin support of Android Gradle Plugin 9.0 or newer (enabled by default):

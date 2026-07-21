@@ -157,8 +157,8 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
             !project.hasConfig(Const.KAPT_CONFIGURATION_NAME)
         ) {
             // Note: no-op if kapt plugin was already applied.
-            project.plugins.apply("kotlin-kapt")
-            env.logDebug { "Applied 'kotlin-kapt'." }
+            project.plugins.apply(Const.KOTLIN_KAPT_PLUGIN_ID)
+            env.logDebug { "Applied '${Const.KOTLIN_KAPT_PLUGIN_ID}'." }
         } else if (env.hasBuiltInKotlin && !project.hasConfig(Const.KAPT_CONFIGURATION_NAME)) {
             // With built-in Kotlin of Android Gradle Plugin 9.0 the kotlin-kapt plugin is not supported,
             // apply the replacement of the Android Gradle Plugin instead (no-op if it was already applied).

@@ -19,6 +19,7 @@
 package io.objectbox.gradle
 
 import com.google.common.truth.Truth.assertThat
+import io.objectbox.gradle.ProjectEnv.Const
 import io.objectbox.gradle.transform.ClassConst
 import io.objectbox.gradle.transform.assignsBoxStoreField
 import io.objectbox.gradle.transform.getInitializedFields
@@ -97,7 +98,7 @@ abstract class AndroidProjectPluginTest {
         val gradleRunner = GradleTestRunner(testProjectDir)
             .apply {
                 // Note: classpath for plugins configured in build script of this project (see GradleTestRunner.build).
-                additionalPlugins += "com.android.application"
+                additionalPlugins += Const.ANDROID_APPLICATION_PLUGIN_ID
                 additionalBlocks = buildScriptAndroidBlock
             }
 

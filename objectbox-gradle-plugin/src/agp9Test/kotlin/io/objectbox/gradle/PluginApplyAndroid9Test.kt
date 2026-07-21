@@ -48,7 +48,7 @@ open class PluginApplyAndroid9Test : PluginApplyAndroidTest() {
     fun apply_afterAndroidAndLegacyKaptPlugin() {
         val project = buildProject {
             pluginManager.apply {
-                apply("com.android.application")
+                apply(Const.ANDROID_APPLICATION_PLUGIN_ID)
                 apply(Const.ANDROID_LEGACY_KAPT_PLUGIN_ID)
                 apply(pluginId)
             }

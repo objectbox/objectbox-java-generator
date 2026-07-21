@@ -19,6 +19,7 @@
 package io.objectbox.gradle
 
 import com.google.common.truth.Truth.assertThat
+import io.objectbox.gradle.ProjectEnv.Const
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -40,7 +41,7 @@ class PluginApplyAndroid73Test {
     @Test
     fun apply_afterAndroidPlugin_failsTooOld() {
         val gradleRunner = GradleTestRunner(testProjectDir).apply {
-            additionalPlugins += "com.android.application"
+            additionalPlugins += Const.ANDROID_APPLICATION_PLUGIN_ID
         }
 
         // Applying the plugin fails during configuration, so no Android SDK or resolvable dependencies required.

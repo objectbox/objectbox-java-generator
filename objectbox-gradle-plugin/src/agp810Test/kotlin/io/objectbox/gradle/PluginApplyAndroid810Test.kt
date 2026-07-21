@@ -18,6 +18,7 @@
 
 package io.objectbox.gradle
 
+import io.objectbox.gradle.ProjectEnv.Const
 import org.gradle.api.plugins.JavaPlugin
 import org.junit.Assert.assertNotNull
 import org.junit.Test
@@ -57,9 +58,9 @@ open class PluginApplyAndroid810Test : PluginApplyAndroidTest() {
     fun apply_afterKotlinAndroidAndKaptPlugin() {
         val project = buildProject {
             pluginManager.apply {
-                apply("com.android.application")
-                apply("kotlin-android")
-                apply("kotlin-kapt")
+                apply(Const.ANDROID_APPLICATION_PLUGIN_ID)
+                apply(Const.KOTLIN_ANDROID_PLUGIN_ID)
+                apply(Const.KOTLIN_KAPT_PLUGIN_ID)
                 apply(pluginId)
             }
         }
@@ -71,8 +72,8 @@ open class PluginApplyAndroid810Test : PluginApplyAndroidTest() {
     fun apply_afterKotlinAndroidPlugin_addsKapt() {
         val project = buildProject {
             pluginManager.apply {
-                apply("com.android.application")
-                apply("kotlin-android")
+                apply(Const.ANDROID_APPLICATION_PLUGIN_ID)
+                apply(Const.KOTLIN_ANDROID_PLUGIN_ID)
                 apply(pluginId)
             }
         }
