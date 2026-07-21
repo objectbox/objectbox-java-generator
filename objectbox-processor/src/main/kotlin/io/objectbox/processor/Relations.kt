@@ -89,7 +89,7 @@ class Relations(private val messages: Messages) {
             ToManyByBacklink(
                 name = field.simpleName.toString(),
                 targetEntityName = targetEntityName,
-                targetPropertyName = backlinkAnnotation?.to?.ifBlank { null },
+                targetPropertyName = backlinkAnnotation.to.ifBlank { null },
                 isFieldAccessible = isFieldAccessible
             )
         } else {

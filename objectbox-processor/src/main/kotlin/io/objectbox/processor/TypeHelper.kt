@@ -32,6 +32,7 @@ import javax.lang.model.util.Types
 /**
  * Helps translate processor types to objectbox types.
  */
+@Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN") // Using <KotlinType>.javaObjectType is redundant
 class TypeHelper(
     private val elementUtils: Elements,
     private val typeUtils: Types

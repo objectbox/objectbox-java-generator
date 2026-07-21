@@ -531,11 +531,6 @@ class Properties(
                         null
                     }
                 }
-
-                else -> {
-                    messages.error("@Type does not support the given type.", field)
-                    null
-                }
             }
         }
 
