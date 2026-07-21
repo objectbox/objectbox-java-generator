@@ -114,7 +114,10 @@ buildscript {
     // mockito 5.0.0+ requires JDK 11
     val mockitoVersion by extra("4.11.0") // https://github.com/mockito/mockito/releases
     val moshiVersion by extra("1.15.2") // https://github.com/square/moshi/blob/master/CHANGELOG.md
-    // Used to run the moshi-kotlin-codegen annotation processor (kapt does not support Kotlin 2.3 metadata)
+    // Used to run the moshi-kotlin-codegen annotation processor (kapt does not support Kotlin 2.3 metadata).
+    // Moshi doesn't support KSP 2 until v2, currently in preview, but out of luck it appears this
+    // project isn't affected by the changed return values of KSP 2
+    // (https://github.com/google/ksp/blob/main/docs/ksp2api.md) so use it regardless.
     val kspVersion by extra("2.3.9") // https://github.com/google/ksp/releases
     // okio 3.0.0+ requires Kotlin 1.5
     val okioVersion by extra("2.10.0") // https://github.com/square/okio/blob/master/CHANGELOG.md
