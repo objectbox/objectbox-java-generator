@@ -33,11 +33,10 @@ class Android81ProjectPluginTest : AndroidProjectPluginTest() {
         """
         android {
             namespace 'com.example'
-            compileSdkVersion 35 // Matches SDK embedded in buildenv-android CI image to avoid downloading it
+            compileSdkVersion $compileSdk
             defaultConfig {
                 applicationId "com.example"
-                minSdkVersion 21
-                targetSdkVersion 33
+                minSdkVersion $minSdk
             }
             compileOptions {
                 sourceCompatibility JavaVersion.VERSION_1_8

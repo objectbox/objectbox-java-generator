@@ -37,10 +37,10 @@ open class Android9ProjectPluginTest : AndroidProjectPluginTest() {
         """
         android {
             namespace = 'com.example'
-            compileSdk = 36 // Matches SDK embedded in buildenv-android CI image to avoid downloading it
+            compileSdk = $compileSdk
             defaultConfig {
                 applicationId = "com.example"
-                minSdk = 21
+                minSdk = $minSdk
             }
         }
         """.trimIndent()

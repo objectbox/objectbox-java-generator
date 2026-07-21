@@ -45,6 +45,16 @@ abstract class AndroidProjectPluginTest {
     @Rule
     val testProjectDir: TemporaryFolder = TemporaryFolder.builder().assureDeletion().build()
 
+    /**
+     * Matches the SDK embedded in buildenv-android CI image to avoid downloading it.
+     */
+    val compileSdk = "35"
+
+    /**
+     * Matches the minimum SDK supported by the ObjectBox Android database library.
+     */
+    val minSdk = "21"
+
     abstract val buildScriptAndroidBlock: String
 
     @Language("XML")
