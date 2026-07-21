@@ -104,12 +104,15 @@ buildscript {
     val truthVersion by extra("1.4.5") // https://github.com/google/truth/releases
     // mockito 5.0.0+ requires JDK 11
     val mockitoVersion by extra("4.11.0") // https://github.com/mockito/mockito/releases
-    val moshiVersion by extra("1.15.0") // https://github.com/square/moshi/blob/master/CHANGELOG.md
+    val moshiVersion by extra("1.15.2") // https://github.com/square/moshi/blob/master/CHANGELOG.md
+    // Used to run the moshi-kotlin-codegen annotation processor (kapt does not support Kotlin 2.3 metadata)
+    val kspVersion by extra("2.3.9") // https://github.com/google/ksp/releases
     // okio 3.0.0+ requires Kotlin 1.5
     val okioVersion by extra("2.10.0") // https://github.com/square/okio/blob/master/CHANGELOG.md
 
     dependencies {
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
+        classpath("com.google.devtools.ksp:symbol-processing-gradle-plugin:$kspVersion")
     }
 }
 

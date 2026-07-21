@@ -16,7 +16,7 @@ plugins {
     id("java-library")
     id("java-test-fixtures")
     kotlin("jvm")
-    kotlin("kapt")
+    id("com.google.devtools.ksp")
     id("com.github.gmazzo.buildconfig")
     id("objectbox-publish")
     id("objectbox-disable-analytics")
@@ -44,7 +44,7 @@ dependencies {
     implementation("org.greenrobot:essentials:$essentialsVersion")
     implementation("org.javassist:javassist:$javassistVersion")
     implementation("com.squareup.moshi:moshi:$moshiVersion")
-    kapt("com.squareup.moshi:moshi-kotlin-codegen:$moshiVersion")
+    ksp("com.squareup.moshi:moshi-kotlin-codegen:$moshiVersion")
     implementation("com.squareup.okio:okio:$okioVersion")
     // Tink 1.19.0 requires Java 11
     // Tink 1.16.0 includes protobuf-java 4.28.2 which removes a method required by a Android Gradle Plugin 8.1 dependency
