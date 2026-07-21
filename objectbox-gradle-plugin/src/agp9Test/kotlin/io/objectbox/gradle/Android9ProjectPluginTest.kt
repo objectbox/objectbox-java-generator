@@ -25,9 +25,9 @@ import org.intellij.lang.annotations.Language
  * Tests assembling an Android project using the latest supported version of the Android Plugin
  * (see build script and [expectedAndroidPluginVersion]) and Gradle (see [gradleVersion]).
  *
- * As Android Plugin 9 has built-in Kotlin support enabled by default, this also covers that the plugin applies its
- * legacy-kapt plugin (available on the plugin classpath for this test, see the build script of this project), which
- * then runs the processor.
+ * Android Plugin 9 notably has switched to a new DSL, built-in Kotlin support and requires using
+ * its own legacy-kapt plugin (which must be added to the special plugin classpath for
+ * GradleTestRunner, see the build script).
  */
 open class Android9ProjectPluginTest : AndroidProjectPluginTest() {
 

@@ -169,12 +169,8 @@ data class PluginClassPathFile(
 configureTestTaskForTestKit(tasks.test)
 // Test Android Plugin with
 // - a version that is too old (expecting failure),
-// - the lowest supported version and
-// - with the latest API implemented (in the future might add tests for all API levels supported).
-// Note: tests based on ProjectBuilder (like the plugin apply tests) run the Android Plugin in-process with the
-// Gradle version of this build, so they only work with Android Plugin versions compatible with it (verified for
-// Android Plugin 8.10 and 9, whereas 8.1 fails). For older Android Plugin versions tests must use TestKit
-// (GradleTestRunner) which runs an actual build with a compatible Gradle version.
+// - the lowest supported and
+// - the latest supported (in the future might add tests for all AGP API levels supported).
 val (agp73TestImplementation, agp73TestRuntimeOnly) =
     createTestKitSourceSet("agp73", "Runs Android Plugin 7.3 integration tests.")
 val (agp81TestImplementation, agp81TestRuntimeOnly) =
@@ -218,11 +214,12 @@ dependencies {
     // longer use).
     val agp810Version = "8.10.1"
     agp810TestRuntimeOnly("com.android.tools.build:gradle:$agp810Version")
-    // Testing 9, the latest major version (has built-in Kotlin support enabled by default)
+    // Testing 9.2, the latest minor version
+    // 9.x also uses built-in Kotlin and requires its own legacy-kapt plugin, added below.
     val agp9Version = "9.2.1"
     testPluginClasspathagp9("com.android.tools.build:gradle:$agp9Version")
-    // Contains the legacy-kapt plugin (not part of the main artifact) which this plugin applies for projects
-    // that use built-in Kotlin, if available.
+    // Contains the legacy-kapt plugin (not part of the main artifact) which this plugin applies for
+    // projects that use built-in Kotlin, if available.
     testPluginClasspathagp9("com.android.tools.build:gradle-kotlin:$agp9Version")
     agp9TestRuntimeOnly(files(testPluginClasspathagp9File))
 
