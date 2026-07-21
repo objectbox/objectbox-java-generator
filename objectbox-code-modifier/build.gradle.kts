@@ -1,5 +1,4 @@
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
-import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 
 val kotlinVersion: String by rootProject.extra
 val kotlinApiVersion: String by rootProject.extra
@@ -30,7 +29,7 @@ java {
     // Note: the sources JAR is created using the custom sourcesJar task below
 }
 
-tasks.withType<KotlinJvmCompile>().configureEach {
+kotlin {
     compilerOptions {
         // Match Kotlin version embedded by minimum supported Gradle version, see root build script for details.
         apiVersion.set(KotlinVersion.fromVersion(kotlinApiVersion))
