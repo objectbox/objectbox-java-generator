@@ -4,7 +4,7 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import java.util.*
 
 val kotlinVersion: String by rootProject.extra
-val kotlinApiLevel: String by rootProject.extra
+val kotlinApiVersion: String by rootProject.extra
 val javassistVersion: String by rootProject.extra
 val objectboxJavaVersion: String by rootProject.extra
 val essentialsVersion: String by rootProject.extra
@@ -42,8 +42,8 @@ tasks.withType<JavaCompile>().configureEach {
 kotlin {
     compilerOptions {
         jvmTarget.set(JvmTarget.JVM_11)
-        // Match Kotlin language level used by minimum supported Gradle version, see root build script for details.
-        apiVersion.set(KotlinVersion.fromVersion(kotlinApiLevel))
+        // Match Kotlin version embedded by minimum supported Gradle version, see root build script for details.
+        apiVersion.set(KotlinVersion.fromVersion(kotlinApiVersion))
     }
 }
 
@@ -146,7 +146,11 @@ fun createPluginClasspathFile(suffix: String = ""): PluginClassPathFile {
             outputDir.mkdirs()
             // Adapted from PluginUnderTestMetadata task, make sure to prevent duplicates.
             // Get paths to JAR files from main classpath and from dependencies added to the above custom configuration.
-            val pluginClasspath = sourceSets.main.get().runtimeClasspath.map { it.toString() }.toMutableSet()
+            val pluginClasspath = sourceSets.main.get().runtimeClasspath
+                // Do not inject the Gradle API (from the gradleApi() dependency), the Gradle version running a
+                // test build provides its own (older versions may even fail to process a newer API JAR).
+                .filterNot { it.name.startsWith("gradle-api-") }
+                .map { it.toString() }.toMutableSet()
             pluginClasspath.addAll(project.files(configuration).map { it.absolutePath })
             file("$outputDir/plugin-classpath.txt").writeText(
                 pluginClasspath.joinToString("\n")
@@ -164,16 +168,22 @@ data class PluginClassPathFile(
 // Configure default test task for TestKit (IncrementalCompilationTest).
 configureTestTaskForTestKit(tasks.test)
 // Test Android Plugin with
-// - the lowest supported version and
-// - with the latest API implemented (in the future might add tests for all API levels supported).
+// - a version that is too old (expecting failure),
+// - the lowest supported and
+// - the latest supported (in the future might add tests for all AGP API levels supported).
 val (agp73TestImplementation, agp73TestRuntimeOnly) =
     createTestKitSourceSet("agp73", "Runs Android Plugin 7.3 integration tests.")
 val (agp81TestImplementation, agp81TestRuntimeOnly) =
     createTestKitSourceSet("agp81", "Runs Android Plugin 8.1 integration tests.")
+val (agp810TestImplementation, agp810TestRuntimeOnly) =
+    createTestKitSourceSet("agp810", "Runs Android Plugin 8.10 integration tests.")
+val (agp9TestImplementation, agp9TestRuntimeOnly) =
+    createTestKitSourceSet("agp9", "Runs Android Plugin 9 integration tests.")
 
 val (testPluginClasspath, testPluginClasspathFile) = createPluginClasspathFile()
 val (testPluginClasspathagp73, testPluginClasspathagp73File) = createPluginClasspathFile("agp73")
 val (testPluginClasspathagp81, testPluginClasspathagp81File) = createPluginClasspathFile("agp81")
+val (testPluginClasspathagp9, testPluginClasspathagp9File) = createPluginClasspathFile("agp9")
 
 dependencies {
     implementation(project(":objectbox-code-modifier"))
@@ -198,12 +208,28 @@ dependencies {
     val agp81Version = "8.1.4"
     testPluginClasspathagp81("com.android.tools.build:gradle:$agp81Version")
     agp81TestRuntimeOnly(files(testPluginClasspathagp81File))
+    // Testing 8.10, a potential future minimum supported version. Unlike 8.1, it is compatible with the Gradle
+    // version of this build, so it is used for the in-process plugin apply tests of the Android Plugin 8 series
+    // (like for the Kotlin Android plugin with kapt, which projects using the Android Plugin 9 series can no
+    // longer use).
+    val agp810Version = "8.10.1"
+    agp810TestRuntimeOnly("com.android.tools.build:gradle:$agp810Version")
+    // Testing 9.2, the latest minor version
+    // 9.x also uses built-in Kotlin and requires its own legacy-kapt plugin, added below.
+    val agp9Version = "9.2.1"
+    testPluginClasspathagp9("com.android.tools.build:gradle:$agp9Version")
+    // Contains the legacy-kapt plugin (not part of the main artifact) which this plugin applies for
+    // projects that use built-in Kotlin, if available.
+    testPluginClasspathagp9("com.android.tools.build:gradle-kotlin:$agp9Version")
+    agp9TestRuntimeOnly(files(testPluginClasspathagp9File))
 
     // For plugin apply tests and outdated TestKit tests (dir "test-gradle-projects").
     testImplementation("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
     testImplementation("com.android.tools.build:gradle-api:$agpApi")
     agp73TestRuntimeOnly("com.android.tools.build:gradle:$agp73Version")
     agp81TestRuntimeOnly("com.android.tools.build:gradle:$agp81Version")
+    agp9TestRuntimeOnly("com.android.tools.build:gradle:$agp9Version")
+    agp9TestRuntimeOnly("com.android.tools.build:gradle-kotlin:$agp9Version")
 
     testImplementation("io.objectbox:objectbox-java:$objectboxJavaVersion")
     testImplementation("org.greenrobot:essentials:$essentialsVersion")

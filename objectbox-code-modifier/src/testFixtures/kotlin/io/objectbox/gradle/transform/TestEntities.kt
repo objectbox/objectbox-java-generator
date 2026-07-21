@@ -16,7 +16,13 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-@file:Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS", "unused", "UNUSED_PARAMETER")
+@file:Suppress(
+    "JavaIoSerializableObjectMustHaveReadResolve",
+    "NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS",
+    "TYPE_MISMATCH_BASED_ON_JAVA_ANNOTATIONS",
+    "unused",
+    "UNUSED_PARAMETER"
+)
 
 package io.objectbox.gradle.transform
 

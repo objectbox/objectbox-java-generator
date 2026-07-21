@@ -1,6 +1,6 @@
 /*
  * ObjectBox Build Tools
- * Copyright (C) 2022-2024 ObjectBox Ltd.
+ * Copyright (C) 2026 ObjectBox Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -16,17 +16,23 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.objectbox.gradle.util
+package io.objectbox.gradle
 
-import org.gradle.api.Project
-import org.gradle.api.plugins.JavaPluginConvention
-import org.gradle.api.tasks.SourceSetContainer
+import io.objectbox.gradle.ProjectEnv.Const
+import org.gradle.api.artifacts.DependencySet
+import org.junit.Assert.assertEquals
 
-open class GradleLegacy : GradleCompat() {
+fun DependencySet.assertObxDependency(name: String, version: String) {
+    assertEquals("$name dependency not found", 1, count {
+        it.group == Const.OBX_GROUP && it.name == name
+                && it.version == version
+    })
+}
 
-    override fun getJavaPluginSourceSets(project: Project): SourceSetContainer {
-        // Replaced by JavaPluginExtension, see Gradle71. Scheduled for removal in Gradle 9.0.
-        @Suppress("DEPRECATION")
-        return project.convention.getPlugin(JavaPluginConvention::class.java).sourceSets
-    }
+fun DependencySet.assertJavaDependency() {
+    assertObxDependency(Const.OBX_JAVA, Const.OBX_JAVA_VERSION)
+}
+
+fun DependencySet.assertKotlinDependency() {
+    assertObxDependency(Const.OBX_KOTLIN, Const.OBX_JAVA_VERSION)
 }

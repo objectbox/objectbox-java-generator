@@ -1,7 +1,7 @@
 plugins {
     id("java")
     kotlin("jvm")
-    kotlin("kapt")
+    id("com.google.devtools.ksp")
     id("objectbox-publish")
 }
 
@@ -28,7 +28,7 @@ dependencies {
     implementation("org.freemarker:freemarker:2.3.34")
     implementation("org.greenrobot:essentials:$essentialsVersion")
     implementation("com.squareup.moshi:moshi:$moshiVersion")
-    kapt("com.squareup.moshi:moshi-kotlin-codegen:$moshiVersion")
+    ksp("com.squareup.moshi:moshi-kotlin-codegen:$moshiVersion")
     implementation("com.squareup.okio:okio:$okioVersion")
 
     testImplementation("junit:junit:$junitVersion")

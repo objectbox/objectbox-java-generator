@@ -79,12 +79,7 @@ class GradleTestRunner(
                 ${additionalPlugins.joinToString(separator = "\n") { "id(\"$it\")" }}
                 id("${Const.PLUGIN_ID}")
             }
-            
-            java {
-                sourceCompatibility = JavaVersion.VERSION_1_8
-                targetCompatibility = JavaVersion.VERSION_1_8
-            }
-            
+
             repositories {
                 maven { url "$testRepository" }
                 mavenCentral()
@@ -99,6 +94,9 @@ class GradleTestRunner(
                         header(HttpHeaderAuthentication)
                     }
                 }
+                // Don't (premanently) add the local repo to avoid CI build failures. But to test
+                // with locally built dependencies add:
+                // mavenLocal()
             }
             
             configurations.all {
@@ -126,6 +124,23 @@ class GradleTestRunner(
         args: List<String>,
         additionalRunnerConfiguration: ((GradleRunner) -> Unit)? = null
     ): BuildResult {
+        return createRunner(args, additionalRunnerConfiguration).build()
+    }
+
+    /**
+     * Like [build], but expects the build to fail.
+     */
+    fun buildAndFail(
+        args: List<String>,
+        additionalRunnerConfiguration: ((GradleRunner) -> Unit)? = null
+    ): BuildResult {
+        return createRunner(args, additionalRunnerConfiguration).buildAndFail()
+    }
+
+    private fun createRunner(
+        args: List<String>,
+        additionalRunnerConfiguration: ((GradleRunner) -> Unit)?
+    ): GradleRunner {
         writeBuildFile()
 
         val pluginClasspathResource = javaClass.classLoader.getResource("plugin-classpath.txt")
@@ -138,7 +153,7 @@ class GradleTestRunner(
             .withArguments(args)
             .withPluginClasspath(pluginClasspath)
         additionalRunnerConfiguration?.invoke(runner)
-        return runner.build()
+        return runner
     }
 
     /**

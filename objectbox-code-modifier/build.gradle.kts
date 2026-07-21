@@ -1,8 +1,7 @@
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
-import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 
 val kotlinVersion: String by rootProject.extra
-val kotlinApiLevel: String by rootProject.extra
+val kotlinApiVersion: String by rootProject.extra
 val essentialsVersion: String by rootProject.extra
 val javassistVersion: String by rootProject.extra
 val moshiVersion: String by rootProject.extra
@@ -16,7 +15,7 @@ plugins {
     id("java-library")
     id("java-test-fixtures")
     kotlin("jvm")
-    kotlin("kapt")
+    id("com.google.devtools.ksp")
     id("com.github.gmazzo.buildconfig")
     id("objectbox-publish")
     id("objectbox-disable-analytics")
@@ -30,10 +29,10 @@ java {
     // Note: the sources JAR is created using the custom sourcesJar task below
 }
 
-tasks.withType<KotlinJvmCompile>().configureEach {
+kotlin {
     compilerOptions {
-        // Match Kotlin language level used by minimum supported Gradle version, see root build script for details.
-        apiVersion.set(KotlinVersion.fromVersion(kotlinApiLevel))
+        // Match Kotlin version embedded by minimum supported Gradle version, see root build script for details.
+        apiVersion.set(KotlinVersion.fromVersion(kotlinApiVersion))
     }
 }
 
@@ -44,7 +43,7 @@ dependencies {
     implementation("org.greenrobot:essentials:$essentialsVersion")
     implementation("org.javassist:javassist:$javassistVersion")
     implementation("com.squareup.moshi:moshi:$moshiVersion")
-    kapt("com.squareup.moshi:moshi-kotlin-codegen:$moshiVersion")
+    ksp("com.squareup.moshi:moshi-kotlin-codegen:$moshiVersion")
     implementation("com.squareup.okio:okio:$okioVersion")
     // Tink 1.19.0 requires Java 11
     // Tink 1.16.0 includes protobuf-java 4.28.2 which removes a method required by a Android Gradle Plugin 8.1 dependency

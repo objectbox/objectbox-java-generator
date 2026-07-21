@@ -58,6 +58,7 @@ class ClassTransformer(private val debug: Boolean = false) {
             // location.path is a URL, but javassist expects a path: so decode the URL first.
             val decodedObjectBoxPath = URLDecoder.decode(objectBoxPath, "UTF-8")
             classPool.appendClassPath(decodedObjectBoxPath)
+            @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
             classPool.appendClassPath(PrefixedClassPath("java.", java.lang.Object::class.java))
         }
 

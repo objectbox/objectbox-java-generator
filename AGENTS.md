@@ -26,13 +26,15 @@ Setting `OBX_RELEASE=true` in the environment makes the build use and produce re
 ./gradlew :objectbox-gradle-plugin:test --tests "io.objectbox.gradle.PluginApplyTest.someMethod"
 
 # Android Gradle Plugin integration tests (separate source sets in objectbox-gradle-plugin)
-./gradlew :objectbox-gradle-plugin:agp73Test    # lowest supported AGP API
-./gradlew :objectbox-gradle-plugin:agp81Test    # latest implemented AGP API
+./gradlew :objectbox-gradle-plugin:agp73Test    # too-old AGP fails with a helpful error (TestKit)
+./gradlew :objectbox-gradle-plugin:agp81Test    # lowest supported AGP, Android project build (TestKit)
+./gradlew :objectbox-gradle-plugin:agp810Test   # AGP 8.10, in-process plugin apply tests (incl. kotlin-android/kapt)
+./gradlew :objectbox-gradle-plugin:agp9Test     # AGP 9: apply tests (built-in Kotlin) + Android project builds (lowest and latest Gradle)
 ```
 
 TestKit tests (`GradleTestRunner`-based tests and the `agpXYTest` tasks) build throwaway Gradle projects:
 they first publish the other subprojects to a local test repository and receive the `gitlab*` properties as system properties, so they also need the GitLab credentials to be set.
-Some of them build an actual Android project, which requires `ANDROID_HOME` to point to an Android SDK — if it is not set, `check` fails late with "SDK location not found" in a single `agp81Test` test.
+Some of them build an actual Android project, which requires `ANDROID_HOME` to point to an Android SDK — if it is not set, `check` fails late with "SDK location not found" in `agp81Test`/`agp9Test` tests.
 A 401 Unauthorized when resolving `io.objectbox` snapshots means the GitLab token is expired/invalid (verify with `curl -H "Private-Token: $token" <gitlabUrl>/api/v4/user`).
 
 Versioning/release: `versionNumber` in the root `build.gradle.kts` is the single source of truth; change it via `scripts/set-version.sh` (use `--release` to also tag).
@@ -52,8 +54,9 @@ Dependency chain (see `settings.gradle.kts`):
 
 ## Compatibility constraints (critical when editing plugin code)
 
-- The plugin supports Gradle 7.0+ (`GradleCompat`) and Android Plugin 8.1+ (`AndroidCompat`).
-- Gradle runs plugins with its *embedded* Kotlin version, so all plugin projects set Kotlin `apiVersion` to 1.4 (what Gradle 7.0 bundles). Do not use newer Kotlin APIs in `objectbox-gradle-plugin`, `objectbox-code-modifier`, or `agp-wrapper-*` code — this also applies to their dependencies.
+- The plugin supports Gradle 8.3+ (`GradleCompat`) and Android Plugin 8.1+ (`AndroidCompat`), including Android Plugin 9 with built-in Kotlin (the plugin then applies `com.android.legacy-kapt` if available on the classpath).
+- Gradle runs plugins with its *embedded* Kotlin version, so all plugin projects set Kotlin `apiVersion` to 1.9 (what Gradle 8.3 bundles). Do not use newer Kotlin APIs in `objectbox-gradle-plugin`, `objectbox-code-modifier`, or `agp-wrapper-*` code — this also applies to their dependencies.
+- The wrapper intentionally stays on Gradle 9.5.x: Gradle 9.6 can no longer run Android Plugin 8, which the in-process (ProjectBuilder-based) `agp810Test` tests still cover. TestKit tests run other Gradle versions in a subprocess (e.g. `agp9Test` covers Gradle 9.6).
 - Java targets: `objectbox-processor` and `objectbox-generator` compile to Java 8; the plugin projects target Java 11.
 - Version-specific Gradle/AGP API access goes through the `util/GradleCompat`/`AndroidCompat` abstractions and `agp-wrapper-x-y` projects — follow that pattern rather than calling new APIs directly.
 
