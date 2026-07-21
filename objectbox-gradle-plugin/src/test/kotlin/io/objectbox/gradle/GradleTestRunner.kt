@@ -99,6 +99,9 @@ class GradleTestRunner(
                         header(HttpHeaderAuthentication)
                     }
                 }
+                // Like for this project itself (see its settings file), fall back to the local Maven repository,
+                // e.g. for a locally built objectbox-java.
+                mavenLocal()
             }
             
             configurations.all {
@@ -126,6 +129,23 @@ class GradleTestRunner(
         args: List<String>,
         additionalRunnerConfiguration: ((GradleRunner) -> Unit)? = null
     ): BuildResult {
+        return createRunner(args, additionalRunnerConfiguration).build()
+    }
+
+    /**
+     * Like [build], but expects the build to fail.
+     */
+    fun buildAndFail(
+        args: List<String>,
+        additionalRunnerConfiguration: ((GradleRunner) -> Unit)? = null
+    ): BuildResult {
+        return createRunner(args, additionalRunnerConfiguration).buildAndFail()
+    }
+
+    private fun createRunner(
+        args: List<String>,
+        additionalRunnerConfiguration: ((GradleRunner) -> Unit)?
+    ): GradleRunner {
         writeBuildFile()
 
         val pluginClasspathResource = javaClass.classLoader.getResource("plugin-classpath.txt")
@@ -138,7 +158,7 @@ class GradleTestRunner(
             .withArguments(args)
             .withPluginClasspath(pluginClasspath)
         additionalRunnerConfiguration?.invoke(runner)
-        return runner.build()
+        return runner
     }
 
     /**

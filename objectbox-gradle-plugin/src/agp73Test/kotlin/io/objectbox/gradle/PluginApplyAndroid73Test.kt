@@ -1,6 +1,6 @@
 /*
  * ObjectBox Build Tools
- * Copyright (C) 2022-2024 ObjectBox Ltd.
+ * Copyright (C) 2022-2026 ObjectBox Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -18,32 +18,40 @@
 
 package io.objectbox.gradle
 
-import org.gradle.api.internal.plugins.PluginApplicationException
-import org.gradle.testfixtures.ProjectBuilder
-import org.hamcrest.CoreMatchers.instanceOf
-import org.hamcrest.MatcherAssert.assertThat
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertThrows
+import com.google.common.truth.Truth.assertThat
+import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.TemporaryFolder
 
 
 /**
  * Tests applying [ObjectBoxGradlePlugin] with Android Plugin 7.3 fails because it is too old.
+ *
+ * Note: unlike the plugin apply tests for supported Android Plugin versions this uses TestKit to run an actual
+ * build as Android Plugin 7.3 is not compatible with the Gradle version of this build (so it can not run
+ * in-process with ProjectBuilder).
  */
-class PluginApplyAndroid73Test : PluginApplyTest() {
+class PluginApplyAndroid73Test {
+
+    @JvmField
+    @Rule
+    val testProjectDir: TemporaryFolder = TemporaryFolder.builder().assureDeletion().build()
 
     @Test
     fun apply_afterAndroidPlugin_failsTooOld() {
-        val project = ProjectBuilder.builder().build()
-        project.pluginManager.apply("com.android.application")
-
-        assertThrows(PluginApplicationException::class.java) {
-            project.project.pluginManager.apply(pluginId)
-        }.also {
-            assertEquals("Failed to apply plugin '$pluginId'.", it.message)
-            assertThat(it.cause, instanceOf(IllegalStateException::class.java))
-            assertEquals(it.cause?.message, "The ObjectBox Gradle plugin requires Android Gradle Plugin 8.1 or newer")
+        val gradleRunner = GradleTestRunner(testProjectDir).apply {
+            additionalPlugins += "com.android.application"
         }
+
+        // Applying the plugin fails during configuration, so no Android SDK or resolvable dependencies required.
+        val result = gradleRunner.buildAndFail(listOf("--stacktrace", "help")) {
+            // Use a Gradle version compatible with both Android Plugin 7.3 and the JDK running this build (JDK 21
+            // requires at least Gradle 8.5).
+            it.withGradleVersion("8.5")
+        }
+
+        assertThat(result.output)
+            .contains("The ObjectBox Gradle plugin requires Android Gradle Plugin 8.1 or newer")
     }
 
 }

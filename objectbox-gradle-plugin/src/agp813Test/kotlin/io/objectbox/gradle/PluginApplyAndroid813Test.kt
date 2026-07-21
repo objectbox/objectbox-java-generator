@@ -25,10 +25,10 @@ import org.gradle.api.Project
 
 
 /**
- * Tests applying [ObjectBoxSyncGradlePlugin] configures a Java or Kotlin Android Gradle project as expected.
- * Tests with Android Plugin 8.1.
+ * Tests applying [ObjectBoxGradlePlugin] configures a Java or Kotlin Android Gradle project as expected.
+ * Tests with Android Plugin 8.13 (the latest of the 8 series that is compatible with the Gradle version of this build).
  */
-class SyncPluginApplyAndroid81Test : SyncPluginApplyAndroidTest() {
+class PluginApplyAndroid813Test : PluginApplyAndroidTest() {
 
     override fun assertAndroidCompat(project: Project) {
         assertThat(AndroidCompat.getPlugin(project))

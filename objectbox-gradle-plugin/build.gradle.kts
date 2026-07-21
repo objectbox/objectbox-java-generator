@@ -168,12 +168,19 @@ data class PluginClassPathFile(
 // Configure default test task for TestKit (IncrementalCompilationTest).
 configureTestTaskForTestKit(tasks.test)
 // Test Android Plugin with
+// - a version that is too old (expecting failure),
 // - the lowest supported version and
 // - with the latest API implemented (in the future might add tests for all API levels supported).
+// Note: tests based on ProjectBuilder (like the plugin apply tests) run the Android Plugin in-process with the
+// Gradle version of this build, so they only work with Android Plugin versions compatible with it (currently only
+// Android Plugin 9). For older Android Plugin versions tests must use TestKit (GradleTestRunner) which runs an
+// actual build with a compatible Gradle version.
 val (agp73TestImplementation, agp73TestRuntimeOnly) =
     createTestKitSourceSet("agp73", "Runs Android Plugin 7.3 integration tests.")
 val (agp81TestImplementation, agp81TestRuntimeOnly) =
     createTestKitSourceSet("agp81", "Runs Android Plugin 8.1 integration tests.")
+val (agp813TestImplementation, agp813TestRuntimeOnly) =
+    createTestKitSourceSet("agp813", "Runs Android Plugin 8.13 integration tests.")
 
 val (testPluginClasspath, testPluginClasspathFile) = createPluginClasspathFile()
 val (testPluginClasspathagp73, testPluginClasspathagp73File) = createPluginClasspathFile("agp73")
@@ -202,6 +209,11 @@ dependencies {
     val agp81Version = "8.1.4"
     testPluginClasspathagp81("com.android.tools.build:gradle:$agp81Version")
     agp81TestRuntimeOnly(files(testPluginClasspathagp81File))
+    // Testing 8.13, the latest version of the 8 series. Unlike 8.1, it is compatible with the Gradle version of
+    // this build, so it is used for the in-process plugin apply tests of the Android Plugin 8 series (like for the
+    // Kotlin Android plugin with kapt, which projects using the Android Plugin 9 series can no longer use).
+    val agp813Version = "8.13.2"
+    agp813TestRuntimeOnly("com.android.tools.build:gradle:$agp813Version")
 
     // For plugin apply tests and outdated TestKit tests (dir "test-gradle-projects").
     testImplementation("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
