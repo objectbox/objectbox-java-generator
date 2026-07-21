@@ -45,9 +45,6 @@ open class Android9ProjectPluginTest : AndroidProjectPluginTest() {
         }
         """.trimIndent()
 
-    // The java block of older tests is not used with Android Plugin 9, the android block configures the project.
-    override val buildScriptJavaBlock = ""
-
     // Test with the latest possible version of Gradle
     override val gradleVersion = "9.6.1"
 

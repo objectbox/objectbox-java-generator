@@ -40,19 +40,6 @@ class GradleTestRunner(
     val additionalPlugins: MutableList<String> = mutableListOf()
     var additionalBlocks: String = ""
 
-    /**
-     * The java block written to the build script. Set to an empty string to remove it, for example for Android
-     * Plugin 9 projects (which should configure the android block instead).
-     */
-    @Language("Groovy")
-    var javaBlock: String =
-        """
-        java {
-            sourceCompatibility = JavaVersion.VERSION_1_8
-            targetCompatibility = JavaVersion.VERSION_1_8
-        }
-        """.trimIndent()
-
     private val gitlabUrl = System.getProperty("gitlabUrl")
     private val gitlabTokenName = System.getProperty("gitlabTokenName")
     private val gitlabToken = System.getProperty("gitlabToken")
@@ -92,8 +79,6 @@ class GradleTestRunner(
                 ${additionalPlugins.joinToString(separator = "\n") { "id(\"$it\")" }}
                 id("${Const.PLUGIN_ID}")
             }
-
-            $javaBlock
 
             repositories {
                 maven { url "$testRepository" }

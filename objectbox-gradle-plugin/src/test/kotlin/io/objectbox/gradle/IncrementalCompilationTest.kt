@@ -20,6 +20,7 @@ package io.objectbox.gradle
 
 import com.google.common.truth.Truth.assertThat
 import org.gradle.testkit.runner.BuildResult
+import org.intellij.lang.annotations.Language
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -222,7 +223,10 @@ class IncrementalCompilationTest {
 
     private fun createRunner(): GradleTestRunner {
         return GradleTestRunner(testProjectDir)
-            .apply { additionalPlugins += "java-library" }
+            .apply {
+                additionalPlugins += "java-library"
+                additionalBlocks += buildScriptJavaBlock
+            }
     }
 
     private fun GradleTestRunner.assemble(): BuildResult {
@@ -234,6 +238,15 @@ class IncrementalCompilationTest {
         private const val GRADLE_MSG_FULL_RECOMPILE_REQ_FIRST_BUILD =
             "Full recompilation is required because no incremental change information is available."
         private const val GRADLE_MSG_FULL_RECOMPILE_REQ = "Full recompilation is required "
+
+        @Language("Groovy")
+        private val buildScriptJavaBlock: String =
+            """
+            java {
+                sourceCompatibility = JavaVersion.VERSION_1_8
+                targetCompatibility = JavaVersion.VERSION_1_8
+            }
+            """.trimIndent()
     }
 
 }

@@ -58,12 +58,6 @@ abstract class AndroidProjectPluginTest {
         """.trimIndent()
 
     /**
-     * The java block written to the build script, null to use the [GradleTestRunner] default.
-     * Android Plugin 9 projects should set this to an empty string and configure the android block instead.
-     */
-    open val buildScriptJavaBlock: String? = null
-
-    /**
      * The version of Gradle to run the test project with.
      */
     abstract val gradleVersion: String
@@ -99,7 +93,6 @@ abstract class AndroidProjectPluginTest {
                 // Note: classpath for plugins configured in build script of this project (see GradleTestRunner.build).
                 additionalPlugins += "com.android.application"
                 additionalBlocks = buildScriptAndroidBlock
-                buildScriptJavaBlock?.let { javaBlock = it }
             }
 
         testProjectDir.newFile("src/main/AndroidManifest.xml").apply {
