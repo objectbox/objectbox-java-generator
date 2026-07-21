@@ -22,6 +22,7 @@ import io.objectbox.reporting.ObjectBoxBuildConfig
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
+import org.gradle.work.DisableCachingByDefault
 import java.io.File
 import javax.inject.Inject
 
@@ -29,12 +30,13 @@ import javax.inject.Inject
 /**
  * Writes build config file required for processor and tracks builds.
  */
+@DisableCachingByDefault(because = "Should always track builds and writing the build config file is faster than caching it")
 open class PrepareTask @Inject constructor(
     private val env: ProjectEnv,
     private val buildTracker: GradleBuildTracker
 ) : DefaultTask() {
 
-    private val buildDir = env.project.buildDir
+    private val buildDir = env.project.layout.buildDirectory.get().asFile
 
     @OutputFile
     val buildConfigFile: File = ObjectBoxBuildConfig.buildFile(buildDir)

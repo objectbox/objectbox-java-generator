@@ -95,7 +95,7 @@ open class GradleBuildTracker(toolName: String) : BasicBuildTracker(toolName) {
             // https://circleci.com/docs/variables/#built-in-environment-variables
             System.getenv("CIRCLECI") != null -> "C"
             // https://docs.cloudbees.com/docs/cloudbees-codeship/latest/pro-builds-and-configuration/environment-variables#_default_environment_variables
-            System.getenv("CI_NAME")?.toLowerCase(Locale.ROOT) == "codeship" -> "CS"
+            System.getenv("CI_NAME")?.lowercase(Locale.ROOT) == "codeship" -> "CS"
             System.getenv("CI") == "true" -> "Other"
             else -> null
         }

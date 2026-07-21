@@ -89,10 +89,13 @@ buildscript {
     // Set kotlinVersion to the Kotlin version embedded by the Gradle version used to compile this project (needs to
     // be the exact version to avoid conflicts):
     // https://docs.gradle.org/current/userguide/compatibility.html or see output of `gradlew --version`
-    val kotlinVersion by extra("2.0.21") // Embedded by Gradle 8.14.4 used to compile this
+    // Note: not using Gradle 9.6 or newer for this build as it can no longer run Android Plugin 8 (which this
+    // plugin still supports and tests, see the objectbox-gradle-plugin build script).
+    val kotlinVersion by extra("2.3.20") // Embedded by Gradle 9.5.1 used to compile this
     // To remain compatible with the lowest supported version of Gradle (see GradleCompat), set kotlinApiLevel to
     // the Kotlin language level supported by that version: https://docs.gradle.org/current/userguide/compatibility.html
-    val kotlinApiLevel by extra("1.4") // Minimum supported Gradle 7.0 bundles Kotlin 1.4
+    // Note: Kotlin 2.3 and newer only support API level 1.9 or newer, so can not support Gradle before 8.3.
+    val kotlinApiLevel by extra("1.9") // Minimum supported Gradle 8.3 bundles Kotlin 1.9
 
     val essentialsVersion by extra("3.1.0")
     // 3.24.0-GA and newer support Java 11 byte code
