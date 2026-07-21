@@ -40,6 +40,19 @@ class GradleTestRunner(
     val additionalPlugins: MutableList<String> = mutableListOf()
     var additionalBlocks: String = ""
 
+    /**
+     * The java block written to the build script. Set to an empty string to remove it, for example for Android
+     * Plugin 9 projects (which should configure the android block instead).
+     */
+    @Language("Groovy")
+    var javaBlock: String =
+        """
+        java {
+            sourceCompatibility = JavaVersion.VERSION_1_8
+            targetCompatibility = JavaVersion.VERSION_1_8
+        }
+        """.trimIndent()
+
     private val gitlabUrl = System.getProperty("gitlabUrl")
     private val gitlabTokenName = System.getProperty("gitlabTokenName")
     private val gitlabToken = System.getProperty("gitlabToken")
@@ -53,6 +66,13 @@ class GradleTestRunner(
 
     fun addSourceFile(name: String, content: String): File {
         return testProjectDir.newFile("src/main/java/com/example/$name").apply {
+            writeText(content)
+        }
+    }
+
+    fun addKotlinSourceFile(name: String, content: String): File {
+        val sourceDir = File(testProjectDir.root, "src/main/kotlin/com/example").apply { mkdirs() }
+        return File(sourceDir, name).apply {
             writeText(content)
         }
     }
@@ -79,12 +99,9 @@ class GradleTestRunner(
                 ${additionalPlugins.joinToString(separator = "\n") { "id(\"$it\")" }}
                 id("${Const.PLUGIN_ID}")
             }
-            
-            java {
-                sourceCompatibility = JavaVersion.VERSION_1_8
-                targetCompatibility = JavaVersion.VERSION_1_8
-            }
-            
+
+            $javaBlock
+
             repositories {
                 maven { url "$testRepository" }
                 mavenCentral()

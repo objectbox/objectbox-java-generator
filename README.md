@@ -21,6 +21,10 @@ The plugin
 
 - Gradle `8.3` (see [GradleCompat](objectbox-gradle-plugin/src/main/kotlin/io/objectbox/gradle/util/GradleCompat.kt))
 - Android Plugin `8.1` (see [AndroidCompat](objectbox-gradle-plugin/src/main/kotlin/io/objectbox/gradle/util/AndroidCompat.kt))
+  - For projects that use the built-in Kotlin support of Android Plugin `9.0` or newer, this plugin applies the
+    `com.android.legacy-kapt` plugin so the annotation processor can process `@Entity` classes written in Kotlin.
+    For this to work, the build must declare that plugin so it is on the classpath (for example in the plugins block
+    of the top-level build script with `apply false`).
 - JDK 11
                    
 For JVM projects, the Java byte code transformer supports `@Entity` classes using up to Java 11 byte code. 

@@ -47,6 +47,13 @@ class ProjectEnv(val project: Project) {
 
         /** Name of the configuration of the [kapt plugin](https://kotlinlang.org/docs/kapt.html). */
         const val KAPT_CONFIGURATION_NAME = "kapt"
+
+        /**
+         * The kapt replacement plugin shipped with Android Gradle Plugin 9.0 or newer for projects that use its
+         * [built-in Kotlin support](https://developer.android.com/build/migrate-to-built-in-kotlin).
+         * It also creates the kapt configurations.
+         */
+        const val ANDROID_LEGACY_KAPT_PLUGIN_ID = "com.android.legacy-kapt"
     }
 
     /** Note: Plugin extension, values only available after evaluation phase. */
@@ -59,6 +66,14 @@ class ProjectEnv(val project: Project) {
     val hasAndroidPlugin = project.plugins.hasPlugin("com.android.base")
     val hasKotlinAndroidPlugin = project.plugins.hasPlugin("kotlin-android")
     val hasKotlinPlugin = project.plugins.hasPlugin("kotlin")
+
+    /**
+     * If the project uses the built-in Kotlin support of Android Gradle Plugin 9.0 or newer (enabled by default):
+     * then the Kotlin Android plugin is not (and can not be) applied, but the Android Gradle Plugin registers the
+     * `kotlin` extension itself.
+     */
+    val hasBuiltInKotlin = hasAndroidPlugin && !hasKotlinAndroidPlugin
+            && project.extensions.findByName("kotlin") != null
 
     // The Java Library and Java Application plugin,
     // as well as the Kotlin JVM and Android plugin also apply the Java plugin.

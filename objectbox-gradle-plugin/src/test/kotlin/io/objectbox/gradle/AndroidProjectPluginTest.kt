@@ -49,6 +49,12 @@ abstract class AndroidProjectPluginTest {
 
     abstract val androidManifest: String
 
+    /**
+     * The java block written to the build script, null to use the [GradleTestRunner] default.
+     * Android Plugin 9 projects should set this to an empty string and configure the android block instead.
+     */
+    open val buildScriptJavaBlock: String? = null
+
     open val additionalRunnerConfiguration: ((GradleRunner) -> Unit) = {
         // Log build output to standard out, does not pollute logs as just using --stacktrace option.
         it.forwardOutput()
@@ -76,6 +82,7 @@ abstract class AndroidProjectPluginTest {
                 // Note: classpath for plugins configured in build script of this project (see GradleTestRunner.build).
                 additionalPlugins += "com.android.application"
                 additionalBlocks = buildScriptAndroidBlock
+                buildScriptJavaBlock?.let { javaBlock = it }
             }
 
         testProjectDir.newFile("src/main/AndroidManifest.xml").apply {

@@ -58,7 +58,7 @@ open class GradleBuildTracker(toolName: String) : BasicBuildTracker(toolName) {
             event.key("CI").value(ci).comma()
         }
         // There may be multiple languages in a project, so it's not a single dimension
-        val hasKotlinPlugin = env.hasKotlinAndroidPlugin || env.hasKotlinPlugin
+        val hasKotlinPlugin = env.hasKotlinAndroidPlugin || env.hasKotlinPlugin || env.hasBuiltInKotlin
         event.key("Kotlin").value(hasKotlinPlugin.toString()).comma()
         event.key("Java").value(env.hasJavaPlugin.toString()).comma()
         event.key("Version").value(ProjectEnv.Const.OBX_PLUGIN_VERSION).comma()

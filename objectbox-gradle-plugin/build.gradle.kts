@@ -181,10 +181,13 @@ val (agp81TestImplementation, agp81TestRuntimeOnly) =
     createTestKitSourceSet("agp81", "Runs Android Plugin 8.1 integration tests.")
 val (agp813TestImplementation, agp813TestRuntimeOnly) =
     createTestKitSourceSet("agp813", "Runs Android Plugin 8.13 integration tests.")
+val (agp9TestImplementation, agp9TestRuntimeOnly) =
+    createTestKitSourceSet("agp9", "Runs Android Plugin 9 integration tests.")
 
 val (testPluginClasspath, testPluginClasspathFile) = createPluginClasspathFile()
 val (testPluginClasspathagp73, testPluginClasspathagp73File) = createPluginClasspathFile("agp73")
 val (testPluginClasspathagp81, testPluginClasspathagp81File) = createPluginClasspathFile("agp81")
+val (testPluginClasspathagp9, testPluginClasspathagp9File) = createPluginClasspathFile("agp9")
 
 dependencies {
     implementation(project(":objectbox-code-modifier"))
@@ -214,12 +217,21 @@ dependencies {
     // Kotlin Android plugin with kapt, which projects using the Android Plugin 9 series can no longer use).
     val agp813Version = "8.13.2"
     agp813TestRuntimeOnly("com.android.tools.build:gradle:$agp813Version")
+    // Testing 9, the latest major version (has built-in Kotlin support enabled by default)
+    val agp9Version = "9.2.1"
+    testPluginClasspathagp9("com.android.tools.build:gradle:$agp9Version")
+    // Contains the legacy-kapt plugin (not part of the main artifact) which this plugin applies for projects
+    // that use built-in Kotlin, if available.
+    testPluginClasspathagp9("com.android.tools.build:gradle-kotlin:$agp9Version")
+    agp9TestRuntimeOnly(files(testPluginClasspathagp9File))
 
     // For plugin apply tests and outdated TestKit tests (dir "test-gradle-projects").
     testImplementation("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
     testImplementation("com.android.tools.build:gradle-api:$agpApi")
     agp73TestRuntimeOnly("com.android.tools.build:gradle:$agp73Version")
     agp81TestRuntimeOnly("com.android.tools.build:gradle:$agp81Version")
+    agp9TestRuntimeOnly("com.android.tools.build:gradle:$agp9Version")
+    agp9TestRuntimeOnly("com.android.tools.build:gradle-kotlin:$agp9Version")
 
     testImplementation("io.objectbox:objectbox-java:$objectboxJavaVersion")
     testImplementation("org.greenrobot:essentials:$essentialsVersion")
