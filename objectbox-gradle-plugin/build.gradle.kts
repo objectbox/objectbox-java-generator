@@ -146,7 +146,11 @@ fun createPluginClasspathFile(suffix: String = ""): PluginClassPathFile {
             outputDir.mkdirs()
             // Adapted from PluginUnderTestMetadata task, make sure to prevent duplicates.
             // Get paths to JAR files from main classpath and from dependencies added to the above custom configuration.
-            val pluginClasspath = sourceSets.main.get().runtimeClasspath.map { it.toString() }.toMutableSet()
+            val pluginClasspath = sourceSets.main.get().runtimeClasspath
+                // Do not inject the Gradle API (from the gradleApi() dependency), the Gradle version running a
+                // test build provides its own (older versions may even fail to process a newer API JAR).
+                .filterNot { it.name.startsWith("gradle-api-") }
+                .map { it.toString() }.toMutableSet()
             pluginClasspath.addAll(project.files(configuration).map { it.absolutePath })
             file("$outputDir/plugin-classpath.txt").writeText(
                 pluginClasspath.joinToString("\n")
