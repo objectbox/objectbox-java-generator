@@ -141,7 +141,7 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
         val configureDepends = Action<Task> { it.dependsOn(prepareTask) }
         try {
             project.tasks.named("preBuild").configure(configureDepends) // Android
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             project.tasks.named("build").configure(configureDepends) // Java
         }
     }
@@ -167,7 +167,7 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
             try {
                 project.plugins.apply(Const.ANDROID_LEGACY_KAPT_PLUGIN_ID)
                 env.logDebug { "Applied '${Const.ANDROID_LEGACY_KAPT_PLUGIN_ID}'." }
-            } catch (e: UnknownPluginException) {
+            } catch (_: UnknownPluginException) {
                 project.logger.warn(
                     "ObjectBox: to process @Entity classes written in Kotlin, add the " +
                             "'${Const.ANDROID_LEGACY_KAPT_PLUGIN_ID}' plugin to this project (it is not required " +
