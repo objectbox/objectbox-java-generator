@@ -75,33 +75,36 @@ buildscript {
     println("ObjectBoxSyncGradlePlugin:")
     println("  appliesObxSyncJniLibVersion=$appliesObxSyncJniLibVersion\n")
 
-    // Note: Gradle runs plugins at the Kotlin language level that Gradle version supports using the Kotlin library it
-    // embeds, regardless of what Kotlin library the plugin depends on.
-    // https://github.com/gradle/gradle/issues/16345#issuecomment-931437640
-    // https://docs.gradle.org/current/userguide/compatibility.html
-    // To ensure compatibility, all plugin projects (so excluding the annotation processor and generator) set a Kotlin
-    // API level to avoid using Kotlin APIs not supported when run by Gradle. Note that dependencies also must not
-    // use newer Kotlin APIs!
-
-    // To remain compatible with new Gradle versions, this project should aim to compile with a Gradle version
-    // using the highest supported Kotlin language level to detect Kotlin API incompatibilities (e.g. removal of
-    // deprecated functions). So far only major Gradle releases have changed the Kotlin language level.
-    // Set kotlinVersion to the Kotlin version embedded by the Gradle version used to compile this project (needs to
-    // be the exact version to avoid conflicts):
-    // https://docs.gradle.org/current/userguide/compatibility.html or see output of `gradlew --version`
-    // Note: not using Gradle 9.6 or newer for this build as it can no longer run Android Plugin 8 (which this
-    // plugin still supports and tests, see the objectbox-gradle-plugin build script).
-    val kotlinVersion by extra("2.3.20") // Embedded by Gradle 9.5.1 used to compile this
-    // To remain compatible with the lowest supported version of Gradle (see GradleCompat), plugin code must not
-    // use Kotlin APIs newer than the Kotlin version embedded by that Gradle version (the plugin runs against the
-    // embedded Kotlin standard library). So set kotlinApiLevel to the "Embedded Kotlin version" of the lowest
-    // supported Gradle version: https://docs.gradle.org/current/userguide/compatibility.html#kotlin
-    // Note: the "Kotlin Language version" column does not matter for pre-compiled, binary plugins like this one,
-    // it only applies to build scripts and precompiled script plugins:
+    // Kotlin compiler and API level
+    //
+    // Gradle runs (pre-compiled) binary plugins, like the one in this project, using its embedded
+    // version of the Kotlin standard library. Regardless of what version a plugin was compiled for
+    // and depends on. (Script plugins are compiled at build time using an even older language level.)
     // https://blog.gradle.org/three-kotlin-versions-in-a-gradle-project
-    // Note: Kotlin 2.3 and newer only support API level 1.9 or newer, so can not support Gradle before 8.3
-    // (the first version that embeds Kotlin 1.9).
-    val kotlinApiLevel by extra("1.9") // Minimum supported Gradle 8.3 embeds Kotlin 1.9
+    //
+    // So to be compatible with Gradle, all subprojects that are run as part of the plugin (so not
+    // the annotation processor and generator) must set the Kotlin API version compiler option to
+    // prevent using APIs not supported by the Kotlin version Gradle embeds. Note that dependencies
+    // also must not use newer Kotlin APIs!
+    //
+    // To also remain compatible with the latest Gradle versions, this project should compile with
+    // the latest minor version of Kotlin embedded by Gradle. This prevents Kotlin API
+    // incompatibilities, such as the removal of deprecated functions.
+    //
+    // So for simplicity and to avoid other compiler issues in this project, the Kotlin version
+    // embedded by the Gradle version that compiles this project is used.
+
+    // Matches the Kotlin version embedded by the Gradle version that compiles this project.
+    // Details above.
+    // Look it up at https://docs.gradle.org/current/userguide/compatibility.html#kotlin
+    // or with `gradlew --version`.
+    // Gradle 9.5.1 embeds Kotlin 2.3.20
+    val kotlinVersion by extra("2.3.20")
+    // At least the lowest supported by kotlinVersion (and project dependencies). Determines the
+    // minimum supported Gradle version based on the Kotlin version it embeds. Details above.
+    // Look up in org.jetbrains.kotlin.gradle.dsl.KotlinVersion (check deprecated annotations).
+    // Kotlin 2.3.20 still supports 1.9, requires at least Gradle 8.3 which embeds Kotlin 1.9.0
+    val kotlinApiLevel by extra("1.9")
 
     val essentialsVersion by extra("3.1.0")
     // 3.24.0-GA and newer support Java 11 byte code
