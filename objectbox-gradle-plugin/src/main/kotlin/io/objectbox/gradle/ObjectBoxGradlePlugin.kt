@@ -132,10 +132,8 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
         val project = env.project
 
         // use register to defer creation until use
-        val prepareTaskName = "objectboxPrepareBuild"
-
-        val prepareTask = project.tasks.register(prepareTaskName, PrepareTask::class.java, env, buildTracker)
-        env.logDebug { "Registered $prepareTaskName task." }
+        val prepareTask = project.tasks.register(PrepareTask.NAME, PrepareTask::class.java, env, buildTracker)
+        env.logDebug { "Registered ${PrepareTask.NAME} task." }
 
         // make build task depend on prepare task
         val configureDepends = Action<Task> { it.dependsOn(prepareTask) }

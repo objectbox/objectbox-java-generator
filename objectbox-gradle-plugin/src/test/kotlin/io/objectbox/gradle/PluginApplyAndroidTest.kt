@@ -99,7 +99,7 @@ abstract class PluginApplyAndroidTest : PluginApplyTest() {
             }
             assertNativeDependency(getByName(JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME).dependencies)
         }
-        assertNotNull(project.tasks.findByPath("objectboxPrepareBuild"))
+        assertNotNull(project.tasks.findByPath(PrepareTask.NAME))
 
         assertAndroidCompat(project)
 

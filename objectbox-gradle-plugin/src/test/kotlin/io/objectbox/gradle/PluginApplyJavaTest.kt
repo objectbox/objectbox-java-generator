@@ -149,7 +149,7 @@ open class PluginApplyJavaTest : PluginApplyTest() {
                 assertNativeDependency(it)
             }
         }
-        assertNotNull(project.tasks.findByPath("objectboxPrepareBuild"))
+        assertNotNull(project.tasks.findByPath(PrepareTask.NAME))
 
         // Note: using the internal evaluate is not nice, but beats writing a full-blown integration test.
         (project as ProjectInternal).evaluate()
@@ -218,7 +218,7 @@ open class PluginApplyJavaTest : PluginApplyTest() {
                 assertNativeDependency(deps)
             }
         }
-        assertNotNull(project.tasks.findByPath("objectboxPrepareBuild"))
+        assertNotNull(project.tasks.findByPath(PrepareTask.NAME))
 
         // Note: using the internal evaluate is not nice, but beats writing a full-blown integration test.
         (project as ProjectInternal).evaluate()

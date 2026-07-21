@@ -56,4 +56,8 @@ open class PrepareTask @Inject constructor(
         ObjectBoxBuildConfig(env.project.projectDir.absolutePath, null).writeInto(buildConfigFile)
     }
 
+    companion object {
+        const val NAME = "objectboxPrepareBuild"
+    }
+
 }
