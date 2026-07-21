@@ -94,9 +94,9 @@ class GradleTestRunner(
                         header(HttpHeaderAuthentication)
                     }
                 }
-                // Like for this project itself (see its settings file), fall back to the local Maven repository,
-                // e.g. for a locally built objectbox-java.
-                mavenLocal()
+                // Don't (premanently) add the local repo to avoid CI build failures. But to test
+                // with locally built dependencies add:
+                // mavenLocal()
             }
             
             configurations.all {
