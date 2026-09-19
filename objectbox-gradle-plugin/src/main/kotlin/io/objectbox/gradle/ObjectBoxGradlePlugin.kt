@@ -25,6 +25,7 @@ import io.objectbox.gradle.transform.ObjectBoxJavaTransform
 import io.objectbox.gradle.transform.TransformException
 import io.objectbox.gradle.util.AndroidCompat
 import io.objectbox.gradle.util.GradleCompat
+import io.objectbox.reporting.ObjectBoxBuildConfig
 import org.gradle.api.Action
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -133,7 +134,32 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
         // use register to defer creation until use
         val prepareTaskName = "objectboxPrepareBuild"
 
-        val prepareTask = project.tasks.register(prepareTaskName, PrepareTask::class.java, env, buildTracker)
+        // Only the plugin-presence flags are safe to resolve now: they are plain
+        // `plugins.hasPlugin(...)` checks, correct as soon as this plugin applies. Everything
+        // else PrepareTask needs (project dir, AGP version, application id, output file) is
+        // configured below via `project.provider { }`/`project.layout`, deferring the actual
+        // Project access until Gradle resolves those providers - never storing `project`/`env`
+        // as task state, which is what broke Configuration Cache support before (see
+        // PrepareTask's docs and https://github.com/objectbox/objectbox-java/issues/948).
+        val prepareTask = project.tasks.register(
+            prepareTaskName,
+            PrepareTask::class.java,
+            env.hasAndroidPlugin,
+            env.hasKotlinAndroidPlugin,
+            env.hasKotlinPlugin,
+            env.hasJavaPlugin,
+            buildTracker
+        )
+        prepareTask.configure { task ->
+            task.projectDirPath.set(project.provider { project.projectDir.absolutePath })
+            task.buildConfigFile.set(project.layout.buildDirectory.file(ObjectBoxBuildConfig.FILE_NAME))
+            if (env.hasAndroidPlugin) {
+                task.agpVersion.set(project.provider { AndroidCompat.getPluginVersion(project) })
+                task.applicationId.set(
+                    project.provider { AndroidCompat.getPlugin(project).getFirstApplicationId(project) }
+                )
+            }
+        }
         env.logDebug { "Registered $prepareTaskName task." }
 
         // make build task depend on prepare task

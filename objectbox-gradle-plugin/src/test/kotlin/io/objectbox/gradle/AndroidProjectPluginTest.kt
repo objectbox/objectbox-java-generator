@@ -69,8 +69,56 @@ abstract class AndroidProjectPluginTest {
      */
     abstract val buildTransformDirectory: String
 
-    @Test
-    fun assemble() {
+    @Language("Java")
+    private val exampleEntitySource =
+        """
+        package com.example;
+
+        import io.objectbox.annotation.Convert;
+        import io.objectbox.annotation.Entity;
+        import io.objectbox.annotation.Id;
+        import io.objectbox.annotation.Transient;
+        import io.objectbox.converter.PropertyConverter;
+        import io.objectbox.relation.ToMany;
+        import io.objectbox.relation.ToOne;
+        import java.util.List;
+
+        @Entity
+        public class ExampleEntity {
+            @Id public long id;
+
+            public ToOne<ExampleEntity> toOneProperty;
+            public ToMany<ExampleEntity> toManyProperty;
+            public List<ExampleEntity> toManyListProperty;
+
+            public transient ToOne<ExampleEntity> transientProperty;
+            @Transient public ToMany<ExampleEntity> transientProperty2;
+            @Convert(converter = TestConverter.class, dbType = String.class)
+            public List<ExampleEntity> convertProperty;
+
+            public ExampleEntity(String log) {
+                toManyProperty = new ToMany<>(this, ExampleEntity_.toManyProperty);
+                System.out.println(log);
+            }
+
+            public ExampleEntity() {
+                this("calls other constructor");
+            }
+
+            public static class TestConverter implements PropertyConverter<List<ExampleEntity>, String> {
+                @Override
+                public List<ExampleEntity> convertToEntityProperty(String databaseValue) {
+                    return null;
+                }
+                @Override
+                public String convertToDatabaseValue(List<ExampleEntity> entityProperty) {
+                    return null;
+                }
+            }
+        }
+        """.trimIndent()
+
+    private fun newGradleRunner(): GradleTestRunner {
         val gradleRunner = GradleTestRunner(testProjectDir)
             .apply {
                 // Note: classpath for plugins configured in build script of this project (see GradleTestRunner.build).
@@ -82,56 +130,13 @@ abstract class AndroidProjectPluginTest {
             writeText(androidManifest)
         }
 
-        @Language("Java")
-        val exampleEntitySource =
-            """
-            package com.example;
-            
-            import io.objectbox.annotation.Convert;
-            import io.objectbox.annotation.Entity;
-            import io.objectbox.annotation.Id;
-            import io.objectbox.annotation.Transient;
-            import io.objectbox.converter.PropertyConverter;
-            import io.objectbox.relation.ToMany;
-            import io.objectbox.relation.ToOne;
-            import java.util.List;
-            
-            @Entity
-            public class ExampleEntity {
-                @Id public long id;
-                
-                public ToOne<ExampleEntity> toOneProperty;
-                public ToMany<ExampleEntity> toManyProperty;
-                public List<ExampleEntity> toManyListProperty;
-                
-                public transient ToOne<ExampleEntity> transientProperty;
-                @Transient public ToMany<ExampleEntity> transientProperty2;
-                @Convert(converter = TestConverter.class, dbType = String.class)
-                public List<ExampleEntity> convertProperty;
-                
-                public ExampleEntity(String log) {
-                    toManyProperty = new ToMany<>(this, ExampleEntity_.toManyProperty);
-                    System.out.println(log);
-                }
-                
-                public ExampleEntity() {
-                    this("calls other constructor");
-                }
-                
-                public static class TestConverter implements PropertyConverter<List<ExampleEntity>, String> {
-                    @Override
-                    public List<ExampleEntity> convertToEntityProperty(String databaseValue) {
-                        return null;
-                    }
-                    @Override
-                    public String convertToDatabaseValue(List<ExampleEntity> entityProperty) {
-                        return null;
-                    }
-                }
-            } 
-            """.trimIndent()
-
         gradleRunner.addSourceFile("ExampleEntity.java", exampleEntitySource)
+        return gradleRunner
+    }
+
+    @Test
+    fun assemble() {
+        val gradleRunner = newGradleRunner()
 
         val result = gradleRunner.build(listOf("--stacktrace", "assembleDebug"), additionalRunnerConfiguration)
         assertThat(result.task(":assembleDebug")!!.outcome).isEqualTo(TaskOutcome.SUCCESS)
@@ -187,6 +192,33 @@ abstract class AndroidProjectPluginTest {
             assertThat(attachMethod.assignsBoxStoreField()).isTrue()
         }
 
+    }
+
+    /**
+     * Regression test for https://github.com/objectbox/objectbox-java/issues/948: applying this
+     * plugin used to make the whole build's Configuration Cache entry unstorable (not just for
+     * the plugin's own task), because [PrepareTask] held a [ProjectEnv] - and with it a live
+     * [org.gradle.api.Project] - as task state. Runs `assembleDebug` twice with the
+     * Configuration Cache enabled: the first run must store a cache entry with no problems, the
+     * second run must reuse it instead of reconfiguring from scratch.
+     */
+    @Test
+    fun assembleWithConfigurationCache() {
+        val gradleRunner = newGradleRunner()
+
+        val firstRun = gradleRunner.build(
+            listOf("--configuration-cache", "assembleDebug"),
+            additionalRunnerConfiguration
+        )
+        assertThat(firstRun.task(":assembleDebug")!!.outcome).isEqualTo(TaskOutcome.SUCCESS)
+        assertThat(firstRun.output).doesNotContain("problem was found storing the configuration cache")
+        assertThat(firstRun.output).doesNotContain("Configuration cache entry discarded")
+
+        val secondRun = gradleRunner.build(
+            listOf("--configuration-cache", "assembleDebug"),
+            additionalRunnerConfiguration
+        )
+        assertThat(secondRun.output).contains("Reusing configuration cache.")
     }
 
 }
