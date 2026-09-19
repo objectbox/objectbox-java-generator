@@ -18,7 +18,6 @@
 
 package io.objectbox.gradle
 
-import io.objectbox.gradle.util.AndroidCompat
 import io.objectbox.reporting.BasicBuildTracker
 import org.gradle.util.GradleVersion
 import java.util.*
@@ -33,19 +32,19 @@ open class GradleBuildTracker(toolName: String) : BasicBuildTracker(toolName) {
         return ProjectEnv.Const.OBX_PLUGIN_VERSION
     }
 
-    fun trackBuild(env: ProjectEnv) {
+    fun trackBuild(info: BuildEventInfo) {
         countBuild()
         if (shouldSendBuildEvent()) {
-            sendEvent("Build", buildEventProperties(env))
+            sendEvent("Build", buildEventProperties(info))
         }
     }
 
     // Use internal once fixed (Kotlin 1.1.4?)
-    fun buildEventProperties(env: ProjectEnv): String {
+    fun buildEventProperties(info: BuildEventInfo): String {
         val event = StringBuilder()
 
         // AAID: Anonymous App ID
-        val appId = androidAppId(env)
+        val appId = info.applicationId
         if (appId != null) {
             event.key("AAID").value(hashBase64WithoutPadding(appId)).comma()
         }
@@ -58,28 +57,16 @@ open class GradleBuildTracker(toolName: String) : BasicBuildTracker(toolName) {
             event.key("CI").value(ci).comma()
         }
         // There may be multiple languages in a project, so it's not a single dimension
-        val hasKotlinPlugin = env.hasKotlinAndroidPlugin || env.hasKotlinPlugin
+        val hasKotlinPlugin = info.hasKotlinAndroidPlugin || info.hasKotlinPlugin
         event.key("Kotlin").value(hasKotlinPlugin.toString()).comma()
-        event.key("Java").value(env.hasJavaPlugin.toString()).comma()
+        event.key("Java").value(info.hasJavaPlugin.toString()).comma()
         event.key("Version").value(ProjectEnv.Const.OBX_PLUGIN_VERSION).comma()
-        event.key("Target").value(if (env.hasAndroidPlugin) "Android" else "Other").comma()
-        if (env.hasAndroidPlugin) {
-            event.key("AGP").value(AndroidCompat.getPluginVersion(env.project)).comma()
+        event.key("Target").value(if (info.hasAndroidPlugin) "Android" else "Other").comma()
+        if (info.hasAndroidPlugin && info.agpVersion != null) {
+            event.key("AGP").value(info.agpVersion).comma()
         }
         event.key("Gradle").value(GradleVersion.current().version)
         return event.toString()
-    }
-
-    /**
-     * Returns the application ID of the first found build variant.
-     */
-    // Open to allow mocking for testing.
-    open fun androidAppId(env: ProjectEnv): String? {
-        if (!env.hasAndroidPlugin) {
-            return null // Android plugin API not available
-        }
-        val project = env.project
-        return AndroidCompat.getPlugin(project).getFirstApplicationId(project)
     }
 
     private fun checkCI(): String? {

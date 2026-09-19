@@ -21,52 +21,30 @@ package io.objectbox.gradle
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import io.objectbox.reporting.BasicBuildTracker.Event
-import org.gradle.api.Project
-import org.gradle.api.logging.Logger
-import org.gradle.api.plugins.ExtensionContainer
-import org.gradle.api.plugins.PluginContainer
 import org.gradle.util.GradleVersion
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import org.mockito.ArgumentMatchers
-import org.mockito.Mockito.doReturn
-import org.mockito.Mockito.mock
 import org.mockito.Mockito.spy
-import org.mockito.Mockito.`when`
-import java.io.File
 
 class BuildTrackerTest {
     private val toolName = "TestTool"
 
     @Test
     fun testBuildEventData() {
-        val project = mock(Project::class.java)
-        `when`(project.file(ArgumentMatchers.anyString())).thenReturn(mock(File::class.java))
-        val pluginContainer = mock(PluginContainer::class.java)
-        // Mocking "find" did not work out... Avoiding the call...
-//        `when`(pluginContainer.find<Collection<Plugin<Any>>>(ArgumentMatchers.any())).thenReturn(emptyList<Plugin<Any>>())
-//        `when`(pluginContainer.find<Any>(any())).thenReturn(emptyList<Plugin<Any>>())
-//        doReturn(emptyList<Plugin<Any>>()).`when`(pluginContainer).find<Any>(any())
-        `when`(project.plugins).thenReturn(pluginContainer)
-        `when`(project.logger).thenReturn(mock(Logger::class.java))
-
-        val extensionContainer = mock(ExtensionContainer::class.java)
-        `when`(project.extensions).thenReturn(extensionContainer)
-
-        val options = mock(ObjectBoxPluginExtension::class.java)
-        `when`(extensionContainer.create(ProjectEnv.Const.EXTENSION_NAME, ObjectBoxPluginExtension::class.java)).thenReturn(
-            options
-        )
-
-        val env = ProjectEnv(project)
-        val toolName = "TestTool"
         val analytics = spy(GradleBuildTracker(toolName))
         val aid = "my.test.app"
-        doReturn(aid).`when`(analytics).androidAppId(env)
+        val info = BuildEventInfo(
+            hasAndroidPlugin = true,
+            hasKotlinAndroidPlugin = false,
+            hasKotlinPlugin = false,
+            hasJavaPlugin = true,
+            agpVersion = "8.1.0",
+            applicationId = aid
+        )
 
-        val eventData = analytics.eventData("Build", analytics.buildEventProperties(env), true, "dummy")
+        val eventData = analytics.eventData("Build", analytics.buildEventProperties(info), true, "dummy")
         val json = parseJsonAndAssertBasics(eventData, "Build")
 
         @Suppress("UNCHECKED_CAST")
@@ -76,6 +54,8 @@ class BuildTrackerTest {
         assertEquals(toolName, properties["Tool"])
         assertEquals(ProjectEnv.Const.OBX_PLUGIN_VERSION, properties["Version"])
         assertEquals(GradleVersion.current().version, properties["Gradle"])
+        assertEquals("8.1.0", properties["AGP"])
+        assertEquals("Android", properties["Target"])
 
         val analytics2 = spy(GradleBuildTracker(toolName))
         assertEquals(distinctId, analytics2.uniqueIdentifier())
