@@ -54,12 +54,16 @@ class IncrementalCompilationTest {
                 @Entity
                 public class Example {
                     @Id public long id;
-                } 
+                }
                 """.trimIndent()
         )
+        // Warm-up build: creates the objectbox model file, a new task input that (like any other newly appeared
+        // input) forces one extra full rebuild on the very next build, before incremental compilation is testable.
+        gradleRunner.assemble()
+
         // Compile 1st time.
         with(gradleRunner.assemble()) {
-            assertThat(output).contains(GRADLE_MSG_FULL_RECOMPILE_REQ_FIRST_BUILD)
+            assertThat(output).contains(GRADLE_MSG_FULL_RECOMPILE_REQ)
         }
 
         // Add new property and all-properties constructor to class.
@@ -118,12 +122,16 @@ class IncrementalCompilationTest {
                 
                 @Entity
                 public class Example extends BaseExample {
-                } 
+                }
                 """.trimIndent()
         )
+        // Warm-up build: creates the objectbox model file, a new task input that (like any other newly appeared
+        // input) forces one extra full rebuild on the very next build, before incremental compilation is testable.
+        gradleRunner.assemble()
+
         // Compile 1st time.
         with(gradleRunner.assemble()) {
-            assertThat(output).contains(GRADLE_MSG_FULL_RECOMPILE_REQ_FIRST_BUILD)
+            assertThat(output).contains(GRADLE_MSG_FULL_RECOMPILE_REQ)
         }
 
         // Add new property to class.
@@ -132,11 +140,11 @@ class IncrementalCompilationTest {
             package com.example;
 
             import io.objectbox.annotation.Entity;
-            
+
             @Entity
             public class Example extends BaseExample {
                 public String newProperty;
-            } 
+            }
             """.trimIndent()
         )
         // Compile 2nd time.
@@ -191,12 +199,16 @@ class IncrementalCompilationTest {
                 
                 @Entity
                 public class Example extends IntermediateExample {
-                } 
+                }
                 """.trimIndent()
         )
+        // Warm-up build: creates the objectbox model file, a new task input that (like any other newly appeared
+        // input) forces one extra full rebuild on the very next build, before incremental compilation is testable.
+        gradleRunner.assemble()
+
         // Compile 1st time.
         with(gradleRunner.assemble()) {
-            assertThat(output).contains(GRADLE_MSG_FULL_RECOMPILE_REQ_FIRST_BUILD)
+            assertThat(output).contains(GRADLE_MSG_FULL_RECOMPILE_REQ)
         }
 
         // Add new property to class.
@@ -231,8 +243,6 @@ class IncrementalCompilationTest {
     }
 
     companion object {
-        private const val GRADLE_MSG_FULL_RECOMPILE_REQ_FIRST_BUILD =
-            "Full recompilation is required because no incremental change information is available."
         private const val GRADLE_MSG_FULL_RECOMPILE_REQ = "Full recompilation is required "
     }
 
