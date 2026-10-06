@@ -24,7 +24,7 @@ import io.objectbox.generator.model.PropertyType
 import org.junit.Test
 
 /**
- * Additional tests for the Type annotation. For basic tests see SimpleEntity test in ObjectBoxProcessorTest.
+ * Additional tests for the Type annotation. For basic tests see SimpleEntityTest.
  */
 class TypeTest : BaseProcessorTest() {
 
