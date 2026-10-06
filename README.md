@@ -36,9 +36,9 @@ This project is known to build with JDK 21.
 This repository contains a collection of Gradle subprojects:
 - `objectbox-gradle-plugin` provides the actual Gradle plugins (`io.objectbox` and `io.objectbox.sync`),
 - `objectbox-processor` provides an annotation processor,
-- `objectbox-generator` provides a source code generator used by the annotation processor,
-- `objectbox-code-modifier` provides model file ("IdSync") generation used by the annotation processor,
-  and byte-code transformers for Android and Java projects.
+- `objectbox-generator` provides a source code generator and model file ("IdSync") generation used by the
+  annotation processor,
+- `objectbox-code-modifier` provides byte-code transformers for Android and Java projects.
   - Multiple `agp-wrapper-x-y` projects provide a compatibility layer for specific versions
     of the Android Plugin API, currently for byte-code transforms only.
 
