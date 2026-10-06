@@ -20,7 +20,6 @@ package io.objectbox.gradle
 
 import io.objectbox.gradle.ProjectEnv.Const
 import org.gradle.api.Project
-import org.gradle.api.artifacts.DependencySet
 import org.gradle.api.internal.plugins.PluginApplicationException
 import org.gradle.api.internal.project.ProjectInternal
 import org.gradle.api.plugins.InvalidPluginException
@@ -146,11 +145,11 @@ open class PluginApplyJavaTest : PluginApplyTest() {
             assertProcessorDependency(getByName(JavaPlugin.ANNOTATION_PROCESSOR_CONFIGURATION_NAME).dependencies)
 
             getByName(configuration).dependencies.let {
-                assertJavaDependency(it)
+                it.assertJavaDependency()
                 assertNativeDependency(it)
             }
         }
-        assertNotNull(project.tasks.findByPath("objectboxPrepareBuild"))
+        assertNotNull(project.tasks.findByPath(PrepareTask.NAME))
 
         // Note: using the internal evaluate is not nice, but beats writing a full-blown integration test.
         (project as ProjectInternal).evaluate()
@@ -185,8 +184,8 @@ open class PluginApplyJavaTest : PluginApplyTest() {
     private fun buildKotlinKaptProject(): Project =
         buildProject {
             pluginManager.apply {
-                apply("kotlin")
-                apply("kotlin-kapt")
+                apply(Const.KOTLIN_PLUGIN_ID)
+                apply(Const.KOTLIN_KAPT_PLUGIN_ID)
                 apply(pluginId)
             }
         }
@@ -200,7 +199,7 @@ open class PluginApplyJavaTest : PluginApplyTest() {
     fun apply_afterKotlinPlugin_addsKapt() {
         val project = buildProject {
             pluginManager.apply {
-                apply("kotlin")
+                apply(Const.KOTLIN_PLUGIN_ID)
                 apply(pluginId)
             }
         }
@@ -214,15 +213,12 @@ open class PluginApplyJavaTest : PluginApplyTest() {
             assertProcessorDependency(getByName(Const.KAPT_CONFIGURATION_NAME).dependencies)
 
             getByName(JavaPlugin.API_CONFIGURATION_NAME).dependencies.let { deps ->
-                assertEquals(1, deps.count {
-                    it.group == Const.OBX_GROUP && it.name == Const.OBX_KOTLIN
-                            && it.version == Const.OBX_JAVA_VERSION
-                })
-                assertJavaDependency(deps)
+                deps.assertKotlinDependency()
+                deps.assertJavaDependency()
                 assertNativeDependency(deps)
             }
         }
-        assertNotNull(project.tasks.findByPath("objectboxPrepareBuild"))
+        assertNotNull(project.tasks.findByPath(PrepareTask.NAME))
 
         // Note: using the internal evaluate is not nice, but beats writing a full-blown integration test.
         (project as ProjectInternal).evaluate()
@@ -232,13 +228,6 @@ open class PluginApplyJavaTest : PluginApplyTest() {
         // Note: transform is not supported for Kotlin code/tasks, so these match plain Java plugin.
         assertTransformTask(project, "", JavaPlugin.CLASSES_TASK_NAME)
         assertTransformTask(project, "Test", JavaPlugin.TEST_CLASSES_TASK_NAME)
-    }
-
-    private fun assertJavaDependency(deps: DependencySet) {
-        assertEquals("${Const.OBX_JAVA} dependency not found", 1, deps.count {
-            it.group == Const.OBX_GROUP && it.name == Const.OBX_JAVA
-                    && it.version == Const.OBX_JAVA_VERSION
-        })
     }
 
     @Test

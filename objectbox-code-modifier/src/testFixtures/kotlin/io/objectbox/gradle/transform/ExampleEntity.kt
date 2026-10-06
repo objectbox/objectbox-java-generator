@@ -59,7 +59,11 @@ data class ExampleEntity(
  * These are required for the legacy ClassTransformer as Javassist compiles the code
  * it inserts (and the initializer code accesses these fields).
  */
-@Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
+@Suppress(
+    "JavaIoSerializableObjectMustHaveReadResolve",
+    "NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS",
+    "TYPE_MISMATCH_BASED_ON_JAVA_ANNOTATIONS"
+)
 object ExampleEntity_ : EntityInfo<ExampleEntity>, EntityInfoStub<ExampleEntity>() {
 
     @JvmField

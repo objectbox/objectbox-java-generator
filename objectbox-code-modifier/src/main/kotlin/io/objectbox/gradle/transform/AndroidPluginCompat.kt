@@ -26,9 +26,11 @@ abstract class AndroidPluginCompat {
     abstract fun registerTransform(project: Project, debug: Property<Boolean>, hasKotlinPlugin: Boolean)
 
     /**
-     * Returns the Android application ID of the first found build variant of the given project.
+     * Returns the Android application ID of the first found build variant of the given project,
+     * or null if there is none or it is not available yet.
      *
-     * Must be called after the project is evaluated as the Android plugin can change variants until then.
+     * [registerTransform] must have been called on the same project. Must be called at execution time (variants
+     * are only known after the project is evaluated and the application ID may change until then).
      */
     abstract fun getFirstApplicationId(project: Project): String?
 

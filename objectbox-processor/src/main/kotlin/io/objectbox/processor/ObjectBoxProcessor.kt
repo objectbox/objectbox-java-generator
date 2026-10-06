@@ -133,6 +133,8 @@ open class ObjectBoxProcessor : AbstractProcessor() {
         elementUtils = env.elementUtils
         typeUtils = env.typeUtils
         filer = env.filer
+
+        @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
         javaLangObjectType = elementUtils.getTypeElement(java.lang.Object::class.java.canonicalName).asType()
 
         val options = env.options
@@ -577,7 +579,7 @@ open class ObjectBoxProcessor : AbstractProcessor() {
                 return false
             }
         } else {
-            File(customModelPath!!)
+            File(customModelPath)
         }
 
         val modelFolder = modelFile.parentFile

@@ -1,6 +1,6 @@
 /*
  * ObjectBox Build Tools
- * Copyright (C) 2022-2024 ObjectBox Ltd.
+ * Copyright (C) 2026 ObjectBox Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -19,6 +19,7 @@
 package io.objectbox.gradle
 
 import com.google.common.truth.Truth.assertThat
+import io.objectbox.gradle.ProjectEnv.Const
 import io.objectbox.gradle.transform.ClassConst
 import io.objectbox.gradle.transform.assignsBoxStoreField
 import io.objectbox.gradle.transform.getInitializedFields
@@ -45,13 +46,39 @@ abstract class AndroidProjectPluginTest {
     @Rule
     val testProjectDir: TemporaryFolder = TemporaryFolder.builder().assureDeletion().build()
 
+    /**
+     * Matches the SDK embedded in buildenv-android CI image to avoid downloading it.
+     */
+    val compileSdk = "35"
+
+    /**
+     * Matches the minimum SDK supported by the ObjectBox Android database library.
+     */
+    val minSdk = "21"
+
     abstract val buildScriptAndroidBlock: String
 
-    abstract val androidManifest: String
+    @Language("XML")
+    private val androidManifest: String =
+        """
+        <?xml version="1.0" encoding="utf-8"?>
+        <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+            <application>
+            </application>
+        </manifest>
+        """.trimIndent()
 
-    open val additionalRunnerConfiguration: ((GradleRunner) -> Unit) = {
+    /**
+     * The version of Gradle to run the test project with.
+     *
+     * Also used to check that build tracker detects the correct Gradle version.
+     */
+    abstract val gradleVersion: String
+
+    private val additionalRunnerConfiguration: ((GradleRunner) -> Unit) = {
         // Log build output to standard out, does not pollute logs as just using --stacktrace option.
         it.forwardOutput()
+        it.withGradleVersion(gradleVersion)
     }
 
     /**
@@ -60,21 +87,18 @@ abstract class AndroidProjectPluginTest {
     abstract val expectedAndroidPluginVersion: String
 
     /**
-     * Used to check that build tracker detects the correct Gradle version.
-     */
-    abstract val expectedGradleVersion: String
-
-    /**
      * From project root, the path to the directory where transformed classes are written to.
+     * This is the path as of Android Plugin 8.
      */
-    abstract val buildTransformDirectory: String
+    private val buildTransformDirectory: String =
+        "build/intermediates/classes/debug/transformDebugClassesWithAsm/dirs"
 
     @Test
     fun assemble() {
         val gradleRunner = GradleTestRunner(testProjectDir)
             .apply {
                 // Note: classpath for plugins configured in build script of this project (see GradleTestRunner.build).
-                additionalPlugins += "com.android.application"
+                additionalPlugins += Const.ANDROID_APPLICATION_PLUGIN_ID
                 additionalBlocks = buildScriptAndroidBlock
             }
 
@@ -144,7 +168,7 @@ abstract class AndroidProjectPluginTest {
         assertThat(buildTrackerLog).contains("\"Tool\": \"GradlePlugin\"")
         assertThat(buildTrackerLog).contains("\"Target\": \"Android\"")
         assertThat(buildTrackerLog).contains("\"AGP\": \"$expectedAndroidPluginVersion\"")
-        assertThat(buildTrackerLog).contains("\"Gradle\": \"$expectedGradleVersion\"")
+        assertThat(buildTrackerLog).contains("\"Gradle\": \"$gradleVersion\"")
 
         // Assert transform output.
         val transformDir = File(testProjectDir.root, buildTransformDirectory)

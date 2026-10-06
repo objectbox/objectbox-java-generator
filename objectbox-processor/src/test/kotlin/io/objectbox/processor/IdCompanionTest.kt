@@ -25,7 +25,7 @@ import org.junit.Test
 import javax.tools.JavaFileObject
 
 /**
- * Additional tests for the IdCompanion annotation. For basic tests see SimpleEntity test in ObjectBoxProcessorTest.
+ * Additional tests for the IdCompanion annotation. For basic tests see SimpleEntityTest.
  */
 class IdCompanionTest : BaseProcessorTest() {
 

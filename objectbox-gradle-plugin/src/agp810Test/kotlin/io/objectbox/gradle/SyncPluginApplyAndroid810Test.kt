@@ -1,6 +1,6 @@
 /*
  * ObjectBox Build Tools
- * Copyright (C) 2022-2024 ObjectBox Ltd.
+ * Copyright (C) 2022-2026 ObjectBox Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -18,21 +18,16 @@
 
 package io.objectbox.gradle
 
-import com.google.common.truth.Truth.assertThat
-import io.objectbox.gradle.transform.AndroidPlugin72
-import io.objectbox.gradle.util.AndroidCompat
-import org.gradle.api.Project
+import io.objectbox.gradle.ProjectEnv.Const
 
 
 /**
- * Tests applying [ObjectBoxSyncGradlePlugin] configures a Java or Kotlin Android Gradle project as expected.
- * Tests with Android Plugin 8.1.
+ * Like [PluginApplyAndroid810Test], but tests applying [ObjectBoxSyncGradlePlugin].
  */
-class SyncPluginApplyAndroid81Test : SyncPluginApplyAndroidTest() {
+class SyncPluginApplyAndroid810Test : PluginApplyAndroid810Test() {
 
-    override fun assertAndroidCompat(project: Project) {
-        assertThat(AndroidCompat.getPlugin(project))
-            .isInstanceOf(AndroidPlugin72::class.java)
-    }
+    override val pluginId = Const.SYNC_PLUGIN_ID
+    override val expectedLibWithSyncVariantPrefix = "objectbox-sync"
+    override val expectedLibWithSyncVariantVersion = Const.OBX_DATABASE_SYNC_VERSION
 
 }

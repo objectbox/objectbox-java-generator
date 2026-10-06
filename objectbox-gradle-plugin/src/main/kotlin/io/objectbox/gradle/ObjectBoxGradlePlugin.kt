@@ -35,6 +35,7 @@ import org.gradle.api.artifacts.Dependency
 import org.gradle.api.artifacts.DependencySet
 import org.gradle.api.plugins.InvalidPluginException
 import org.gradle.api.plugins.JavaPlugin
+import org.gradle.api.plugins.UnknownPluginException
 import org.gradle.api.tasks.compile.JavaCompile
 
 /**
@@ -131,16 +132,14 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
         val project = env.project
 
         // use register to defer creation until use
-        val prepareTaskName = "objectboxPrepareBuild"
-
-        val prepareTask = project.tasks.register(prepareTaskName, PrepareTask::class.java, env, buildTracker)
-        env.logDebug { "Registered $prepareTaskName task." }
+        val prepareTask = project.tasks.register(PrepareTask.NAME, PrepareTask::class.java, env, buildTracker)
+        env.logDebug { "Registered ${PrepareTask.NAME} task." }
 
         // make build task depend on prepare task
         val configureDepends = Action<Task> { it.dependsOn(prepareTask) }
         try {
             project.tasks.named("preBuild").configure(configureDepends) // Android
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             project.tasks.named("build").configure(configureDepends) // Java
         }
     }
@@ -156,8 +155,23 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
             !project.hasConfig(Const.KAPT_CONFIGURATION_NAME)
         ) {
             // Note: no-op if kapt plugin was already applied.
-            project.plugins.apply("kotlin-kapt")
-            env.logDebug { "Applied 'kotlin-kapt'." }
+            project.plugins.apply(Const.KOTLIN_KAPT_PLUGIN_ID)
+            env.logDebug { "Applied '${Const.KOTLIN_KAPT_PLUGIN_ID}'." }
+        } else if (env.hasBuiltInKotlin && !project.hasConfig(Const.KAPT_CONFIGURATION_NAME)) {
+            // With built-in Kotlin of Android Gradle Plugin 9.0 the kotlin-kapt plugin is not supported,
+            // apply the replacement of the Android Gradle Plugin instead (no-op if it was already applied).
+            // Unlike kotlin-kapt (which ships with the Kotlin plugin) it is a separate artifact, so it is only
+            // available if the build script declares the plugin (like with `apply false`).
+            try {
+                project.plugins.apply(Const.ANDROID_LEGACY_KAPT_PLUGIN_ID)
+                env.logDebug { "Applied '${Const.ANDROID_LEGACY_KAPT_PLUGIN_ID}'." }
+            } catch (_: UnknownPluginException) {
+                project.logger.warn(
+                    "ObjectBox: to process @Entity classes written in Kotlin, add the " +
+                            "'${Const.ANDROID_LEGACY_KAPT_PLUGIN_ID}' plugin to this project (it is not required " +
+                            "for entity classes written in Java)."
+                )
+            }
         }
 
         // Note: use plugin version for processor dependency as processor is part of this project.
@@ -235,7 +249,7 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
         // Use Configuration.withDependencies to also detect dependencies that are added after the plugin is applied
         // (which, if using modern Gradle plugins syntax, they are always).
         project.configurations.getByName(compileConfig).withDependencies { dependencySet ->
-            val hasKotlinPlugin = env.hasKotlinPlugin || env.hasKotlinAndroidPlugin
+            val hasKotlinPlugin = env.hasKotlinPlugin || env.hasKotlinAndroidPlugin || env.hasBuiltInKotlin
             val hasObxKotlinLibrary = env.hasObjectBoxDep(Const.OBX_KOTLIN)
 
             if (hasKotlinPlugin) {

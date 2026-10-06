@@ -1,6 +1,6 @@
 /*
  * ObjectBox Build Tools
- * Copyright (C) 2022-2025 ObjectBox Ltd.
+ * Copyright (C) 2022-2026 ObjectBox Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -18,7 +18,6 @@
 
 package io.objectbox.gradle
 
-import org.gradle.testkit.runner.GradleRunner
 import org.intellij.lang.annotations.Language
 
 
@@ -34,11 +33,10 @@ class Android81ProjectPluginTest : AndroidProjectPluginTest() {
         """
         android {
             namespace 'com.example'
-            compileSdkVersion 35 // Matches SDK embedded in buildenv-android CI image to avoid downloading it
+            compileSdkVersion $compileSdk
             defaultConfig {
                 applicationId "com.example"
-                minSdkVersion 21
-                targetSdkVersion 33
+                minSdkVersion $minSdk
             }
             compileOptions {
                 sourceCompatibility JavaVersion.VERSION_1_8
@@ -47,29 +45,10 @@ class Android81ProjectPluginTest : AndroidProjectPluginTest() {
         }
         """.trimIndent()
 
-    @Language("XML")
-    override val androidManifest =
-        """
-        <?xml version="1.0" encoding="utf-8"?>
-        <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-            <application>
-            </application>
-        </manifest>
-        """.trimIndent()
-
-    // Test with the oldest possible version of Gradle (JDK 21 requires Gradle 8.5, Android Plugin 8.1 requires Gradle
-    // 8.0, this plugin (see GradleCompat) requires Gradle 7.0).
-    private val gradleVersionLowest = "8.5"
-    override val additionalRunnerConfiguration: ((GradleRunner) -> Unit) = {
-        it.forwardOutput()
-        it.withGradleVersion(gradleVersionLowest)
-    }
+    // Test with the oldest possible version of Gradle (JDK 21 requires Gradle 8.5, Android Plugin 8.1 requires
+    // Gradle 8.0, this plugin (see GradleCompat) requires Gradle 8.3).
+    override val gradleVersion = "8.5"
 
     override val expectedAndroidPluginVersion: String = "8.1.4"
-    override val expectedGradleVersion: String = gradleVersionLowest
-
-    // New ASM based transformers output to a different path. The path has also changed with Android Gradle Plugin 8.
-    override val buildTransformDirectory =
-        "build/intermediates/classes/debug/transformDebugClassesWithAsm/dirs"
 
 }
