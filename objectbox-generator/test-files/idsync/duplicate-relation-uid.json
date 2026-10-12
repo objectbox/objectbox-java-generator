@@ -1,0 +1,36 @@
+{
+  "entities": [
+    {
+      "id": "1:4858050548069557694",
+      "lastPropertyId": "4:8044051146334126065",
+      "name": "Note",
+      "properties": [
+        {
+          "id": "1:8303367770402050741",
+          "name": "id"
+        },
+        {
+          "id": "4:8044051146334126065",
+          "name": "integerProperty"
+        }
+      ],
+      "relations": [
+        {
+          "id": "1:4858050548069557694",
+          "name": "notes",
+          "targetId": "1:4858050548069557694"
+        }
+      ]
+    }
+  ],
+  "lastEntityId": "1:4858050548069557694",
+  "lastIndexId": "0:0",
+  "lastRelationId": "1:4858050548069557694",
+  "lastSequenceId": "0:0",
+  "modelVersion": 2,
+  "retiredEntityUids": [],
+  "retiredIndexUids": [],
+  "retiredPropertyUids": [],
+  "retiredRelationUids": [],
+  "version": 1
+}

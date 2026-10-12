@@ -233,6 +233,44 @@ class IdSyncTest {
     }
 
     @Test
+    fun testAddEntityRelationWithDuplicateUid() {
+        val model1 = syncTestModel {
+            addTestEntity("Entity1", addTestProperties = true)
+                .addTestToMany("oneToMany")
+        }
+        val entityRefId = model1.entities.first().uid
+        val relationRefId = model1.entities.first().relations!!.first().uid
+
+        val exception = assertThrows(IdSyncException::class.java) {
+            syncTestModel {
+                addTestEntity("Entity1", uid = entityRefId, addTestProperties = true)
+                    .addTestToMany("oneToMany", relationRefId)
+                    .addTestToMany("twoToMany", relationRefId)
+            }
+        }
+        assertThat(exception.message)
+            .contains("Non-unique UID $relationRefId in parsed entity pac.me.Entity1 for relation twoToMany")
+    }
+
+    @Test
+    fun testEntityRelationUidCollision() {
+        val model1 = syncTestModel {
+            addTestEntity("Entity1", addTestProperties = true)
+                .addTestToMany("oneToMany")
+        }
+        val entityRefId = model1.entities.first().uid
+
+        val exception = assertThrows(IdSyncException::class.java) {
+            syncTestModel {
+                addTestEntity("Entity1", uid = entityRefId, addTestProperties = true)
+                    .addTestToMany("oneToMany", entityRefId)
+            }
+        }
+        assertThat(exception.message)
+            .contains("Non-unique UID $entityRefId in parsed entity pac.me.Entity1 for relation oneToMany")
+    }
+
+    @Test
     fun testAddIndexId() {
         val model1 = syncBasicModel()
         assertEquals(2, model1.entities.first().lastPropertyId.id)
@@ -481,14 +519,14 @@ class IdSyncTest {
     /**
      * Adds to-many relation to itself.
      */
-    private fun Entity.addTestToMany(name: String): Entity {
+    private fun Entity.addTestToMany(name: String, uid: Long? = null): Entity {
         addToMany(
             ToManyStandalone(
                 name = name,
                 dbName = null,
                 targetEntityName = this.className,
                 isFieldAccessible = true,
-                uid = null,
+                uid = uid,
                 externalName = null,
                 externalTypeId = null,
                 externalTypeExpression = null

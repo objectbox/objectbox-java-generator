@@ -143,7 +143,11 @@ class IdSync(private val jsonFile: File = File("objectmodel.json")) {
                 uidHelper.addExistingIds(retiredRelationUids)
                 idSyncModel.entities.forEach { entity ->
                     uidHelper.addExistingId(entity.uid)
-                    entity.properties.forEach { uidHelper.addExistingId(it.uid) }
+                    entity.properties.forEach { property ->
+                        uidHelper.addExistingId(property.uid)
+                        property.indexId?.let { uidHelper.addExistingId(it.uid) }
+                    }
+                    entity.relations?.forEach { uidHelper.addExistingId(it.uid) }
                     entitiesReadByUid[entity.uid] = entity
                     if (entitiesReadByName.put(entity.name.lowercase(Locale.getDefault()), entity) != null) {
                         throw IdSyncException(

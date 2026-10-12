@@ -83,6 +83,8 @@ class IdSyncFileTest {
             "duplicate-entity-uid.json" to "Duplicate UID 4858050548069557694",
             "duplicate-property-id.json" to "Duplicate ID 1 for property Note.integerProperty",
             "duplicate-property-uid.json" to "Duplicate UID 8303367770402050741",
+            "duplicate-index-uid.json" to "Duplicate UID 8303367770402050741",
+            "duplicate-relation-uid.json" to "Duplicate UID 4858050548069557694",
             "mismatching-last-entity-id.json" to
                     "Entity Note ID 1:4858050548069557694 does not match UID of lastEntityId 1:893473467320234874",
             "mismatching-last-property-id.json" to
