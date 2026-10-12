@@ -19,45 +19,22 @@
 package io.objectbox.gradle.transform
 
 import io.objectbox.logging.log
-import io.objectbox.logging.logWarning
-import io.objectbox.reporting.BasicBuildTracker
-import org.gradle.api.file.ConfigurableFileCollection
 import java.io.File
 
 /**
  * Transforms class (byte code) files from multiple directories,
  * overwriting the original class files if no output directory is given.
  *
- * NOTE: This class is also used by the ObjectBox Maven plugin.
+ * NOTE: This class is also used by the ObjectBox Maven plugin, so it's API
+ * should remain stable and it shouldn't use any Gradle APIs.
  *
  * See ObjectBoxAndroidTransform in AGP 3.3 module.
  * @see ClassTransformer
  */
 class ObjectBoxJavaTransform(private val debug: Boolean) {
 
-    fun transform(compiledClasses: ConfigurableFileCollection, outDir: File?, copyNonTransformed: Boolean) {
-        try {
-            // Process classpath in reverse order to ensure output for first items overwrites output for last items.
-            val byteCodeDirs = compiledClasses.files.toList().reversed()
-            // Currently not modifying JAR files as there are not expected to be some,
-            // but instruct users to report if there are.
-            byteCodeDirs.forEach {
-                if (it.isFile && it.extension == "jar") {
-                    logWarning("Detected JAR file in transform classpath ($it), relations might not work, please report this to us.")
-                }
-            }
-
-            transform(byteCodeDirs, outDir, copyNonTransformed)
-        } catch (e: Throwable) {
-            val buildTracker = BasicBuildTracker("Transformer")
-            if (e is TransformException) buildTracker.trackError("Transform failed", e)
-            else buildTracker.trackFatal("Transform failed", e)
-            throw e
-        }
-    }
-
     /**
-     * NOTE: This method is used by the ObjectBox Maven plugin.
+     * NOTE: This method is also used by the ObjectBox Maven plugin.
      */
     fun transform(byteCodeDirs: List<File>, outDir: File?, copyNonTransformed: Boolean) {
         val probedClasses = mutableListOf<ProbedClass>()
