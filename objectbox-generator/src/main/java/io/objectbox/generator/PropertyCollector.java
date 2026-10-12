@@ -310,7 +310,7 @@ class PropertyCollector {
         if (last) {
             if (!idProperty.isTypeNotNull()) {
                 all.append(idProperty.getPropertyName()).append(" != null ? ").append(idProperty.getPropertyName())
-                        .append(": 0");
+                        .append(" : 0");
             } else {
                 all.append(getValue(idProperty));
             }
