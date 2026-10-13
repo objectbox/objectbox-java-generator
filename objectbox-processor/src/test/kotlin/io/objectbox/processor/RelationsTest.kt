@@ -19,7 +19,6 @@
 package io.objectbox.processor
 
 import com.google.common.truth.Truth.assertThat
-import com.google.testing.compile.JavaFileObjects
 import io.objectbox.generator.IdUid
 import io.objectbox.generator.model.Entity
 import io.objectbox.generator.model.Property
@@ -36,8 +35,6 @@ import org.junit.Test
  * Tests relations using standalone ToOne, standalone ToMany and ToMany with @Backlink ToOne.
  */
 class RelationsTest(processorType: ProcessorType) : BaseProcessorTest(processorType) {
-
-    private val idEntityFileObject = JavaFileObjects.forResource("IdEntity.java")
 
     @Test
     fun testRelation() {
@@ -172,7 +169,9 @@ class RelationsTest(processorType: ProcessorType) : BaseProcessorTest(processorT
         }
     }
 
-    private val javaFileObjectToOneTarget = """
+    private val toOneTargetName = "com.example.ToOneTarget"
+
+    private val toOneTargetSourceFile = """
         package com.example;
         import io.objectbox.annotation.Entity;
         import io.objectbox.annotation.Id;
@@ -181,13 +180,11 @@ class RelationsTest(processorType: ProcessorType) : BaseProcessorTest(processorT
         public class ToOneTarget {
             @Id long id;
         }
-        """.trimIndent().let {
-        JavaFileObjects.forSourceString("com.example.ToOneTarget", it)
-    }
+        """.trimIndent()
 
     @Test
     fun toOne_noTypeParameter_errors() {
-        val javaFileObjectSource = """
+        val toOneSourceFile = """
         package com.example;
         import io.objectbox.BoxStore;
         import io.objectbox.annotation.Entity;
@@ -203,13 +200,13 @@ class RelationsTest(processorType: ProcessorType) : BaseProcessorTest(processorT
             // need to add manually, as processor can not modify entity
             transient BoxStore __boxStore;
         }
-        """.trimIndent().let {
-            JavaFileObjects.forSourceString("com.example.NoType", it)
-        }
+        """.trimIndent()
 
         val environment = env("not-generated.json", useTemporaryModelFile = true)
 
-        environment.compile(listOf(javaFileObjectSource, javaFileObjectToOneTarget))
+        environment.addSourceFile("com.example.NoType", toOneSourceFile)
+        environment.addSourceFile(toOneTargetName, toOneTargetSourceFile)
+        environment.compile()
             .assertThatIt {
                 failed()
                 hadErrorContaining("The generic ToOne property 'toOne' in 'NoType' must have a type argument, e.g. ToOne<Entity>.")
@@ -219,7 +216,7 @@ class RelationsTest(processorType: ProcessorType) : BaseProcessorTest(processorT
 
     @Test
     fun toMany_noTypeParameter_errors() {
-        val javaFileObjectSource = """
+        val toOneSourceFile = """
         package com.example;
         import io.objectbox.BoxStore;
         import io.objectbox.annotation.Entity;
@@ -235,13 +232,13 @@ class RelationsTest(processorType: ProcessorType) : BaseProcessorTest(processorT
             // need to add manually, as processor can not modify entity
             transient BoxStore __boxStore;
         }
-        """.trimIndent().let {
-            JavaFileObjects.forSourceString("com.example.NoType", it)
-        }
+        """.trimIndent()
 
         val environment = env("not-generated.json", useTemporaryModelFile = true)
 
-        environment.compile(listOf(javaFileObjectSource, javaFileObjectToOneTarget))
+        environment.addSourceFile("com.example.NoType", toOneSourceFile)
+        environment.addSourceFile(toOneTargetName, toOneTargetSourceFile)
+        environment.compile()
             .assertThatIt {
                 failed()
                 hadErrorContaining("The generic ToMany property 'toMany' in 'NoType' must have a type argument, e.g. ToMany<Entity>.")
@@ -251,7 +248,7 @@ class RelationsTest(processorType: ProcessorType) : BaseProcessorTest(processorT
 
     @Test
     fun toOne_targetIdTypeNotLong_errors() {
-        val javaFileObjectSource = """
+        val toOneSourceFile = """
         package com.example;
         import io.objectbox.BoxStore;
         import io.objectbox.annotation.Entity;
@@ -269,13 +266,13 @@ class RelationsTest(processorType: ProcessorType) : BaseProcessorTest(processorT
             // need to add manually, as processor can not modify entity
             transient BoxStore __boxStore;
         }
-        """.trimIndent().let {
-            JavaFileObjects.forSourceString("com.example.ToOneSource", it)
-        }
+        """.trimIndent()
 
         val environment = env("not-generated.json", useTemporaryModelFile = true)
 
-        environment.compile(listOf(javaFileObjectSource, javaFileObjectToOneTarget))
+        environment.addSourceFile("com.example.ToOneSource", toOneSourceFile)
+        environment.addSourceFile(toOneTargetName, toOneTargetSourceFile)
+        environment.compile()
             .assertThatIt {
                 failed()
                 hadErrorContaining("The target ID property 'targetId' for ToOne relation 'target' in 'ToOneSource' must be long.")
@@ -285,7 +282,7 @@ class RelationsTest(processorType: ProcessorType) : BaseProcessorTest(processorT
 
     @Test
     fun toOne_targetIdAnnotationTypeNotLong_errors() {
-        val javaFileObjectSource = """
+        val toOneSourceFile = """
         package com.example;
         import io.objectbox.BoxStore;
         import io.objectbox.annotation.Entity;
@@ -305,13 +302,13 @@ class RelationsTest(processorType: ProcessorType) : BaseProcessorTest(processorT
             // need to add manually, as processor can not modify entity
             transient BoxStore __boxStore;
         }
-        """.trimIndent().let {
-            JavaFileObjects.forSourceString("com.example.ToOneSource", it)
-        }
+        """.trimIndent()
 
         val environment = env("not-generated.json", useTemporaryModelFile = true)
 
-        environment.compile(listOf(javaFileObjectSource, javaFileObjectToOneTarget))
+        environment.addSourceFile("com.example.ToOneSource", toOneSourceFile)
+        environment.addSourceFile(toOneTargetName, toOneTargetSourceFile)
+        environment.compile()
             .assertThatIt {
                 failed()
                 hadErrorContaining("The target ID property 'targetIdUnconventionalName' for ToOne relation 'target' in 'ToOneSource' must be long.")
@@ -621,7 +618,7 @@ class RelationsTest(processorType: ProcessorType) : BaseProcessorTest(processorT
     @Test
     fun testToManyStandalone() {
         val parentName = "ToManyStandalone"
-        val parentFileObject = """
+        val parentSourceFile = """
         package io.objectbox.processor.test;
         
         import java.util.List;
@@ -638,14 +635,14 @@ class RelationsTest(processorType: ProcessorType) : BaseProcessorTest(processorT
                                                         
             List<IdEntity> childrenList = new ToMany<>(this, ToManyStandalone_.childrenList);
         }
-        """.trimIndent().let {
-            JavaFileObjects.forSourceString("io.objectbox.processor.test.${parentName}", it)
-        }
+        """.trimIndent()
         val childName = "IdEntity"
 
         val environment = env("standalone-to-many.json")
 
-        environment.compile(listOf(parentFileObject, idEntityFileObject))
+        environment.addSourceFile("io.objectbox.processor.test.${parentName}", parentSourceFile)
+        environment.addResourceSourceFile("IdEntity")
+        environment.compile()
             .assertThatIt { succeededWithoutWarnings() }
             .assertGeneratedSourceMatches("${parentName}_")
             .assertGeneratedSourceMatches("${parentName}Cursor")

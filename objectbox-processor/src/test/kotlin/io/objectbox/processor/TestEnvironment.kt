@@ -19,9 +19,7 @@
 package io.objectbox.processor
 
 import com.google.common.truth.Truth.assertWithMessage
-import com.google.testing.compile.JavaFileObjects
 import io.objectbox.generator.idsync.IdSync
-import javax.tools.JavaFileObject
 import io.objectbox.generator.model.Schema
 import java.io.File
 import java.io.FileNotFoundException
@@ -138,6 +136,13 @@ abstract class TestEnvironment(
         sourceFiles.add(TestSourceFile(fullyQualifiedName, source))
     }
 
+    /**
+     * Adds a source file from a .java file resource to be compiled with [compile].
+     */
+    fun addResourceSourceFile(resourceName: String) {
+        sourceFiles.add(resourceSourceFile(resourceName))
+    }
+
     fun addEntitySourceFile(
         name: String = "Example",
         sync: Boolean = false,
@@ -176,19 +181,6 @@ ${body().replaceIndent("            ")}
     fun compile(modelExpectedToChange: Boolean = false): TestCompilation {
         check(sourceFiles.isNotEmpty())
         return compileAndCheckModel(sourceFiles, modelExpectedToChange)
-    }
-
-    /**
-     * Variant of [compile] that expects source files created with [JavaFileObjects.forSourceString].
-     *
-     * New code should add source code using [addSourceFile] instead.
-     */
-    fun compile(files: List<JavaFileObject>, modelExpectedToChange: Boolean = false): TestCompilation {
-        val sources = files.map {
-            val qualifiedName = it.name.removePrefix("/").removeSuffix(".java").replace('/', '.')
-            TestSourceFile(qualifiedName, it.getCharContent(true).toString())
-        }
-        return compileAndCheckModel(sources, modelExpectedToChange)
     }
 
     /**

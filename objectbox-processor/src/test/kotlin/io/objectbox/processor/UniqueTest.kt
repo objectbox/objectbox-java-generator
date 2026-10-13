@@ -20,7 +20,6 @@ package io.objectbox.processor
 
 import com.google.common.truth.Truth.assertThat
 import com.google.common.truth.Truth.assertWithMessage
-import com.google.testing.compile.JavaFileObjects
 import org.junit.Test
 
 
@@ -134,13 +133,12 @@ class UniqueTest(processorType: ProcessorType) : BaseProcessorTest(processorType
             @Unique(onConflict = ConflictStrategy.REPLACE)
             public long replace2;
         }
-        """.trimIndent().let {
-            JavaFileObjects.forSourceString("com.example.Example", it)
-        }
+        """.trimIndent()
 
         val environment = env("not-generated.json", useTemporaryModelFile = true)
 
-        environment.compile(listOf(sourceFile))
+        environment.addSourceFile("com.example.Example", sourceFile)
+        environment.compile()
             .assertThatIt {
                 failed()
                 hadErrorContaining(

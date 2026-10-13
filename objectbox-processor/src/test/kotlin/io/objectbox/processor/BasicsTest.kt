@@ -19,7 +19,6 @@
 package io.objectbox.processor
 
 import com.google.common.truth.Truth.assertThat
-import com.google.testing.compile.JavaFileObjects
 import io.objectbox.generator.model.PropertyType
 import org.junit.Assert.assertEquals
 import org.junit.Assert.fail
@@ -139,13 +138,12 @@ class BasicsTest(processorType: ProcessorType) : BaseProcessorTest(processorType
                 this.secondProperty = secondProperty;
             }
         }
-        """.trimIndent().let {
-            JavaFileObjects.forSourceString("io.objectbox.processor.test.NoArgCtrMissing", it)
-        }
+        """.trimIndent()
 
         val environment = env("ctr-no-arg-missing.json", useTemporaryModelFile = true)
 
-        environment.compile(listOf(noArgCtrMissing))
+        environment.addSourceFile("io.objectbox.processor.test.NoArgCtrMissing", noArgCtrMissing)
+        environment.compile()
             .assertThatIt {
                 failed()
                 hadErrorContaining("No-argument or all-properties constructor is required for @Entity class")
@@ -180,13 +178,12 @@ class BasicsTest(processorType: ProcessorType) : BaseProcessorTest(processorType
                 this.secondProperty = secondProperty;
             }
         }
-        """.trimIndent().let {
-            JavaFileObjects.forSourceString("io.objectbox.processor.test.AllPropsCtrOnly", it)
-        }
+        """.trimIndent()
 
         val environment = env("ctr-all-props.json", useTemporaryModelFile = true)
 
-        environment.compile(listOf(allPropertiesCtrOnly))
+        environment.addSourceFile("io.objectbox.processor.test.AllPropsCtrOnly", allPropertiesCtrOnly)
+        environment.compile()
             .assertThatIt { succeededWithoutWarnings() }
         assertThat(environment.isModelFileExists()).isTrue()
     }
@@ -288,12 +285,11 @@ class BasicsTest(processorType: ProcessorType) : BaseProcessorTest(processorType
             @Id long id;
             String __boxStore;
         }
-        """.let {
-            JavaFileObjects.forSourceString("com.example.Example", it)
-        }
+        """
 
         env("reserved-boxstore.json", useTemporaryModelFile = true)
-            .compile(listOf(entityWithBoxstoreProperty))
+            .apply { addSourceFile("com.example.Example", entityWithBoxstoreProperty) }
+            .compile()
             .assertThatIt {
                 hadErrorContaining("A property can not be named `__boxStore`. Adding a BoxStore field for relations? Annotate it with @Transient.")
             }
@@ -301,7 +297,7 @@ class BasicsTest(processorType: ProcessorType) : BaseProcessorTest(processorType
 
     @Test
     fun entity_duplicateWithSameName_shouldError() {
-        val javaFileObjectOriginal = """
+        val originalSourceFile = """
         package com.example.original;
         import io.objectbox.annotation.Entity;
         import io.objectbox.annotation.Id;
@@ -310,10 +306,8 @@ class BasicsTest(processorType: ProcessorType) : BaseProcessorTest(processorType
         public class Example {
             @Id long id;
         }
-        """.let {
-            JavaFileObjects.forSourceString("com.example.original.Example", it)
-        }
-        val javaFileObjectDuplicate = """
+        """
+        val duplicateSourceFile = """
         package com.example.duplicate;
         import io.objectbox.annotation.Entity;
         import io.objectbox.annotation.Id;
@@ -322,12 +316,14 @@ class BasicsTest(processorType: ProcessorType) : BaseProcessorTest(processorType
         public class Example {
             @Id long id;
         }
-        """.let {
-            JavaFileObjects.forSourceString("com.example.duplicate.Example", it)
-        }
+        """
 
         env("getter-matching-return.json", useTemporaryModelFile = true)
-            .compile(listOf(javaFileObjectOriginal, javaFileObjectDuplicate))
+            .apply {
+                addSourceFile("com.example.original.Example", originalSourceFile)
+                addSourceFile("com.example.duplicate.Example", duplicateSourceFile)
+            }
+            .compile()
             .assertThatIt {
                 // Note: which of the two is found first depends on the order the compiler
                 // provides them in, which differs between javac and KSP.

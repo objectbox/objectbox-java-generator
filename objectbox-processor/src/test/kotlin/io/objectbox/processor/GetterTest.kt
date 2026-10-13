@@ -19,7 +19,6 @@
 package io.objectbox.processor
 
 import com.google.common.truth.Truth
-import com.google.testing.compile.JavaFileObjects
 import org.junit.Test
 
 /** Tests related to detecting getter methods of properties. */
@@ -48,11 +47,10 @@ class GetterTest(processorType: ProcessorType) : BaseProcessorTest(processorType
             }
         }
         """
-        val javaFileObject = JavaFileObjects.forSourceString("com.example.objectbox.Example", source)
-
         val environment = env("getter-is.json", useTemporaryModelFile = true)
 
-        environment.compile(listOf(javaFileObject))
+        environment.addSourceFile("com.example.objectbox.Example", source)
+        environment.compile()
             .assertThatIt { succeededWithoutWarnings() }
 
         val entity = environment.schema.entities[0]!!
@@ -86,11 +84,10 @@ class GetterTest(processorType: ProcessorType) : BaseProcessorTest(processorType
             }
         }
         """
-        val javaFileObject = JavaFileObjects.forSourceString("com.example.objectbox.Example", source)
-
         val environment = env("getter-matching-return.json", useTemporaryModelFile = true)
 
-        environment.compile(listOf(javaFileObject))
+        environment.addSourceFile("com.example.objectbox.Example", source)
+        environment.compile()
             .assertThatIt { succeededWithoutWarnings() }
 
         val entity = environment.schema.entities[0]!!

@@ -19,7 +19,6 @@
 package io.objectbox.processor
 
 import com.google.common.truth.Truth.assertThat
-import com.google.testing.compile.JavaFileObjects
 import io.objectbox.model.EntityFlags
 import org.intellij.lang.annotations.Language
 import org.junit.Test
@@ -31,8 +30,9 @@ class SyncTest(processorType: ProcessorType) : BaseProcessorTest(processorType) 
 
     @Test
     fun sync_works() {
+        val exampleName = "com.example.Example"
         @Language("Java")
-        val sourceFile = """
+        val exampleSource = """
         package com.example;
         
         import io.objectbox.annotation.ConflictStrategy;
@@ -49,19 +49,20 @@ class SyncTest(processorType: ProcessorType) : BaseProcessorTest(processorType) 
             @Unique(onConflict = ConflictStrategy.REPLACE)
             public long replaceProp;
         }
-        """.trimIndent().let {
-            JavaFileObjects.forSourceString("com.example.Example", it)
-        }
+        """.trimIndent()
 
         // Need stable model file + ids to verify sources match.
-        env("sync-works.json").compile(listOf(sourceFile))
+        env("sync-works.json")
+            .apply { addSourceFile(exampleName, exampleSource) }
+            .compile()
             .assertThatIt { succeededWithoutWarnings() }
             // Entity flag added to generated code
             .assertGeneratedSourceMatches("com.example.MyObjectBox", "MyObjectBox-sync.java")
 
         // Use temp model file to assert model file.
         env("sync-works.json", useTemporaryModelFile = true).let { environment ->
-            environment.compile(listOf(sourceFile))
+            environment.addSourceFile(exampleName, exampleSource)
+            environment.compile()
                 .assertThatIt { succeededWithoutWarnings() }
 
             // Schema matches
@@ -94,9 +95,7 @@ class SyncTest(processorType: ProcessorType) : BaseProcessorTest(processorType) 
             @Id long id;
             ToMany<Related> relation;
         }
-        """.trimIndent().let {
-            JavaFileObjects.forSourceString("com.example.Example", it)
-        }
+        """.trimIndent()
         val relatedFile = """
         package com.example;
         import io.objectbox.annotation.Entity;
@@ -108,13 +107,13 @@ class SyncTest(processorType: ProcessorType) : BaseProcessorTest(processorType) 
         public class Related {
             @Id long id;
         }
-        """.trimIndent().let {
-            JavaFileObjects.forSourceString("com.example.Related", it)
-        }
+        """.trimIndent()
 
         val environment = env("sync-relation-works.json", useTemporaryModelFile = true)
 
-        environment.compile(listOf(exampleFile, relatedFile))
+        environment.addSourceFile("com.example.Example", exampleFile)
+        environment.addSourceFile("com.example.Related", relatedFile)
+        environment.compile()
             .assertThatIt { succeededWithoutWarnings() }
     }
 
@@ -134,9 +133,7 @@ class SyncTest(processorType: ProcessorType) : BaseProcessorTest(processorType) 
             @Id long id;
             ToMany<Related> relation;
         }
-        """.trimIndent().let {
-            JavaFileObjects.forSourceString("com.example.Example", it)
-        }
+        """.trimIndent()
         val relatedFile = """
         package com.example;
         import io.objectbox.annotation.Entity;
@@ -146,13 +143,13 @@ class SyncTest(processorType: ProcessorType) : BaseProcessorTest(processorType) 
         public class Related {
             @Id long id;
         }
-        """.trimIndent().let {
-            JavaFileObjects.forSourceString("com.example.Related", it)
-        }
+        """.trimIndent()
 
         val environment = env("sync-relation-fails.json", useTemporaryModelFile = true)
 
-        environment.compile(listOf(exampleFile, relatedFile))
+        environment.addSourceFile("com.example.Example", exampleFile)
+        environment.addSourceFile("com.example.Related", relatedFile)
+        environment.compile()
             .assertThatIt {
                 failed()
                 hadErrorContaining(
@@ -164,8 +161,9 @@ class SyncTest(processorType: ProcessorType) : BaseProcessorTest(processorType) 
 
     @Test
     fun sync_sharedGlobalIds_works() {
+        val exampleName = "com.example.Example"
         @Language("Java")
-        val sourceFile = """
+        val exampleSource = """
         package com.example;
         import io.objectbox.annotation.Entity;
         import io.objectbox.annotation.Id;
@@ -176,20 +174,20 @@ class SyncTest(processorType: ProcessorType) : BaseProcessorTest(processorType) 
         public class Example {
             @Id long id;
         }
-        """.trimIndent().let {
-            JavaFileObjects.forSourceString("com.example.Example", it)
-        }
+        """.trimIndent()
 
         // Need stable model file + ids to verify sources match.
         env("sync-global-ids-works.json")
-            .compile(listOf(sourceFile))
+            .apply { addSourceFile(exampleName, exampleSource) }
+            .compile()
             .assertThatIt { succeededWithoutWarnings() }
             // Entity flag added to generated code
             .assertGeneratedSourceMatches("com.example.MyObjectBox", "MyObjectBox-sync-global-ids.java")
 
         // Use temp model file to assert model file.
         env("sync-global-ids-works.json", useTemporaryModelFile = true).let { environment ->
-            environment.compile(listOf(sourceFile))
+            environment.addSourceFile(exampleName, exampleSource)
+            environment.compile()
                 .assertThatIt { succeededWithoutWarnings() }
 
             // Schema matches
@@ -230,13 +228,12 @@ class SyncTest(processorType: ProcessorType) : BaseProcessorTest(processorType) 
             @Unique
             public long failProp;
         }
-        """.trimIndent().let {
-            JavaFileObjects.forSourceString("com.example.Example", it)
-        }
+        """.trimIndent()
 
         val environment = env("not-generated.json", useTemporaryModelFile = true)
 
-        environment.compile(listOf(exampleFile))
+        environment.addSourceFile("com.example.Example", exampleFile)
+        environment.compile()
             .assertThatIt {
                 failed()
                 hadErrorContaining(

@@ -19,7 +19,6 @@
 package io.objectbox.processor
 
 import com.google.common.truth.Truth.assertThat
-import com.google.testing.compile.JavaFileObjects
 import io.objectbox.generator.model.PropertyType
 import org.junit.Test
 
@@ -39,13 +38,12 @@ class IdTest(processorType: ProcessorType) : BaseProcessorTest(processorType) {
         public class NoIdEntity {
             long id;
         }
-        """.trimIndent().let {
-            JavaFileObjects.forSourceString("io.objectbox.processor.test.NoIdEntity", it)
-        }
+        """.trimIndent()
 
         val environment = env("not-generated.json", useTemporaryModelFile = true)
 
-        environment.compile(listOf(sourceFile))
+        environment.addSourceFile("io.objectbox.processor.test.NoIdEntity", sourceFile)
+        environment.compile()
             .assertThatIt {
                 failed()
                 hadErrorContaining("No @Id property found for 'NoIdEntity', add @Id on a not-null long property.")
@@ -64,13 +62,12 @@ class IdTest(processorType: ProcessorType) : BaseProcessorTest(processorType) {
         public class NotLongEntity {
             @Id String id;
         }
-        """.trimIndent().let {
-            JavaFileObjects.forSourceString("io.objectbox.processor.test.NotLongEntity", it)
-        }
+        """.trimIndent()
 
         val environment = env("not-generated.json", useTemporaryModelFile = true)
 
-        environment.compile(listOf(sourceFile))
+        environment.addSourceFile("io.objectbox.processor.test.NotLongEntity", sourceFile)
+        environment.compile()
             .assertThatIt {
                 failed()
                 hadErrorContaining("An @Id property must be a not-null long.")
@@ -88,13 +85,12 @@ class IdTest(processorType: ProcessorType) : BaseProcessorTest(processorType) {
         public class PrivateEntity {
             @Id private long id; // private + no getter or setter
         }
-        """.trimIndent().let {
-            JavaFileObjects.forSourceString("com.example.objectbox.PrivateEntity", it)
-        }
+        """.trimIndent()
 
         val environment = env("not-generated.json", useTemporaryModelFile = true)
 
-        environment.compile(listOf(sourceFile))
+        environment.addSourceFile("com.example.objectbox.PrivateEntity", sourceFile)
+        environment.compile()
             .assertThatIt {
                 failed()
                 hadErrorContaining("An @Id property must not be private or have a not-private getter and setter.")
@@ -118,11 +114,11 @@ class IdTest(processorType: ProcessorType) : BaseProcessorTest(processorType) {
             @Id Long id;
         }
         """.trimIndent()
-            .let { JavaFileObjects.forSourceString("com.example.NullableIdEntity", it) }
 
         val environment = env("nullable-id.json")
 
-        environment.compile(listOf(sourceFile))
+        environment.addSourceFile("com.example.NullableIdEntity", sourceFile)
+        environment.compile()
             .assertThatIt {
                 succeededWithoutWarnings()
             }

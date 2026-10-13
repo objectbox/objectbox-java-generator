@@ -22,7 +22,6 @@ import com.google.common.truth.Truth.assertThat
 import io.objectbox.generator.model.PropertyType
 import org.junit.Assert
 import org.junit.Test
-import javax.tools.JavaFileObject
 
 
 /**

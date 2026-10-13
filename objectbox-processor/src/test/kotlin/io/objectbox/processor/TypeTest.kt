@@ -19,7 +19,6 @@
 package io.objectbox.processor
 
 import com.google.common.truth.Truth
-import com.google.testing.compile.JavaFileObjects
 import io.objectbox.generator.model.PropertyType
 import org.junit.Test
 
@@ -61,13 +60,12 @@ class TypeTest(processorType: ProcessorType) : BaseProcessorTest(processorType) 
                 }
             }
         }
-        """.trimIndent().let {
-            JavaFileObjects.forSourceString("com.example.Example", it)
-        }
+        """.trimIndent()
 
         val environment = env("type-custom-datenano.json", useTemporaryModelFile = true)
 
-        environment.compile(listOf(entitySource))
+        environment.addSourceFile("com.example.Example", entitySource)
+        environment.compile()
             .assertThatIt { succeededWithoutWarnings() }
 
         // Assert schema.
@@ -90,7 +88,7 @@ class TypeTest(processorType: ProcessorType) : BaseProcessorTest(processorType) 
 
     @Test
     fun typeAnnotation_notLong_unsupported() {
-        val javaFileObject = """
+        val sourceFile = """
         package com.example;
         import io.objectbox.annotation.DatabaseType;
         import io.objectbox.annotation.Entity;
@@ -102,12 +100,11 @@ class TypeTest(processorType: ProcessorType) : BaseProcessorTest(processorType) 
             @Id long id;
             @Type(DatabaseType.DateNano) int notLong;
         }
-        """.trimIndent().let {
-            JavaFileObjects.forSourceString("com.example.Example", it)
-        }
+        """.trimIndent()
 
         env("type-not-long.json", useTemporaryModelFile = true)
-            .compile(listOf(javaFileObject))
+            .apply { addSourceFile("com.example.Example", sourceFile) }
+            .compile()
             .assertThatIt {
                 hadErrorContaining("@Type(DateNano) only supports properties with type Long")
             }
