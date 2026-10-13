@@ -199,10 +199,6 @@ dependencies {
     compileOnly("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
 
     testImplementation(gradleTestKit())
-    // The KSP Gradle plugin, so plugin apply tests can apply it to verify the ObjectBox plugin then
-    // uses KSP. Not referenced by test code (so not by the compiler; it is built with a
-    // newer Kotlin version than this project).
-    testRuntimeOnly("com.google.devtools.ksp:symbol-processing-gradle-plugin:$kspVersion")
     // For new Gradle TestKit tests (see GradleTestRunner).
     testRuntimeOnly(files(testPluginClasspathFile))
     // The Kotlin and KSP plugins for TestKit projects with Kotlin code: the KSP plugin requires
@@ -229,7 +225,6 @@ dependencies {
     testPluginClasspathagp810("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinTestKitVersion")
     testPluginClasspathagp810("com.google.devtools.ksp:symbol-processing-gradle-plugin:$kspVersion")
     agp810TestRuntimeOnly(files(testPluginClasspathagp810File))
-    agp810TestRuntimeOnly("com.android.tools.build:gradle:$agp810Version")
     // Testing 9.2, the latest minor version
     // 9.x also uses built-in Kotlin and requires its own legacy-kapt plugin, added below.
     val agp9Version = "9.2.1"
@@ -242,8 +237,10 @@ dependencies {
     // For plugin apply tests and outdated TestKit tests (dir "test-gradle-projects").
     testImplementation("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
     testImplementation("com.android.tools.build:gradle-api:$agpApi")
+    testRuntimeOnly("com.google.devtools.ksp:symbol-processing-gradle-plugin:${kspVersion}")
     agp73TestRuntimeOnly("com.android.tools.build:gradle:$agp73Version")
     agp81TestRuntimeOnly("com.android.tools.build:gradle:$agp81Version")
+    agp810TestRuntimeOnly("com.android.tools.build:gradle:$agp810Version")
     agp9TestRuntimeOnly("com.android.tools.build:gradle:$agp9Version")
     agp9TestRuntimeOnly("com.android.tools.build:gradle-kotlin:$agp9Version")
 
