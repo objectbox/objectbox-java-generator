@@ -82,7 +82,7 @@ class KspCompiler {
         val logger = CollectingKspLogger()
         val exitCode = KotlinSymbolProcessing(kspConfig, listOf(provider), logger).execute()
 
-        return KspCompilation(exitCode, logger.messages(), javaOutputDirectory)
+        return KspCompilation(exitCode, logger, javaOutputDirectory)
 
     }
 
@@ -130,18 +130,21 @@ class KspCompiler {
      */
     class KspCompilation(
         private val exitCode: KotlinSymbolProcessing.ExitCode,
-        val messages: List<String>,
+        private val logger: CollectingKspLogger,
         private val javaOutputDirectory: File
     ) {
+
+        val messages: List<String>
+            get() = logger.messages()
 
         val succeeded: Boolean
             get() = exitCode == KotlinSymbolProcessing.ExitCode.OK
 
         val errors: List<String>
-            get() = messages.filter { it.startsWith("error: ") }
+            get() = logger.errors
 
         val warnings: List<String>
-            get() = messages.filter { it.startsWith("warning: ") }
+            get() = logger.warnings
 
         /**
          * Returns the generated source file for the given class, or null if it was not generated.
@@ -155,21 +158,34 @@ class KspCompiler {
     /**
      * Collects messages, prefixed with their severity like "error: " or "warning: ".
      */
-    private class CollectingKspLogger : KSPLogger {
+    class CollectingKspLogger : KSPLogger {
 
         private val messages = mutableListOf<String>()
 
         fun messages(): List<String> = messages
 
-        private fun add(severity: String, message: String, symbol: KSNode?) {
+        val errors: List<String>
+            get() = messages.filter { it.startsWith("$ERROR: ") }
+
+        val warnings: List<String>
+            get() = messages.filter { it.startsWith("$WARNING: ") }
+
+        private fun add(severity: String, message: String) {
             messages.add("$severity: $message")
         }
 
-        override fun logging(message: String, symbol: KSNode?) = add("logging", message, symbol)
-        override fun info(message: String, symbol: KSNode?) = add("info", message, symbol)
-        override fun warn(message: String, symbol: KSNode?) = add("warning", message, symbol)
-        override fun error(message: String, symbol: KSNode?) = add("error", message, symbol)
-        override fun exception(e: Throwable) = add("error", e.toString(), null)
+        override fun logging(message: String, symbol: KSNode?) = add(LOGGING, message)
+        override fun info(message: String, symbol: KSNode?) = add(INFO, message)
+        override fun warn(message: String, symbol: KSNode?) = add(WARNING, message)
+        override fun error(message: String, symbol: KSNode?) = add(ERROR, message)
+        override fun exception(e: Throwable) = add(ERROR, e.toString())
+
+        companion object {
+            const val LOGGING = "logging"
+            const val INFO = "info"
+            const val WARNING = "warning"
+            const val ERROR = "error"
+        }
     }
 
 }
