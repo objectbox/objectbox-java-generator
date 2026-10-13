@@ -199,8 +199,8 @@ dependencies {
     compileOnly("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
 
     testImplementation(gradleTestKit())
-    // The KSP Gradle plugin, so tests can verify the ObjectBox plugin applies it if it is on the
-    // project classpath. Not referenced by test code (so not by the compiler; it is built with a
+    // The KSP Gradle plugin, so plugin apply tests can apply it to verify the ObjectBox plugin then
+    // uses KSP. Not referenced by test code (so not by the compiler; it is built with a
     // newer Kotlin version than this project).
     testRuntimeOnly("com.google.devtools.ksp:symbol-processing-gradle-plugin:$kspVersion")
     // For new Gradle TestKit tests (see GradleTestRunner).
@@ -271,8 +271,6 @@ buildConfig {
     buildConfigField<String>("APPLIES_JAVA_VERSION", appliesObxJavaVersion)
     buildConfigField<String>("APPLIES_NATIVE_VERSION", appliesObxJniLibVersion)
     buildConfigField<String>("APPLIES_NATIVE_SYNC_VERSION", appliesObxSyncJniLibVersion)
-    // The KSP plugin version recommended to (and verified to work with) this plugin.
-    buildConfigField<String>("APPLIES_KSP_VERSION", kspVersion)
 }
 
 // Need to evaluate other modules before a publication for them can be created below.

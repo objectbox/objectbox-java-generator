@@ -26,12 +26,13 @@ import org.junit.rules.TemporaryFolder
 import java.io.File
 
 /**
- * Compiles a Kotlin JVM project with Kotlin and Java entity classes using only the Kotlin and
- * ObjectBox plugins, end-to-end: the ObjectBox plugin is expected to apply its bundled KSP plugin
- * and add the processor and library dependencies.
+ * Compiles a Kotlin JVM project with Kotlin and Java entity classes using the Kotlin, KSP and
+ * ObjectBox plugins, end-to-end: as the project has applied the KSP plugin, the ObjectBox plugin
+ * is expected to add the processor to the KSP configuration (and not apply kapt) and add the
+ * library dependencies.
  *
- * The expected output resources were originally generated with the kapt based setup this plugin
- * used to configure, which the KSP based setup must reproduce exactly.
+ * The expected output resources were originally generated with the kapt based setup (see
+ * KotlinKaptCompileTest), which the KSP based setup must reproduce exactly.
  */
 class KotlinPluginKspCompileTest {
 
@@ -41,8 +42,10 @@ class KotlinPluginKspCompileTest {
 
     private fun createRunner(): GradleTestRunner {
         return GradleTestRunner(testProjectDir).apply {
-            // Resolved from the injected plugin classpath (see testPluginClasspath).
+            // Resolved from the injected plugin classpath (see testPluginClasspath), so no version.
             additionalPlugins += "org.jetbrains.kotlin.jvm"
+            // The project applies the KSP plugin before the ObjectBox plugin.
+            additionalPlugins += "com.google.devtools.ksp"
             additionalBlocks = KotlinTestEntities.buildScriptJvmTargetBlock + "\n" + """
                 ksp {
                     arg("objectbox.debug", "true")
@@ -52,7 +55,7 @@ class KotlinPluginKspCompileTest {
     }
 
     @Test
-    fun kotlinProject_objectBoxPluginAppliesKsp_generatesExpectedSources() {
+    fun kotlinProject_userAppliedKsp_generatesExpectedSources() {
         val runner = createRunner()
         KotlinTestEntities.addEntitySources(runner)
         val modelFile = KotlinTestEntities.seedModelFile(testProjectDir)
@@ -60,8 +63,9 @@ class KotlinPluginKspCompileTest {
 
         val result = runner.build(listOf("assemble", "--stacktrace"))
 
-        // The plugin applied the KSP plugin and added the processor, so KSP ran.
-        assertThat(result.output).contains("Applied '${ProjectEnv.Const.KSP_PLUGIN_ID}'.")
+        // The plugin added the processor to the KSP configuration (and did not apply kapt), so KSP ran.
+        assertThat(result.output).doesNotContain("Applied '${ProjectEnv.Const.KOTLIN_KAPT_PLUGIN_ID}'.")
+        assertThat(result.task(":kaptKotlin")).isNull()
         assertThat(result.task(":kspKotlin")?.outcome).isEqualTo(TaskOutcome.SUCCESS)
         assertThat(result.task(":compileKotlin")?.outcome).isEqualTo(TaskOutcome.SUCCESS)
         assertThat(result.task(":assemble")?.outcome).isEqualTo(TaskOutcome.SUCCESS)
@@ -79,23 +83,6 @@ class KotlinPluginKspCompileTest {
         for (fileName in listOf("Order_.java", "OrderCursor.java", "Item_.java", "ItemCursor.java")) {
             assertThat(generatedSourceFile(fileName).exists()).isTrue()
         }
-    }
-
-    @Test
-    fun kotlinProject_userAppliedKsp_pluginDoesNotApplyBundledKsp() {
-        val runner = createRunner()
-        // The user applies the KSP plugin before the ObjectBox plugin.
-        // Note: no version, as the bundled KSP plugin is already on the (injected) classpath.
-        runner.additionalPlugins += "com.google.devtools.ksp"
-        KotlinTestEntities.addEntitySources(runner)
-        KotlinTestEntities.seedModelFile(testProjectDir)
-
-        val result = runner.build(listOf("assemble"))
-
-        // The plugin respects the user applied KSP plugin, the processor still runs.
-        assertThat(result.output).doesNotContain("Applied '${ProjectEnv.Const.KSP_PLUGIN_ID}'.")
-        assertThat(result.task(":kspKotlin")?.outcome).isEqualTo(TaskOutcome.SUCCESS)
-        assertThat(generatedSourceFile("MyObjectBox.java").exists()).isTrue()
     }
 
     private fun generatedSourceFile(fileName: String): File {

@@ -26,12 +26,12 @@ import org.junit.rules.TemporaryFolder
 import java.io.File
 
 /**
- * Compiles a Kotlin JVM project with Kotlin and Java entity classes through kapt, end-to-end:
- * kapt remains supported if a project applies the kapt plugin itself (the ObjectBox plugin then
- * does not apply the KSP plugin).
+ * Compiles a Kotlin JVM project with Kotlin and Java entity classes through kapt, end-to-end.
  *
- * The expected output of the `kotlin-project` resources was originally generated with this
- * kapt based setup (the KSP based setup reproduces it, see KotlinKspCompileTest).
+ * This pins the current kapt based behavior (generated sources and model file of the
+ * `kotlin-project` resources) for real Kotlin language constructs (data class with default
+ * values, nullable types, is-prefixed property, ToOne/ToMany relations) and a Java entity, so
+ * other processor implementations can be verified against it.
  */
 class KotlinKaptCompileTest {
 
@@ -41,10 +41,8 @@ class KotlinKaptCompileTest {
 
     private fun createRunner(): GradleTestRunner {
         return GradleTestRunner(testProjectDir).apply {
-            // Resolved from the injected plugin classpath (see testPluginClasspath). The kapt
-            // plugin is applied by the project, the ObjectBox plugin no longer applies it.
+            // Resolved from the injected plugin classpath (see testPluginClasspath).
             additionalPlugins += "org.jetbrains.kotlin.jvm"
-            additionalPlugins += "org.jetbrains.kotlin.kapt"
             additionalBlocks = KotlinTestEntities.buildScriptJvmTargetBlock + "\n" + """
                 kapt {
                     arguments {
@@ -64,8 +62,6 @@ class KotlinKaptCompileTest {
 
         val result = runner.build(listOf("assemble", "--stacktrace"))
 
-        // As the project has applied the kapt plugin, the ObjectBox plugin must not apply KSP.
-        assertThat(result.output).doesNotContain("Applied '${ProjectEnv.Const.KSP_PLUGIN_ID}'.")
         assertThat(result.task(":kaptKotlin")?.outcome).isEqualTo(TaskOutcome.SUCCESS)
         assertThat(result.task(":compileKotlin")?.outcome).isEqualTo(TaskOutcome.SUCCESS)
         assertThat(result.task(":assemble")?.outcome).isEqualTo(TaskOutcome.SUCCESS)

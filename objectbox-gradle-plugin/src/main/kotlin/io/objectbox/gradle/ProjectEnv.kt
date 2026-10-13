@@ -33,7 +33,6 @@ class ProjectEnv(val project: Project) {
         const val OBX_JAVA_VERSION = GradlePluginBuildConfig.APPLIES_JAVA_VERSION
         const val OBX_DATABASE_VERSION = GradlePluginBuildConfig.APPLIES_NATIVE_VERSION
         const val OBX_DATABASE_SYNC_VERSION = GradlePluginBuildConfig.APPLIES_NATIVE_SYNC_VERSION
-        const val OBX_KSP_VERSION = GradlePluginBuildConfig.APPLIES_KSP_VERSION
 
         const val OBX_GROUP = "io.objectbox"
         const val OBX_PROCESSOR = "objectbox-processor"

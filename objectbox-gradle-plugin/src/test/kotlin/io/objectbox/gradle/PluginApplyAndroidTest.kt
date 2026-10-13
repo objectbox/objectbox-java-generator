@@ -88,7 +88,10 @@ abstract class PluginApplyAndroidTest : PluginApplyTest() {
             }
         }
 
-    fun assertKotlinAndroidSetup(project: Project, processorConfiguration: String) {
+    fun assertKotlinAndroidSetup(
+        project: Project,
+        processorConfiguration: String = Const.KAPT_CONFIGURATION_NAME
+    ) {
         project.resolveDependencyGraphWithoutDownloadingFiles()
         with(project.configurations) {
             assertProcessorDependency(getByName(processorConfiguration).dependencies)

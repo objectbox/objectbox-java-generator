@@ -33,10 +33,10 @@ Without one of these, the build fails to resolve dependencies.
 # Android Gradle Plugin integration tests (separate source sets in objectbox-gradle-plugin)
 # Too-old AGP fails with a helpful error (TestKit)
 ./gradlew :objectbox-gradle-plugin:agp73Test
-# Lowest supported AGP (Java projects), Android project build (TestKit)
+# Lowest supported AGP, Android project build (TestKit)
 ./gradlew :objectbox-gradle-plugin:agp81Test
-# AGP 8.10, lowest supporting KSP (Kotlin projects): in-process plugin apply tests
-# (incl. kotlin-android/kapt) + Kotlin Android project build with KSP (TestKit)
+# AGP 8.10 (lowest supporting KSP), in-process plugin apply tests (incl. kotlin-android with
+# kapt or KSP) + Kotlin Android project build with KSP (TestKit)
 ./gradlew :objectbox-gradle-plugin:agp810Test
 # Apply tests (built-in Kotlin) + Android project builds (lowest and latest Gradle)
 ./gradlew :objectbox-gradle-plugin:agp9Test
@@ -77,7 +77,7 @@ These are general working principles for this project; the repo-specific pointer
 - **No duplicate logic.** When adding a variant of existing code (a second API, backend, format, ...), extracting the shared core — via base classes, delegates, or a small abstraction over the differing APIs — is part of the task, not an optional follow-up. A good order: implement the variant, prove behavior parity with tests, then generalize until each piece of logic exists once. Example: the two processors share `ObjectBoxProcessorCore`/`Properties`/`Relations` through the `ProcessingApi.kt` abstraction — extend that rather than adding parallel javax/KSP code paths.
 - **The same applies to tests.** Adapt or parameterize existing tests to also cover a new variant, so all variants are held to identical expectations — do not write a separate, diverging suite. Example: tests extending `BaseProcessorTest` (environments via `env(...)`) run against both processors automatically; end-to-end (TestKit) coverage alone is not acceptable for processor behavior.
 - **Pin behavior before changing it.** For code that produces output, characterization tests comparing against expected output come first, then the port/refactor is verified against them. Example: generated sources and the model JSON file are byte-compatible across all processor setups, pinned by `objectbox-processor/src/test/resources/` (`expected-source/`, `objectbox-models/`) and `objectbox-gradle-plugin/src/test/resources/kotlin-project/`. Only change expected files when the output is meant to change.
-- **Prefer coexistence over removal.** When introducing a replacement, keep existing consumer setups working (the old way may become opt-in); dropping support requires explicit agreement. Example: kapt remains supported alongside the preferred KSP.
+- **Prefer coexistence over removal.** When introducing a replacement, keep existing consumer setups working (the old way may become opt-in); dropping support requires explicit agreement. Example: kapt remains the default for Kotlin projects, KSP is opt-in by applying its plugin.
 - **Prefer slim in-repo helpers over new dependencies.** Build on official/first-party APIs instead of adding third-party libraries, also for test-only needs; adding a dependency requires explicit agreement. Example: `KspCompiler` runs the KSP processor in tests via the standalone KSP implementation instead of a compile-testing fork.
 - **Verify claims empirically.** Version-compatibility assumptions (Kotlin/KSP/AGP/Gradle) and behavior claims are checked with tests or experiments; documentation is often wrong about minimum versions. When results contradict expectations, present the evidence (error output, version checks), not just the conclusion.
 - **Commits tell a clean story.** Split work into logical, self-contained steps that each build and pass tests; for message style see Workflow above. Never add AI/tool attribution or co-author trailers. Avoid within-branch churn (one commit adding what a later one removes or renames) — restructure the commits instead.
@@ -97,9 +97,9 @@ Contents:
   `ObjectBoxGradlePlugin` (id `io.objectbox`) does the work; `ObjectBoxSyncGradlePlugin`
   (id `io.objectbox.sync`) subclasses it to swap in the Sync-enabled native library.
   On apply, the plugin adds objectbox-java/native-library dependencies, wires up the processor
-  (Java projects: `annotationProcessor`; Kotlin projects: applies the KSP plugin — which must be on
-  the project classpath — and uses the `ksp` configuration, unless the project has applied the
-  kapt plugin, then the `kapt` configuration is used), and registers byte-code transform tasks.
+  (Java projects: `annotationProcessor`; Kotlin projects: applies the kapt plugin and uses the
+  `kapt` configuration, unless the project has applied the KSP plugin, then the `ksp`
+  configuration is used), and registers byte-code transform tasks.
   The library/dependency versions it injects come from BuildConfig constants generated in the root
   build script (`appliesObx*Version` extra properties).
 - **objectbox-processor** — reads `@Entity` classes: a javax annotation processor and a KSP
@@ -140,5 +140,5 @@ Contents:
   `symbol-processing-api` (processor) and `symbol-processing-aa` (test infrastructure).
   The KSP Gradle plugin version (`kspVersion`, 2.3.x, versioned independently of Kotlin) is both
   recommended to consumers and used for the internal Moshi code gen.
-  Current KSP versions require AGP 8.10+ for Android projects (the plugin fails Kotlin Android
-  projects on older versions with a helpful error; kapt remains the alternative there).
+  Current KSP versions require AGP 8.10+ for Android projects (with older versions, Kotlin
+  Android projects use the kapt default).

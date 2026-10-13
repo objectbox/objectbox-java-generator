@@ -31,7 +31,7 @@ import org.junit.Test
  * expected.
  *
  * Tests with Android Plugin 8.10 (as 8.1 is incompatible with Gradle 9 required by
- * [PluginApplyAndroidTest]), which is also the lowest version supporting KSP (so Kotlin projects).
+ * [PluginApplyAndroidTest]).
  */
 open class PluginApplyAndroid810Test : PluginApplyAndroidTest() {
 
@@ -57,35 +57,7 @@ open class PluginApplyAndroid810Test : PluginApplyAndroidTest() {
     }
 
     @Test
-    fun apply_afterKotlinAndroidAndKspPlugin() {
-        val project = buildProject {
-            pluginManager.apply {
-                apply(Const.ANDROID_APPLICATION_PLUGIN_ID)
-                apply(Const.KOTLIN_ANDROID_PLUGIN_ID)
-                apply(Const.KSP_PLUGIN_ID)
-                apply(pluginId)
-            }
-        }
-
-        assertKotlinAndroidSetup(project, Const.KSP_CONFIGURATION_NAME)
-    }
-
-    @Test
-    fun apply_afterKotlinAndroidPlugin_addsKsp() {
-        val project = buildProject {
-            pluginManager.apply {
-                apply(Const.ANDROID_APPLICATION_PLUGIN_ID)
-                apply(Const.KOTLIN_ANDROID_PLUGIN_ID)
-                apply(pluginId)
-            }
-        }
-
-        assertTrue(project.plugins.hasPlugin(Const.KSP_PLUGIN_ID))
-        assertKotlinAndroidSetup(project, Const.KSP_CONFIGURATION_NAME)
-    }
-
-    @Test
-    fun apply_afterKotlinAndroidAndKaptPlugin_usesKapt() {
+    fun apply_afterKotlinAndroidAndKaptPlugin() {
         val project = buildProject {
             pluginManager.apply {
                 apply(Const.ANDROID_APPLICATION_PLUGIN_ID)
@@ -95,10 +67,40 @@ open class PluginApplyAndroid810Test : PluginApplyAndroidTest() {
             }
         }
 
-        // The plugin respects the kapt setup, so does not apply the KSP plugin.
-        // Notably this works with Android Plugin versions not supported by KSP.
-        assertFalse(project.plugins.hasPlugin(Const.KSP_PLUGIN_ID))
-        assertKotlinAndroidSetup(project, Const.KAPT_CONFIGURATION_NAME)
+        assertKotlinAndroidSetup(project)
+    }
+
+    @Test
+    fun apply_afterKotlinAndroidPlugin_addsKapt() {
+        val project = buildProject {
+            pluginManager.apply {
+                apply(Const.ANDROID_APPLICATION_PLUGIN_ID)
+                apply(Const.KOTLIN_ANDROID_PLUGIN_ID)
+                apply(pluginId)
+            }
+        }
+
+        assertTrue(project.plugins.hasPlugin(Const.KOTLIN_KAPT_PLUGIN_ID))
+        assertKotlinAndroidSetup(project)
+    }
+
+    /**
+     * Android Plugin 8.10 is the lowest version supported by KSP.
+     */
+    @Test
+    fun apply_afterKotlinAndroidAndKspPlugin_usesKsp() {
+        val project = buildProject {
+            pluginManager.apply {
+                apply(Const.ANDROID_APPLICATION_PLUGIN_ID)
+                apply(Const.KOTLIN_ANDROID_PLUGIN_ID)
+                apply(Const.KSP_PLUGIN_ID)
+                apply(pluginId)
+            }
+        }
+
+        // The project has applied the KSP plugin, so the plugin does not apply kapt.
+        assertFalse(project.plugins.hasPlugin(Const.KOTLIN_KAPT_PLUGIN_ID))
+        assertKotlinAndroidSetup(project, Const.KSP_CONFIGURATION_NAME)
     }
 
 }

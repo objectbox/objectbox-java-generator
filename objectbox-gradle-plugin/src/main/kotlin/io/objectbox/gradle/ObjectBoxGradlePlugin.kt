@@ -151,35 +151,17 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
      */
     private fun addDependenciesAnnotationProcessor(env: ProjectEnv) {
         val project = env.project
-        if (env.hasKotlinPlugin || env.hasKotlinAndroidPlugin) {
-            // For Kotlin projects, the processor preferably runs with KSP. If the project has set up
-            // neither KSP nor kapt, apply the KSP plugin. If the project has applied the kapt plugin
-            // (but not the KSP plugin), the processor runs with kapt instead.
-            if (!project.plugins.hasPlugin(Const.KSP_PLUGIN_ID)
-                && !project.hasConfig(Const.KAPT_CONFIGURATION_NAME)
-            ) {
-                // Note: KSP requires a recent enough Android Plugin, check to fail with a helpful message.
-                if (env.hasAndroidPlugin) {
-                    AndroidCompat.checkSupportsKsp(project)
-                }
-                // Applying works if the KSP plugin is on the project classpath (like
-                // `id("${Const.KSP_PLUGIN_ID}") version "x.y.z" apply false` in the root project).
-                // Otherwise, fail explaining the required setup.
-                // Note: the KSP plugin can not be bundled with this plugin: its classes require Kotlin
-                // plugin classes, which for example a Java-only Android project does not have (the
-                // Android Plugin checks for the KSP plugin, which then fails to load).
-                try {
-                    project.plugins.apply(Const.KSP_PLUGIN_ID)
-                } catch (e: UnknownPluginException) {
-                    throw InvalidPluginException(
-                        "ObjectBox: Kotlin projects require the KSP (or kapt) plugin, add it to the plugins " +
-                                "block of the build script before the '$pluginId' plugin:\n" +
-                                "\tid(\"${Const.KSP_PLUGIN_ID}\") version \"${Const.OBX_KSP_VERSION}\"\n" +
-                                "(version ${Const.OBX_KSP_VERSION} or newer is recommended)", e
-                    )
-                }
-                env.logDebug { "Applied '${Const.KSP_PLUGIN_ID}'." }
-            }
+        // Kotlin projects use kapt to run the processor, unless the project has applied the KSP plugin
+        // (before this plugin), then KSP is used instead (see below).
+        val hasKspPlugin = project.plugins.hasPlugin(Const.KSP_PLUGIN_ID)
+        if (hasKspPlugin) {
+            env.logDebug { "Found '${Const.KSP_PLUGIN_ID}', using KSP." }
+        } else if ((env.hasKotlinPlugin || env.hasKotlinAndroidPlugin) &&
+            !project.hasConfig(Const.KAPT_CONFIGURATION_NAME)
+        ) {
+            // Note: no-op if kapt plugin was already applied.
+            project.plugins.apply(Const.KOTLIN_KAPT_PLUGIN_ID)
+            env.logDebug { "Applied '${Const.KOTLIN_KAPT_PLUGIN_ID}'." }
         } else if (env.hasBuiltInKotlin && !project.hasConfig(Const.KAPT_CONFIGURATION_NAME)) {
             // With built-in Kotlin of Android Gradle Plugin 9.0 the kotlin-kapt plugin is not supported,
             // apply the replacement of the Android Gradle Plugin instead (no-op if it was already applied).
@@ -202,12 +184,12 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
         // Note: check for and use preferred/best config first, potentially ignoring others.
         when {
             project.hasConfig(Const.KSP_CONFIGURATION_NAME) -> {
-                // Kotlin (Android + Desktop).
+                // Kotlin (Android + Desktop) if the project has applied the KSP plugin.
                 project.addDep(Const.KSP_CONFIGURATION_NAME, processorDep)
             }
 
             project.hasConfig(Const.KAPT_CONFIGURATION_NAME) -> {
-                // Kotlin (Android + Desktop) if the project has applied the kapt plugin itself.
+                // Kotlin (Android + Desktop).
                 project.addDep(Const.KAPT_CONFIGURATION_NAME, processorDep)
             }
 

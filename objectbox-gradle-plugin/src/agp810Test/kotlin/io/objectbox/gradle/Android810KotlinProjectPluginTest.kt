@@ -36,9 +36,9 @@ import java.lang.reflect.Modifier
 
 /**
  * Tests assembling an Android project with Kotlin entity classes using Android Plugin 8.10, the
- * lowest version supporting KSP: the ObjectBox plugin applies KSP (on the classpath, like a
- * consumer project has after applying the Kotlin and ObjectBox plugins), the KSP processor
- * generates code and the byte code transform runs on the Kotlin classes.
+ * lowest version supporting KSP: as the project has applied the KSP plugin, the ObjectBox plugin
+ * uses KSP, the KSP processor generates code and the byte code transform runs on the Kotlin
+ * classes.
  */
 class Android810KotlinProjectPluginTest {
 
@@ -52,6 +52,7 @@ class Android810KotlinProjectPluginTest {
             // Note: classpath for plugins configured in build script of this project (see GradleTestRunner.build).
             additionalPlugins += "com.android.application"
             additionalPlugins += "org.jetbrains.kotlin.android"
+            additionalPlugins += "com.google.devtools.ksp"
 
             @Language("Groovy")
             val androidBlock =
@@ -113,8 +114,8 @@ class Android810KotlinProjectPluginTest {
             it.forwardOutput()
         }
 
-        // The plugin applied KSP, the processor ran and generated code.
-        assertThat(result.output).contains("Applied '${ProjectEnv.Const.KSP_PLUGIN_ID}'.")
+        // The plugin used KSP (and did not apply kapt), the processor ran and generated code.
+        assertThat(result.task(":kaptDebugKotlin")).isNull()
         assertThat(result.task(":kspDebugKotlin")!!.outcome).isEqualTo(TaskOutcome.SUCCESS)
         assertThat(result.task(":assembleDebug")!!.outcome).isEqualTo(TaskOutcome.SUCCESS)
         val generatedDir = File(testProjectDir.root, "build/generated/ksp/debug/java/com/example")

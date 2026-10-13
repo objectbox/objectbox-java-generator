@@ -41,7 +41,7 @@ open class PluginApplyAndroid9Test : PluginApplyAndroidTest() {
         // The plugin should apply the legacy-kapt plugin.
         assertThat(project.plugins.hasPlugin(Const.ANDROID_LEGACY_KAPT_PLUGIN_ID)).isTrue()
 
-        assertKotlinAndroidSetup(project, Const.KAPT_CONFIGURATION_NAME)
+        assertKotlinAndroidSetup(project)
     }
 
     @Test
@@ -54,7 +54,23 @@ open class PluginApplyAndroid9Test : PluginApplyAndroidTest() {
             }
         }
 
-        assertKotlinAndroidSetup(project, Const.KAPT_CONFIGURATION_NAME)
+        assertKotlinAndroidSetup(project)
+    }
+
+    @Test
+    fun apply_afterAndroidAndKspPlugin_usesKsp() {
+        val project = buildProject {
+            pluginManager.apply {
+                apply(Const.ANDROID_APPLICATION_PLUGIN_ID)
+                apply(Const.KSP_PLUGIN_ID)
+                apply(pluginId)
+            }
+        }
+
+        // The project has applied the KSP plugin, so the plugin does not apply legacy-kapt.
+        assertThat(project.plugins.hasPlugin(Const.ANDROID_LEGACY_KAPT_PLUGIN_ID)).isFalse()
+
+        assertKotlinAndroidSetup(project, Const.KSP_CONFIGURATION_NAME)
     }
 
 }

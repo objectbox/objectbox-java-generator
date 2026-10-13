@@ -12,8 +12,8 @@ The plugin
   needed [Kotlin extension functions](https://docs.objectbox.io/kotlin-support),
 - automatically adds database libraries for Android or the Java Virtual Machine (JVM) to run on the developer machine as
   a dependency,
-- adds and configures the processor (for Java projects the annotation processor, for Kotlin projects the KSP
-  processor) to generate the model JSON file and source code like the `MyObjectBox`
+- adds and configures the processor (for Java projects as annotation processor, for Kotlin projects with kapt or,
+  if the project applies the KSP plugin, with KSP) to generate the model JSON file and source code like the `MyObjectBox`
   and underscore classes (like `Example_`) used for [queries](https://docs.objectbox.io/queries),
 - for Android and Java JVM projects, registers a byte code transformer to 
   [make relations easier to use](https://docs.objectbox.io/relations#initialization-magic)
@@ -28,16 +28,11 @@ The plugin
     of the top-level build script with `apply false`).
 - JDK 11
 
-For Kotlin projects that apply the Kotlin JVM or Kotlin Android plugin (which preferably use
-[KSP](https://kotlinlang.org/docs/ksp-overview.html) to run the processor) additionally:
-
-- the KSP plugin on the project classpath: the ObjectBox plugin applies it automatically if the user has not, but it
-  must be added to the plugins block of the build script (or with `apply false` in the root project), like
-  `id("com.google.devtools.ksp") version "2.3.9"`
-- for Android projects, Android Plugin `8.10` (the minimum supported by KSP)
-
-Alternatively, Kotlin projects that apply the [kapt plugin](https://kotlinlang.org/docs/kapt.html) (and not the KSP
-plugin) keep using the annotation processor with kapt, also with older Android Plugin versions.
+For Kotlin projects, the plugin by default runs the processor with the
+[kapt plugin](https://kotlinlang.org/docs/kapt.html) (and applies it, if the project has not).
+To use [KSP](https://kotlinlang.org/docs/ksp-overview.html) instead, apply the KSP plugin before this plugin, like
+`id("com.google.devtools.ksp") version "2.3.9"` (the version tested with this plugin). This requires for Android
+projects at least Android Plugin `8.10` (the minimum supported by KSP).
 
 For JVM projects, the Java byte code transformer supports `@Entity` classes using up to Java 11 byte code. 
 
