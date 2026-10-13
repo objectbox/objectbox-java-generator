@@ -18,7 +18,9 @@
 
 package io.objectbox.processor
 
+import io.objectbox.annotation.ConflictStrategy
 import io.objectbox.annotation.Convert
+import io.objectbox.annotation.DatabaseType
 import io.objectbox.annotation.DefaultValue
 import io.objectbox.annotation.ExternalName
 import io.objectbox.annotation.ExternalPropertyType
@@ -27,6 +29,7 @@ import io.objectbox.annotation.HnswIndex
 import io.objectbox.annotation.Id
 import io.objectbox.annotation.IdCompanion
 import io.objectbox.annotation.Index
+import io.objectbox.annotation.IndexType
 import io.objectbox.annotation.NameInDb
 import io.objectbox.annotation.SyncClock
 import io.objectbox.annotation.SyncPrecedence
@@ -305,13 +308,14 @@ class Properties(
         val supportsHashIndex = propertyType == PropertyType.String
         // || propertyType == PropertyType.ByteArray // Not yet supported for byte[]
         val indexType = if (hasIndexAnnotation) {
-            field.enumValueNameOf(Index::class.java, "type") ?: "DEFAULT"
+            field.enumValueNameOf(Index::class.java, "type")
+                ?.let { IndexType.valueOf(it) }
         } else {
-            "DEFAULT"
-        }
+            null
+        } ?: IndexType.DEFAULT
 
         // error if HASH or HASH64 is not supported by property type
-        if (!supportsHashIndex && (indexType == "HASH" || indexType == "HASH64")) {
+        if (!supportsHashIndex && (indexType == IndexType.HASH || indexType == IndexType.HASH64)) {
             messages.error("IndexType.$indexType is not supported for $propertyType.", field)
         }
 
@@ -340,10 +344,10 @@ class Properties(
 
         // compute actual property flags for model
         var indexFlags: Int = when (indexType) {
-            "VALUE" -> PropertyFlags.INDEXED
-            "HASH" -> PropertyFlags.INDEX_HASH
-            "HASH64" -> PropertyFlags.INDEX_HASH64
-            else -> {
+            IndexType.VALUE -> PropertyFlags.INDEXED
+            IndexType.HASH -> PropertyFlags.INDEX_HASH
+            IndexType.HASH64 -> PropertyFlags.INDEX_HASH64
+            IndexType.DEFAULT -> {
                 // auto detect
                 if (supportsHashIndex) {
                     PropertyFlags.INDEX_HASH // String and byte[] like HASH
@@ -355,7 +359,11 @@ class Properties(
         if (hasUniqueAnnotation) {
             indexFlags = indexFlags or PropertyFlags.UNIQUE
             // determine unique conflict resolution
-            if (field.enumValueNameOf(Unique::class.java, "onConflict") == "REPLACE") {
+            if (field.enumValueNameOf(
+                    Unique::class.java,
+                    "onConflict"
+                ) == ConflictStrategy.REPLACE.name
+            ) {
                 indexFlags = indexFlags or PropertyFlags.UNIQUE_ON_CONFLICT_REPLACE
             }
         }
@@ -519,8 +527,10 @@ class Properties(
      */
     private fun determinePropertyDatabaseType(field: ProcessingField, propertyType: PropertyType): PropertyType? {
         if (field.hasAnnotation(Type::class.java)) {
-            return when (field.enumValueNameOf(Type::class.java)) {
-                "DateNano" -> {
+            val databaseType = field.enumValueNameOf(Type::class.java)
+                ?.let { DatabaseType.valueOf(it) }
+            return when (databaseType) {
+                DatabaseType.DateNano -> {
                     if (propertyType == PropertyType.Long) {
                         PropertyType.DateNano
                     } else {
@@ -529,7 +539,7 @@ class Properties(
                     }
                 }
 
-                else -> {
+                null -> {
                     messages.error("@Type does not support the given type.", field)
                     null
                 }
