@@ -21,7 +21,6 @@ package io.objectbox.processor
 import com.google.common.truth.Truth.assertThat
 import io.objectbox.generator.model.Property
 import io.objectbox.generator.model.PropertyType
-import org.junit.Assume.assumeTrue
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 
@@ -41,7 +40,7 @@ abstract class BaseProcessorTest(protected val processorType: ProcessorType) {
     companion object {
         @JvmStatic
         @Parameterized.Parameters(name = "{0}")
-        fun processorTypes(): List<ProcessorType> = ProcessorType.values().toList()
+        fun processorTypes(): List<ProcessorType> = ProcessorType.entries
     }
 
     /**
@@ -60,13 +59,6 @@ abstract class BaseProcessorTest(protected val processorType: ProcessorType) {
         ProcessorType.KSP -> KspTestEnvironment(
             modelFile, myObjectBoxPackage, optionDisableTransform, useTemporaryModelFile
         )
-    }
-
-    /**
-     * For tests of behavior only relevant to the annotation processor.
-     */
-    protected fun assumeAnnotationProcessor() {
-        assumeTrue("Only relevant for the annotation processor", processorType == ProcessorType.JAVAC)
     }
 
     protected fun assertPrimitiveType(prop: Property, type: PropertyType) {
