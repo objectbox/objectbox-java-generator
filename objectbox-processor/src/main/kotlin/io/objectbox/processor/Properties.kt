@@ -86,8 +86,9 @@ class Properties(
         }
 
         if (field.isKotlin) {
-            // KAPT compiles a delegated property to a field of the delegate type (like 'name$delegate'),
-            // which the annotation processor fails on. Fail with a better message instead.
+            // When using KAPT, the processor already fails on a delegated property as it is
+            // compiled to a field of the delegate type (like 'name$delegate').
+            // However, KSP sees only the property itself (like 'name'), so add an explicit check.
             if (field.isDelegated) {
                 messages.error(
                     "Delegated properties are not supported, use @Transient or a regular property.",
