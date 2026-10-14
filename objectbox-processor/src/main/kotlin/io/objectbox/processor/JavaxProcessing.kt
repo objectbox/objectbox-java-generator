@@ -19,7 +19,7 @@
 package io.objectbox.processor
 
 import io.objectbox.generator.model.PropertyType
-import java.util.Locale
+import java.util.*
 import javax.lang.model.element.AnnotationMirror
 import javax.lang.model.element.Element
 import javax.lang.model.element.ElementKind
@@ -49,7 +49,7 @@ class JavaxProcessing(
     private abstract inner class JavaxAnnotated(private val annotatedElement: Element) : ProcessingAnnotated {
 
         override fun hasAnnotation(annotationClass: Class<out Annotation>): Boolean {
-            return annotatedElement.getAnnotation(annotationClass) != null
+            return annotationInstanceOf(annotationClass) != null
         }
 
         override fun stringValueOf(annotationClass: Class<out Annotation>, member: String): String? {
