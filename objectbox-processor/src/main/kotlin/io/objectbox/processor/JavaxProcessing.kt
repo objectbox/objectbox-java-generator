@@ -119,11 +119,9 @@ class JavaxProcessing(
         override fun superTypes(): List<ProcessingClass> {
             // Note: Why can there be multiple super types? Because interfaces are considered super types.
             return typeUtils.directSupertypes(element.asType())
+                // Skip if the top-most type (java.lang.Object, also for interfaces) is reached.
+                .filterNot { typeHelper.isObject(it) }
                 .mapNotNull { (it as? DeclaredType)?.asElement() }
-                .filter {
-                    // Skip if the top-most type (java.lang.Object, also for interfaces) is reached.
-                    !((it as? TypeElement)?.qualifiedName?.contentEquals("java.lang.Object") ?: false)
-                }
                 .map { JavaxClass(it) }
         }
     }
