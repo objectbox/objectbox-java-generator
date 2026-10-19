@@ -24,7 +24,6 @@ import io.objectbox.annotation.ExternalPropertyType
 import io.objectbox.annotation.ExternalType
 import io.objectbox.annotation.NameInDb
 import io.objectbox.annotation.TargetIdProperty
-import io.objectbox.annotation.Uid
 import io.objectbox.generator.IdUid
 import io.objectbox.generator.model.Entity
 import io.objectbox.generator.model.ExternalPropertyTypeMapper
@@ -76,7 +75,7 @@ class Relations(private val messages: CommonMessages) {
         val isBacklink = field.hasAnnotation(Backlink::class.java)
         val isFieldAccessible = field.isAccessibleField
         val nameInDb = field.stringValueOf(NameInDb::class.java)
-        val uid = field.longValueOf(Uid::class.java)
+        val uid = field.uidValue()
         if (isBacklink && nameInDb != null) messages.error("Backlinks are not allowed to have @NameInDb")
         if (isBacklink && uid != null) messages.error("Backlinks are not allowed to have @Uid")
 
@@ -99,7 +98,7 @@ class Relations(private val messages: CommonMessages) {
                 dbName = nameInDb,
                 targetEntityName = targetEntityName,
                 isFieldAccessible = isFieldAccessible,
-                uid = uid.let { if (it == 0L) -1L else it },
+                uid = uid,
                 externalName = externalName,
                 externalTypeId = externalType?.let { ExternalPropertyTypeMapper.toId(it) },
                 externalTypeExpression = externalType?.let { ExternalPropertyTypeMapper.toExpression(it) }
@@ -122,7 +121,7 @@ class Relations(private val messages: CommonMessages) {
             isFieldAccessible = field.isAccessibleField,
             idRefPropertyName = field.stringValueOf(TargetIdProperty::class.java)?.ifBlank { null },
             idRefPropertyNameInDb = field.stringValueOf(NameInDb::class.java)?.ifBlank { null },
-            idRefPropertyUid = field.longValueOf(Uid::class.java)?.let { if (it == 0L) -1L else it },
+            idRefPropertyUid = field.uidValue(),
             targetEntityName = targetEntityName
         )
 

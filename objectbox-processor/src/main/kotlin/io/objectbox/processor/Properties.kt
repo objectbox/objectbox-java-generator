@@ -35,7 +35,6 @@ import io.objectbox.annotation.SyncClock
 import io.objectbox.annotation.SyncPrecedence
 import io.objectbox.annotation.Transient
 import io.objectbox.annotation.Type
-import io.objectbox.annotation.Uid
 import io.objectbox.annotation.Unique
 import io.objectbox.annotation.Unsigned
 import io.objectbox.converter.FlexObjectConverter
@@ -266,12 +265,9 @@ class Properties(
         parseHnswIndexAnnotation(field, propertyBuilder)
 
         // @Uid
-        val uidValue = field.longValueOf(Uid::class.java)
-        if (uidValue != null) {
+        field.uidValue()?.also {
             // just storing uid, id model sync will replace with correct id+uid
-            // Note: UID values 0 and -1 are special: print current value and fail later
-            val uid = if (uidValue == 0L) -1 else uidValue
-            propertyBuilder.modelId(IdUid(0, uid))
+            propertyBuilder.modelId(IdUid(0, it))
         }
 
         // @SyncClock, @SyncPrecedence

@@ -18,6 +18,8 @@
 
 package io.objectbox.processor
 
+import io.objectbox.annotation.Uid
+import io.objectbox.generator.idsync.IdSync
 import io.objectbox.generator.model.PropertyType
 
 /**
@@ -57,6 +59,13 @@ interface ProcessingAnnotated {
     fun <A : Annotation> annotationInstanceOf(annotationClass: Class<A>): A?
 
 }
+
+/**
+ * The value of [Uid], mapping the default value 0 (`@Uid` without a value) to [IdSync.UID_PRINT],
+ * so IdSync prints instructions to rename or reset the UID.
+ */
+fun ProcessingAnnotated.uidValue(): Long? =
+    longValueOf(Uid::class.java)?.let { if (it == 0L) IdSync.UID_PRINT else it }
 
 /**
  * A class declaration. See [ProcessingAnnotated].

@@ -21,7 +21,6 @@ package io.objectbox.processor
 import io.objectbox.annotation.ExternalName
 import io.objectbox.annotation.NameInDb
 import io.objectbox.annotation.Sync
-import io.objectbox.annotation.Uid
 import io.objectbox.generator.BoxGenerator
 import io.objectbox.generator.GeneratorJob
 import io.objectbox.generator.GeneratorOutput
@@ -183,11 +182,7 @@ abstract class ObjectBoxProcessorCore(
             ?.also { entityModel.setExternalName(it) }
 
         // @Uid
-        val uidValue = entity.longValueOf(Uid::class.java)
-        if (uidValue != null) {
-            // Note: UID values 0 and -1 are special: print current value and fail later
-            entityModel.modelUid = if (uidValue == 0L) -1 else uidValue
-        }
+        entity.uidValue()?.also { entityModel.modelUid = it }
 
         // @Sync
         if (entity.hasAnnotation(Sync::class.java)) {
