@@ -200,7 +200,7 @@ class Properties(
                 messages.error("An @Id property must not be private or have a not-private getter and setter.", field)
             }
             propertyBuilder.primaryKey()
-            if (field.booleanValueOf(Id::class.java, "assignable") == true) {
+            if (field.booleanValueOf(Id::assignable) == true) {
                 propertyBuilder.idAssignable()
             }
         }
@@ -241,19 +241,19 @@ class Properties(
         }
 
         // @NameInDb
-        val nameInDb = field.stringValueOf(NameInDb::class.java)
+        val nameInDb = field.stringValueOf(NameInDb::value)
         if (nameInDb != null && nameInDb.isNotEmpty()) {
             propertyBuilder.dbName(nameInDb)
         }
 
         // @ExternalName
-        field.stringValueOf(ExternalName::class.java)
+        field.stringValueOf(ExternalName::value)
             ?.also { propertyBuilder.externalName(it) }
 
         // @ExternalType
         // Note: not validating the external type for the property type here. Instead, let the database do
         // it at runtime as this can be complex. And we don't want to maintain checks in multiple places.
-        field.enumValueNameOf(ExternalType::class.java)
+        field.enumValueNameOf(ExternalType::value)
             ?.also { propertyBuilder.externalType(ExternalPropertyType.valueOf(it)) }
 
         // @Index, @Unique
@@ -304,7 +304,7 @@ class Properties(
         val supportsHashIndex = propertyType == PropertyType.String
         // || propertyType == PropertyType.ByteArray // Not yet supported for byte[]
         val indexType = if (hasIndexAnnotation) {
-            field.enumValueNameOf(Index::class.java, "type")
+            field.enumValueNameOf(Index::type)
                 ?.let { IndexType.valueOf(it) }
         } else {
             null
@@ -355,11 +355,7 @@ class Properties(
         if (hasUniqueAnnotation) {
             indexFlags = indexFlags or PropertyFlags.UNIQUE
             // determine unique conflict resolution
-            if (field.enumValueNameOf(
-                    Unique::class.java,
-                    "onConflict"
-                ) == ConflictStrategy.REPLACE.name
-            ) {
+            if (field.enumValueNameOf(Unique::onConflict) == ConflictStrategy.REPLACE.name) {
                 indexFlags = indexFlags or PropertyFlags.UNIQUE_ON_CONFLICT_REPLACE
             }
         }
@@ -431,7 +427,7 @@ class Properties(
             return null
         }
 
-        when (field.stringValueOf(DefaultValue::class.java)) {
+        when (field.stringValueOf(DefaultValue::value)) {
             "" -> {
                 val propertyType = field.type.propertyTypeOrNull()
                 if (propertyType != PropertyType.String) {
@@ -461,8 +457,8 @@ class Properties(
         // extract @Convert annotation member values
         // as they are class values, need to access them as types
         // converter and dbType value existence guaranteed by compiler
-        val converter = field.typeValueOf(Convert::class.java, "converter")!!
-        val dbType = field.typeValueOf(Convert::class.java, "dbType")!!
+        val converter = field.typeValueOf(Convert::converter)!!
+        val dbType = field.typeValueOf(Convert::dbType)!!
 
         // Detect property type based on dbType of annotation.
         val propertyType = dbType.propertyTypeOrNull()
@@ -523,7 +519,7 @@ class Properties(
      */
     private fun determinePropertyDatabaseType(field: ProcessingField, propertyType: PropertyType): PropertyType? {
         if (field.hasAnnotation(Type::class.java)) {
-            val databaseType = field.enumValueNameOf(Type::class.java)
+            val databaseType = field.enumValueNameOf(Type::value)
                 ?.let { DatabaseType.valueOf(it) }
             return when (databaseType) {
                 DatabaseType.DateNano -> {

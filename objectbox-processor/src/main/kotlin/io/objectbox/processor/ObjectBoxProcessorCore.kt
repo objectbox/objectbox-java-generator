@@ -172,13 +172,13 @@ abstract class ObjectBoxProcessorCore(
         entityModel.javaPackageDao = options.daoCompatPackage ?: entityModel.javaPackage
 
         // @NameInDb
-        val nameInDb = entity.stringValueOf(NameInDb::class.java)
+        val nameInDb = entity.stringValueOf(NameInDb::value)
         if (nameInDb != null && nameInDb.isNotEmpty()) {
             entityModel.dbName = nameInDb
         }
 
         // @ExternalName
-        entity.stringValueOf(ExternalName::class.java)
+        entity.stringValueOf(ExternalName::value)
             ?.also { entityModel.setExternalName(it) }
 
         // @Uid
@@ -187,7 +187,7 @@ abstract class ObjectBoxProcessorCore(
         // @Sync
         if (entity.hasAnnotation(Sync::class.java)) {
             entityModel.isSyncEnabled = true
-            entityModel.isSyncSharedGlobalIds = entity.booleanValueOf(Sync::class.java, "sharedGlobalIds") == true
+            entityModel.isSyncSharedGlobalIds = entity.booleanValueOf(Sync::sharedGlobalIds) == true
         }
 
         // Parse properties.

@@ -21,6 +21,8 @@ package io.objectbox.processor
 import io.objectbox.annotation.Uid
 import io.objectbox.generator.idsync.IdSync
 import io.objectbox.generator.model.PropertyType
+import kotlin.reflect.KClass
+import kotlin.reflect.KProperty1
 
 /**
  * Abstraction over the classes, fields and types of the annotation processing and KSP APIs:
@@ -31,21 +33,24 @@ import io.objectbox.generator.model.PropertyType
  * Note: to produce identical output regardless of the processor API and source language, the
  * implementations provide the Java view of the code: like the annotation processor sees Java
  * sources or the KAPT-generated Java stubs of Kotlin sources.
+ *
+ * To read annotation values, prefer the extension functions taking a member reference, like
+ * `stringValueOf(Backlink::to)`, over passing the annotation class and member name.
  */
 interface ProcessingAnnotated {
 
     fun hasAnnotation(annotationClass: Class<out Annotation>): Boolean
 
-    fun stringValueOf(annotationClass: Class<out Annotation>, member: String = "value"): String?
+    fun stringValueOf(annotationClass: Class<out Annotation>, member: String): String?
 
-    fun longValueOf(annotationClass: Class<out Annotation>, member: String = "value"): Long?
+    fun longValueOf(annotationClass: Class<out Annotation>, member: String): Long?
 
-    fun booleanValueOf(annotationClass: Class<out Annotation>, member: String = "value"): Boolean?
+    fun booleanValueOf(annotationClass: Class<out Annotation>, member: String): Boolean?
 
     /**
      * The simple name of an enum value, like "REPLACE" of `ConflictStrategy.REPLACE`.
      */
-    fun enumValueNameOf(annotationClass: Class<out Annotation>, member: String = "value"): String?
+    fun enumValueNameOf(annotationClass: Class<out Annotation>, member: String): String?
 
     /**
      * The type of a class value, like the `converter` of `@Convert`.
@@ -60,12 +65,39 @@ interface ProcessingAnnotated {
 
 }
 
+// Typed variants of the ProcessingAnnotated value functions: a member reference like
+// Backlink::to provides the annotation class and the member name (the compiler replaces .name of a
+// callable reference with a constant, so this does not need kotlin-reflect) and checks the value
+// type at compile time.
+
+inline fun <reified A : Annotation> ProcessingAnnotated.stringValueOf(member: KProperty1<A, String>): String? =
+    stringValueOf(A::class.java, member.name)
+
+inline fun <reified A : Annotation> ProcessingAnnotated.longValueOf(member: KProperty1<A, Long>): Long? =
+    longValueOf(A::class.java, member.name)
+
+inline fun <reified A : Annotation> ProcessingAnnotated.booleanValueOf(member: KProperty1<A, Boolean>): Boolean? =
+    booleanValueOf(A::class.java, member.name)
+
+/**
+ * See [ProcessingAnnotated.enumValueNameOf].
+ */
+inline fun <reified A : Annotation> ProcessingAnnotated.enumValueNameOf(member: KProperty1<A, Enum<*>>): String? =
+    enumValueNameOf(A::class.java, member.name)
+
+/**
+ * See [ProcessingAnnotated.typeValueOf].
+ */
+inline fun <reified A : Annotation> ProcessingAnnotated.typeValueOf(
+    member: KProperty1<A, KClass<*>>
+): ProcessingType? = typeValueOf(A::class.java, member.name)
+
 /**
  * The value of [Uid], mapping the default value 0 (`@Uid` without a value) to [IdSync.UID_PRINT],
  * so IdSync prints instructions to rename or reset the UID.
  */
 fun ProcessingAnnotated.uidValue(): Long? =
-    longValueOf(Uid::class.java)?.let { if (it == 0L) IdSync.UID_PRINT else it }
+    longValueOf(Uid::value)?.let { if (it == 0L) IdSync.UID_PRINT else it }
 
 /**
  * A class declaration. See [ProcessingAnnotated].

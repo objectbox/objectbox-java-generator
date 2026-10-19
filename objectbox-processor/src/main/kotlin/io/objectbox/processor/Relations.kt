@@ -74,7 +74,7 @@ class Relations(private val messages: CommonMessages) {
 
         val isBacklink = field.hasAnnotation(Backlink::class.java)
         val isFieldAccessible = field.isAccessibleField
-        val nameInDb = field.stringValueOf(NameInDb::class.java)
+        val nameInDb = field.stringValueOf(NameInDb::value)
         val uid = field.uidValue()
         if (isBacklink && nameInDb != null) messages.error("Backlinks are not allowed to have @NameInDb")
         if (isBacklink && uid != null) messages.error("Backlinks are not allowed to have @Uid")
@@ -83,14 +83,14 @@ class Relations(private val messages: CommonMessages) {
             ToManyByBacklink(
                 name = field.name,
                 targetEntityName = targetEntityName,
-                targetPropertyName = field.stringValueOf(Backlink::class.java, "to")?.ifBlank { null },
+                targetPropertyName = field.stringValueOf(Backlink::to)?.ifBlank { null },
                 isFieldAccessible = isFieldAccessible
             )
         } else {
-            val externalName = field.stringValueOf(ExternalName::class.java)
+            val externalName = field.stringValueOf(ExternalName::value)
             // Note: for a standalone ToMany only vector based external types are allowed, but leaving checks to the
             // database to not duplicate them here.
-            val externalType = field.enumValueNameOf(ExternalType::class.java)
+            val externalType = field.enumValueNameOf(ExternalType::value)
                 ?.let { ExternalPropertyType.valueOf(it) }
 
             ToManyStandalone(
@@ -119,8 +119,8 @@ class Relations(private val messages: CommonMessages) {
         val toOne = ToOne(
             name = field.name,
             isFieldAccessible = field.isAccessibleField,
-            idRefPropertyName = field.stringValueOf(TargetIdProperty::class.java)?.ifBlank { null },
-            idRefPropertyNameInDb = field.stringValueOf(NameInDb::class.java)?.ifBlank { null },
+            idRefPropertyName = field.stringValueOf(TargetIdProperty::value)?.ifBlank { null },
+            idRefPropertyNameInDb = field.stringValueOf(NameInDb::value)?.ifBlank { null },
             idRefPropertyUid = field.uidValue(),
             targetEntityName = targetEntityName
         )
