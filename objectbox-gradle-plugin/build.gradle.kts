@@ -201,11 +201,9 @@ dependencies {
     testImplementation(gradleTestKit())
     // For new Gradle TestKit tests (see GradleTestRunner).
     testRuntimeOnly(files(testPluginClasspathFile))
-    // The Kotlin and KSP plugins for TestKit projects with Kotlin code: the KSP plugin requires
-    // Kotlin plugin classes, so both must be on the injected plugin classpath.
-    // The Kotlin version must be able to read the Kotlin metadata of objectbox-kotlin.
-    val kotlinTestKitVersion = "2.4.0"
-    testPluginClasspath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinTestKitVersion")
+    // For TestKit tests using the Kotlin and KSP plugins (see test folder).
+    // The Kotlin (compiler) version must be able to read the Kotlin metadata of objectbox-kotlin.
+    testPluginClasspath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
     testPluginClasspath("com.google.devtools.ksp:symbol-processing-gradle-plugin:$kspVersion")
     // Note: not testing with 7.4.0 as it ships Gradle metadata requiring Java 11 which would require a more complicated
     // testing setup. 7.3.0 also supports Gradle 8.
@@ -222,7 +220,10 @@ dependencies {
     // projects using the Android Plugin 9 series can no longer use).
     val agp810Version = "8.10.1"
     testPluginClasspathagp810("com.android.tools.build:gradle:$agp810Version")
-    testPluginClasspathagp810("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinTestKitVersion")
+    // The Kotlin version must be supported by the R8/D8 included in the Android plugin (check test
+    // build output for warnings).
+    // The KSP version must be compatible with the Kotlin plugin version.
+    testPluginClasspathagp810("org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10")
     testPluginClasspathagp810("com.google.devtools.ksp:symbol-processing-gradle-plugin:$kspVersion")
     agp810TestRuntimeOnly(files(testPluginClasspathagp810File))
     // Testing 9.2, the latest minor version
