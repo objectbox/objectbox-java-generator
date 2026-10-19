@@ -225,27 +225,29 @@ abstract class ObjectBoxProcessorCore(
     }
 
     /**
-     * Starting from the given [clazz] walks up the inheritance chain and for each super type
+     * Starting from the given [entityClass] walks up the inheritance chain and for each super type
      * that has a match in [annotatedElements] adds that element to the [entityInheritanceChain].
      */
     private fun findAnnotatedSuperElements(
         annotatedElements: List<ProcessingClass>,
         entityInheritanceChain: MutableList<ProcessingClass>,
-        clazz: ProcessingClass
+        entityClass: ProcessingClass
     ): Boolean {
-        // Implementation note: it can NOT be assumed that for each super type there will be an
-        // annotated element. E.g. when processing is incremental the annotation processor only
+        // Implementation note: it can NOT be assumed that the processor receives an element for
+        // each super type. E.g. when processing is incremental the annotation processor only
         // receives annotated elements (for this processor @BaseEntity and @Entity classes).
-        for (superClass in clazz.superTypes()) {
+        for (superClass in entityClass.superTypes()) {
             val superName = superClass.qualifiedName ?: continue
-            if (debug) messages.debug("${clazz.simpleName} has super type $superName.")
+            if (debug) messages.debug("${entityClass.simpleName} has super type $superName.")
 
             // If there is an annotated element that matches this super type, find it.
-            // Note: the @BaseEntity and @Entity annotation should be restricted to classes by the
-            // compiler, but to be sure ignore any annotated element that is not a class.
-            // Note: comparing by qualified name, so type parameters are ignored
-            // (like BaseEntity<String> matches BaseEntity<T>).
             val matchingElement = annotatedElements.find {
+                // Note: the @BaseEntity and @Entity annotation should be restricted to classes by
+                // the compiler, but to be sure ignore any annotated element that is not a class.
+                // Note: comparing by qualified name, so type parameters are ignored
+                // (like BaseEntity<String> matches BaseEntity<T>) as parameterized types of
+                // directSupertypes() are specific (like BaseEntity<String>), but parameterized
+                // types of elements of the round environment are generic (like BaseEntity<T>).
                 it.isClass && it.qualifiedName == superName
             }
             // If there is a match, add the element to the list.
