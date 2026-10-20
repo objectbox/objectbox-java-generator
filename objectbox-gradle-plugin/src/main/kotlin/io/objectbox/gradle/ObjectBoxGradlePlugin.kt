@@ -191,11 +191,13 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
             project.hasConfig(Const.KAPT_CONFIGURATION_NAME) -> {
                 // Kotlin (Android + Desktop).
                 project.addDep(Const.KAPT_CONFIGURATION_NAME, processorDep)
+                registerModelFileAsKaptInput(project)
             }
 
             project.hasConfig(JavaPlugin.ANNOTATION_PROCESSOR_CONFIGURATION_NAME) -> {
                 // Android (Java), also Java Desktop with Gradle 5.0 (best as of 5.2) uses annotationProcessor.
                 project.addDep(JavaPlugin.ANNOTATION_PROCESSOR_CONFIGURATION_NAME, processorDep)
+                registerModelFileAsJavaCompileInput(project)
             }
 
             else -> {
@@ -207,6 +209,39 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
                 )
             }
         }
+    }
+
+    /**
+     * The processor reads/writes the model file here unless told otherwise (which this plugin does not currently
+     * do). Gradle does not otherwise know this file affects the annotation processing tasks below, so a build or
+     * configuration cache hit could reuse stale generated code/model even after a manual edit to this file.
+     * https://github.com/objectbox/objectbox-java/issues/1114
+     */
+    private fun defaultModelFile(project: Project) = project.file("objectbox-models/default.json")
+
+    private fun registerModelFileAsJavaCompileInput(project: Project) {
+        project.tasks.withType(JavaCompile::class.java).configureEach { task ->
+            registerModelFileInput(task, project)
+        }
+    }
+
+    private fun registerModelFileAsKaptInput(project: Project) {
+        // Match by task name, not kapt's task type, to avoid depending on (internal) Kotlin Gradle Plugin API.
+        // "kapt<Variant>Kotlin" runs the annotation processor; "kaptGenerateStubs<Variant>Kotlin" only generates
+        // stubs for kapt and does not run it.
+        project.tasks.matching {
+            it.name.startsWith("kapt") && it.name.endsWith("Kotlin") && !it.name.contains("GenerateStubs")
+        }.configureEach { task ->
+            registerModelFileInput(task, project)
+        }
+    }
+
+    // Note: uses TaskInputs.files(), not .file(), as the latter requires the file to already exist, which the
+    // model file does not on a project's very first build (the processor creates it).
+    private fun registerModelFileInput(task: Task, project: Project) {
+        task.inputs.files(defaultModelFile(project))
+            .withPropertyName("objectBoxModelFile")
+            .optional(true)
     }
 
     private fun Project.hasConfig(name: String): Boolean {
