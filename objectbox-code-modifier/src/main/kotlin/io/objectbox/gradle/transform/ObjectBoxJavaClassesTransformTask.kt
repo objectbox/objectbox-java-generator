@@ -18,6 +18,8 @@
 
 package io.objectbox.gradle.transform
 
+import io.objectbox.logging.logWarning
+import io.objectbox.reporting.BasicBuildTracker
 import org.gradle.api.Action
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
@@ -44,7 +46,29 @@ abstract class ObjectBoxJavaClassesTransformTask : DefaultTask() {
         // Currently transforming in place, no need to copy non-transformed files.
         // In the future, might want to change this to output to a custom directory,
         // then re-wire that to be used as the classes directory of a source set.
-        ObjectBoxJavaTransform(debug.get()).transform(compiledClasses, null, copyNonTransformed = false)
+        try {
+            // Process classpath in reverse order to ensure output for first
+            // items overwrites output for last items.
+            val byteCodeDirs = compiledClasses.files.toList().reversed()
+            // Currently not modifying JAR files as there are not expected to be
+            // some, but instruct users to report if there are.
+            byteCodeDirs.forEach {
+                if (it.isFile && it.extension == "jar") {
+                    logWarning("Detected JAR file in transform classpath ($it), relations might not work, please report this to us.")
+                }
+            }
+
+            ObjectBoxJavaTransform(debug.get()).transform(
+                byteCodeDirs,
+                null,
+                copyNonTransformed = false
+            )
+        } catch (e: Throwable) {
+            val buildTracker = BasicBuildTracker("Transformer")
+            if (e is TransformException) buildTracker.trackError("Transform failed", e)
+            else buildTracker.trackFatal("Transform failed", e)
+            throw e
+        }
     }
 
     class ConfigAction(

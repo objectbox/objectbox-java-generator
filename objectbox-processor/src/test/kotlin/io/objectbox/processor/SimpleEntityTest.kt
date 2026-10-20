@@ -31,7 +31,7 @@ import org.junit.Test
  * Tests all supported properties, including basic relations, and the most important annotations
  * with a simple entity class.
  */
-class SimpleEntityTest : BaseProcessorTest() {
+class SimpleEntityTest(processorType: ProcessorType) : BaseProcessorTest(processorType) {
 
     @Test
     fun simpleEntity() {
@@ -40,8 +40,8 @@ class SimpleEntityTest : BaseProcessorTest() {
 
         // Test generated sources
         // need stable model file + ids to verify sources match
-        val envStable = TestEnvironment("default.json")
-        envStable.compileDaoCompat(className, relatedClassName)
+        val envStable = env("default.json")
+        envStable.compile(className, relatedClassName)
             .assertThatIt { succeededWithoutWarnings() }
             // assert generated files source trees
             .assertGeneratedSourceMatches("MyObjectBox")
@@ -50,9 +50,9 @@ class SimpleEntityTest : BaseProcessorTest() {
 
         // Test schema and model
         // ensure mode file is re-created on each run
-        val envFresh = TestEnvironment("default.json", useTemporaryModelFile = true)
+        val envFresh = env("default.json", useTemporaryModelFile = true)
 
-        envFresh.compileDaoCompat(className, relatedClassName)
+        envFresh.compile(className, relatedClassName)
             .assertThatIt { succeededWithoutWarnings() }
 
         // assert schema
@@ -323,7 +323,7 @@ class SimpleEntityTest : BaseProcessorTest() {
         val relatedClassName = "IdEntity"
 
         // need stable model file + ids to verify sources match
-        val environment = TestEnvironment("default.json", "io.objectbox.processor.custom")
+        val environment = env("default.json", "io.objectbox.processor.custom")
 
         environment.compile(className, relatedClassName)
             .assertThatIt { succeededWithoutWarnings() }

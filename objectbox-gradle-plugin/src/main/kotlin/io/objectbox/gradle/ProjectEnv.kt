@@ -45,12 +45,19 @@ class ProjectEnv(val project: Project) {
          */
         const val ANDROID_TEST_IMPLEMENTATION_CONFIGURATION_NAME = "androidTestImplementation"
 
+        /** Plugin id of the [KSP plugin](https://kotlinlang.org/docs/ksp-overview.html). */
+        const val KSP_PLUGIN_ID = "com.google.devtools.ksp"
+
+        /** Name of the configuration of the [KSP plugin](https://kotlinlang.org/docs/ksp-overview.html). */
+        const val KSP_CONFIGURATION_NAME = "ksp"
+
         /** Name of the configuration of the [kapt plugin](https://kotlinlang.org/docs/kapt.html). */
         const val KAPT_CONFIGURATION_NAME = "kapt"
 
         const val ANDROID_BASE_PLUGIN_ID = "com.android.base"
         const val ANDROID_APPLICATION_PLUGIN_ID = "com.android.application"
         const val KOTLIN_PLUGIN_ID = "kotlin"
+        const val KOTLIN_JVM_PLUGIN_ID = "org.jetbrains.kotlin.jvm"
         const val KOTLIN_ANDROID_PLUGIN_ID = "kotlin-android"
         const val KOTLIN_KAPT_PLUGIN_ID = "kotlin-kapt"
 

@@ -1,6 +1,6 @@
 /*
  * ObjectBox Build Tools
- * Copyright (C) 2017-2025 ObjectBox Ltd.
+ * Copyright (C) 2017-2026 ObjectBox Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -20,10 +20,10 @@ package io.objectbox.processor
 
 import io.objectbox.annotation.Backlink
 import io.objectbox.annotation.ExternalName
+import io.objectbox.annotation.ExternalPropertyType
 import io.objectbox.annotation.ExternalType
 import io.objectbox.annotation.NameInDb
 import io.objectbox.annotation.TargetIdProperty
-import io.objectbox.annotation.Uid
 import io.objectbox.generator.IdUid
 import io.objectbox.generator.model.Entity
 import io.objectbox.generator.model.ExternalPropertyTypeMapper
@@ -34,14 +34,12 @@ import io.objectbox.generator.model.ToManyBase
 import io.objectbox.generator.model.ToManyByBacklink
 import io.objectbox.generator.model.ToManyStandalone
 import io.objectbox.generator.model.ToOne
-import javax.lang.model.element.Modifier
-import javax.lang.model.element.VariableElement
-import javax.lang.model.type.DeclaredType
 
 /**
- * Parses and keeps records of to-one and to-many relations of all parsed entities.
+ * Parses ([ProcessingField]), keeps records of and resolves to-one and to-many relations of all
+ * parsed entities.
  */
-class Relations(private val messages: Messages) {
+class Relations(private val messages: CommonMessages) {
 
     private val toOnesByEntity: MutableMap<Entity, MutableList<ToOne>> = mutableMapOf()
     private val toManysByEntity: MutableMap<Entity, MutableList<ToManyBase>> = mutableMapOf()
@@ -49,61 +47,58 @@ class Relations(private val messages: Messages) {
     fun hasRelations(entity: Entity) =
         (toOnesByEntity[entity]?.isNotEmpty() ?: false) || (toManysByEntity[entity]?.isNotEmpty() ?: false)
 
-    private fun targetEntityNameOrError(entityModel: Entity, field: VariableElement, relationType: String): String? {
+    private fun targetEntityNameOrError(entityModel: Entity, field: ProcessingField, relationType: String): String? {
         // assuming ToOne<TargetEntity>, List<TargetType> or ToMany<TargetType> field
         // Note: Java allows to not specify a type parameter (ToOne instead of ToOne<Entity>), so check for one.
-        val fieldTypeMirror = field.asType() as DeclaredType
-        if (fieldTypeMirror.typeArguments.isEmpty()) {
+        val fieldType = field.type
+        if (fieldType.typeArgumentCount == 0) {
             messages.error(
-                "The generic $relationType property '$field' in '${entityModel.className}' " +
+                "The generic $relationType property '${field.name}' in '${entityModel.className}' " +
                         "must have a type argument, e.g. $relationType<Entity>."
             )
             return null
         }
-        val targetTypeMirror = fieldTypeMirror.typeArguments[0]
-        return if (targetTypeMirror is DeclaredType) {
-            // can simply get as element as code would not have compiled if target type is not known
-            targetTypeMirror.asElement().simpleName.toString()
-        } else {
+        val targetEntityName = fieldType.relationTargetClassName()
+        if (targetEntityName == null) {
             messages.error(
-                "Property '$field' can not have a relation to type $targetTypeMirror, " +
+                "Property '${field.name}' can not have a relation to type ${fieldType.relationTargetDisplayName()}, " +
                         "specify an entity class instead"
             )
-            null
         }
+        return targetEntityName
     }
 
-    fun parseToMany(entityModel: Entity, field: VariableElement) {
+    fun parseToMany(entityModel: Entity, field: ProcessingField) {
         val targetEntityName = targetEntityNameOrError(entityModel, field, "ToMany")
             ?: return // skip faulty to-many
 
-        val backlinkAnnotation = field.getAnnotation(Backlink::class.java)
-        val isBacklink = backlinkAnnotation != null
-        val isFieldAccessible = !field.modifiers.contains(Modifier.PRIVATE)
-        val nameInDb = field.getAnnotation(NameInDb::class.java)?.value
-        val uid = field.getAnnotation(Uid::class.java)?.value
+        val isBacklink = field.hasAnnotation(Backlink::class.java)
+        val isFieldAccessible = field.isAccessibleField
+        val nameInDb = field.stringValueOf(NameInDb::value)
+        val uid = field.uidValue()
         if (isBacklink && nameInDb != null) messages.error("Backlinks are not allowed to have @NameInDb")
         if (isBacklink && uid != null) messages.error("Backlinks are not allowed to have @Uid")
 
         val toMany = if (isBacklink) {
             ToManyByBacklink(
-                name = field.simpleName.toString(),
+                name = field.name,
                 targetEntityName = targetEntityName,
-                targetPropertyName = backlinkAnnotation.to.ifBlank { null },
+                targetPropertyName = field.stringValueOf(Backlink::to)?.ifBlank { null },
                 isFieldAccessible = isFieldAccessible
             )
         } else {
-            val externalName = field.getAnnotation(ExternalName::class.java)?.value
+            val externalName = field.stringValueOf(ExternalName::value)
             // Note: for a standalone ToMany only vector based external types are allowed, but leaving checks to the
             // database to not duplicate them here.
-            val externalType = field.getAnnotation(ExternalType::class.java)?.value
+            val externalType = field.enumValueNameOf(ExternalType::value)
+                ?.let { ExternalPropertyType.valueOf(it) }
 
             ToManyStandalone(
-                name = field.simpleName.toString(),
+                name = field.name,
                 dbName = nameInDb,
                 targetEntityName = targetEntityName,
                 isFieldAccessible = isFieldAccessible,
-                uid = uid.let { if (it == 0L) -1L else it },
+                uid = uid,
                 externalName = externalName,
                 externalTypeId = externalType?.let { ExternalPropertyTypeMapper.toId(it) },
                 externalTypeExpression = externalType?.let { ExternalPropertyTypeMapper.toExpression(it) }
@@ -113,23 +108,20 @@ class Relations(private val messages: Messages) {
         collectToMany(entityModel, toMany)
     }
 
-    fun parseToOne(entityModel: Entity, field: VariableElement) {
+    fun parseToOne(entityModel: Entity, field: ProcessingField) {
         val targetEntityName = targetEntityNameOrError(entityModel, field, "ToOne")
             ?: return // skip faulty to-one
 
-        if (field.getAnnotation(Backlink::class.java) != null) {
-            messages.error("'$field' @Backlink can only be used on a ToMany relation")
+        if (field.hasAnnotation(Backlink::class.java)) {
+            messages.error("'${field.name}' @Backlink can only be used on a ToMany relation")
         }
 
-        val relationAnnotation = field.getAnnotation(TargetIdProperty::class.java)
-        val idRefPropertyName = relationAnnotation?.value?.ifBlank { null }
-
         val toOne = ToOne(
-            name = field.simpleName.toString(),
-            isFieldAccessible = !field.modifiers.contains(Modifier.PRIVATE),
-            idRefPropertyName = idRefPropertyName,
-            idRefPropertyNameInDb = field.getAnnotation(NameInDb::class.java)?.value?.ifBlank { null },
-            idRefPropertyUid = field.getAnnotation(Uid::class.java)?.value?.let { if (it == 0L) -1L else it },
+            name = field.name,
+            isFieldAccessible = field.isAccessibleField,
+            idRefPropertyName = field.stringValueOf(TargetIdProperty::value)?.ifBlank { null },
+            idRefPropertyNameInDb = field.stringValueOf(NameInDb::value)?.ifBlank { null },
+            idRefPropertyUid = field.uidValue(),
             targetEntityName = targetEntityName
         )
 
@@ -137,21 +129,11 @@ class Relations(private val messages: Messages) {
     }
 
     private fun collectToOne(entity: Entity, toOne: ToOne) {
-        var toOnes = toOnesByEntity[entity]
-        if (toOnes == null) {
-            toOnes = mutableListOf()
-            toOnesByEntity[entity] = toOnes
-        }
-        toOnes.add(toOne)
+        toOnesByEntity.getOrPut(entity) { mutableListOf() }.add(toOne)
     }
 
     private fun collectToMany(entity: Entity, toMany: ToManyBase) {
-        var toManys = toManysByEntity[entity]
-        if (toManys == null) {
-            toManys = mutableListOf()
-            toManysByEntity[entity] = toManys
-        }
-        toManys.add(toMany)
+        toManysByEntity.getOrPut(entity) { mutableListOf() }.add(toMany)
     }
 
     fun ensureToOneIdRefProperties(entity: Entity) {

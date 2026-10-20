@@ -192,8 +192,8 @@ class IdSyncTest {
         assertEquals(4, entity2.properties.last().modelId)
     }
 
-    @Test(expected = IdSyncException::class)
-    fun testAddEntityWithDuplicateRefId() {
+    @Test
+    fun testAddEntityWithDuplicateUid() {
         val model1 = syncBasicModel()
         val entityRefId = model1.entities.first().uid
         val schema = basicSchema()
@@ -202,11 +202,15 @@ class IdSyncTest {
         schema.finish()
 
         idSync = IdSync(file)
-        idSync!!.sync(schema)
+        val exception = assertThrows(IdSyncException::class.java) {
+            idSync!!.sync(schema)
+        }
+        assertThat(exception.message)
+            .contains("Non-unique UID $entityRefId in parsed entity pac.me.Entity2")
     }
 
-    @Test(expected = IdSyncException::class)
-    fun testAddEntityPropertyWithDuplicateRefId() {
+    @Test
+    fun testAddEntityPropertyWithDuplicateUid() {
         val model1 = syncBasicModel()
         val propertyRefId = model1.entities.first().properties.first().uid
         val entityRefId = model1.entities.first().uid
@@ -216,11 +220,15 @@ class IdSyncTest {
         schema.finish()
 
         idSync = IdSync(file)
-        idSync!!.sync(schema)
+        val exception = assertThrows(IdSyncException::class.java) {
+            idSync!!.sync(schema)
+        }
+        assertThat(exception.message)
+            .contains("Non-unique UID $propertyRefId in parsed entity pac.me.Entity1 for property bar")
     }
 
-    @Test(expected = IdSyncException::class)
-    fun testEntityPropertyRefIdCollision() {
+    @Test
+    fun testEntityPropertyUidCollision() {
         val model1 = syncBasicModel()
         val entityRefId = model1.entities.first().uid
         val schema = basicSchema()
@@ -229,7 +237,49 @@ class IdSyncTest {
         schema.finish()
 
         idSync = IdSync(file)
-        idSync!!.sync(schema)
+        val exception = assertThrows(IdSyncException::class.java) {
+            idSync!!.sync(schema)
+        }
+        assertThat(exception.message)
+            .contains("Non-unique UID $entityRefId in parsed entity pac.me.Entity1 for property bar")
+    }
+
+    @Test
+    fun testAddEntityRelationWithDuplicateUid() {
+        val model1 = syncTestModel {
+            addTestEntity("Entity1", addTestProperties = true)
+                .addTestToMany("oneToMany")
+        }
+        val entityRefId = model1.entities.first().uid
+        val relationRefId = model1.entities.first().relations!!.first().uid
+
+        val exception = assertThrows(IdSyncException::class.java) {
+            syncTestModel {
+                addTestEntity("Entity1", uid = entityRefId, addTestProperties = true)
+                    .addTestToMany("oneToMany", relationRefId)
+                    .addTestToMany("twoToMany", relationRefId)
+            }
+        }
+        assertThat(exception.message)
+            .contains("Non-unique UID $relationRefId in parsed entity pac.me.Entity1 for relation twoToMany")
+    }
+
+    @Test
+    fun testEntityRelationUidCollision() {
+        val model1 = syncTestModel {
+            addTestEntity("Entity1", addTestProperties = true)
+                .addTestToMany("oneToMany")
+        }
+        val entityRefId = model1.entities.first().uid
+
+        val exception = assertThrows(IdSyncException::class.java) {
+            syncTestModel {
+                addTestEntity("Entity1", uid = entityRefId, addTestProperties = true)
+                    .addTestToMany("oneToMany", entityRefId)
+            }
+        }
+        assertThat(exception.message)
+            .contains("Non-unique UID $entityRefId in parsed entity pac.me.Entity1 for relation oneToMany")
     }
 
     @Test
@@ -481,14 +531,14 @@ class IdSyncTest {
     /**
      * Adds to-many relation to itself.
      */
-    private fun Entity.addTestToMany(name: String): Entity {
+    private fun Entity.addTestToMany(name: String, uid: Long? = null): Entity {
         addToMany(
             ToManyStandalone(
                 name = name,
                 dbName = null,
                 targetEntityName = this.className,
                 isFieldAccessible = true,
-                uid = null,
+                uid = uid,
                 externalName = null,
                 externalTypeId = null,
                 externalTypeExpression = null

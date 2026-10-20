@@ -27,7 +27,7 @@ import org.junit.Test
 /**
  * Tests the [ExternalName] and [ExternalType] annotations.
  */
-class ExternalNameAndTypeTest : BaseProcessorTest() {
+class ExternalNameAndTypeTest(processorType: ProcessorType) : BaseProcessorTest(processorType) {
 
     // Note: the annotation processor doesn't have checks for types (done at runtime by the database),
     // so just verify parsing works and generated code is as expected.
@@ -59,7 +59,7 @@ class ExternalNameAndTypeTest : BaseProcessorTest() {
             }
             """.trimIndent()
 
-        val env = TestEnvironment("external-type-and-name.json")
+        val env = env("external-type-and-name.json")
             .apply { addSourceFile("com.example.MongoEntity", mongoEntity) }
 
         env.compile()

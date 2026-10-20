@@ -20,7 +20,9 @@ package io.objectbox.gradle
 
 import io.objectbox.gradle.ProjectEnv.Const
 import org.gradle.api.plugins.JavaPlugin
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 
@@ -78,7 +80,27 @@ open class PluginApplyAndroid810Test : PluginApplyAndroidTest() {
             }
         }
 
+        assertTrue(project.plugins.hasPlugin(Const.KOTLIN_KAPT_PLUGIN_ID))
         assertKotlinAndroidSetup(project)
+    }
+
+    /**
+     * Android Plugin 8.10 is the lowest version supported by KSP.
+     */
+    @Test
+    fun apply_afterKotlinAndroidAndKspPlugin_usesKsp() {
+        val project = buildProject {
+            pluginManager.apply {
+                apply(Const.ANDROID_APPLICATION_PLUGIN_ID)
+                apply(Const.KOTLIN_ANDROID_PLUGIN_ID)
+                apply(Const.KSP_PLUGIN_ID)
+                apply(pluginId)
+            }
+        }
+
+        // The project has applied the KSP plugin, so the plugin does not apply kapt.
+        assertFalse(project.plugins.hasPlugin(Const.KOTLIN_KAPT_PLUGIN_ID))
+        assertKotlinAndroidSetup(project, Const.KSP_CONFIGURATION_NAME)
     }
 
 }

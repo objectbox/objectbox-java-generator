@@ -35,7 +35,7 @@ buildscript {
 
     // Version of Maven artifacts
     // Should only be changed as part of the release process, see the release checklist in the objectbox repo
-    val versionNumber = "6.0.0-beta2"
+    val versionNumber = "6.0.0-beta3"
 
     // If OBX_RELEASE is set, build and depend on release versions. Doesn't publish a release.
     // See the release checklist in the objectbox repo on how to publish a release.
@@ -114,7 +114,9 @@ buildscript {
     // mockito 5.0.0+ requires JDK 11
     val mockitoVersion by extra("4.11.0") // https://github.com/mockito/mockito/releases
     val moshiVersion by extra("1.15.2") // https://github.com/square/moshi/blob/master/CHANGELOG.md
-    // Used to run the moshi-kotlin-codegen annotation processor (kapt does not support Kotlin 2.3 metadata).
+    // The KSP Gradle plugin version recommended by (and tested with) the ObjectBox plugin for Kotlin
+    // projects. KSP versions independently of Kotlin since 2.3.0.
+    // Also used to run the moshi-kotlin-codegen annotation processor (kapt does not support Kotlin 2.3 metadata).
     // Moshi doesn't support KSP 2 until v2, currently in preview, but out of luck it appears this
     // project isn't affected by the changed return values of KSP 2
     // (https://github.com/google/ksp/blob/main/docs/ksp2api.md) so use it regardless.

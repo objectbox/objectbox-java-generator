@@ -151,7 +151,12 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
      */
     private fun addDependenciesAnnotationProcessor(env: ProjectEnv) {
         val project = env.project
-        if ((env.hasKotlinPlugin || env.hasKotlinAndroidPlugin) &&
+        // Kotlin projects use kapt to run the processor, unless the project has applied the KSP plugin
+        // (before this plugin), then KSP is used instead (see below).
+        val hasKspPlugin = project.plugins.hasPlugin(Const.KSP_PLUGIN_ID)
+        if (hasKspPlugin) {
+            env.logDebug { "Found '${Const.KSP_PLUGIN_ID}', using KSP." }
+        } else if ((env.hasKotlinPlugin || env.hasKotlinAndroidPlugin) &&
             !project.hasConfig(Const.KAPT_CONFIGURATION_NAME)
         ) {
             // Note: no-op if kapt plugin was already applied.
@@ -178,6 +183,11 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
         val processorDep = "${Const.OBX_GROUP}:${Const.OBX_PROCESSOR}:${Const.OBX_PLUGIN_VERSION}"
         // Note: check for and use preferred/best config first, potentially ignoring others.
         when {
+            project.hasConfig(Const.KSP_CONFIGURATION_NAME) -> {
+                // Kotlin (Android + Desktop) if the project has applied the KSP plugin.
+                project.addDep(Const.KSP_CONFIGURATION_NAME, processorDep)
+            }
+
             project.hasConfig(Const.KAPT_CONFIGURATION_NAME) -> {
                 // Kotlin (Android + Desktop).
                 project.addDep(Const.KAPT_CONFIGURATION_NAME, processorDep)
@@ -191,7 +201,8 @@ open class ObjectBoxGradlePlugin : Plugin<Project> {
             else -> {
                 project.logger.warn(
                     "ObjectBox: Could not add dependency on ${Const.OBX_PROCESSOR}, " +
-                            "no supported configuration (${Const.KAPT_CONFIGURATION_NAME}, " +
+                            "no supported configuration (${Const.KSP_CONFIGURATION_NAME}, " +
+                            "${Const.KAPT_CONFIGURATION_NAME}, " +
                             "${JavaPlugin.ANNOTATION_PROCESSOR_CONFIGURATION_NAME}) found."
                 )
             }

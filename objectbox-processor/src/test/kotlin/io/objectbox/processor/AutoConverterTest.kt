@@ -19,12 +19,11 @@
 package io.objectbox.processor
 
 import com.google.common.truth.Truth.assertThat
-import com.google.testing.compile.JavaFileObjects
 import io.objectbox.generator.model.PropertyType
 import org.junit.Test
 
 
-class AutoConverterTest : BaseProcessorTest() {
+class AutoConverterTest(processorType: ProcessorType) : BaseProcessorTest(processorType) {
 
     @Test
     fun javaStringMap_isAutoConverted() {
@@ -43,11 +42,11 @@ class AutoConverterTest : BaseProcessorTest() {
             Map<String, Long> stringLongMap;
         }
         """.trimIndent()
-            .let { JavaFileObjects.forSourceString("com.example.MapEntity", it) }
 
-        val environment = TestEnvironment("auto-convert-java-string-map.json", useTemporaryModelFile = true)
+        val environment = env("auto-convert-java-string-map.json", useTemporaryModelFile = true)
 
-        environment.compile(listOf(sourceFile))
+        environment.addSourceFile("com.example.MapEntity", sourceFile)
+        environment.compile()
             .assertThatIt { succeededWithoutWarnings() }
 
         environment.schema.entities[0].properties.find { it.dbName == "stringMap" }!!
@@ -98,11 +97,11 @@ class AutoConverterTest : BaseProcessorTest() {
             Map<Integer, Long> integerLongMap;
         }
         """.trimIndent()
-            .let { JavaFileObjects.forSourceString("com.example.MapEntity", it) }
 
-        val environment = TestEnvironment("auto-convert-java-integer-map.json", useTemporaryModelFile = true)
+        val environment = env("auto-convert-java-integer-map.json", useTemporaryModelFile = true)
 
-        environment.compile(listOf(sourceFile))
+        environment.addSourceFile("com.example.MapEntity", sourceFile)
+        environment.compile()
             .assertThatIt { succeededWithoutWarnings() }
 
         environment.schema.entities[0].properties.find { it.dbName == "integerFlexMap" }!!
@@ -143,11 +142,11 @@ class AutoConverterTest : BaseProcessorTest() {
             Map<Long, Long> longLongMap;
         }
         """.trimIndent()
-            .let { JavaFileObjects.forSourceString("com.example.MapEntity", it) }
 
-        val environment = TestEnvironment("auto-convert-java-long-map.json", useTemporaryModelFile = true)
+        val environment = env("auto-convert-java-long-map.json", useTemporaryModelFile = true)
 
-        environment.compile(listOf(sourceFile))
+        environment.addSourceFile("com.example.MapEntity", sourceFile)
+        environment.compile()
             .assertThatIt { succeededWithoutWarnings() }
 
         environment.schema.entities[0].properties.find { it.dbName == "longFlexMap" }!!
@@ -187,11 +186,11 @@ class AutoConverterTest : BaseProcessorTest() {
             Map<Boolean, Integer> otherMap;
         }
         """.trimIndent()
-            .let { JavaFileObjects.forSourceString("com.example.MapEntity", it) }
 
-        val environment = TestEnvironment("auto-convert-java-other-map.json", useTemporaryModelFile = true)
+        val environment = env("auto-convert-java-other-map.json", useTemporaryModelFile = true)
 
-        environment.compile(listOf(sourceFile))
+        environment.addSourceFile("com.example.MapEntity", sourceFile)
+        environment.compile()
             .assertThatIt {
                 failed()
                 hadErrorContaining(

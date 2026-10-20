@@ -19,13 +19,13 @@
 package io.objectbox.processor
 
 import com.google.common.truth.Truth.assertThat
-import com.google.testing.compile.JavaFileObjects
+import io.objectbox.generator.model.PropertyType
 import org.junit.Test
 
 /**
  * Tests related to the @Id annotation.
  */
-class IdTest : BaseProcessorTest() {
+class IdTest(processorType: ProcessorType) : BaseProcessorTest(processorType) {
 
     @Test
     fun id_missing() {
@@ -38,13 +38,12 @@ class IdTest : BaseProcessorTest() {
         public class NoIdEntity {
             long id;
         }
-        """.trimIndent().let {
-            JavaFileObjects.forSourceString("io.objectbox.processor.test.NoIdEntity", it)
-        }
+        """.trimIndent()
 
-        val environment = TestEnvironment("not-generated.json", useTemporaryModelFile = true)
+        val environment = env("not-generated.json", useTemporaryModelFile = true)
 
-        environment.compile(listOf(sourceFile))
+        environment.addSourceFile("io.objectbox.processor.test.NoIdEntity", sourceFile)
+        environment.compile()
             .assertThatIt {
                 failed()
                 hadErrorContaining("No @Id property found for 'NoIdEntity', add @Id on a not-null long property.")
@@ -63,13 +62,12 @@ class IdTest : BaseProcessorTest() {
         public class NotLongEntity {
             @Id String id;
         }
-        """.trimIndent().let {
-            JavaFileObjects.forSourceString("io.objectbox.processor.test.NotLongEntity", it)
-        }
+        """.trimIndent()
 
-        val environment = TestEnvironment("not-generated.json", useTemporaryModelFile = true)
+        val environment = env("not-generated.json", useTemporaryModelFile = true)
 
-        environment.compile(listOf(sourceFile))
+        environment.addSourceFile("io.objectbox.processor.test.NotLongEntity", sourceFile)
+        environment.compile()
             .assertThatIt {
                 failed()
                 hadErrorContaining("An @Id property must be a not-null long.")
@@ -87,18 +85,62 @@ class IdTest : BaseProcessorTest() {
         public class PrivateEntity {
             @Id private long id; // private + no getter or setter
         }
-        """.trimIndent().let {
-            JavaFileObjects.forSourceString("com.example.objectbox.PrivateEntity", it)
-        }
+        """.trimIndent()
 
-        val environment = TestEnvironment("not-generated.json", useTemporaryModelFile = true)
+        val environment = env("not-generated.json", useTemporaryModelFile = true)
 
-        environment.compile(listOf(sourceFile))
+        environment.addSourceFile("com.example.objectbox.PrivateEntity", sourceFile)
+        environment.compile()
             .assertThatIt {
                 failed()
                 hadErrorContaining("An @Id property must not be private or have a not-private getter and setter.")
             }
         assertThat(environment.isModelFileExists()).isFalse()
+    }
+
+    /**
+     * While not recommended (many internal checks rely on ID == 0 to determine if an entity was not
+     * put), using a nullable type for the ID property should work.
+     */
+    @Test
+    fun id_nullable() {
+        val sourceFile = """
+        package com.example;
+        import io.objectbox.annotation.Entity;
+        import io.objectbox.annotation.Id;
+
+        @Entity
+        public class NullableIdEntity {
+            @Id Long id;
+        }
+        """.trimIndent()
+
+        val environment = env("nullable-id.json")
+
+        environment.addSourceFile("com.example.NullableIdEntity", sourceFile)
+        environment.compile()
+            .assertThatIt {
+                succeededWithoutWarnings()
+            }
+            // Generated code should include null checks for @Id property.
+            .assertGeneratedSourceMatches(
+                "com.example.NullableIdEntity_",
+                "NullableIdEntity_.java"
+            )
+            .assertGeneratedSourceMatches(
+                "com.example.NullableIdEntityCursor",
+                "NullableIdEntityCursor.java"
+            )
+
+        environment.schema.entities[0].properties.find { it.dbName == "id" }!!
+            .run {
+                assertThat(propertyType).isEqualTo(PropertyType.Long)
+                assertThat(isPrimaryKey).isTrue()
+                // Type should be nullable.
+                assertThat(isTypeNotNull).isFalse()
+                // Non-primitive should be set so long wrapper type is used by JNI.
+                assertThat(isNonPrimitiveFlag).isTrue()
+            }
     }
 
 }

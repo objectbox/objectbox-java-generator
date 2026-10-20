@@ -19,15 +19,13 @@
 package io.objectbox.processor
 
 import com.google.common.truth.Truth.assertThat
-import com.google.testing.compile.JavaFileObjects
 import io.objectbox.model.PropertyFlags
 import org.junit.Test
-import javax.tools.JavaFileObject
 
 /**
  * Additional tests for the IdCompanion annotation. For basic tests see SimpleEntityTest.
  */
-class IdCompanionTest : BaseProcessorTest() {
+class IdCompanionTest(processorType: ProcessorType) : BaseProcessorTest(processorType) {
 
     @Test
     fun datenano_primitive_supported() {
@@ -44,9 +42,7 @@ class IdCompanionTest : BaseProcessorTest() {
             @Id long id;
             @IdCompanion @Type(DatabaseType.DateNano) long companion;
         }
-        """.trimIndent().let {
-            JavaFileObjects.forSourceString("com.example.Example", it)
-        }
+        """.trimIndent()
 
         assertIdCompanionDateNano(dateNanoLongPrimitive)
     }
@@ -66,17 +62,16 @@ class IdCompanionTest : BaseProcessorTest() {
             @Id long id;
             @IdCompanion @Type(DatabaseType.DateNano) Long companion;
         }
-        """.trimIndent().let {
-            JavaFileObjects.forSourceString("com.example.Example", it)
-        }
+        """.trimIndent()
 
         assertIdCompanionDateNano(dateNanoLongNullable)
     }
 
-    private fun assertIdCompanionDateNano(javaFileObject: JavaFileObject) {
-        val environment = TestEnvironment("idcompanion-datenano.json", useTemporaryModelFile = true)
+    private fun assertIdCompanionDateNano(exampleSource: String) {
+        val environment = env("idcompanion-datenano.json", useTemporaryModelFile = true)
 
-        environment.compile(listOf(javaFileObject))
+        environment.addSourceFile("com.example.Example", exampleSource)
+        environment.compile()
             .assertThatIt { succeededWithoutWarnings() }
 
         // Assert model file.
@@ -91,7 +86,7 @@ class IdCompanionTest : BaseProcessorTest() {
 
     @Test
     fun multiple_error() {
-        val javaFileObject = """
+        val sourceFile = """
         package com.example;
         import io.objectbox.annotation.Entity;
         import io.objectbox.annotation.Id;
@@ -104,13 +99,12 @@ class IdCompanionTest : BaseProcessorTest() {
             @IdCompanion Date companion1;
             @IdCompanion Date companion2;
         }
-        """.trimIndent().let {
-            JavaFileObjects.forSourceString("com.example.Example", it)
-        }
+        """.trimIndent()
 
-        val environment = TestEnvironment("idcompanion-multiple.json", useTemporaryModelFile = true)
+        val environment = env("idcompanion-multiple.json", useTemporaryModelFile = true)
 
-        environment.compile(listOf(javaFileObject))
+        environment.addSourceFile("com.example.Example", sourceFile)
+        environment.compile()
             .assertThatIt {
                 hadErrorContaining("'companion1' is already an @IdCompanion property, there can only be one.")
             }
@@ -118,7 +112,7 @@ class IdCompanionTest : BaseProcessorTest() {
 
     @Test
     fun not_date_unsupported() {
-        val javaFileObject = """
+        val sourceFile = """
         package com.example;
         import io.objectbox.annotation.Entity;
         import io.objectbox.annotation.Id;
@@ -129,13 +123,12 @@ class IdCompanionTest : BaseProcessorTest() {
             @Id long id;
             @IdCompanion Long companion;
         }
-        """.trimIndent().let {
-            JavaFileObjects.forSourceString("com.example.Example", it)
-        }
+        """.trimIndent()
 
-        val environment = TestEnvironment("idcompanion-not-date.json", useTemporaryModelFile = true)
+        val environment = env("idcompanion-not-date.json", useTemporaryModelFile = true)
 
-        environment.compile(listOf(javaFileObject))
+        environment.addSourceFile("com.example.Example", sourceFile)
+        environment.compile()
             .assertThatIt {
                 hadErrorContaining("@IdCompanion has to be of type Date or a long annotated with @Type(DateNano).")
             }

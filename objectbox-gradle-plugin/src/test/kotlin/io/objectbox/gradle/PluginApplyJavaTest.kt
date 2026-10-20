@@ -28,6 +28,7 @@ import org.gradle.testfixtures.ProjectBuilder
 import org.hamcrest.CoreMatchers.instanceOf
 import org.hamcrest.MatcherAssert.assertThat
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
@@ -204,13 +205,43 @@ open class PluginApplyJavaTest : PluginApplyTest() {
             }
         }
 
+        assertTrue(project.plugins.hasPlugin(Const.KOTLIN_KAPT_PLUGIN_ID))
         assertKotlinSetup(project)
     }
 
-    private fun assertKotlinSetup(project: Project) {
+    @Test
+    fun apply_afterKotlinAndKspPlugin_usesKsp() {
+        val project = buildProject {
+            pluginManager.apply {
+                apply(Const.KOTLIN_PLUGIN_ID)
+                apply(Const.KSP_PLUGIN_ID)
+                apply(pluginId)
+            }
+        }
+
+        // The project has applied the KSP plugin, so the plugin does not apply kapt.
+        assertFalse(project.plugins.hasPlugin(Const.KOTLIN_KAPT_PLUGIN_ID))
+        assertKotlinSetup(project, Const.KSP_CONFIGURATION_NAME)
+    }
+
+    @Test
+    fun apply_afterKotlinKaptAndKspPlugin_prefersKsp() {
+        val project = buildProject {
+            pluginManager.apply {
+                apply(Const.KOTLIN_PLUGIN_ID)
+                apply(Const.KOTLIN_KAPT_PLUGIN_ID)
+                apply(Const.KSP_PLUGIN_ID)
+                apply(pluginId)
+            }
+        }
+
+        assertKotlinSetup(project, Const.KSP_CONFIGURATION_NAME)
+    }
+
+    private fun assertKotlinSetup(project: Project, processorConfiguration: String = Const.KAPT_CONFIGURATION_NAME) {
         project.resolveDependencyGraphWithoutDownloadingFiles()
         with(project.configurations) {
-            assertProcessorDependency(getByName(Const.KAPT_CONFIGURATION_NAME).dependencies)
+            assertProcessorDependency(getByName(processorConfiguration).dependencies)
 
             getByName(JavaPlugin.API_CONFIGURATION_NAME).dependencies.let { deps ->
                 deps.assertKotlinDependency()
