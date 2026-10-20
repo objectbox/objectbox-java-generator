@@ -46,7 +46,7 @@ public class GeneratorOutput {
     final Filer filer;
     final File outDirFile;
 
-    private GeneratorOutput(Filer filer, File outDirFile) {
+    protected GeneratorOutput(Filer filer, File outDirFile) {
         this.filer = filer;
         this.outDirFile = outDirFile;
     }

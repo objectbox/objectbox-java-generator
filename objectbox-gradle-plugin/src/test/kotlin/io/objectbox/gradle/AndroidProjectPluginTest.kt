@@ -26,6 +26,7 @@ import io.objectbox.gradle.transform.getInitializedFields
 import javassist.ClassPool
 import javassist.CtClass
 import javassist.bytecode.ClassFile
+import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
 import org.intellij.lang.annotations.Language
@@ -93,19 +94,79 @@ abstract class AndroidProjectPluginTest {
     private val buildTransformDirectory: String =
         "build/intermediates/classes/debug/transformDebugClassesWithAsm/dirs"
 
+    /**
+     * Adds the Android plugin and [buildScriptAndroidBlock].
+     */
+    open fun configureTestRunner(gradleTestRunner: GradleTestRunner) {
+        gradleTestRunner.apply {
+            // Note: classpath for plugins configured in build script of this project (see GradleTestRunner.build).
+            additionalPlugins += Const.ANDROID_APPLICATION_PLUGIN_ID
+            additionalBlocks += buildScriptAndroidBlock
+        }
+    }
+
     @Test
     fun assemble() {
         val gradleRunner = GradleTestRunner(testProjectDir)
-            .apply {
-                // Note: classpath for plugins configured in build script of this project (see GradleTestRunner.build).
-                additionalPlugins += Const.ANDROID_APPLICATION_PLUGIN_ID
-                additionalBlocks = buildScriptAndroidBlock
-            }
+        configureTestRunner(gradleRunner)
 
         testProjectDir.newFile("src/main/AndroidManifest.xml").apply {
             writeText(androidManifest)
         }
 
+        addSourceFiles(gradleRunner)
+
+        val result = gradleRunner.build(listOf("--stacktrace", "assembleDebug"), additionalRunnerConfiguration)
+        assertThat(result.task(":assembleDebug")!!.outcome).isEqualTo(TaskOutcome.SUCCESS)
+
+        // Assert build tracker.
+        @Suppress("RegExpRedundantEscape")
+        val buildTrackerLog = "\\[ObjectBox\\] Analytics disabled, would have sent event: .*".toRegex()
+            .find(result.output)?.value
+        assertThat(buildTrackerLog).contains("\"event\": \"Build\"")
+        assertThat(buildTrackerLog).contains("\"Tool\": \"GradlePlugin\"")
+        assertThat(buildTrackerLog).contains("\"Target\": \"Android\"")
+        assertThat(buildTrackerLog).contains("\"AGP\": \"$expectedAndroidPluginVersion\"")
+        assertThat(buildTrackerLog).contains("\"Gradle\": \"$gradleVersion\"")
+
+        // Assert transform output.
+        val transformDir = File(testProjectDir.root, buildTransformDirectory)
+
+        // Check entity is transformed.
+        File(transformDir, "com/example/ExampleEntity.class").inputStream().use { fileInputStream ->
+            val classFile = ClassFile(DataInputStream(fileInputStream))
+
+            assertBoxStoreField(classFile)
+
+            // Check constructors not calling other constructors initialize relation properties.
+            val constructors = classFile.methods.filter { it.isConstructor }
+            assertThat(constructors).hasSize(2)
+            constructors.forEach {
+                val callsSuper = it.codeAttribute.iterator().skipSuperConstructor() != -1
+                val initializedFields = classFile.getInitializedFields(it)
+                if (callsSuper) {
+                    // Constructor calls super()
+                    assertThat(initializedFields).containsExactly(
+                        "toOneProperty",
+                        "toManyProperty",
+                        "toManyListProperty"
+                    )
+                } else {
+                    // Constructor calls this()
+                    assertThat(initializedFields).isEmpty()
+                }
+            }
+        }
+
+        assertCursorTransformed(transformDir, "ExampleEntity")
+
+        assertBuildResult(result, transformDir)
+    }
+
+    /**
+     * Adds the source files of the test project. Override to add more.
+     */
+    open fun addSourceFiles(gradleRunner: GradleTestRunner) {
         @Language("Java")
         val exampleEntitySource =
             """
@@ -156,61 +217,34 @@ abstract class AndroidProjectPluginTest {
             """.trimIndent()
 
         gradleRunner.addSourceFile("ExampleEntity.java", exampleEntitySource)
+    }
 
-        val result = gradleRunner.build(listOf("--stacktrace", "assembleDebug"), additionalRunnerConfiguration)
-        assertThat(result.task(":assembleDebug")!!.outcome).isEqualTo(TaskOutcome.SUCCESS)
+    /**
+     * Called at the end of [assemble] for additional assertions.
+     */
+    open fun assertBuildResult(result: BuildResult, transformDir: File) {
+    }
 
-        // Assert build tracker.
-        @Suppress("RegExpRedundantEscape")
-        val buildTrackerLog = "\\[ObjectBox\\] Analytics disabled, would have sent event: .*".toRegex()
-            .find(result.output)?.value
-        assertThat(buildTrackerLog).contains("\"event\": \"Build\"")
-        assertThat(buildTrackerLog).contains("\"Tool\": \"GradlePlugin\"")
-        assertThat(buildTrackerLog).contains("\"Target\": \"Android\"")
-        assertThat(buildTrackerLog).contains("\"AGP\": \"$expectedAndroidPluginVersion\"")
-        assertThat(buildTrackerLog).contains("\"Gradle\": \"$gradleVersion\"")
+    /**
+     * Checks the BoxStore field exists and is accessible.
+     */
+    protected fun assertBoxStoreField(classFile: ClassFile) {
+        val boxStoreField = classFile.fields.find { it.name == ClassConst.boxStoreFieldName }
+        assertThat(boxStoreField).isNotNull()
+        assertThat(Modifier.isPrivate(boxStoreField!!.accessFlags)).isFalse()
+        assertThat(Modifier.isTransient(boxStoreField.accessFlags)).isTrue()
+    }
 
-        // Assert transform output.
-        val transformDir = File(testProjectDir.root, buildTransformDirectory)
-
-        // Check entity is transformed.
-        File(transformDir, "com/example/ExampleEntity.class").inputStream().use { fileInputStream ->
-            val classFile = ClassFile(DataInputStream(fileInputStream))
-
-            // Check BoxStore field exists and is accessible.
-            val boxStoreField = classFile.fields.find { it.name == ClassConst.boxStoreFieldName }
-            assertThat(boxStoreField).isNotNull()
-            assertThat(Modifier.isPrivate(boxStoreField!!.accessFlags)).isFalse()
-            assertThat(Modifier.isTransient(boxStoreField.accessFlags)).isTrue()
-
-            // Check constructors not calling other constructors initialize relation properties.
-            val constructors = classFile.methods.filter { it.isConstructor }
-            assertThat(constructors).hasSize(2)
-            constructors.forEach {
-                val callsSuper = it.codeAttribute.iterator().skipSuperConstructor() != -1
-                val initializedFields = classFile.getInitializedFields(it)
-                if (callsSuper) {
-                    // Constructor calls super()
-                    assertThat(initializedFields).containsExactly(
-                        "toOneProperty",
-                        "toManyProperty",
-                        "toManyListProperty"
-                    )
-                } else {
-                    // Constructor calls this()
-                    assertThat(initializedFields).isEmpty()
-                }
-            }
-        }
-
-        // Check Cursor is transformed.
-        File(transformDir, "com/example/ExampleEntityCursor.class").inputStream().use { fileInputStream ->
+    /**
+     * Checks the Cursor class of the entity is transformed.
+     */
+    protected fun assertCursorTransformed(transformDir: File, entityName: String) {
+        File(transformDir, "com/example/${entityName}Cursor.class").inputStream().use { fileInputStream ->
             val pool: ClassPool = ClassPool.getDefault()
             val ctClass: CtClass = pool.makeClass(fileInputStream)
             val attachMethod = ctClass.declaredMethods.first { it.name == ClassConst.cursorAttachEntityMethodName }
             assertThat(attachMethod.assignsBoxStoreField()).isTrue()
         }
-
     }
 
 }

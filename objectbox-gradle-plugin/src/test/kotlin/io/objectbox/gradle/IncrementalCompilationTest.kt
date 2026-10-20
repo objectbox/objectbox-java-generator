@@ -226,6 +226,7 @@ class IncrementalCompilationTest {
             .apply {
                 additionalPlugins += "java-library"
                 additionalBlocks += buildScriptJavaBlock
+                debugJavacProcessor()
             }
     }
 

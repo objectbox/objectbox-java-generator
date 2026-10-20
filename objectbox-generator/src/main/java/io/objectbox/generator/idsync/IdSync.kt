@@ -86,6 +86,12 @@ class IdSync(private val jsonFile: File = File("objectmodel.json")) {
     companion object {
         const val MIN_VERSION = 2
         const val MAX_VERSION = IdSyncModel.MODEL_VERSION
+
+        /**
+         * Special UID value signaling that instructions to rename or reset the UID should be
+         * printed. See [IdSyncPrintUidException].
+         */
+        const val UID_PRINT = -1L
     }
 
     class ModelIdAdapter {
@@ -255,7 +261,7 @@ class IdSync(private val jsonFile: File = File("objectmodel.json")) {
     private fun syncEntityIdUids(schemaEntity: io.objectbox.generator.model.Entity): Entity? {
         val entityName = schemaEntity.dbName ?: schemaEntity.className
         val entityUid = schemaEntity.modelUid
-        val printUid = entityUid == -1L
+        val printUid = entityUid == UID_PRINT
         if (entityUid != null && !printUid && !parsedUids.add(entityUid)) {
             throw IdSyncException(
                 "Non-unique UID $entityUid in parsed entity " +
@@ -362,7 +368,7 @@ class IdSync(private val jsonFile: File = File("objectmodel.json")) {
     ): Property {
         val name = schemaProperty.dbName ?: schemaProperty.propertyName
         val propertyUid: Long? = schemaProperty.modelId?.uid
-        val printUid = propertyUid == -1L
+        val printUid = propertyUid == UID_PRINT
         var existingProperty: Property? = null
         if (existingEntity != null) {
             if (propertyUid != null && !printUid && !parsedUids.add(propertyUid)) {
@@ -447,7 +453,7 @@ class IdSync(private val jsonFile: File = File("objectmodel.json")) {
     ): Relation {
         val name = schemaRelation.dbName
         val relationUid = schemaRelation.modelId?.uid
-        val printUid = relationUid == -1L
+        val printUid = relationUid == UID_PRINT
         var existingRelation: Relation? = null
         if (existingEntity != null) {
             if (relationUid != null && !printUid && !parsedUids.add(relationUid)) {
@@ -503,7 +509,7 @@ class IdSync(private val jsonFile: File = File("objectmodel.json")) {
     }
 
     fun findEntity(name: String, uid: Long?): Entity? {
-        if (uid != null && uid != 0L && uid != -1L) {
+        if (uid != null && uid != 0L && uid != UID_PRINT) {
             return entitiesReadByUid[uid] ?: if (newUidPool.contains(uid)) return null
             else throw IdSyncException("No entity with UID $uid found")
         } else {
@@ -512,7 +518,7 @@ class IdSync(private val jsonFile: File = File("objectmodel.json")) {
     }
 
     fun findProperty(entity: Entity, name: String, uid: Long?): Property? {
-        if (uid != null && uid != 0L && uid != -1L) {
+        if (uid != null && uid != 0L && uid != UID_PRINT) {
             val filtered = entity.properties.filter { it.uid == uid }
             if (filtered.isEmpty()) {
                 if (newUidPool.contains(uid)) {
@@ -532,7 +538,7 @@ class IdSync(private val jsonFile: File = File("objectmodel.json")) {
 
     private fun findRelation(entity: Entity, name: String, uid: Long?): Relation? {
         if (entity.relations == null) return null
-        if (uid != null && uid != 0L && uid != -1L) {
+        if (uid != null && uid != 0L && uid != UID_PRINT) {
             val filtered = entity.relations.filter { it.uid == uid }
             if (filtered.isEmpty()) {
                 if (newUidPool.contains(uid)) {

@@ -22,24 +22,22 @@ import io.objectbox.reporting.BasicBuildTracker
 import io.objectbox.generator.model.HasParsedElement
 import javax.annotation.processing.Messager
 import javax.lang.model.element.Element
-import javax.lang.model.element.TypeElement
-import javax.lang.model.element.VariableElement
 import javax.tools.Diagnostic
 
 /**
  * Helps raise and keep count of errors during processing.
  */
-class Messages(private val messager: Messager, private val debug: Boolean) {
+class Messages(private val messager: Messager, private val debug: Boolean) : CommonMessages {
 
     private var errorCount: Int = 0
 
-    val errorRaised: Boolean
+    override val errorRaised: Boolean
         get() = errorCount > 0
 
     /**
      * If debug mode is enabled, prints `message` as note. Otherwise does nothing.
      */
-    fun debug(message: String) {
+    override fun debug(message: String) {
         if (debug) {
             printMessage(Diagnostic.Kind.NOTE, message)
         }
@@ -48,41 +46,36 @@ class Messages(private val messager: Messager, private val debug: Boolean) {
     /**
      * Prints `message` as note.
      */
-    fun info(message: String) {
+    override fun info(message: String) {
         printMessage(Diagnostic.Kind.NOTE, message)
     }
 
     /**
      * Prints `message` as error.
      */
-    fun error(message: String) {
+    override fun error(message: String) {
         printAndTrackError(message, null)
-    }
-
-    /**
-     * Prints `message` as error, links to `element`.
-     */
-    fun error(message: String, element: Element) {
-        printAndTrackError(message, element)
-    }
-
-    /**
-     * Prints error like `message (<qualified name>)`, links to `field`.
-     */
-    fun error(message: String, field: VariableElement) {
-        val enclosingElement = field.enclosingElement as TypeElement
-        val fieldName = field.simpleName
-        printAndTrackError(message + " (${enclosingElement.qualifiedName}.$fieldName)", field)
     }
 
     /**
      * Prints `message` as error, links to `elementHolder.parsedElement` if not null.
      */
-    fun error(message: String, elementHolder: HasParsedElement? = null) {
-        val element: Element? = if (elementHolder?.parsedElement is Element) {
-            elementHolder.parsedElement as Element
-        } else null
-        printAndTrackError(message, element)
+    override fun error(message: String, elementHolder: HasParsedElement?) {
+        // The parsed element is either an element of this processor API or a ProcessingField.
+        val parsedElement = (elementHolder?.parsedElement as? ProcessingField)?.element
+            ?: elementHolder?.parsedElement
+        printAndTrackError(message, parsedElement as? Element)
+    }
+
+    override fun error(message: String, linkToClass: ProcessingClass) {
+        printAndTrackError(message, linkToClass.element as? Element)
+    }
+
+    /**
+     * Prints error like `message (<qualified name>.<field name>)`, links to the field.
+     */
+    override fun error(message: String, field: ProcessingField) {
+        printAndTrackError(message + " (${field.enclosingQualifiedName}.${field.name})", field.element as? Element)
     }
 
     private fun printAndTrackError(message: String, element: Element? = null) {

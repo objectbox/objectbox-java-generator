@@ -19,16 +19,16 @@
 package io.objectbox.processor
 
 import com.google.common.truth.Truth.assertThat
-import com.google.testing.compile.JavaFileObjects
 import io.objectbox.model.PropertyFlags
 import org.junit.Test
 
 
-class UnsignedTest : BaseProcessorTest() {
+class UnsignedTest(processorType: ProcessorType) : BaseProcessorTest(processorType) {
 
     @Test
     fun unsigned_detectedAndGeneratesFlag() {
-        val javaFileObject = """
+        val exampleName = "com.example.Example"
+        val exampleSource = """
         package com.example;
         import io.objectbox.annotation.Entity;
         import io.objectbox.annotation.Id;
@@ -39,26 +39,23 @@ class UnsignedTest : BaseProcessorTest() {
             @Id long id;
             @Unsigned int unsigned;
         }
-        """.trimIndent().let {
-            JavaFileObjects.forSourceString("com.example.Example", it)
-        }
+        """.trimIndent()
 
         // Assert generated MyObjectBox file.
         // Need stable model file + ids to verify sources match.
-        TestEnvironment("unsigned.json").run {
-            compile(listOf(javaFileObject))
+        env("unsigned.json").run {
+            addSourceFile(exampleName, exampleSource)
+            compile()
                 .assertThatIt {
                     succeededWithoutWarnings()
-                    generatedSourceFile("com.example.MyObjectBox").run {
-                        isNotNull()
-                        hasSourceEquivalentTo(JavaFileObjects.forResource("expected-source/MyObjectBox-unsigned.java"))
-                    }
+                    assertGeneratedSourceMatches("com.example.MyObjectBox", "MyObjectBox-unsigned.java")
                 }
         }
 
         // Assert model file, ensure it is re-created on each run.
-        val environment = TestEnvironment("unsigned.json", useTemporaryModelFile = true)
-        environment.compile(listOf(javaFileObject))
+        val environment = env("unsigned.json", useTemporaryModelFile = true)
+        environment.addSourceFile(exampleName, exampleSource)
+        environment.compile()
             .assertThatIt { succeededWithoutWarnings() }
 
         val model = environment.readModel()
@@ -69,7 +66,7 @@ class UnsignedTest : BaseProcessorTest() {
 
     @Test
     fun unsigned_isId_notSupported() {
-        val javaFileObject = """
+        val sourceFile = """
         package com.example;
         import io.objectbox.annotation.Entity;
         import io.objectbox.annotation.Id;
@@ -79,12 +76,11 @@ class UnsignedTest : BaseProcessorTest() {
         public class Example {
             @Id @Unsigned long id;
         }
-        """.trimIndent().let {
-            JavaFileObjects.forSourceString("com.example.Example", it)
-        }
+        """.trimIndent()
 
-        TestEnvironment("not-generated.json", useTemporaryModelFile = true)
-            .compile(listOf(javaFileObject))
+        env("not-generated.json", useTemporaryModelFile = true)
+            .apply { addSourceFile("com.example.Example", sourceFile) }
+            .compile()
             .assertThatIt {
                 failed()
                 hadErrorContaining("@Unsigned can not be used with @Id. ID properties are unsigned internally by default.")
@@ -93,7 +89,7 @@ class UnsignedTest : BaseProcessorTest() {
 
     @Test
     fun unsigned_notInteger_notSupported() {
-        val javaFileObject = """
+        val sourceFile = """
         package com.example;
         import io.objectbox.annotation.Entity;
         import io.objectbox.annotation.Id;
@@ -104,12 +100,11 @@ class UnsignedTest : BaseProcessorTest() {
             @Id long id;
             @Unsigned String notAnInteger;
         }
-        """.trimIndent().let {
-            JavaFileObjects.forSourceString("com.example.Example", it)
-        }
+        """.trimIndent()
 
-        TestEnvironment("not-generated.json", useTemporaryModelFile = true)
-            .compile(listOf(javaFileObject))
+        env("not-generated.json", useTemporaryModelFile = true)
+            .apply { addSourceFile("com.example.Example", sourceFile) }
+            .compile()
             .assertThatIt {
                 failed()
                 hadErrorContaining("@Unsigned is only supported for integer properties.")

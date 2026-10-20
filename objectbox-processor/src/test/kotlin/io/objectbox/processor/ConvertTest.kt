@@ -22,7 +22,7 @@ import org.intellij.lang.annotations.Language
 import org.junit.Test
 
 
-class ConvertTest : BaseProcessorTest() {
+class ConvertTest(processorType: ProcessorType) : BaseProcessorTest(processorType) {
 
     @Test
     fun toStringArray() {
@@ -64,7 +64,7 @@ class ConvertTest : BaseProcessorTest() {
             }        
             """.trimIndent()
 
-        TestEnvironment("convert-to-string-array.json", useTemporaryModelFile = true)
+        env("convert-to-string-array.json", useTemporaryModelFile = true)
             .apply {
                 addSourceFile("com.example.StringListEntity", stringListEntity)
                 addSourceFile("com.example.StringListConverter", stringListConverter)

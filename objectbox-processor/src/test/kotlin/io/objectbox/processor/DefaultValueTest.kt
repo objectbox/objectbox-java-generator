@@ -19,12 +19,11 @@
 package io.objectbox.processor
 
 import com.google.common.truth.Truth.assertThat
-import com.google.testing.compile.JavaFileObjects
 import io.objectbox.generator.model.PropertyType
 import org.junit.Test
 
 
-class DefaultValueTest : BaseProcessorTest() {
+class DefaultValueTest(processorType: ProcessorType) : BaseProcessorTest(processorType) {
 
     @Test
     fun defaultValue_emptyString_works() {
@@ -40,13 +39,12 @@ class DefaultValueTest : BaseProcessorTest() {
             
             @DefaultValue("") String nonNullString;
         }
-        """.trimIndent().let {
-            JavaFileObjects.forSourceString("com.example.DefaultValueEntity", it)
-        }
+        """.trimIndent()
 
-        val environment = TestEnvironment("default-value-empty-string.json", useTemporaryModelFile = true)
+        val environment = env("default-value-empty-string.json", useTemporaryModelFile = true)
 
-        environment.compile(listOf(sourceFile))
+        environment.addSourceFile("com.example.DefaultValueEntity", sourceFile)
+        environment.compile()
             .assertThatIt { succeededWithoutWarnings() }
 
         val stringProperty = environment.schema.entities[0].properties.find { it.dbName == "nonNullString" }!!
@@ -76,13 +74,12 @@ class DefaultValueTest : BaseProcessorTest() {
             
             @DefaultValue("42") String nonNullString;
         }
-        """.trimIndent().let {
-            JavaFileObjects.forSourceString("com.example.DefaultValueEntity", it)
-        }
+        """.trimIndent()
 
-        val environment = TestEnvironment("default-value-not-empty-string.json", useTemporaryModelFile = true)
+        val environment = env("default-value-not-empty-string.json", useTemporaryModelFile = true)
 
-        environment.compile(listOf(sourceFile))
+        environment.addSourceFile("com.example.DefaultValueEntity", sourceFile)
+        environment.compile()
             .assertThatIt {
                 failed()
                 hadErrorContaining("Only @DefaultValue(\"\") is supported.")
@@ -104,13 +101,12 @@ class DefaultValueTest : BaseProcessorTest() {
             
             @DefaultValue("") Integer nonNullInteger;
         }
-        """.trimIndent().let {
-            JavaFileObjects.forSourceString("com.example.DefaultValueEntity", it)
-        }
+        """.trimIndent()
 
-        val environment = TestEnvironment("default-value-prop-not-string.json", useTemporaryModelFile = true)
+        val environment = env("default-value-prop-not-string.json", useTemporaryModelFile = true)
 
-        environment.compile(listOf(sourceFile))
+        environment.addSourceFile("com.example.DefaultValueEntity", sourceFile)
+        environment.compile()
             .assertThatIt {
                 failed()
                 hadErrorContaining("For @DefaultValue(\"\") property must be String.")
@@ -148,13 +144,12 @@ class DefaultValueTest : BaseProcessorTest() {
                 }
             }
         }
-        """.trimIndent().let {
-            JavaFileObjects.forSourceString("com.example.DefaultValueEntity", it)
-        }
+        """.trimIndent()
 
-        val environment = TestEnvironment("default-value-convert.json", useTemporaryModelFile = true)
+        val environment = env("default-value-convert.json", useTemporaryModelFile = true)
 
-        environment.compile(listOf(sourceFile))
+        environment.addSourceFile("com.example.DefaultValueEntity", sourceFile)
+        environment.compile()
             .assertThatIt {
                 failed()
                 hadErrorContaining("Can not use both @Convert and @DefaultValue.")

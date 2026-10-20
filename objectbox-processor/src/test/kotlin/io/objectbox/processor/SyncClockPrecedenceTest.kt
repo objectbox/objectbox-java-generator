@@ -25,7 +25,7 @@ import org.junit.Test
 /**
  * Tests related to the `@SyncClock` and `@SyncPrecedence` annotations.
  */
-class SyncClockPrecedenceTest : BaseProcessorTest() {
+class SyncClockPrecedenceTest(processorType: ProcessorType) : BaseProcessorTest(processorType) {
 
     @Test
     fun syncClock_and_syncPrecedence_setFlags() {
@@ -45,7 +45,7 @@ class SyncClockPrecedenceTest : BaseProcessorTest() {
         """
 
         // Need stable model file + ids to verify sources match.
-        TestEnvironment("sync-precedence.json")
+        env("sync-precedence.json")
             .apply {
                 addEntitySourceFile(
                     sync = true,
@@ -109,7 +109,7 @@ class SyncClockPrecedenceTest : BaseProcessorTest() {
             }
 
         // Use temp model file to assert model file flags.
-        val environment = TestEnvironment("not-generated.json", useTemporaryModelFile = true)
+        val environment = env("not-generated.json", useTemporaryModelFile = true)
             .apply {
                 addEntitySourceFile(
                     sync = true,
@@ -142,7 +142,7 @@ class SyncClockPrecedenceTest : BaseProcessorTest() {
     }
 
     private fun assertAnnotationOnEntityWithoutSync(annotation: String) {
-        TestEnvironment("not-generated.json", useTemporaryModelFile = true)
+        env("not-generated.json", useTemporaryModelFile = true)
             .apply {
                 // language=Java
                 addEntitySourceFile(
@@ -174,7 +174,7 @@ class SyncClockPrecedenceTest : BaseProcessorTest() {
     }
 
     private fun assertDuplicateAnnotationOnEntityFails(annotation: String) {
-        TestEnvironment("not-generated.json", useTemporaryModelFile = true)
+        env("not-generated.json", useTemporaryModelFile = true)
             .apply {
                 // language=Java
                 addEntitySourceFile(
@@ -201,7 +201,7 @@ class SyncClockPrecedenceTest : BaseProcessorTest() {
 
     @Test
     fun syncClock_and_syncPrecedence_onSameProperty_fails() {
-        TestEnvironment("not-generated.json", useTemporaryModelFile = true)
+        env("not-generated.json", useTemporaryModelFile = true)
             .apply {
                 // language=Java
                 addEntitySourceFile(
@@ -239,7 +239,7 @@ class SyncClockPrecedenceTest : BaseProcessorTest() {
     }
 
     private fun assertAnnotationOnNonLongPropertyFails(annotation: String) {
-        TestEnvironment("not-generated.json", useTemporaryModelFile = true)
+        env("not-generated.json", useTemporaryModelFile = true)
             .apply {
                 // language=Java
                 addEntitySourceFile(
