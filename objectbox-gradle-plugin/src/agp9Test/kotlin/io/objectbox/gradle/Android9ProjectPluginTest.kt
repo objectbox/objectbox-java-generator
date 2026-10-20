@@ -50,4 +50,9 @@ open class Android9ProjectPluginTest : AndroidProjectPluginTest() {
 
     override val expectedAndroidPluginVersion: String = "9.2.1"
 
+    override fun configureTestRunner(gradleTestRunner: GradleTestRunner) {
+        super.configureTestRunner(gradleTestRunner)
+        gradleTestRunner.debugKaptProcessor()
+    }
+
 }

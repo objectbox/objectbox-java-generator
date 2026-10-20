@@ -35,7 +35,8 @@ object KotlinTestEntities {
      * Build script block that compiles Java and Kotlin sources (and kapt stubs) for the same JVM
      * target, as the Kotlin plugin fails the build if they are inconsistent.
      */
-    val buildScriptJvmTargetBlock = """
+    val buildScriptJvmTargetBlock =
+        """
         java {
             sourceCompatibility = JavaVersion.VERSION_1_8
             targetCompatibility = JavaVersion.VERSION_1_8
@@ -43,7 +44,7 @@ object KotlinTestEntities {
         compileKotlin {
             kotlinOptions.jvmTarget = "1.8"
         }
-    """.trimIndent()
+        """.trimIndent()
 
     fun addEntitySources(runner: GradleTestRunner) {
         runner.addSourceFile(

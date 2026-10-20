@@ -41,7 +41,9 @@ class GradleTestRunner(
 
     /** Set to false to build a project that does not apply the ObjectBox plugin. */
     var applyObjectBoxPlugin: Boolean = true
-    var additionalBlocks: String = ""
+
+    /** Additional blocks to add to the build script. Indent should be trimmed. */
+    var additionalBlocks: MutableSet<String> = mutableSetOf()
 
     private val gitlabUrl = System.getProperty("gitlabUrl")
     private val gitlabTokenName = System.getProperty("gitlabTokenName")
@@ -60,12 +62,44 @@ class GradleTestRunner(
         }
     }
 
-    private fun writeBuildFile() {
-        // Enable debug mode for plugin.
-        val compilerArgs = javaCompilerArgs
-            .plus("-Aobjectbox.debug=true")
-            .joinToString(separator = "\",\"", prefix = "\"", postfix = "\"")
+    /**
+     * Enable debug mode if the annotation processor is run via the Java compiler.
+     */
+    fun debugJavacProcessor() {
+        javaCompilerArgs += "-Aobjectbox.debug=true"
+    }
 
+    /**
+     * Enable debug mode if the annotation processor is run using kapt.
+     */
+    fun debugKaptProcessor() {
+        @Language("Groovy")
+        val snippet =
+            """
+            kapt {
+                arguments {
+                    arg("objectbox.debug", "true")
+                }
+            }
+            """.trimIndent()
+        additionalBlocks += snippet
+    }
+
+    /**
+     * Enable debug mode if the annotation processor is run using KSP.
+     */
+    fun debugKspProcessor() {
+        @Language("Groovy")
+        val snippet =
+            """
+            ksp {
+                arg("objectbox.debug", "true")
+            }
+            """.trimIndent()
+        additionalBlocks += snippet
+    }
+
+    private fun writeBuildFile() {
         // Note: instead of getting artifacts of the modules in this project from internal repo,
         // publish them to a directory in the build folder, then add that as repo below.
         val testRepository = File("build/repository").absolutePath.normaliseFileSeparators()
@@ -73,16 +107,18 @@ class GradleTestRunner(
         val buildFile = testProjectDir.newFile("build.gradle")
             .also { buildFile = it }
 
-        @Language("Groovy")
-        val buildScript =
-            """
-            $buildscriptBlock                
-                
-            plugins {
-                ${additionalPlugins.joinToString(separator = "\n") { "id(\"$it\")" }}
-                ${if (applyObjectBoxPlugin) "id(\"${Const.PLUGIN_ID}\")" else ""}
-            }
+        val pluginIds = if (applyObjectBoxPlugin) {
+            additionalPlugins + Const.PLUGIN_ID
+        } else additionalPlugins
+        val plugins = pluginIds.joinToString(
+            prefix = "plugins {\n",
+            separator = "\n",
+            postfix = "\n}"
+        ) { "    id(\"$it\")" }
 
+        @Language("Groovy")
+        val repos =
+            """
             repositories {
                 maven { url "$testRepository" }
                 mavenCentral()
@@ -97,7 +133,7 @@ class GradleTestRunner(
                         header(HttpHeaderAuthentication)
                     }
                 }
-                // Don't (premanently) add the local repo to avoid CI build failures. But to test
+                // Don't (permanently) add the local repo to avoid CI build failures. But to test
                 // with locally built dependencies add:
                 // mavenLocal()
             }
@@ -108,20 +144,40 @@ class GradleTestRunner(
                     cacheChangingModulesFor(0, "seconds")
                 }
             }
-            
-            $additionalBlocks
-
-            ${
-                if (applyObjectBoxPlugin) """
-            // Enable ObjectBox plugin and processor debug output.
-            objectbox {
-                debug = true
-            }""" else ""
-            }
-            tasks.withType(JavaCompile) {
-                options.compilerArgs += [ $compilerArgs ]
-            }
             """.trimIndent()
+
+        val javaCompilerConfig = if (javaCompilerArgs.isNotEmpty()) {
+            val compilerArgs = javaCompilerArgs
+                .joinToString(separator = "\",\"", prefix = "\"", postfix = "\"")
+
+            @Language("Groovy")
+            val snippet =
+                """
+                tasks.withType(JavaCompile) {
+                    options.compilerArgs += [ $compilerArgs ]
+                }
+                """.trimIndent()
+            snippet
+        } else ""
+
+        val debugObjectboxPlugin = if (applyObjectBoxPlugin) {
+            @Language("Groovy")
+            val snippet =
+                """
+                // Enable ObjectBox plugin debug output.
+                objectbox {
+                    debug = true
+                }""".trimIndent()
+            snippet
+        } else ""
+
+        val buildScript =
+            buildscriptBlock + "\n" +
+                    plugins + "\n" +
+                    repos + "\n" +
+                    additionalBlocks.joinToString(separator = "\n") + "\n" +
+                    javaCompilerConfig + "\n" +
+                    debugObjectboxPlugin
 
         buildFile.writeText(buildScript)
     }

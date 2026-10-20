@@ -43,16 +43,16 @@ class KspProcessorScenarioTest {
             applyObjectBoxPlugin = false
             additionalPlugins += Const.KOTLIN_JVM_PLUGIN_ID
             additionalPlugins += Const.KSP_PLUGIN_ID
-            additionalBlocks = KotlinTestEntities.buildScriptJvmTargetBlock + "\n" + """
+            additionalBlocks += KotlinTestEntities.buildScriptJvmTargetBlock
+            additionalBlocks +=
+                """
                 dependencies {
                     implementation "io.objectbox:objectbox-java:${Const.OBX_JAVA_VERSION}"
                     implementation "io.objectbox:objectbox-kotlin:${Const.OBX_JAVA_VERSION}"
                     ksp "io.objectbox:objectbox-processor:${Const.OBX_PLUGIN_VERSION}"
                 }
-                ksp {
-                    arg("objectbox.debug", "true")
-                }
-            """.trimIndent()
+                """.trimIndent()
+            debugKspProcessor()
         }
     }
 

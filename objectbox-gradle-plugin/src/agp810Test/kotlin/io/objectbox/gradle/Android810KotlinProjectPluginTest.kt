@@ -75,7 +75,8 @@ class Android810KotlinProjectPluginTest {
                     kotlinOptions.jvmTarget = "1.8"
                 }
                 """.trimIndent()
-            additionalBlocks = androidBlock
+            additionalBlocks += androidBlock
+            debugKspProcessor()
         }
 
         @Language("XML")

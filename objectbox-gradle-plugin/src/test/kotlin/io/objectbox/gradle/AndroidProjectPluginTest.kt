@@ -93,14 +93,21 @@ abstract class AndroidProjectPluginTest {
     private val buildTransformDirectory: String =
         "build/intermediates/classes/debug/transformDebugClassesWithAsm/dirs"
 
+    /**
+     * Adds the Android plugin and [buildScriptAndroidBlock].
+     */
+    open fun configureTestRunner(gradleTestRunner: GradleTestRunner) {
+        gradleTestRunner.apply {
+            // Note: classpath for plugins configured in build script of this project (see GradleTestRunner.build).
+            additionalPlugins += Const.ANDROID_APPLICATION_PLUGIN_ID
+            additionalBlocks += buildScriptAndroidBlock
+        }
+    }
+
     @Test
     fun assemble() {
         val gradleRunner = GradleTestRunner(testProjectDir)
-            .apply {
-                // Note: classpath for plugins configured in build script of this project (see GradleTestRunner.build).
-                additionalPlugins += Const.ANDROID_APPLICATION_PLUGIN_ID
-                additionalBlocks = buildScriptAndroidBlock
-            }
+        configureTestRunner(gradleRunner)
 
         testProjectDir.newFile("src/main/AndroidManifest.xml").apply {
             writeText(androidManifest)

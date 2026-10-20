@@ -47,11 +47,8 @@ class KotlinPluginKspCompileTest {
             additionalPlugins += Const.KOTLIN_JVM_PLUGIN_ID
             // The project applies the KSP plugin before the ObjectBox plugin.
             additionalPlugins += Const.KSP_PLUGIN_ID
-            additionalBlocks = KotlinTestEntities.buildScriptJvmTargetBlock + "\n" + """
-                ksp {
-                    arg("objectbox.debug", "true")
-                }
-            """.trimIndent()
+            additionalBlocks += KotlinTestEntities.buildScriptJvmTargetBlock
+            debugKspProcessor()
         }
     }
 

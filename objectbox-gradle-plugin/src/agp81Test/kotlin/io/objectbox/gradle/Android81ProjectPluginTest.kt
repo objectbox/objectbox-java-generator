@@ -51,4 +51,9 @@ class Android81ProjectPluginTest : AndroidProjectPluginTest() {
 
     override val expectedAndroidPluginVersion: String = "8.1.4"
 
+    override fun configureTestRunner(gradleTestRunner: GradleTestRunner) {
+        super.configureTestRunner(gradleTestRunner)
+        gradleTestRunner.debugJavacProcessor()
+    }
+
 }

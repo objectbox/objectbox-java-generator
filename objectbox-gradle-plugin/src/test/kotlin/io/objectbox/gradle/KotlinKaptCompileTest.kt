@@ -44,13 +44,8 @@ class KotlinKaptCompileTest {
         return GradleTestRunner(testProjectDir).apply {
             // Resolved from the injected plugin classpath (see testPluginClasspath).
             additionalPlugins += Const.KOTLIN_JVM_PLUGIN_ID
-            additionalBlocks = KotlinTestEntities.buildScriptJvmTargetBlock + "\n" + """
-                kapt {
-                    arguments {
-                        arg("objectbox.debug", "true")
-                    }
-                }
-            """.trimIndent()
+            additionalBlocks += KotlinTestEntities.buildScriptJvmTargetBlock
+            debugKaptProcessor()
         }
     }
 
@@ -86,14 +81,14 @@ class KotlinKaptCompileTest {
     @Test
     fun kotlinProject_kapt_myObjectBoxPackageOption() {
         val runner = createRunner()
-        runner.additionalBlocks += """
-
+        runner.additionalBlocks +=
+            """
             kapt {
                 arguments {
                     arg("objectbox.myObjectBoxPackage", "com.example.custom")
                 }
             }
-        """.trimIndent()
+            """.trimIndent()
         KotlinTestEntities.addEntitySources(runner)
         KotlinTestEntities.seedModelFile(testProjectDir)
 
