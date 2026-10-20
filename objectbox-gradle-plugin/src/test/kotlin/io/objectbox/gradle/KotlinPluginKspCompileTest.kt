@@ -19,6 +19,7 @@
 package io.objectbox.gradle
 
 import com.google.common.truth.Truth.assertThat
+import io.objectbox.gradle.ProjectEnv.Const
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.Rule
 import org.junit.Test
@@ -43,9 +44,9 @@ class KotlinPluginKspCompileTest {
     private fun createRunner(): GradleTestRunner {
         return GradleTestRunner(testProjectDir).apply {
             // Resolved from the injected plugin classpath (see testPluginClasspath), so no version.
-            additionalPlugins += "org.jetbrains.kotlin.jvm"
+            additionalPlugins += Const.KOTLIN_JVM_PLUGIN_ID
             // The project applies the KSP plugin before the ObjectBox plugin.
-            additionalPlugins += "com.google.devtools.ksp"
+            additionalPlugins += Const.KSP_PLUGIN_ID
             additionalBlocks = KotlinTestEntities.buildScriptJvmTargetBlock + "\n" + """
                 ksp {
                     arg("objectbox.debug", "true")

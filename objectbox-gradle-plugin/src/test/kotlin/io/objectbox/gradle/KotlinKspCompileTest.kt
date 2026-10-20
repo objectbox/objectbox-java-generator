@@ -45,8 +45,8 @@ class KotlinKspCompileTest {
         return GradleTestRunner(testProjectDir).apply {
             applyObjectBoxPlugin = false
             // Both resolved from the injected plugin classpath (see testPluginClasspath).
-            additionalPlugins += "org.jetbrains.kotlin.jvm"
-            additionalPlugins += "com.google.devtools.ksp"
+            additionalPlugins += Const.KOTLIN_JVM_PLUGIN_ID
+            additionalPlugins += Const.KSP_PLUGIN_ID
             additionalBlocks = KotlinTestEntities.buildScriptJvmTargetBlock + "\n" + """
                 dependencies {
                     implementation "io.objectbox:objectbox-java:${Const.OBX_JAVA_VERSION}"

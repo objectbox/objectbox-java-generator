@@ -57,6 +57,7 @@ class ProjectEnv(val project: Project) {
         const val ANDROID_BASE_PLUGIN_ID = "com.android.base"
         const val ANDROID_APPLICATION_PLUGIN_ID = "com.android.application"
         const val KOTLIN_PLUGIN_ID = "kotlin"
+        const val KOTLIN_JVM_PLUGIN_ID = "org.jetbrains.kotlin.jvm"
         const val KOTLIN_ANDROID_PLUGIN_ID = "kotlin-android"
         const val KOTLIN_KAPT_PLUGIN_ID = "kotlin-kapt"
 

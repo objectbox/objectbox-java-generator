@@ -19,6 +19,7 @@
 package io.objectbox.gradle
 
 import com.google.common.truth.Truth.assertThat
+import io.objectbox.gradle.ProjectEnv.Const
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.Rule
 import org.junit.Test
@@ -42,7 +43,7 @@ class KotlinKaptCompileTest {
     private fun createRunner(): GradleTestRunner {
         return GradleTestRunner(testProjectDir).apply {
             // Resolved from the injected plugin classpath (see testPluginClasspath).
-            additionalPlugins += "org.jetbrains.kotlin.jvm"
+            additionalPlugins += Const.KOTLIN_JVM_PLUGIN_ID
             additionalBlocks = KotlinTestEntities.buildScriptJvmTargetBlock + "\n" + """
                 kapt {
                     arguments {
