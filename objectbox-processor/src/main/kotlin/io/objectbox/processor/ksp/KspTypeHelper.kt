@@ -18,7 +18,9 @@
 
 package io.objectbox.processor.ksp
 
+import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSType
+import com.google.devtools.ksp.symbol.Modifier
 import com.google.devtools.ksp.symbol.Nullability
 import io.objectbox.generator.model.PropertyType
 
@@ -73,6 +75,30 @@ class KspTypeHelper {
     fun isLongLongMap(type: KSType): Boolean = type.isMapOf("kotlin.Long", "kotlin.Long")
 
     fun isObject(type: KSType): Boolean = qualifiedName(type) == "kotlin.Any"
+
+    /**
+     * True if the type is a Kotlin inline value class (like `UInt` or a custom `@JvmInline value class`).
+     */
+    fun isValueClass(type: KSType): Boolean {
+        val declaration = type.declaration as? KSClassDeclaration ?: return false
+        // Only custom inline value classes have the "value" modifier,
+        // the stdlib types, like UInt, appear to use "inline".
+        return declaration.modifiers.contains(Modifier.VALUE) || declaration.modifiers.contains(Modifier.INLINE)
+    }
+
+    /**
+     * Returns the type a not-null inline value class type compiles to (the type of its single
+     * underlying property, recursively if that is a value class itself), like `kotlin.Byte` for
+     * `kotlin.UByte`. Returns other types (including nullable value class types, which compile to
+     * the boxed value class) as is.
+     */
+    fun toJavaViewType(type: KSType): KSType {
+        if (type.nullability != Nullability.NOT_NULL || !isValueClass(type)) return type
+        val declaration = type.declaration as KSClassDeclaration
+        val underlyingType = declaration.primaryConstructor?.parameters?.singleOrNull()?.type?.resolve()
+            ?: return type
+        return toJavaViewType(underlyingType)
+    }
 
     /**
      * True if the type compiles to a Java primitive: a Kotlin scalar type that is not-null

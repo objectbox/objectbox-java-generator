@@ -52,10 +52,20 @@ internal fun KSAnnotated.hasAnnotation(annotationClass: Class<out Annotation>): 
  * like `kotlin.jvm.JvmField`.
  */
 internal fun KSAnnotated.hasAnnotation(simpleName: String, qualifiedName: String): Boolean {
-    return annotations.any {
-        it.shortName.asString() == simpleName
-                && it.annotationType.resolve().declaration.qualifiedName?.asString() == qualifiedName
-    }
+    return annotation(simpleName, qualifiedName) != null
+}
+
+/**
+ * Like [annotation], but for annotations that may not be on the compile classpath of this module,
+ * like `kotlin.jvm.JvmName`.
+ */
+internal fun KSAnnotated.annotation(simpleName: String, qualifiedName: String): KSAnnotation? {
+    return annotations.firstOrNull { it.isAnnotation(simpleName, qualifiedName) }
+}
+
+internal fun KSAnnotation.isAnnotation(simpleName: String, qualifiedName: String): Boolean {
+    return shortName.asString() == simpleName
+            && annotationType.resolve().declaration.qualifiedName?.asString() == qualifiedName
 }
 
 /**

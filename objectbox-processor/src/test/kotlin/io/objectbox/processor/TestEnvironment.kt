@@ -137,6 +137,13 @@ abstract class TestEnvironment(
     }
 
     /**
+     * Adds a Kotlin source file to be compiled with [compile]. Only supported by the KSP processor.
+     */
+    fun addKotlinSourceFile(fullyQualifiedName: String, source: String) {
+        sourceFiles.add(TestSourceFile(fullyQualifiedName, source, isKotlin = true))
+    }
+
+    /**
      * Adds a source file from a .java file resource to be compiled with [compile].
      */
     fun addResourceSourceFile(resourceName: String) {
