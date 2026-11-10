@@ -171,7 +171,7 @@ class KspProcessing {
         override val isTransient: Boolean
             get() = property.modifiers.contains(Modifier.JAVA_TRANSIENT)
                     // A Kotlin property annotated @Transient compiles to a transient field.
-                    || property.hasAnnotation("Transient", "kotlin.jvm.Transient")
+                    || property.hasAnnotation(Transient::class.java)
 
         /** If this is parsed from Kotlin sources (or libraries). */
         private val isKotlin: Boolean
@@ -183,7 +183,7 @@ class KspProcessing {
                 // property is exposed as a field (lateinit or @JvmField).
                 !property.modifiers.contains(Modifier.PRIVATE)
                         && (property.modifiers.contains(Modifier.LATEINIT)
-                        || property.hasAnnotation("JvmField", "kotlin.jvm.JvmField"))
+                        || property.hasAnnotation(JvmField::class.java))
             } else {
                 !property.modifiers.contains(Modifier.PRIVATE)
             }
@@ -193,7 +193,7 @@ class KspProcessing {
             val propertyNameCapitalized = propertyName.replaceFirstChar { it.titlecase(Locale.getDefault()) }
 
             if (isKotlin) {
-                if (property.hasAnnotation("JvmField", "kotlin.jvm.JvmField")) {
+                if (property.hasAnnotation(JvmField::class.java)) {
                     return null // no accessors generated
                 }
                 getterJvmNameOrNull()?.let { return it }
@@ -261,12 +261,11 @@ class KspProcessing {
          * The name of the getter if renamed with `@get:JvmName`, or null.
          */
         private fun getterJvmNameOrNull(): String? {
-            val jvmName = property.getter?.annotation("JvmName", "kotlin.jvm.JvmName")
+            val jvmName = property.getter?.annotation(JvmName::class.java)
                 ?: property.annotations.firstOrNull {
-                    it.useSiteTarget == AnnotationUseSiteTarget.GET
-                            && it.isAnnotation("JvmName", "kotlin.jvm.JvmName")
+                    it.useSiteTarget == AnnotationUseSiteTarget.GET && it.isAnnotation(JvmName::class.java)
                 }
-            return jvmName?.stringArgument("name")
+            return jvmName?.stringArgument(JvmName::name.name)
         }
 
         /**
