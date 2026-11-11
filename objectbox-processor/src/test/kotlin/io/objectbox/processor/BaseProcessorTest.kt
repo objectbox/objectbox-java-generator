@@ -21,6 +21,7 @@ package io.objectbox.processor
 import com.google.common.truth.Truth.assertThat
 import io.objectbox.generator.model.Property
 import io.objectbox.generator.model.PropertyType
+import org.junit.Assume.assumeTrue
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 
@@ -59,6 +60,14 @@ abstract class BaseProcessorTest(protected val processorType: ProcessorType) {
         ProcessorType.KSP -> KspTestEnvironment(
             modelFile, myObjectBoxPackage, optionDisableTransform, useTemporaryModelFile
         )
+    }
+
+    /**
+     * Skips the test unless running with the KSP processor, for tests using Kotlin sources (see
+     * [TestEnvironment.addKotlinSourceFile]).
+     */
+    protected fun assumeKotlinSourcesSupported() {
+        assumeTrue("Kotlin sources are only supported by KSP test setup", processorType == ProcessorType.KSP)
     }
 
     protected fun assertPrimitiveType(prop: Property, type: PropertyType) {

@@ -18,7 +18,8 @@
 
 package io.objectbox.processor
 
-import com.google.common.truth.Truth
+import com.google.common.truth.Truth.assertThat
+import org.intellij.lang.annotations.Language
 import org.junit.Test
 
 /** Tests related to detecting getter methods of properties. */
@@ -55,7 +56,7 @@ class GetterTest(processorType: ProcessorType) : BaseProcessorTest(processorType
 
         val entity = environment.schema.entities[0]!!
         val property = entity.properties!!.find { it.propertyName == "isProperty" }!!
-        Truth.assertThat(property.getterMethodName).isEqualTo("isProperty")
+        assertThat(property.getterMethodName).isEqualTo("isProperty")
     }
 
     /**
@@ -92,7 +93,51 @@ class GetterTest(processorType: ProcessorType) : BaseProcessorTest(processorType
 
         val entity = environment.schema.entities[0]!!
         val property = entity.properties!!.find { it.propertyName == "isProperty" }!!
-        Truth.assertThat(property.getterMethodName).isEqualTo("getIsProperty")
+        assertThat(property.getterMethodName).isEqualTo("getIsProperty")
+    }
+
+    /**
+     * A Kotlin property getter renamed with `@JvmName` (on the property with the `get` use-site
+     * target, or on the getter itself) is called by its new name. The renamed name also takes
+     * precedence over the "is" prefix rule.
+     */
+    @Test
+    fun getter_kotlinJvmName_isUsed() {
+        assumeKotlinSourcesSupported()
+
+        @Language("kotlin")
+        val source = """
+        package com.example.objectbox
+
+        import io.objectbox.annotation.Entity
+        import io.objectbox.annotation.Id
+
+        @Entity
+        class Example(
+            @Id var id: Long = 0,
+            @get:JvmName("readName")
+            var name: String? = null,
+            @get:JvmName("hasFlag")
+            var isFlag: Boolean = false
+        ) {
+            var count: Int = 0
+                @JvmName("readCount") get
+        }
+        """.trimIndent()
+        val environment = env("getter-jvm-name.json", useTemporaryModelFile = true)
+
+        environment.addKotlinSourceFile("com.example.objectbox.Example", source)
+        // The generated Cursor calls the getters, so it only compiles if the renamed names are used
+        environment.compile()
+            .assertThatIt { succeededWithoutWarnings() }
+
+        val getterNames = environment.schema.entities.single().properties
+            .associate { it.propertyName to it.getterMethodName }
+        assertThat(getterNames).containsAtLeast(
+            "name", "readName",
+            "isFlag", "hasFlag",
+            "count", "readCount"
+        )
     }
 
 }
