@@ -51,7 +51,7 @@ abstract class PluginApplyAndroidTest : PluginApplyTest() {
     private fun Project.configureAndroidProject() {
         val androidExtension = extensions.getByName("android") as ApplicationExtension
         androidExtension.apply {
-            compileSdk = 35 // Matches SDK embedded in buildenv-android CI image to avoid downloading it
+            compileSdk = AndroidProjectPluginTest.COMPILE_SDK
             namespace = "io.objectbox.plugin.test"
         }
     }

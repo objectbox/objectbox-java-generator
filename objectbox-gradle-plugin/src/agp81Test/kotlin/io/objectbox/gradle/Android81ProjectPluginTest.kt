@@ -33,10 +33,10 @@ class Android81ProjectPluginTest : AndroidProjectPluginTest() {
         """
         android {
             namespace 'com.example'
-            compileSdkVersion $compileSdk
+            compileSdkVersion $COMPILE_SDK
             defaultConfig {
                 applicationId "com.example"
-                minSdkVersion $minSdk
+                minSdkVersion $MIN_SDK
             }
             compileOptions {
                 sourceCompatibility JavaVersion.VERSION_1_8

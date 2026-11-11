@@ -47,16 +47,6 @@ abstract class AndroidProjectPluginTest {
     @Rule
     val testProjectDir: TemporaryFolder = TemporaryFolder.builder().assureDeletion().build()
 
-    /**
-     * Matches the SDK embedded in buildenv-android CI image to avoid downloading it.
-     */
-    val compileSdk = "35"
-
-    /**
-     * Matches the minimum SDK supported by the ObjectBox Android database library.
-     */
-    val minSdk = "21"
-
     abstract val buildScriptAndroidBlock: String
 
     @Language("XML")
@@ -245,6 +235,19 @@ abstract class AndroidProjectPluginTest {
             val attachMethod = ctClass.declaredMethods.first { it.name == ClassConst.cursorAttachEntityMethodName }
             assertThat(attachMethod.assignsBoxStoreField()).isTrue()
         }
+    }
+
+    companion object {
+        /**
+         * Matches the SDK embedded in the buildenv-android CI image to avoid downloading it and at
+         * least the SDK required by the ObjectBox Android database library.
+         */
+        const val COMPILE_SDK = 36
+
+        /**
+         * Matches the minimum SDK supported by the ObjectBox Android database library.
+         */
+        const val MIN_SDK = 21
     }
 
 }
