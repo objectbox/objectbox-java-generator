@@ -21,7 +21,6 @@ package io.objectbox.processor
 import com.google.common.truth.Truth.assertThat
 import io.objectbox.generator.model.PropertyType
 import org.intellij.lang.annotations.Language
-import org.junit.Assume.assumeTrue
 import org.junit.Before
 import org.junit.Test
 
@@ -32,7 +31,7 @@ class InlineValueClassTest(processorType: ProcessorType) : BaseProcessorTest(pro
 
     @Before
     fun assumeKsp() {
-        assumeTrue("Kotlin sources are only supported by KSP test setup", processorType == ProcessorType.KSP)
+        assumeKotlinSourcesSupported()
     }
 
     /**
