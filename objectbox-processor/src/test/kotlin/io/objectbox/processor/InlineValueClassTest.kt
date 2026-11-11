@@ -57,16 +57,21 @@ class InlineValueClassTest(processorType: ProcessorType) : BaseProcessorTest(pro
 
         import io.objectbox.annotation.Entity
         import io.objectbox.annotation.Id
+        import io.objectbox.annotation.Unsigned
 
         @Entity
         data class InlineValueClasses(
             @Id var id: Long = 0,
+            // @Unsigned not required, but makes sense to be used: test both cases
             @get:JvmName("getUnsignedByte")
             var unsignedByte: UByte = 0u,
+            @Unsigned
             @get:JvmName("getUnsignedShort")
             var unsignedShort: UShort = 0u,
+            @Unsigned
             @get:JvmName("getUnsignedInt")
             var unsignedInt: UInt = 0u,
+            @Unsigned
             @get:JvmName("getUnsignedLong")
             var unsignedLong: ULong = 0u,
             @get:JvmName("getCustomValue")
@@ -89,12 +94,12 @@ class InlineValueClassTest(processorType: ProcessorType) : BaseProcessorTest(pro
                     )
                 }
 
-            // Value classes map to the type they compile to; no unsigned flag (like with KAPT,
-            // where the annotation processor only sees the compiled types).
             val entity = schema.entities.single()
             // Constructors with value class parameters are not callable from Java.
             assertThat(entity.hasAllArgsConstructor()).isFalse()
             for (prop in entity.properties) {
+                // Value classes map to the type they compile to (like with KAPT,
+                // where the annotation processor only sees the compiled types).
                 when (prop.propertyName) {
                     "id" -> assertPrimitiveType(prop, PropertyType.Long)
                     "unsignedByte" -> assertPrimitiveType(prop, PropertyType.Byte)
@@ -104,9 +109,9 @@ class InlineValueClassTest(processorType: ProcessorType) : BaseProcessorTest(pro
                     "customValue" -> assertPrimitiveType(prop, PropertyType.Long)
                     else -> throw AssertionError("Unexpected property ${prop.propertyName}")
                 }
-                assertThat(prop.isUnsigned).isFalse()
                 if (prop.propertyName != "id") {
                     assertThat(prop.getterMethodName).isEqualTo("get" + prop.propertyName.replaceFirstChar { it.uppercase() })
+                    assertThat(prop.isUnsigned).isEqualTo(prop.propertyName != "unsignedByte" && prop.propertyName != "customValue")
                 }
             }
         }
