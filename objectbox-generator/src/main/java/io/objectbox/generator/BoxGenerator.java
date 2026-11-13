@@ -1,6 +1,6 @@
 /*
  * ObjectBox Build Tools
- * Copyright (C) 2017-2025 ObjectBox Ltd.
+ * Copyright (C) 2017-2026 ObjectBox Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -154,6 +154,11 @@ public class BoxGenerator {
         if (hasHnswParams(schema)) {
             imports.add("io.objectbox.model.HnswFlags");
             imports.add("io.objectbox.model.HnswDistanceType");
+            for (Entity entity : schema.getEntities()) {
+                for (Property property : entity.getProperties()) {
+                    if (property.hasHnswParams()) imports.addAll(property.getHnswParams().getImports());
+                }
+            }
         }
 
         for (Entity entity : schema.getEntities()) {
