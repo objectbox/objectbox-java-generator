@@ -299,13 +299,11 @@ fun VectorDistanceType.toExpression(): String? {
 /**
  * Maps to string representations of [io.objectbox.model.HnswFlags] to use with code generation.
  */
-@Suppress("DEPRECATION") // reparationLimitCandidates: ignored by the database since 6.0, but passing it is harmless
 fun HnswFlags.toExpressionSet(): Set<String> {
     val set = mutableSetOf<String>()
     if (debugLogs) set.add("HnswFlags.DebugLogs")
     if (debugLogsDetailed) set.add("HnswFlags.DebugLogsDetailed")
     if (vectorCacheSimdPaddingOff) set.add("HnswFlags.VectorCacheSimdPaddingOff")
-    if (reparationLimitCandidates) set.add("HnswFlags.ReparationLimitCandidates")
     if (lateInit) set.add("HnswFlags.LateInit")
     return set
 }

@@ -178,8 +178,7 @@ class HnswIndexTest(processorType: ProcessorType) : BaseProcessorTest(processorT
                         flags = @HnswFlags(
                                 debugLogs = true,
                                 debugLogsDetailed = true,
-                                vectorCacheSimdPaddingOff = true,
-                                reparationLimitCandidates = true),
+                                vectorCacheSimdPaddingOff = true),
                         distanceType = VectorDistanceType.EUCLIDEAN,
                         reparationBacklinkProbability = 0.95F,
                         vectorCacheHintSizeKB = 2097152
@@ -236,7 +235,7 @@ class HnswIndexTest(processorType: ProcessorType) : BaseProcessorTest(processorT
                                     .flags(PropertyFlags.ID);
                             entityBuilder.property("coordinates", PropertyType.FloatVector).id(2, 5548164134743129791L)
                                     .flags(PropertyFlags.INDEXED).indexId(1, 2826677083708064981L)
-                                    .hnswParams(2, 30L, 100L, HnswFlags.DebugLogs | HnswFlags.DebugLogsDetailed | HnswFlags.VectorCacheSimdPaddingOff | HnswFlags.ReparationLimitCandidates, HnswDistanceType.Euclidean, 0.95F, 2097152L);
+                                    .hnswParams(2, 30L, 100L, HnswFlags.DebugLogs | HnswFlags.DebugLogsDetailed | HnswFlags.VectorCacheSimdPaddingOff, HnswDistanceType.Euclidean, 0.95F, 2097152L);
                     
                             entityBuilder.entityDone();
                         }
@@ -257,8 +256,7 @@ class HnswIndexTest(processorType: ProcessorType) : BaseProcessorTest(processorT
         assertThat(vectorProperty.hnswParams!!.flagsExpressionSet).containsExactly(
             "HnswFlags.DebugLogs",
             "HnswFlags.DebugLogsDetailed",
-            "HnswFlags.VectorCacheSimdPaddingOff",
-            "HnswFlags.ReparationLimitCandidates"
+            "HnswFlags.VectorCacheSimdPaddingOff"
         )
         assertThat(vectorProperty.hnswParams!!.distanceTypeExpression).isEqualTo("HnswDistanceType.Euclidean")
         assertThat(vectorProperty.hnswParams!!.reparationBacklinkProbability).isEqualTo(0.95F)

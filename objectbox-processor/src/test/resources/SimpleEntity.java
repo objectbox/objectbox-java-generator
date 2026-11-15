@@ -109,8 +109,7 @@ public class SimpleEntity {
             flags = @HnswFlags(
                     debugLogs = true,
                     debugLogsDetailed = true,
-                    vectorCacheSimdPaddingOff = true,
-                    reparationLimitCandidates = true),
+                    vectorCacheSimdPaddingOff = true),
             distanceType = VectorDistanceType.EUCLIDEAN,
             reparationBacklinkProbability = 0.95F,
             vectorCacheHintSizeKB = 2097152
