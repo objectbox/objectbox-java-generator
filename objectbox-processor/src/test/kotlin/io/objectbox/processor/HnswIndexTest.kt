@@ -605,6 +605,22 @@ class HnswIndexTest(processorType: ProcessorType) : BaseProcessorTest(processorT
         )
     }
 
+    @Test
+    fun hnswAnnotation_valuesBeyond32Bits_errors() {
+        assertHnswIndexError(
+            "@HnswIndex(dimensions = 4294967296L)",
+            "dimensions must be at most 4294967295"
+        )
+        assertHnswIndexError(
+            "@HnswIndex(dimensions = 2, neighborsPerNode = 4294967296L)",
+            "neighborsPerNode must be at most 4294967295"
+        )
+        assertHnswIndexError(
+            "@HnswIndex(dimensions = 2, indexingSearchCount = 4294967296L)",
+            "indexingSearchCount must be at most 4294967295"
+        )
+    }
+
     private fun assertHnswIndexError(annotation: String, expectedError: String) {
         @Language("Java")
         val citySource =

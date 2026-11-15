@@ -172,12 +172,15 @@ data class HnswParams(
                     "dimensions must be 1 or greater (or use late init: @HnswFlags(lateInit = true))"
                 }
             }
+            checkFitsUint32(annotation.dimensions, "dimensions")
             val neighborsPerNode = if (annotation.neighborsPerNode != 0L) {
                 check(annotation.neighborsPerNode > 0) { "neighborsPerNode must be 1 or greater" }
+                checkFitsUint32(annotation.neighborsPerNode, "neighborsPerNode")
                 annotation.neighborsPerNode
             } else null
             val indexingSearchCount = if (annotation.indexingSearchCount != 0L) {
                 check(annotation.indexingSearchCount > 0) { "indexingSearchCount must be 1 or greater" }
+                checkFitsUint32(annotation.indexingSearchCount, "indexingSearchCount")
                 annotation.indexingSearchCount
             } else null
             // 1.0 is the default, so only pass to model if different
