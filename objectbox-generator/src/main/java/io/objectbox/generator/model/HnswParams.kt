@@ -18,12 +18,15 @@
 
 package io.objectbox.generator.model
 
+import io.objectbox.HnswIndexParams
 import io.objectbox.annotation.HnswFlags
 import io.objectbox.annotation.HnswIndex
 import io.objectbox.annotation.VectorBuildLevel
 import io.objectbox.annotation.VectorDistanceType
 import io.objectbox.annotation.VectorQuantization
 import io.objectbox.annotation.VectorSearchLevel
+import io.objectbox.model.HnswDistanceType
+import io.objectbox.model.HnswFlags as ModelHnswFlags
 
 
 /**
@@ -69,12 +72,13 @@ data class HnswParams(
                 || filteredSearchMaxNodes != null
 
     /**
-     * The classes that [getExpression] uses in addition to [io.objectbox.model.HnswFlags] and
-     * [io.objectbox.model.HnswDistanceType], which are always imported.
+     * The classes to import for [getExpression]. [io.objectbox.model.HnswFlags] and
+     * [io.objectbox.model.HnswDistanceType] are always included.
      */
     fun getImports(): Set<String> {
-        if (!usesIndexParams) return emptySet()
-        val imports = mutableSetOf("io.objectbox.HnswIndexParams")
+        val imports = mutableSetOf(ModelHnswFlags::class.java.name, HnswDistanceType::class.java.name)
+        if (!usesIndexParams) return imports
+        imports.add(HnswIndexParams::class.java.name)
         if (distanceType != VectorDistanceType.DEFAULT) imports.add(VectorDistanceType::class.java.name)
         if (quantization != VectorQuantization.DEFAULT) imports.add(VectorQuantization::class.java.name)
         if (searchLevel != VectorSearchLevel.DEFAULT) imports.add(VectorSearchLevel::class.java.name)

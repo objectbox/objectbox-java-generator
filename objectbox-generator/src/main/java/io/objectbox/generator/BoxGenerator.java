@@ -31,6 +31,7 @@ import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateNotFoundException;
 import io.objectbox.generator.model.Entity;
+import io.objectbox.generator.model.HnswParams;
 import io.objectbox.generator.model.Property;
 import io.objectbox.generator.model.Schema;
 import io.objectbox.generator.model.ToManyBase;
@@ -151,13 +152,10 @@ public class BoxGenerator {
             imports.add("io.objectbox.model.ExternalPropertyType");
         }
         // HNSW params are optional, so only import classes if necessary
-        if (hasHnswParams(schema)) {
-            imports.add("io.objectbox.model.HnswFlags");
-            imports.add("io.objectbox.model.HnswDistanceType");
-            for (Entity entity : schema.getEntities()) {
-                for (Property property : entity.getProperties()) {
-                    if (property.hasHnswParams()) imports.addAll(property.getHnswParams().getImports());
-                }
+        for (Entity entity : schema.getEntities()) {
+            for (Property property : entity.getProperties()) {
+                HnswParams hnswParams = property.getHnswParams();
+                if (hnswParams != null) imports.addAll(hnswParams.getImports());
             }
         }
 
@@ -194,21 +192,6 @@ public class BoxGenerator {
                 if (toManyBase instanceof ToManyStandalone) {
                     if (((ToManyStandalone) toManyBase).getExternalTypeExpression() != null) return true;
                 }
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Returns if at least one property has HNSW params.
-     *
-     * @param schema the schema to search.
-     * @return {@code true} if at least one property with HNSW params exists.
-     */
-    private boolean hasHnswParams(Schema schema) {
-        for (Entity entity : schema.getEntities()) {
-            for (Property property : entity.getProperties()) {
-                if (property.hasHnswParams()) return true;
             }
         }
         return false;
