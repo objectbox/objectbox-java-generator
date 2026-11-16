@@ -2,9 +2,10 @@ package io.objectbox.processor.test;
 
 import io.objectbox.BoxStore;
 import io.objectbox.BoxStoreBuilder;
+import io.objectbox.HnswIndexParams;
 import io.objectbox.ModelBuilder;
 import io.objectbox.ModelBuilder.EntityBuilder;
-import io.objectbox.model.HnswDistanceType;
+import io.objectbox.annotation.VectorDistanceType;
 import io.objectbox.model.HnswFlags;
 import io.objectbox.model.PropertyFlags;
 import io.objectbox.model.PropertyType;
@@ -94,7 +95,13 @@ public class MyObjectBox {
         entityBuilder.property("doubleArray", PropertyType.DoubleVector).id(38, 6410324640289798251L);
         entityBuilder.property("floatArrayHnsw", PropertyType.FloatVector).id(39, 8513602819579966935L)
                 .flags(PropertyFlags.INDEXED).indexId(3, 4603777245389737989L)
-                .hnswParams(2, 30L, 100L, HnswFlags.DebugLogs | HnswFlags.DebugLogsDetailed | HnswFlags.VectorCacheSimdPaddingOff | HnswFlags.ReparationLimitCandidates, HnswDistanceType.Euclidean, 0.95F, 2097152L);
+                .hnswParams(new HnswIndexParams(2)
+                        .neighborsPerNode(30L)
+                        .indexingSearchCount(100L)
+                        .flags(HnswFlags.DebugLogs | HnswFlags.DebugLogsDetailed | HnswFlags.VectorCacheSimdPaddingOff)
+                        .distanceType(VectorDistanceType.EUCLIDEAN)
+                        .reparationBacklinkProbability(0.95F)
+                        .vectorCacheHintSizeKb(2097152L));
         entityBuilder.property("toOneId", "IdEntity", "toOne", PropertyType.Relation).id(25, 8807838229280449251L)
                 .flags(PropertyFlags.VIRTUAL | PropertyFlags.INDEXED | PropertyFlags.INDEX_PARTIAL_SKIP_ZERO).indexId(2, 6174264050444102923L);
 
