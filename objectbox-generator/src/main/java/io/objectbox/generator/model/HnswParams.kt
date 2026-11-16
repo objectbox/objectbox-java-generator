@@ -25,15 +25,14 @@ import io.objectbox.annotation.VectorBuildLevel
 import io.objectbox.annotation.VectorDistanceType
 import io.objectbox.annotation.VectorQuantization
 import io.objectbox.annotation.VectorSearchLevel
-import io.objectbox.model.HnswDistanceType
 import io.objectbox.model.HnswFlags as ModelHnswFlags
 
 
 /**
  * Describes HNSW index parameters for a float vector property.
  *
- * The parameters added with ObjectBox 6.0 (quantization and the ones following it) are null or DEFAULT if not set;
- * setting any of them generates code using `io.objectbox.HnswIndexParams` (see [usesIndexParams]).
+ * Optional parameters are null or DEFAULT if not set; the generated code sets only the other ones (see
+ * [getExpression]).
  */
 data class HnswParams(
     val dimensions: Long,
@@ -53,32 +52,12 @@ data class HnswParams(
 ) {
 
     /**
-     * The distance type as [io.objectbox.model.HnswDistanceType] constant, or null for the default.
-     */
-    val distanceTypeExpression: String?
-        get() = distanceType.toExpression()
-
-    /**
-     * If any parameter added with ObjectBox 6.0 is set, which the `hnswParams()` variant with single parameters does
-     * not support.
-     */
-    val usesIndexParams: Boolean
-        get() = quantization != VectorQuantization.DEFAULT
-                || quantizationOversample != null
-                || quantizationRescoreFactor != null
-                || searchLevel != VectorSearchLevel.DEFAULT
-                || buildLevel != VectorBuildLevel.DEFAULT
-                || bruteForceMaxCandidates != null
-                || filteredSearchMaxNodes != null
-
-    /**
-     * The classes to import for [getExpression]. [io.objectbox.model.HnswFlags] and
-     * [io.objectbox.model.HnswDistanceType] are always included.
+     * The classes to import for [getExpression]: [io.objectbox.HnswIndexParams] and only the classes of the set
+     * parameters.
      */
     fun getImports(): Set<String> {
-        val imports = mutableSetOf(ModelHnswFlags::class.java.name, HnswDistanceType::class.java.name)
-        if (!usesIndexParams) return imports
-        imports.add(HnswIndexParams::class.java.name)
+        val imports = mutableSetOf(HnswIndexParams::class.java.name)
+        if (flagsExpressionSet.isNotEmpty()) imports.add(ModelHnswFlags::class.java.name)
         if (distanceType != VectorDistanceType.DEFAULT) imports.add(VectorDistanceType::class.java.name)
         if (quantization != VectorQuantization.DEFAULT) imports.add(VectorQuantization::class.java.name)
         if (searchLevel != VectorSearchLevel.DEFAULT) imports.add(VectorSearchLevel::class.java.name)
@@ -87,31 +66,10 @@ data class HnswParams(
     }
 
     /**
-     * Returns a code string for calling [io.objectbox.ModelBuilder.PropertyBuilder.hnswParams] with parameters of this.
-     *
-     * To keep generated code unchanged for existing annotations, this uses the variant with single parameters unless
-     * [usesIndexParams].
-     */
-    fun getExpression(): String {
-        if (usesIndexParams) return getIndexParamsExpression()
-        return buildString {
-            append(".hnswParams(")
-            append(dimensions).append(", ")
-            append(neighborsPerNode.toExpression()).append(", ")
-            append(indexingSearchCount.toExpression()).append(", ")
-            append(flagsExpressionSet.toExpression()).append(", ")
-            append(distanceTypeExpression).append(", ")
-            append(reparationBacklinkProbability.toExpression()).append(", ")
-            append(vectorCacheHintSizeKb.toExpression())
-            append(")")
-        }
-    }
-
-    /**
      * Returns a code string for calling [io.objectbox.ModelBuilder.PropertyBuilder.hnswParams] with a
      * `HnswIndexParams` that sets only the given parameters.
      */
-    private fun getIndexParamsExpression(): String {
+    fun getExpression(): String {
         return buildString {
             append(".hnswParams(new HnswIndexParams(").append(dimensions).append(")")
             neighborsPerNode?.let { append(".neighborsPerNode(").append(it.toExpression()).append(")") }
@@ -148,10 +106,10 @@ data class HnswParams(
     }
 
     // Due to Java autoboxing need to explicitly specify number type suffix
-    private fun Long?.toExpression(): String = this?.let { "${it}L" } ?: "null"
-    private fun Float?.toExpression(): String = this?.let { "${it}F" } ?: "null"
+    private fun Long.toExpression(): String = "${this}L"
+    private fun Float.toExpression(): String = "${this}F"
 
-    private fun Set<String>.toExpression(): String = if (isNotEmpty()) joinToString(separator = " | ") else "null"
+    private fun Set<String>.toExpression(): String = joinToString(separator = " | ")
 
     companion object {
 
@@ -286,20 +244,6 @@ data class HnswParams(
         private fun checkFitsUint32(value: Long, name: String) {
             check(value <= MAX_UINT32) { "$name must be at most $MAX_UINT32" }
         }
-    }
-}
-
-/**
- * Maps to string representation of [io.objectbox.model.HnswDistanceType] to use with code generation.
- */
-fun VectorDistanceType.toExpression(): String? {
-    return when (this) {
-        VectorDistanceType.DEFAULT -> null
-        VectorDistanceType.EUCLIDEAN -> "HnswDistanceType.Euclidean"
-        VectorDistanceType.COSINE -> "HnswDistanceType.Cosine"
-        VectorDistanceType.DOT_PRODUCT -> "HnswDistanceType.DotProduct"
-        VectorDistanceType.GEO -> "HnswDistanceType.Geo"
-        VectorDistanceType.DOT_PRODUCT_NON_NORMALIZED -> "HnswDistanceType.DotProductNonNormalized"
     }
 }
 
