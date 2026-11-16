@@ -68,39 +68,32 @@ data class HnswParams(
     /**
      * Returns a code string for calling [io.objectbox.ModelBuilder.PropertyBuilder.hnswParams] with a
      * `HnswIndexParams` that sets only the given parameters.
+     *
+     * Each parameter call is on its own line, indented relative to the `.hnswParams(` call that the
+     * MyObjectBox template indents by [CALL_INDENT].
      */
     fun getExpression(): String {
+        val calls = mutableListOf<String>()
+        neighborsPerNode?.let { calls.add("neighborsPerNode(${it.toExpression()})") }
+        indexingSearchCount?.let { calls.add("indexingSearchCount(${it.toExpression()})") }
+        if (flagsExpressionSet.isNotEmpty()) calls.add("flags(${flagsExpressionSet.toExpression()})")
+        if (distanceType != VectorDistanceType.DEFAULT) {
+            calls.add("distanceType(VectorDistanceType.${distanceType.name})")
+        }
+        reparationBacklinkProbability?.let { calls.add("reparationBacklinkProbability(${it.toExpression()})") }
+        vectorCacheHintSizeKb?.let { calls.add("vectorCacheHintSizeKb(${it.toExpression()})") }
+        if (quantization != VectorQuantization.DEFAULT) {
+            calls.add("quantization(VectorQuantization.${quantization.name})")
+        }
+        quantizationOversample?.let { calls.add("quantizationOversample(${it.toExpression()})") }
+        quantizationRescoreFactor?.let { calls.add("quantizationRescoreFactor(${it.toExpression()})") }
+        if (searchLevel != VectorSearchLevel.DEFAULT) calls.add("searchLevel(VectorSearchLevel.${searchLevel.name})")
+        if (buildLevel != VectorBuildLevel.DEFAULT) calls.add("buildLevel(VectorBuildLevel.${buildLevel.name})")
+        bruteForceMaxCandidates?.let { calls.add("bruteForceMaxCandidates(${it.toExpression()})") }
+        filteredSearchMaxNodes?.let { calls.add("filteredSearchMaxNodes(${it.toExpression()})") }
         return buildString {
             append(".hnswParams(new HnswIndexParams(").append(dimensions).append(")")
-            neighborsPerNode?.let { append(".neighborsPerNode(").append(it.toExpression()).append(")") }
-            indexingSearchCount?.let { append(".indexingSearchCount(").append(it.toExpression()).append(")") }
-            if (flagsExpressionSet.isNotEmpty()) append(".flags(").append(flagsExpressionSet.toExpression()).append(")")
-            if (distanceType != VectorDistanceType.DEFAULT) {
-                append(".distanceType(VectorDistanceType.").append(distanceType.name).append(")")
-            }
-            reparationBacklinkProbability?.let {
-                append(".reparationBacklinkProbability(").append(it.toExpression()).append(")")
-            }
-            vectorCacheHintSizeKb?.let { append(".vectorCacheHintSizeKb(").append(it.toExpression()).append(")") }
-            if (quantization != VectorQuantization.DEFAULT) {
-                append(".quantization(VectorQuantization.").append(quantization.name).append(")")
-            }
-            quantizationOversample?.let {
-                append(".quantizationOversample(").append(it.toExpression()).append(")")
-            }
-            quantizationRescoreFactor?.let {
-                append(".quantizationRescoreFactor(").append(it.toExpression()).append(")")
-            }
-            if (searchLevel != VectorSearchLevel.DEFAULT) {
-                append(".searchLevel(VectorSearchLevel.").append(searchLevel.name).append(")")
-            }
-            if (buildLevel != VectorBuildLevel.DEFAULT) {
-                append(".buildLevel(VectorBuildLevel.").append(buildLevel.name).append(")")
-            }
-            bruteForceMaxCandidates?.let {
-                append(".bruteForceMaxCandidates(").append(it.toExpression()).append(")")
-            }
-            filteredSearchMaxNodes?.let { append(".filteredSearchMaxNodes(").append(it.toExpression()).append(")") }
+            calls.forEach { append("\n").append(CALL_INDENT).append(CHAINED_CALL_INDENT).append(".").append(it) }
             append(")")
         }
     }
@@ -112,6 +105,16 @@ data class HnswParams(
     private fun Set<String>.toExpression(): String = joinToString(separator = " | ")
 
     companion object {
+
+        /**
+         * The indent of the property builder calls in the MyObjectBox template, like `.hnswParams(`.
+         */
+        private const val CALL_INDENT = "                "
+
+        /**
+         * The additional indent of the calls chained to `new HnswIndexParams()`.
+         */
+        private const val CHAINED_CALL_INDENT = "        "
 
         /**
          * Checks and extracts values from the [annotation] to build [HnswParams].

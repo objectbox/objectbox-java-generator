@@ -259,7 +259,20 @@ class HnswIndexTest(processorType: ProcessorType) : BaseProcessorTest(processorT
                                     .flags(PropertyFlags.ID);
                             entityBuilder.property("coordinates", PropertyType.FloatVector).id(2, 5548164134743129791L)
                                     .flags(PropertyFlags.INDEXED).indexId(1, 2826677083708064981L)
-                                    .hnswParams(new HnswIndexParams(2).neighborsPerNode(30L).indexingSearchCount(100L).flags(HnswFlags.DebugLogs | HnswFlags.DebugLogsDetailed | HnswFlags.VectorCacheSimdPaddingOff | HnswFlags.LateInit).distanceType(VectorDistanceType.EUCLIDEAN).reparationBacklinkProbability(0.95F).vectorCacheHintSizeKb(2097152L).quantization(VectorQuantization.SCALAR_QUANT_8).quantizationOversample(2.0F).quantizationRescoreFactor(1.5F).searchLevel(VectorSearchLevel.L6_QUALITY).buildLevel(VectorBuildLevel.L5_BALANCED_QUALITY).bruteForceMaxCandidates(5000L).filteredSearchMaxNodes(50000L));
+                                    .hnswParams(new HnswIndexParams(2)
+                                            .neighborsPerNode(30L)
+                                            .indexingSearchCount(100L)
+                                            .flags(HnswFlags.DebugLogs | HnswFlags.DebugLogsDetailed | HnswFlags.VectorCacheSimdPaddingOff | HnswFlags.LateInit)
+                                            .distanceType(VectorDistanceType.EUCLIDEAN)
+                                            .reparationBacklinkProbability(0.95F)
+                                            .vectorCacheHintSizeKb(2097152L)
+                                            .quantization(VectorQuantization.SCALAR_QUANT_8)
+                                            .quantizationOversample(2.0F)
+                                            .quantizationRescoreFactor(1.5F)
+                                            .searchLevel(VectorSearchLevel.L6_QUALITY)
+                                            .buildLevel(VectorBuildLevel.L5_BALANCED_QUALITY)
+                                            .bruteForceMaxCandidates(5000L)
+                                            .filteredSearchMaxNodes(50000L));
                     
                             entityBuilder.entityDone();
                         }
@@ -325,8 +338,8 @@ class HnswIndexTest(processorType: ProcessorType) : BaseProcessorTest(processorT
             .assertThatIt {
                 succeededWithoutWarnings()
                 val myObjectBox = generatedSourceFileContent("com.example.MyObjectBox")
-                assertThat(myObjectBox)
-                    .contains(".hnswParams(new HnswIndexParams(2).searchLevel(VectorSearchLevel.L6_QUALITY));")
+                assertThat(myObjectBox).contains(".hnswParams(new HnswIndexParams(2)")
+                assertThat(myObjectBox).contains(".searchLevel(VectorSearchLevel.L6_QUALITY));")
                 assertThat(myObjectBox).contains("import io.objectbox.annotation.VectorSearchLevel;")
                 assertThat(myObjectBox).doesNotContain("import io.objectbox.annotation.VectorQuantization;")
                 assertThat(myObjectBox).doesNotContain("import io.objectbox.model.HnswFlags;")
@@ -370,10 +383,10 @@ class HnswIndexTest(processorType: ProcessorType) : BaseProcessorTest(processorT
         env.compile()
             .assertThatIt {
                 succeededWithoutWarnings()
-                assertThat(generatedSourceFileContent("com.example.MyObjectBox")).contains(
-                    ".hnswParams(new HnswIndexParams(2).distanceType(VectorDistanceType.GEO)" +
-                            ".quantization(VectorQuantization.NONE));"
-                )
+                val myObjectBox = generatedSourceFileContent("com.example.MyObjectBox")
+                assertThat(myObjectBox).contains(".hnswParams(new HnswIndexParams(2)")
+                assertThat(myObjectBox).contains(".distanceType(VectorDistanceType.GEO)")
+                assertThat(myObjectBox).contains(".quantization(VectorQuantization.NONE));")
             }
     }
 
@@ -403,8 +416,9 @@ class HnswIndexTest(processorType: ProcessorType) : BaseProcessorTest(processorT
         env.compile()
             .assertThatIt {
                 succeededWithoutWarnings()
-                assertThat(generatedSourceFileContent("com.example.MyObjectBox"))
-                    .contains(".hnswParams(new HnswIndexParams(0).flags(HnswFlags.LateInit));")
+                val myObjectBox = generatedSourceFileContent("com.example.MyObjectBox")
+                assertThat(myObjectBox).contains(".hnswParams(new HnswIndexParams(0)")
+                assertThat(myObjectBox).contains(".flags(HnswFlags.LateInit));")
             }
     }
 
