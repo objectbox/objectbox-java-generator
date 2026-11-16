@@ -440,11 +440,11 @@ class HnswIndexTest(processorType: ProcessorType) : BaseProcessorTest(processorT
             "@HnswIndex(distanceType = VectorDistanceType.COSINE, quantization = VectorQuantization.NONE," +
                     " flags = @HnswFlags(lateInit = true, debugLogs = true))",
             "late init without dimensions takes the parameters from BoxStore.initHnswIndex() only," +
-                    " remove these or set the dimensions: distanceType, quantization, debugLogs"
+                    " set the dimensions or remove these: distanceType, quantization, debugLogs"
         )
         assertHnswIndexError(
             "@HnswIndex(reparationBacklinkProbability = 0.5F, flags = @HnswFlags(lateInit = true))",
-            "remove these or set the dimensions: reparationBacklinkProbability"
+            "set the dimensions or remove these: reparationBacklinkProbability"
         )
     }
 

@@ -201,7 +201,7 @@ data class HnswParams(
                 ).filterValues { it }.keys
                 check(ignoredParams.isEmpty()) {
                     "late init without dimensions takes the parameters from BoxStore.initHnswIndex() only," +
-                            " remove these or set the dimensions: ${ignoredParams.joinToString()}"
+                            " set the dimensions or remove these: ${ignoredParams.joinToString()}"
                 }
             }
             return HnswParams(
