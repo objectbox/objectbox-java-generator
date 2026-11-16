@@ -124,12 +124,6 @@ data class HnswParams(
         @JvmStatic
         @Throws(ModelException::class)
         fun fromAnnotation(annotation: HnswIndex): HnswParams {
-            // The database ignores this annotation parameter since 6.0, and it is marked as
-            // deprecated. But the Kotlin compiler apparently can't see this (note lack of a warning
-            // here, despite it being accessed), so make it an error.
-            check(!annotation.flags.reparationLimitCandidates) {
-                "reparationLimitCandidates is no longer supported, remove it"
-            }
             // Reject illegal configuration values during a processor run already,
             // otherwise would error at runtime (which might not be easily attributable,
             // see ModelBuilder.java in Java library).

@@ -500,17 +500,6 @@ class HnswIndexTest(processorType: ProcessorType) : BaseProcessorTest(processorT
         )
     }
 
-    /**
-     * The database ignores the deprecated reparationLimitCandidates flag since 6.0.
-     */
-    @Test
-    fun hnswAnnotation_reparationLimitCandidates_errors() {
-        assertHnswIndexError(
-            "@HnswIndex(dimensions = 2, flags = @HnswFlags(reparationLimitCandidates = true))",
-            "reparationLimitCandidates is no longer supported, remove it"
-        )
-    }
-
     private fun assertHnswIndexError(annotation: String, expectedError: String) {
         @Language("Java")
         val citySource =
