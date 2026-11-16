@@ -151,8 +151,7 @@ data class HnswParams(
             // 1.0 is the default, so only pass to model if different
             val reparationBacklinkProbability = if (annotation.reparationBacklinkProbability != 1.0F) {
                 check(
-                    annotation.reparationBacklinkProbability >= 0.0
-                            && annotation.reparationBacklinkProbability < 1.0
+                    annotation.reparationBacklinkProbability in 0.0..<1.0
                 ) { "reparationBacklinkProbability must be between 0.0 or 1.0" }
                 annotation.reparationBacklinkProbability
             } else null
