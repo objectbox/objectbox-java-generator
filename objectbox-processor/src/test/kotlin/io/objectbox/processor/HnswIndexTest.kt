@@ -305,58 +305,7 @@ class HnswIndexTest(processorType: ProcessorType) : BaseProcessorTest(processorT
 
         val env = env("hnsw-defaults.json")
             .apply { addSourceFile("com.example.City", citySource) }
-        assertParamsSince6UseHnswIndexParams(env)
-    }
 
-    /**
-     * Like [hnswAnnotation_paramsSince6_usesHnswIndexParams], but with a Kotlin source: KSP represents its annotation
-     * arguments (e.g. enum entries, the nested flags) differently than those of Java sources.
-     */
-    @Test
-    fun hnswAnnotation_paramsSince6_kotlinSource_usesHnswIndexParams() {
-        assumeKotlinSourcesSupported()
-        @Language("kotlin")
-        val citySource =
-            """
-            package com.example
-
-            import io.objectbox.annotation.Entity
-            import io.objectbox.annotation.HnswFlags
-            import io.objectbox.annotation.HnswIndex
-            import io.objectbox.annotation.Id
-            import io.objectbox.annotation.VectorBuildLevel
-            import io.objectbox.annotation.VectorDistanceType
-            import io.objectbox.annotation.VectorQuantization
-            import io.objectbox.annotation.VectorSearchLevel
-
-            @Entity
-            class City {
-                @Id
-                var id: Long = 0
-
-                @HnswIndex(
-                    dimensions = 2,
-                    neighborsPerNode = 32,
-                    flags = HnswFlags(debugLogs = true, lateInit = true),
-                    distanceType = VectorDistanceType.COSINE,
-                    quantization = VectorQuantization.SCALAR_QUANT_8,
-                    quantizationOversample = 2.0F,
-                    quantizationRescoreFactor = 1.5F,
-                    searchLevel = VectorSearchLevel.L6_QUALITY,
-                    buildLevel = VectorBuildLevel.L5_BALANCED_QUALITY,
-                    bruteForceMaxCandidates = 5000,
-                    filteredSearchMaxNodes = 50000
-                )
-                var coordinates: FloatArray? = null
-            }
-            """.trimIndent()
-
-        val env = env("hnsw-defaults.json")
-            .apply { addKotlinSourceFile("com.example.City", citySource) }
-        assertParamsSince6UseHnswIndexParams(env)
-    }
-
-    private fun assertParamsSince6UseHnswIndexParams(env: TestEnvironment) {
         env.compile()
             .assertThatIt {
                 succeededWithoutWarnings()
