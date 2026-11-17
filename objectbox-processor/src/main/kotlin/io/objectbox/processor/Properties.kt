@@ -87,28 +87,16 @@ class Properties(
             return
         }
 
-        if (field.isKotlin) {
-            // When using KAPT, the processor already fails on a delegated property as it is
-            // compiled to a field of the delegate type (like 'name$delegate').
-            // However, KSP sees only the property itself (like 'name'), so add an explicit check.
-            if (field.isDelegated) {
-                messages.error(
-                    "Delegated properties are not supported, use @Transient or a regular property.",
-                    field
-                )
-                return
-            }
-            // ignore Kotlin properties that do not compile to a field
-            if (!field.hasBackingField) {
-                return
-            }
-        }
-
         if (field.name.isReservedName()) {
             messages.error(
                 "A property can not be named `__boxStore`. Adding a BoxStore field for relations? Annotate it with @Transient.",
                 field
             )
+            return
+        }
+
+        field.unsupportedReason?.let {
+            messages.error(it, field)
             return
         }
 

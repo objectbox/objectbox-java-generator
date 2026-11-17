@@ -33,14 +33,10 @@ internal fun KSDeclaration.isKotlinOrigin(): Boolean {
 }
 
 /**
- * Returns the annotation of the given class on this node, or null. Matches by simple name first
- * to avoid resolving the type of unrelated annotations.
+ * Returns the annotation of the given class on this node, or null. See [isAnnotation].
  */
 internal fun KSAnnotated.annotation(annotationClass: Class<out Annotation>): KSAnnotation? {
-    return annotations.firstOrNull {
-        it.shortName.asString() == annotationClass.simpleName
-                && it.annotationType.resolve().declaration.qualifiedName?.asString() == annotationClass.canonicalName
-    }
+    return annotations.firstOrNull { it.isAnnotation(annotationClass) }
 }
 
 internal fun KSAnnotated.hasAnnotation(annotationClass: Class<out Annotation>): Boolean {
@@ -48,14 +44,12 @@ internal fun KSAnnotated.hasAnnotation(annotationClass: Class<out Annotation>): 
 }
 
 /**
- * Like [annotation], but for annotations that may not be on the compile classpath of this module,
- * like `kotlin.jvm.JvmField`.
+ * True if this is an annotation of the given class. Matches by simple name first to avoid
+ * resolving the type of unrelated annotations.
  */
-internal fun KSAnnotated.hasAnnotation(simpleName: String, qualifiedName: String): Boolean {
-    return annotations.any {
-        it.shortName.asString() == simpleName
-                && it.annotationType.resolve().declaration.qualifiedName?.asString() == qualifiedName
-    }
+internal fun KSAnnotation.isAnnotation(annotationClass: Class<out Annotation>): Boolean {
+    return shortName.asString() == annotationClass.simpleName
+            && annotationType.resolve().declaration.qualifiedName?.asString() == annotationClass.canonicalName
 }
 
 /**

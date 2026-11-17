@@ -148,17 +148,11 @@ class JavaxProcessing(
         override val isTransient: Boolean
             get() = fieldElement.modifiers.contains(Modifier.TRANSIENT)
 
-        override val isKotlin: Boolean
-            get() = false
-
-        override val isDelegated: Boolean
-            get() = false
-
-        override val hasBackingField: Boolean
-            get() = true
-
         override val isAccessibleField: Boolean
             get() = !fieldElement.modifiers.contains(Modifier.PRIVATE)
+
+        override val unsupportedReason: String?
+            get() = null
 
         override fun getterNameOrNull(propertyType: PropertyType?): String? {
             val fieldType = fieldElement.asType()

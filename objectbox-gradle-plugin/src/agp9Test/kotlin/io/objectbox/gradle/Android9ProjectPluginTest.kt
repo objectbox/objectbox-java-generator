@@ -37,10 +37,10 @@ open class Android9ProjectPluginTest : AndroidProjectPluginTest() {
         """
         android {
             namespace = 'com.example'
-            compileSdk = $compileSdk
+            compileSdk = $COMPILE_SDK
             defaultConfig {
                 applicationId = "com.example"
-                minSdk = $minSdk
+                minSdk = $MIN_SDK
             }
         }
         """.trimIndent()

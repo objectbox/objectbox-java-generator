@@ -24,6 +24,7 @@ import com.google.devtools.ksp.getConstructors
 import com.google.devtools.ksp.getDeclaredFunctions
 import com.google.devtools.ksp.getDeclaredProperties
 import com.google.devtools.ksp.isConstructor
+import com.google.devtools.ksp.symbol.AnnotationUseSiteTarget
 import com.google.devtools.ksp.symbol.ClassKind
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
@@ -31,6 +32,7 @@ import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.google.devtools.ksp.symbol.KSType
 import com.google.devtools.ksp.symbol.KSValueParameter
 import com.google.devtools.ksp.symbol.Modifier
+import com.google.devtools.ksp.symbol.Nullability
 import io.objectbox.generator.model.PropertyType
 import io.objectbox.processor.ProcessingAnnotated
 import io.objectbox.processor.ProcessingClass
@@ -38,7 +40,7 @@ import io.objectbox.processor.ProcessingConstructor
 import io.objectbox.processor.ProcessingField
 import io.objectbox.processor.ProcessingParameter
 import io.objectbox.processor.ProcessingType
-import java.util.Locale
+import java.util.*
 
 /**
  * [ProcessingClass] and friends implemented with the KSP API, providing the Java view of Kotlin
@@ -108,7 +110,13 @@ class KspProcessing {
 
         override fun declaredFields(): List<ProcessingField> {
             val functions = declaration.getDeclaredFunctions().filter { !it.isConstructor() }.toList()
-            return declaration.getDeclaredProperties().map { KspField(it, functions) }.toList()
+            return declaration.getDeclaredProperties()
+                // Like KAPT-generated stubs, leave out Kotlin properties that do not compile to a
+                // field (like `val x get() = ...`). But keep delegated properties (they compile to a
+                // field of the delegate type), to report them as not supported.
+                .filter { !it.isKotlinOrigin() || it.hasBackingField || it.isDelegated() }
+                .map { KspField(it, functions) }
+                .toList()
         }
 
         override fun constructors(): List<ProcessingConstructor> {
@@ -141,7 +149,18 @@ class KspProcessing {
         override val name: String
             get() = property.simpleName.asString()
 
-        override val type: ProcessingType by lazy { KspType(property.type.resolve()) }
+        /** The declared type, for Kotlin properties of inline value class types the value class. */
+        private val declaredType: KSType by lazy { property.type.resolve() }
+
+        /**
+         * The Java view of the type: like for KAPT-generated stubs, inline value classes are
+         * replaced by their underlying type (like `byte` for `UByte`).
+         *
+         * Note: in contrast, constructor parameters keep their value class type. Constructors with
+         * value class parameters are mangled and not callable from Java, so they never match the
+         * properties as an all-args constructor.
+         */
+        override val type: ProcessingType by lazy { KspType(typeHelper.toJavaViewType(declaredType)) }
 
         override val enclosingQualifiedName: String?
             get() = (property.parentDeclaration as? KSClassDeclaration)?.qualifiedName?.asString()
@@ -152,16 +171,11 @@ class KspProcessing {
         override val isTransient: Boolean
             get() = property.modifiers.contains(Modifier.JAVA_TRANSIENT)
                     // A Kotlin property annotated @Transient compiles to a transient field.
-                    || property.hasAnnotation("Transient", "kotlin.jvm.Transient")
+                    || property.hasAnnotation(Transient::class.java)
 
-        override val isKotlin: Boolean
+        /** If this is parsed from Kotlin sources (or libraries). */
+        private val isKotlin: Boolean
             get() = property.isKotlinOrigin()
-
-        override val isDelegated: Boolean
-            get() = isKotlin && property.isDelegated()
-
-        override val hasBackingField: Boolean
-            get() = !isKotlin || property.hasBackingField
 
         override val isAccessibleField: Boolean
             get() = if (isKotlin) {
@@ -169,7 +183,7 @@ class KspProcessing {
                 // property is exposed as a field (lateinit or @JvmField).
                 !property.modifiers.contains(Modifier.PRIVATE)
                         && (property.modifiers.contains(Modifier.LATEINIT)
-                        || property.hasAnnotation("JvmField", "kotlin.jvm.JvmField"))
+                        || property.hasAnnotation(JvmField::class.java))
             } else {
                 !property.modifiers.contains(Modifier.PRIVATE)
             }
@@ -179,9 +193,10 @@ class KspProcessing {
             val propertyNameCapitalized = propertyName.replaceFirstChar { it.titlecase(Locale.getDefault()) }
 
             if (isKotlin) {
-                if (property.hasAnnotation("JvmField", "kotlin.jvm.JvmField")) {
+                if (property.hasAnnotation(JvmField::class.java)) {
                     return null // no accessors generated
                 }
+                getterJvmNameOrNull()?.let { return it }
                 // https://kotlinlang.org/docs/reference/java-to-kotlin-interop.html#properties
                 return if (propertyName.startsWith("is") && propertyName.length > 2 && propertyName[2].isUpperCase()) {
                     propertyName // Getter is called 'isProperty' (setter 'setProperty').
@@ -216,6 +231,41 @@ class KspProcessing {
             return functionsOfClass.find {
                 it.simpleName.asString() == "get$propertyNameCapitalized" && it.returnsType(fieldType)
             }?.simpleName?.asString()
+        }
+
+        override val unsupportedReason: String?
+            get() {
+                if (!isKotlin) return null
+                // When using KAPT, the processor already fails on a delegated property as it is
+                // compiled to a field of the delegate type (like 'name$delegate').
+                // However, KSP sees only the property itself (like 'name'), so add an explicit check.
+                if (property.isDelegated()) {
+                    return "Delegated properties are not supported, use @Transient or a regular property."
+                }
+                if (typeHelper.isValueClass(declaredType)) {
+                    if (declaredType.nullability != Nullability.NOT_NULL) {
+                        return "Nullable inline value class types are not supported, use a not-null type."
+                    }
+                    // The accessors of properties of value class types get mangled names that are not
+                    // callable from Java, unless renamed with @JvmName.
+                    if (!isAccessibleField && getterJvmNameOrNull() == null) {
+                        val propertyNameCapitalized = name.replaceFirstChar { it.titlecase(Locale.getDefault()) }
+                        return "The getter of a property with an inline value class type has a mangled name, rename it" +
+                                " like @get:JvmName(\"get$propertyNameCapitalized\")."
+                    }
+                }
+                return null
+            }
+
+        /**
+         * The name of the getter if renamed with `@get:JvmName`, or null.
+         */
+        private fun getterJvmNameOrNull(): String? {
+            val jvmName = property.getter?.annotation(JvmName::class.java)
+                ?: property.annotations.firstOrNull {
+                    it.useSiteTarget == AnnotationUseSiteTarget.GET && it.isAnnotation(JvmName::class.java)
+                }
+            return jvmName?.stringArgument(JvmName::name.name)
         }
 
         /**

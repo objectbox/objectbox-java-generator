@@ -1,8 +1,8 @@
 ## What does this merge request do?
 
-TODO Link associated issue from title, like: `<title> #NUMBER`
+objectbox/objectbox-java#TODO+
 
-TODO Briefly list what this merge request is about
+TODO Briefly describe what this merge request is about.
 
 ## Author's checklist
 
